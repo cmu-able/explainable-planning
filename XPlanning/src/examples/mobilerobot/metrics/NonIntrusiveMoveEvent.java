@@ -1,0 +1,28 @@
+package examples.mobilerobot.metrics;
+
+import examples.mobilerobot.factors.Area;
+import examples.mobilerobot.factors.Location;
+import examples.mobilerobot.factors.MoveToAction;
+import exceptions.AttributeNameNotFoundException;
+import exceptions.VarNameNotFoundException;
+import factors.IAction;
+import metrics.IEvent;
+import metrics.Transition;
+
+/**
+ * {@link NonIntrusiveMoveEvent} represents the robot moving into a public area.
+ * 
+ * @author rsukkerd
+ *
+ */
+public class NonIntrusiveMoveEvent implements IEvent {
+
+	@Override
+	public boolean isEventOccurred(Transition trans) 
+			throws VarNameNotFoundException, AttributeNameNotFoundException {
+		IAction action = trans.getAction();
+		Location rLocDest = (Location) trans.getDestStateVar("rLoc");
+		return action instanceof MoveToAction && rLocDest.getArea() == Area.PUBLIC;
+	}
+
+}

@@ -2,6 +2,7 @@ package metrics;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
+import factors.Transition;
 
 /**
  * {@link CountQFunction} represents a Q_i function that characterizes a QA i by a count of event occurrences.

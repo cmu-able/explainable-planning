@@ -5,8 +5,8 @@ import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
+import factors.Transition;
 import metrics.IEvent;
-import metrics.Transition;
 
 /**
  * {@link CollisionEvent} represents a collision, where the robot bumps into obstacles at a speed greater than some threshold.

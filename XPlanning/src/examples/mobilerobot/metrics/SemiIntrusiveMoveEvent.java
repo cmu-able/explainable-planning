@@ -6,8 +6,8 @@ import examples.mobilerobot.factors.MoveToAction;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
+import factors.Transition;
 import metrics.IEvent;
-import metrics.Transition;
 
 /**
  * {@link SemiIntrusiveMoveEvent} represents the robot moving into a semi-public area.

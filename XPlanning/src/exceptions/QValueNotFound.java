@@ -1,6 +1,6 @@
 package exceptions;
 
-import metrics.Transition;
+import factors.Transition;
 
 public class QValueNotFound extends Exception {
 

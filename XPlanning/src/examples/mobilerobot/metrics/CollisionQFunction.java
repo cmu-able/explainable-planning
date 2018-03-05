@@ -3,9 +3,9 @@ package examples.mobilerobot.metrics;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
+import factors.Transition;
 import metrics.CountQFunction;
 import metrics.IQFunction;
-import metrics.Transition;
 
 /**
  * {@link CollisionQFunction} determines the collision of the robot of a single transition.

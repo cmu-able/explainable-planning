@@ -7,8 +7,8 @@ import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
+import factors.Transition;
 import metrics.IQFunction;
-import metrics.Transition;
 
 /**
  * {@link TravelTimeQFunction} calculates the travel time of the robot of a single transition.

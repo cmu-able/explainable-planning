@@ -1,11 +1,9 @@
-package metrics;
+package factors;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import exceptions.VarNameNotFoundException;
-import factors.IAction;
-import factors.IStateVarValue;
 
 /**
  * {@link Transition} represents a (s, a, s') transition.

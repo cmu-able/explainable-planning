@@ -36,8 +36,8 @@ public class CollisionEvent implements IEvent {
 	@Override
 	public boolean isEventOccurred(Transition trans) throws VarNameNotFoundException {
 		IAction action = trans.getAction();
-		RobotBumped rBumpedDest = (RobotBumped) trans.getDestStateVar("rBumped");
-		RobotSpeed rSpeedSrc = (RobotSpeed) trans.getSrcStateVar("rSpeed");
+		RobotBumped rBumpedDest = (RobotBumped) trans.getDestStateVarValue("rBumped");
+		RobotSpeed rSpeedSrc = (RobotSpeed) trans.getSrcStateVarValue("rSpeed");
 		return action instanceof MoveToAction && rBumpedDest.isBumped() && rSpeedSrc.getSpeed() > mSpeedThreshold;
 	}
 

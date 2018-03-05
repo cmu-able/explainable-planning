@@ -23,8 +23,8 @@ public class TravelTimeQFunction implements IQFunction {
 			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		IAction action = trans.getAction();
 		if (action instanceof MoveToAction) {
-			Distance distance = (Distance) action.getDerivedAttributeValue("distance", trans.getSrcStateVar("rLoc"));
-			RobotSpeed rSpeedSrc = (RobotSpeed) trans.getSrcStateVar("rSpeed");
+			Distance distance = (Distance) action.getDerivedAttributeValue("distance", trans.getSrcStateVarValue("rLoc"));
+			RobotSpeed rSpeedSrc = (RobotSpeed) trans.getSrcStateVarValue("rSpeed");
 			return distance.getDistance() / rSpeedSrc.getSpeed();
 		} else {
 			return 0;

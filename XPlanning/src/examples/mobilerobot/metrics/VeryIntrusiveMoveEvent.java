@@ -20,7 +20,7 @@ public class VeryIntrusiveMoveEvent implements IEvent {
 	@Override
 	public boolean isEventOccurred(Transition trans) throws VarNameNotFoundException, AttributeNameNotFoundException {
 		IAction action = trans.getAction();
-		Location rLocDest = (Location) trans.getDestStateVar("rLoc");
+		Location rLocDest = (Location) trans.getDestStateVarValue("rLoc");
 		return action instanceof MoveToAction && rLocDest.getArea() == Area.PRIVATE;
 	}
 

@@ -12,19 +12,19 @@ import exceptions.AttributeNameNotFoundException;
  *
  */
 public class StateVarValue implements IStateVarValue {
-	
+
 	private Map<String, IStateVarAttribute> mAttributes;
-	
+
 	public StateVarValue() {
 	}
-	
+
 	public void putAttributeValue(String name, IStateVarAttribute value) {
 		if (mAttributes == null) {
 			mAttributes = new HashMap<>();
 		}
 		mAttributes.put(name, value);
 	}
-	
+
 	@Override
 	public IStateVarAttribute getAttributeValue(String name) throws AttributeNameNotFoundException {
 		if (mAttributes == null || !mAttributes.containsKey(name)) {

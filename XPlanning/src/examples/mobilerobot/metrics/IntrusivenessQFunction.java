@@ -19,12 +19,17 @@ import metrics.Transition;
  */
 public class IntrusivenessQFunction implements IQFunction {
 
-	private double NON_INTRUSIVE_PENALTY = 0;
-	private double SEMI_INTRUSIVE_PEANLTY = 1;
-	private double VERY_INTRUSIVE_PENALTY = 3;
-	
+	private static final double NON_INTRUSIVE_PENALTY = 0;
+	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
+	private static final double VERY_INTRUSIVE_PENALTY = 3;
+
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
+
 	private NonStandardMetricQFunction mNonStdQFn;
-	
+
 	public IntrusivenessQFunction() {
 		Map<IEvent, Double> metric = new HashMap<>();
 		metric.put(new NonIntrusiveMoveEvent(), NON_INTRUSIVE_PENALTY);
@@ -32,11 +37,33 @@ public class IntrusivenessQFunction implements IQFunction {
 		metric.put(new VeryIntrusiveMoveEvent(), VERY_INTRUSIVE_PENALTY);
 		mNonStdQFn = new NonStandardMetricQFunction(metric);
 	}
-	
+
 	@Override
-	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	public double getValue(Transition trans) throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		return mNonStdQFn.getValue(trans);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof IntrusivenessQFunction)) {
+			return false;
+		}
+		IntrusivenessQFunction qFun = (IntrusivenessQFunction) obj;
+		return qFun.mNonStdQFn.equals(mNonStdQFn);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mNonStdQFn.hashCode();
+			hashCode = result;
+		}
+		return result;
 	}
 
 }

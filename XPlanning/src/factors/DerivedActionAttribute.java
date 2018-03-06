@@ -5,7 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * {@link DerivedActionAttribute} holds a set of derived attribute values associated with an action. Each value corresponds to applying the action to a particular state.
+ * {@link DerivedActionAttribute} holds a set of derived attribute values associated with an action. Each value
+ * corresponds to applying the action to a particular state.
  * 
  * @author rsukkerd
  *
@@ -18,15 +19,15 @@ public class DerivedActionAttribute {
 	private volatile int hashCode;
 
 	private String mName;
-	private Map<Set<IStateVarValue>, IActionAttribute> mValues;
+	private Map<Set<IStateVar>, IActionAttribute> mValues;
 
 	public DerivedActionAttribute(String name) {
 		mName = name;
 	}
 
-	public void putDerivedAttributeValue(IActionAttribute value, IStateVarValue... srcStateVars) {
-		Set<IStateVarValue> varSet = new HashSet<>();
-		for (IStateVarValue var : srcStateVars) {
+	public void putDerivedAttributeValue(IActionAttribute value, IStateVar... srcStateVars) {
+		Set<IStateVar> varSet = new HashSet<>();
+		for (IStateVar var : srcStateVars) {
 			varSet.add(var);
 		}
 		mValues.put(varSet, value);
@@ -36,9 +37,9 @@ public class DerivedActionAttribute {
 		return mName;
 	}
 
-	public IActionAttribute getDerivedAttributeValue(IStateVarValue... srcStateVars) {
-		Set<IStateVarValue> varSet = new HashSet<>();
-		for (IStateVarValue var : srcStateVars) {
+	public IActionAttribute getDerivedAttributeValue(IStateVar... srcStateVars) {
+		Set<IStateVar> varSet = new HashSet<>();
+		for (IStateVar var : srcStateVars) {
 			varSet.add(var);
 		}
 		return mValues.get(varSet);

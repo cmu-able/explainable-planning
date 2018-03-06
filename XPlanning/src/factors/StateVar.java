@@ -1,12 +1,12 @@
 package factors;
 
 /**
- * {@link StateVar} represents a state variable with a specific value.
+ * {@link StateVar} represents a generic state variable with a specific value.
  * 
  * @author rsukkerd
  *
  */
-public class StateVar {
+public class StateVar implements IStateVar {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -21,10 +21,12 @@ public class StateVar {
 		mValue = value;
 	}
 
+	@Override
 	public String getName() {
 		return mName;
 	}
 
+	@Override
 	public IStateVarValue getValue() {
 		return mValue;
 	}

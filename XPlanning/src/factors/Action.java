@@ -21,14 +21,14 @@ public class Action implements IAction {
 	private volatile int hashCode;
 
 	private String mActionName;
-	private List<IStateVarValue> mParameters;
+	private List<IStateVar> mParameters;
 	private Map<String, IActionAttribute> mAttributes;
 	private Map<String, DerivedActionAttribute> mDerivedAttributes;
 
-	public Action(String actionName, IStateVarValue... parameters) {
+	public Action(String actionName, IStateVar... parameters) {
 		mActionName = actionName;
 		mParameters = new ArrayList<>();
-		for (IStateVarValue param : parameters) {
+		for (IStateVar param : parameters) {
 			mParameters.add(param);
 		}
 		mAttributes = new HashMap<>();
@@ -39,7 +39,7 @@ public class Action implements IAction {
 		mAttributes.put(name, value);
 	}
 
-	public void putDerivedAttributeValue(String name, IActionAttribute value, IStateVarValue... srcStateVars) {
+	public void putDerivedAttributeValue(String name, IActionAttribute value, IStateVar... srcStateVars) {
 		if (!mDerivedAttributes.containsKey(name)) {
 			DerivedActionAttribute derivedAttr = new DerivedActionAttribute(name);
 			derivedAttr.putDerivedAttributeValue(value, srcStateVars);
@@ -49,12 +49,13 @@ public class Action implements IAction {
 		}
 	}
 
+	@Override
 	public String getActionName() {
 		return mActionName;
 	}
 
 	@Override
-	public List<IStateVarValue> getParameters() {
+	public List<IStateVar> getParameters() {
 		return mParameters;
 	}
 
@@ -67,7 +68,8 @@ public class Action implements IAction {
 	}
 
 	@Override
-	public IActionAttribute getDerivedAttributeValue(String name, IStateVarValue... srcStateVars) throws AttributeNameNotFoundException {
+	public IActionAttribute getDerivedAttributeValue(String name, IStateVar... srcStateVars)
+			throws AttributeNameNotFoundException {
 		if (!mDerivedAttributes.containsKey(name)) {
 			throw new AttributeNameNotFoundException(name);
 		}
@@ -83,8 +85,8 @@ public class Action implements IAction {
 			return false;
 		}
 		Action action = (Action) obj;
-		return action.mActionName.equals(mActionName) && action.mParameters.equals(mParameters) && action.mAttributes.equals(mAttributes)
-				&& action.mDerivedAttributes.equals(mDerivedAttributes);
+		return action.mActionName.equals(mActionName) && action.mParameters.equals(mParameters)
+				&& action.mAttributes.equals(mAttributes) && action.mDerivedAttributes.equals(mDerivedAttributes);
 	}
 
 	@Override

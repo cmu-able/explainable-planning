@@ -1,13 +1,12 @@
 package examples.mobilerobot.factors;
 
-import java.util.Arrays;
 import java.util.List;
 
 import exceptions.AttributeNameNotFoundException;
 import factors.Action;
 import factors.IAction;
 import factors.IActionAttribute;
-import factors.IStateVarValue;
+import factors.IStateVar;
 
 /**
  * {@link MoveToAction} a type of actions that move the robot to specified destinations. It has an associated distance.
@@ -23,32 +22,41 @@ public class MoveToAction implements IAction {
 	private volatile int hashCode;
 
 	private Action mAction;
-	private Location mDest;
+	private LocationStateVar mrLocDest;
 
-	public MoveToAction(Location dest) {
-		mDest = dest;
-		mAction = new Action("moveToL" + mDest.getId(), dest);
+	public MoveToAction(LocationStateVar rLocDest) {
+		mAction = new Action("moveToL" + mrLocDest.getLocation().getId(), rLocDest);
+		mrLocDest = rLocDest;
 	}
 
-	public void putDistanceValue(Distance distance, IStateVarValue... srcStateVars) {
-		mAction.putDerivedAttributeValue("distance", distance, srcStateVars);
+	public void putDistanceValue(Distance distance, LocationStateVar rLocSrc) {
+		mAction.putDerivedAttributeValue("distance", distance, rLocSrc);
 	}
 
+	public void putOcclusionValue(Occlusion occlusion, LocationStateVar rLocSrc) {
+		mAction.putDerivedAttributeValue("occlusion", occlusion, rLocSrc);
+	}
+
+	public LocationStateVar getDestination() {
+		return mrLocDest;
+	}
+
+	public Distance getDistance(LocationStateVar rLocSrc) throws AttributeNameNotFoundException {
+		return (Distance) getDerivedAttributeValue("distance", rLocSrc);
+	}
+
+	public Occlusion getOcclusion(LocationStateVar rLocSrc) throws AttributeNameNotFoundException {
+		return (Occlusion) getDerivedAttributeValue("occlusion", rLocSrc);
+	}
+
+	@Override
 	public String getActionName() {
 		return mAction.getActionName();
 	}
 
-	public Location getDestination() {
-		return mDest;
-	}
-
-	public Distance getDistance(IStateVarValue... srcStateVars) throws AttributeNameNotFoundException {
-		return (Distance) getDerivedAttributeValue("distance", srcStateVars);
-	}
-
 	@Override
-	public List<IStateVarValue> getParameters() {
-		return Arrays.asList(mDest);
+	public List<IStateVar> getParameters() {
+		return mAction.getParameters();
 	}
 
 	@Override
@@ -57,7 +65,8 @@ public class MoveToAction implements IAction {
 	}
 
 	@Override
-	public IActionAttribute getDerivedAttributeValue(String name, IStateVarValue... srcStateVars) throws AttributeNameNotFoundException {
+	public IActionAttribute getDerivedAttributeValue(String name, IStateVar... srcStateVars)
+			throws AttributeNameNotFoundException {
 		return mAction.getDerivedAttributeValue(name, srcStateVars);
 	}
 
@@ -70,7 +79,7 @@ public class MoveToAction implements IAction {
 			return false;
 		}
 		MoveToAction moveTo = (MoveToAction) obj;
-		return moveTo.mAction.equals(mAction) && moveTo.mDest.equals(mDest);
+		return moveTo.mAction.equals(mAction) && moveTo.mrLocDest.equals(mrLocDest);
 	}
 
 	@Override
@@ -79,7 +88,7 @@ public class MoveToAction implements IAction {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mAction.hashCode();
-			result = 31 * result + mDest.hashCode();
+			result = 31 * result + mrLocDest.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

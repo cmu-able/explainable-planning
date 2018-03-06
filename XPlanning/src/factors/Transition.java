@@ -19,32 +19,32 @@ public class Transition {
 	 */
 	private volatile int hashCode;
 
-	private Map<String, StateVar> mSrcStateVars = new HashMap<>();
-	private Map<String, StateVar> mDestStateVars = new HashMap<>();
+	private Map<String, IStateVar> mSrcStateVars = new HashMap<>();
+	private Map<String, IStateVar> mDestStateVars = new HashMap<>();
 	private IAction mAction;
 
-	public Transition(Set<StateVar> srcStateVars, IAction action, Set<StateVar> destStateVars) {
-		for (StateVar var : srcStateVars) {
+	public Transition(Set<IStateVar> srcStateVars, IAction action, Set<IStateVar> destStateVars) {
+		for (IStateVar var : srcStateVars) {
 			mSrcStateVars.put(var.getName(), var);
 		}
-		for (StateVar var : destStateVars) {
+		for (IStateVar var : destStateVars) {
 			mDestStateVars.put(var.getName(), var);
 		}
 		mAction = action;
 	}
 
-	public IStateVarValue getSrcStateVarValue(String srcVarName) throws VarNameNotFoundException {
+	public IStateVar getSrcStateVar(String srcVarName) throws VarNameNotFoundException {
 		if (!mSrcStateVars.containsKey(srcVarName)) {
 			throw new VarNameNotFoundException(srcVarName);
 		}
-		return mSrcStateVars.get(srcVarName).getValue();
+		return mSrcStateVars.get(srcVarName);
 	}
 
-	public IStateVarValue getDestStateVarValue(String destVarName) throws VarNameNotFoundException {
+	public IStateVar getDestStateVar(String destVarName) throws VarNameNotFoundException {
 		if (!mDestStateVars.containsKey(destVarName)) {
 			throw new VarNameNotFoundException(destVarName);
 		}
-		return mDestStateVars.get(destVarName).getValue();
+		return mDestStateVars.get(destVarName);
 	}
 
 	public IAction getAction() {
@@ -60,7 +60,8 @@ public class Transition {
 			return false;
 		}
 		Transition trans = (Transition) obj;
-		return trans.mSrcStateVars.equals(mSrcStateVars) && trans.mDestStateVars.equals(mDestStateVars) && trans.mAction.equals(mAction);
+		return trans.mSrcStateVars.equals(mSrcStateVars) && trans.mDestStateVars.equals(mDestStateVars)
+				&& trans.mAction.equals(mAction);
 	}
 
 	@Override

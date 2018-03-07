@@ -35,9 +35,10 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 	@Override
 	public double getValue(Transition trans)
 			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
-		for (IEvent e : mMetric.keySet()) {
-			if (e.hasEventOccurred(trans)) {
-				return mMetric.get(e);
+		for (Map.Entry<IEvent, Double> entry : mMetric.entrySet()) {
+			IEvent event = entry.getKey();
+			if (event.hasEventOccurred(trans)) {
+				return mMetric.get(event);
 			}
 		}
 		throw new QValueNotFound(trans);

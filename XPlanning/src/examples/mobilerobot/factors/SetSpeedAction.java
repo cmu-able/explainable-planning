@@ -1,36 +1,27 @@
 package examples.mobilerobot.factors;
 
-import java.util.List;
+import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
 import factors.Action;
 import factors.IAction;
 import factors.IActionAttribute;
-import factors.IStateVar;
+import factors.IStateVarValue;
+import factors.StateVar;
 
 public class SetSpeedAction implements IAction {
 
 	private Action mAction;
-	private SpeedStateVar mrSpeedDest;
+	private StateVar<RobotSpeed> mrSpeedDest;
 
-	public SetSpeedAction(SpeedStateVar rSpeedDest) {
-		String actionName = "setSpeed" + rSpeedDest.getSpeed();
-		mAction = new Action(actionName, rSpeedDest);
+	public SetSpeedAction(StateVar<RobotSpeed> rSpeedDest) {
+		mAction = new Action("setSpeed" + rSpeedDest.getValue().getSpeed());
+		mAction.addParameter(rSpeedDest);
 		mrSpeedDest = rSpeedDest;
 	}
 
-	public SpeedStateVar getTargetSpeed() {
-		return mrSpeedDest;
-	}
-
-	@Override
-	public String getActionName() {
-		return mAction.getActionName();
-	}
-
-	@Override
-	public List<IStateVar> getParameters() {
-		return mAction.getParameters();
+	public RobotSpeed getTargetSpeed() {
+		return mrSpeedDest.getValue();
 	}
 
 	@Override
@@ -39,7 +30,7 @@ public class SetSpeedAction implements IAction {
 	}
 
 	@Override
-	public IActionAttribute getDerivedAttributeValue(String name, IStateVar... srcStateVars)
+	public IActionAttribute getDerivedAttributeValue(String name, Set<StateVar<? extends IStateVarValue>> srcStateVars)
 			throws AttributeNameNotFoundException {
 		return mAction.getDerivedAttributeValue(name, srcStateVars);
 	}

@@ -19,32 +19,33 @@ public class Transition {
 	 */
 	private volatile int hashCode;
 
-	private Map<String, IStateVar> mSrcStateVars = new HashMap<>();
-	private Map<String, IStateVar> mDestStateVars = new HashMap<>();
+	private Map<String, StateVar<? extends IStateVarValue>> mSrcStateVars = new HashMap<>();
+	private Map<String, StateVar<? extends IStateVarValue>> mDestStateVars = new HashMap<>();
 	private IAction mAction;
 
-	public Transition(Set<IStateVar> srcStateVars, IAction action, Set<IStateVar> destStateVars) {
-		for (IStateVar var : srcStateVars) {
+	public Transition(Set<StateVar<? extends IStateVarValue>> srcStateVars, IAction action,
+			Set<StateVar<? extends IStateVarValue>> destStateVars) {
+		for (StateVar<? extends IStateVarValue> var : srcStateVars) {
 			mSrcStateVars.put(var.getName(), var);
 		}
-		for (IStateVar var : destStateVars) {
+		for (StateVar<? extends IStateVarValue> var : destStateVars) {
 			mDestStateVars.put(var.getName(), var);
 		}
 		mAction = action;
 	}
 
-	public IStateVar getSrcStateVar(String srcVarName) throws VarNameNotFoundException {
+	public IStateVarValue getSrcStateVarValue(String srcVarName) throws VarNameNotFoundException {
 		if (!mSrcStateVars.containsKey(srcVarName)) {
 			throw new VarNameNotFoundException(srcVarName);
 		}
-		return mSrcStateVars.get(srcVarName);
+		return mSrcStateVars.get(srcVarName).getValue();
 	}
 
-	public IStateVar getDestStateVar(String destVarName) throws VarNameNotFoundException {
+	public IStateVarValue getDestStateVarValue(String destVarName) throws VarNameNotFoundException {
 		if (!mDestStateVars.containsKey(destVarName)) {
 			throw new VarNameNotFoundException(destVarName);
 		}
-		return mDestStateVars.get(destVarName);
+		return mDestStateVars.get(destVarName).getValue();
 	}
 
 	public IAction getAction() {

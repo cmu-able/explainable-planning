@@ -5,7 +5,7 @@ import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
-import factors.IAction;
+import factors.StateVar;
 import factors.Transition;
 import metrics.IEvent;
 
@@ -17,11 +17,19 @@ import metrics.IEvent;
  */
 public class VeryIntrusiveMoveEvent implements IEvent {
 
+	public boolean isVeryIntrusive(MoveToAction moveTo, StateVar<Location> rLocDest)
+			throws AttributeNameNotFoundException {
+		return rLocDest.getValue().getArea() == Area.PRIVATE;
+	}
+
 	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException, AttributeNameNotFoundException {
-		IAction action = trans.getAction();
-		Location rLocDest = (Location) trans.getDestStateVar("rLoc");
-		return action instanceof MoveToAction && rLocDest.getArea() == Area.PRIVATE;
+		if (trans.getAction() instanceof MoveToAction && trans.getDestStateVarValue("rLoc") instanceof Location) {
+			MoveToAction moveTo = (MoveToAction) trans.getAction();
+			StateVar<Location> rLocDest = new StateVar<>("rLoc", (Location) trans.getDestStateVarValue("rLoc"));
+			return isVeryIntrusive(moveTo, rLocDest);
+		}
+		return false;
 	}
 
 }

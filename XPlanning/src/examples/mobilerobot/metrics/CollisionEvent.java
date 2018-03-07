@@ -1,9 +1,10 @@
 package examples.mobilerobot.metrics;
 
-import examples.mobilerobot.factors.BumpedStateVar;
 import examples.mobilerobot.factors.MoveToAction;
-import examples.mobilerobot.factors.SpeedStateVar;
+import examples.mobilerobot.factors.RobotBumped;
+import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNameNotFoundException;
+import factors.StateVar;
 import factors.Transition;
 import metrics.IEvent;
 
@@ -31,17 +32,18 @@ public class CollisionEvent implements IEvent {
 		return mSpeedThreshold;
 	}
 
-	public boolean hasCollided(SpeedStateVar rSpeedSrc, MoveToAction moveTo, BumpedStateVar rBumpedDest) {
-		return rBumpedDest.getBumped().hasBumped() && rSpeedSrc.getSpeed().getSpeed() > getSpeedThreshold();
+	public boolean hasCollided(StateVar<RobotSpeed> rSpeedSrc, MoveToAction moveTo, StateVar<RobotBumped> rBumpedDest) {
+		return rBumpedDest.getValue().hasBumped() && rSpeedSrc.getValue().getSpeed() > getSpeedThreshold();
 	}
 
 	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException {
-		if (trans.getSrcStateVar("rSpeed") instanceof SpeedStateVar && trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVar("rBumped") instanceof BumpedStateVar) {
-			SpeedStateVar rSpeedSrc = (SpeedStateVar) trans.getSrcStateVar("rSpeed");
+		if (trans.getSrcStateVarValue("rSpeed") instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
+				&& trans.getDestStateVarValue("rBumped") instanceof RobotBumped) {
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", (RobotSpeed) trans.getSrcStateVarValue("rSpeed"));
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			BumpedStateVar rBumpedDest = (BumpedStateVar) trans.getDestStateVar("rBumped");
+			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped",
+					(RobotBumped) trans.getDestStateVarValue("rBumped"));
 			return hasCollided(rSpeedSrc, moveTo, rBumpedDest);
 		}
 		return false;

@@ -12,8 +12,6 @@ import factors.IStateVarValue;
  */
 public class RobotSpeed implements IStateVarValue {
 
-	private static final double EPSILON = 0.0001;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -43,7 +41,7 @@ public class RobotSpeed implements IStateVarValue {
 			return false;
 		}
 		RobotSpeed speed = (RobotSpeed) obj;
-		return Math.abs(speed.mSpeed - mSpeed) <= EPSILON;
+		return Double.compare(speed.mSpeed, mSpeed) == 0;
 	}
 
 	@Override

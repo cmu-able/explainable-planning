@@ -10,8 +10,6 @@ import factors.IActionAttribute;
  */
 public class Distance implements IActionAttribute {
 
-	private static final double EPSILON = 0.0001;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -36,7 +34,7 @@ public class Distance implements IActionAttribute {
 			return false;
 		}
 		Distance distance = (Distance) obj;
-		return Math.abs(distance.mDistance - mDistance) <= EPSILON;
+		return Double.compare(distance.mDistance, mDistance) == 0;
 	}
 
 	@Override

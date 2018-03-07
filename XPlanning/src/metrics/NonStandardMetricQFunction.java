@@ -8,12 +8,13 @@ import exceptions.VarNameNotFoundException;
 import factors.Transition;
 
 /**
- * {@link NonStandardMetricQFunction} represents a Q_i function that characterizes a QA i using a non-standard metric.
+ * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard
+ * metric.
  * 
  * @author rsukkerd
  *
  */
-public class NonStandardMetricQFunction implements IQFunction {
+public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -27,9 +28,15 @@ public class NonStandardMetricQFunction implements IQFunction {
 	}
 
 	@Override
-	public double getValue(Transition trans) throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	public Map<IEvent, Double> getMetric() {
+		return mMetric;
+	}
+
+	@Override
+	public double getValue(Transition trans)
+			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		for (IEvent e : mMetric.keySet()) {
-			if (e.isEventOccurred(trans)) {
+			if (e.hasEventOccurred(trans)) {
 				return mMetric.get(e);
 			}
 		}

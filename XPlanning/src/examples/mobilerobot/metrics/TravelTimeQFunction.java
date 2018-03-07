@@ -9,7 +9,7 @@ import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
 import factors.Transition;
-import metrics.IQFunction;
+import metrics.IStandardMetricQFunction;
 
 /**
  * {@link TravelTimeQFunction} calculates the travel time of the robot of a single transition.
@@ -17,7 +17,7 @@ import metrics.IQFunction;
  * @author rsukkerd
  *
  */
-public class TravelTimeQFunction implements IQFunction {
+public class TravelTimeQFunction implements IStandardMetricQFunction {
 
 	public double getTravelTime(LocationStateVar rLocSrc, SpeedStateVar rSpeedSrc, MoveToAction moveTo,
 			LocationStateVar rLocDest) throws AttributeNameNotFoundException {

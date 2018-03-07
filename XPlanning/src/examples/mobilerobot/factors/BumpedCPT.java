@@ -22,7 +22,7 @@ public class BumpedCPT implements ICPT {
 
 	private double getConditionalProbabilityHelper(RobotBumped bumped, MoveToAction moveTo, LocationStateVar rLocSrc)
 			throws AttributeNameNotFoundException {
-		if (bumped.isBumped()) {
+		if (bumped.hasBumped()) {
 			if (moveTo.getOcclusion(rLocSrc) == Occlusion.PARTIALLY_OCCLUDED) {
 				return BUMP_PROB_PARTIALLY_OCCLUDED;
 			}
@@ -31,6 +31,6 @@ public class BumpedCPT implements ICPT {
 			}
 			return BUMP_PROB_BLOCKED;
 		}
-		return 1 - getConditionalProbabilityHelper(new RobotBumped(!bumped.isBumped()), moveTo, rLocSrc);
+		return 1 - getConditionalProbabilityHelper(new RobotBumped(!bumped.hasBumped()), moveTo, rLocSrc);
 	}
 }

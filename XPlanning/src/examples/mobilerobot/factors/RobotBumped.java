@@ -23,7 +23,7 @@ public class RobotBumped implements IStateVarValue {
 		mBumped = bumped;
 	}
 
-	public boolean isBumped() {
+	public boolean hasBumped() {
 		return mBumped;
 	}
 

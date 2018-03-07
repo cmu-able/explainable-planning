@@ -18,7 +18,7 @@ import metrics.IEvent;
 public class NonIntrusiveMoveEvent implements IEvent {
 
 	@Override
-	public boolean isEventOccurred(Transition trans) 
+	public boolean hasEventOccurred(Transition trans) 
 			throws VarNameNotFoundException, AttributeNameNotFoundException {
 		IAction action = trans.getAction();
 		Location rLocDest = (Location) trans.getDestStateVar("rLoc");

@@ -1,11 +1,9 @@
 package examples.mobilerobot.metrics;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
 import factors.Transition;
-import metrics.CountQFunction;
-import metrics.IQFunction;
+import metrics.ICountQFunction;
+import metrics.IEvent;
 
 /**
  * {@link CollisionQFunction} determines the collision of the robot of a single transition.
@@ -13,25 +11,27 @@ import metrics.IQFunction;
  * @author rsukkerd
  *
  */
-public class CollisionQFunction implements IQFunction {
-
-	private static final double SPEED_THRESHOLD = 0.4;
+public class CollisionQFunction implements ICountQFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private CountQFunction mCountQFn;
+	private CollisionEvent mCollisionEvent;
 
-	public CollisionQFunction() {
-		CollisionEvent collEvent = new CollisionEvent(SPEED_THRESHOLD);
-		mCountQFn = new CountQFunction(collEvent);
+	public CollisionQFunction(double speedThreshold) {
+		mCollisionEvent = new CollisionEvent(speedThreshold);
 	}
 
 	@Override
-	public double getValue(Transition trans) throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
-		return mCountQFn.getValue(trans);
+	public IEvent getEvent() {
+		return mCollisionEvent;
+	}
+
+	@Override
+	public double getValue(Transition trans) throws VarNameNotFoundException {
+		return mCollisionEvent.hasEventOccurred(trans) ? 1 : 0;
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class CollisionQFunction implements IQFunction {
 			return false;
 		}
 		CollisionQFunction qFun = (CollisionQFunction) obj;
-		return qFun.mCountQFn.equals(mCountQFn);
+		return qFun.mCollisionEvent.equals(mCollisionEvent);
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class CollisionQFunction implements IQFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mCountQFn.hashCode();
+			result = 31 * result + mCollisionEvent.hashCode();
 			hashCode = result;
 		}
 		return result;

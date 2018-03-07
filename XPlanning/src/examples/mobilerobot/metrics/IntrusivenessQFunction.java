@@ -8,7 +8,7 @@ import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
 import factors.Transition;
 import metrics.IEvent;
-import metrics.IQFunction;
+import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;
 
 /**
@@ -17,7 +17,7 @@ import metrics.NonStandardMetricQFunction;
  * @author rsukkerd
  *
  */
-public class IntrusivenessQFunction implements IQFunction {
+public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 
 	private static final double NON_INTRUSIVE_PENALTY = 0;
 	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
@@ -39,7 +39,13 @@ public class IntrusivenessQFunction implements IQFunction {
 	}
 
 	@Override
-	public double getValue(Transition trans) throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	public Map<IEvent, Double> getMetric() {
+		return mNonStdQFn.getMetric();
+	}
+
+	@Override
+	public double getValue(Transition trans)
+			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		return mNonStdQFn.getValue(trans);
 	}
 

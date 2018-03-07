@@ -1,9 +1,8 @@
 package factors;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
 
@@ -21,25 +20,27 @@ public class Action implements IAction {
 	private volatile int hashCode;
 
 	private String mActionName;
-	private List<IStateVar> mParameters;
+	private Map<String, StateVar<? extends IStateVarValue>> mParameters;
 	private Map<String, IActionAttribute> mAttributes;
 	private Map<String, DerivedActionAttribute> mDerivedAttributes;
 
-	public Action(String actionName, IStateVar... parameters) {
+	public Action(String actionName) {
 		mActionName = actionName;
-		mParameters = new ArrayList<>();
-		for (IStateVar param : parameters) {
-			mParameters.add(param);
-		}
+		mParameters = new HashMap<>();
 		mAttributes = new HashMap<>();
 		mDerivedAttributes = new HashMap<>();
+	}
+
+	public void addParameter(StateVar<? extends IStateVarValue> parameter) {
+		mParameters.put(parameter.getName(), parameter);
 	}
 
 	public void putAttributeValue(String name, IActionAttribute value) {
 		mAttributes.put(name, value);
 	}
 
-	public void putDerivedAttributeValue(String name, IActionAttribute value, IStateVar... srcStateVars) {
+	public void putDerivedAttributeValue(String name, IActionAttribute value,
+			Set<StateVar<? extends IStateVarValue>> srcStateVars) {
 		if (!mDerivedAttributes.containsKey(name)) {
 			DerivedActionAttribute derivedAttr = new DerivedActionAttribute(name);
 			derivedAttr.putDerivedAttributeValue(value, srcStateVars);
@@ -47,16 +48,6 @@ public class Action implements IAction {
 		} else {
 			mDerivedAttributes.get(name).putDerivedAttributeValue(value, srcStateVars);
 		}
-	}
-
-	@Override
-	public String getActionName() {
-		return mActionName;
-	}
-
-	@Override
-	public List<IStateVar> getParameters() {
-		return mParameters;
 	}
 
 	@Override
@@ -68,7 +59,7 @@ public class Action implements IAction {
 	}
 
 	@Override
-	public IActionAttribute getDerivedAttributeValue(String name, IStateVar... srcStateVars)
+	public IActionAttribute getDerivedAttributeValue(String name, Set<StateVar<? extends IStateVarValue>> srcStateVars)
 			throws AttributeNameNotFoundException {
 		if (!mDerivedAttributes.containsKey(name)) {
 			throw new AttributeNameNotFoundException(name);

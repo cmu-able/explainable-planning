@@ -1,6 +1,5 @@
 package factors;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,30 +18,22 @@ public class DerivedActionAttribute {
 	private volatile int hashCode;
 
 	private String mName;
-	private Map<Set<IStateVar>, IActionAttribute> mValues;
+	private Map<Set<StateVar<? extends IStateVarValue>>, IActionAttribute> mValues;
 
 	public DerivedActionAttribute(String name) {
 		mName = name;
 	}
 
-	public void putDerivedAttributeValue(IActionAttribute value, IStateVar... srcStateVars) {
-		Set<IStateVar> varSet = new HashSet<>();
-		for (IStateVar var : srcStateVars) {
-			varSet.add(var);
-		}
-		mValues.put(varSet, value);
+	public void putDerivedAttributeValue(IActionAttribute value, Set<StateVar<? extends IStateVarValue>> srcStateVars) {
+		mValues.put(srcStateVars, value);
 	}
 
 	public String getAttributeName() {
 		return mName;
 	}
 
-	public IActionAttribute getDerivedAttributeValue(IStateVar... srcStateVars) {
-		Set<IStateVar> varSet = new HashSet<>();
-		for (IStateVar var : srcStateVars) {
-			varSet.add(var);
-		}
-		return mValues.get(varSet);
+	public IActionAttribute getDerivedAttributeValue(Set<StateVar<? extends IStateVarValue>> srcStateVars) {
+		return mValues.get(srcStateVars);
 	}
 
 	@Override

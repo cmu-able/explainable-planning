@@ -1,12 +1,12 @@
 package factors;
 
 /**
- * {@link StateVar} represents a generic state variable with a specific value.
+ * {@link StateVar} represents a generic state variable, whose value type is a subtype of {@link IStateVarValue}.
  * 
  * @author rsukkerd
  *
  */
-public class StateVar implements IStateVar {
+public class StateVar<E extends IStateVarValue> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -14,20 +14,18 @@ public class StateVar implements IStateVar {
 	private volatile int hashCode;
 
 	private String mName;
-	private IStateVarValue mValue;
+	private E mValue;
 
-	public StateVar(String name, IStateVarValue value) {
+	public StateVar(String name, E value) {
 		mName = name;
 		mValue = value;
 	}
 
-	@Override
 	public String getName() {
 		return mName;
 	}
 
-	@Override
-	public IStateVarValue getValue() {
+	public E getValue() {
 		return mValue;
 	}
 
@@ -36,10 +34,10 @@ public class StateVar implements IStateVar {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof StateVar)) {
+		if (!(obj instanceof StateVar<?>)) {
 			return false;
 		}
-		StateVar var = (StateVar) obj;
+		StateVar<?> var = (StateVar<?>) obj;
 		return var.mName.equals(mName) && var.mValue.equals(mValue);
 	}
 

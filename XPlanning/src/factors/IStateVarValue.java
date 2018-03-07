@@ -3,8 +3,11 @@ package factors;
 import exceptions.AttributeNameNotFoundException;
 
 /**
- * {@link IStateVarValue} is an interface to the types of values that the state variables can take. 
- * Such a value can be an atomic value or can have an associated set of attribute values.
+ * {@link IStateVarValue} is an interface to a type of values that a state variable can take. Such a value can be an
+ * atomic value or can have an associated set of attribute values. Multiple state variables can have the same value
+ * type.
+ * 
+ * Note: For now, assume that all attributes have unique names.
  * 
  * @author rsukkerd
  *

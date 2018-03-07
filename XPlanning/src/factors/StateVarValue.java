@@ -6,7 +6,8 @@ import java.util.Map;
 import exceptions.AttributeNameNotFoundException;
 
 /**
- * {@link StateVarValue} defines a type of values that the state variables can take.
+ * {@link StateVarValue} defines a generic type of values that a state variable can take. Its attribute values have a
+ * generic {@link IStateVarAttribute} type.
  * 
  * @author rsukkerd
  *

@@ -11,7 +11,8 @@ import factors.IStateVarValue;
 import factors.StateVar;
 
 /**
- * {@link MoveToAction} a type of actions that move the robot to specified destinations. It has an associated distance.
+ * {@link MoveToAction} is a type of actions that move the robot to specified destinations. It has an associated
+ * distance.
  * 
  * @author rsukkerd
  *

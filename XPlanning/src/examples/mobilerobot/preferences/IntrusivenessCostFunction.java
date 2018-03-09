@@ -1,6 +1,6 @@
 package examples.mobilerobot.preferences;
 
-import preferences.ISACostFunction;
+import preferences.ILinearCostFunction;
 import preferences.RiskNeutralCostFunction;
 
 /**
@@ -10,7 +10,7 @@ import preferences.RiskNeutralCostFunction;
  * @author rsukkerd
  *
  */
-public class IntrusivenessCostFunction implements ISACostFunction {
+public class IntrusivenessCostFunction implements ILinearCostFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java

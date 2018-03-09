@@ -2,12 +2,20 @@ package preferences;
 
 import java.util.List;
 
+/**
+ * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs. If the
+ * single-attribute component cost functions are linear, then the input values to this cost function can be either of an
+ * entire policy execution, or of a single transition.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class AdditiveCostFunction implements IMACostFunction {
 
-	private List<ISACostFunction> mSACostFuns;
+	private List<? extends ISACostFunction> mSACostFuns;
 	private List<Double> mScalingConsts;
 
-	public AdditiveCostFunction(List<ISACostFunction> saCostFuns, List<Double> scalingConsts) {
+	public AdditiveCostFunction(List<? extends ISACostFunction> saCostFuns, List<Double> scalingConsts) {
 		mSACostFuns = saCostFuns;
 		mScalingConsts = scalingConsts;
 	}

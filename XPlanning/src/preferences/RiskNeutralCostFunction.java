@@ -8,7 +8,7 @@ package preferences;
  * @author rsukkerd
  *
  */
-public class RiskNeutralCostFunction implements ISACostFunction {
+public class RiskNeutralCostFunction implements ILinearCostFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java

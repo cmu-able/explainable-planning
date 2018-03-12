@@ -1,8 +1,5 @@
 package examples.mobilerobot.metrics;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
@@ -42,18 +39,10 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 			Location locSrc = (Location) locVarSrc.getValue();
 			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc.getValue();
 			Location locDest = (Location) locVarDest.getValue();
-			Set<Location> possibleLocs = new HashSet<>();
-			for (IStateVarValue val : locVarSrc.getPossibleValues()) {
-				possibleLocs.add((Location) val);
-			}
-			Set<RobotSpeed> possibleSpeeds = new HashSet<>();
-			for (IStateVarValue val : speedVarSrc.getPossibleValues()) {
-				possibleSpeeds.add((RobotSpeed) val);
-			}
-			StateVar<Location> rLocSrc = new StateVar<>("rLoc", locSrc, possibleLocs);
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc, possibleSpeeds);
+			StateVar<Location> rLocSrc = new StateVar<>("rLoc", locSrc);
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<Location> rLocDest = new StateVar<>("rLoc", locDest, possibleLocs);
+			StateVar<Location> rLocDest = new StateVar<>("rLoc", locDest);
 			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
 		}
 		return 0;

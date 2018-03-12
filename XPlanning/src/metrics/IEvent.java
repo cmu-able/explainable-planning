@@ -12,6 +12,5 @@ import factors.Transition;
  */
 public interface IEvent {
 
-	public boolean hasEventOccurred(Transition trans) 
-			throws VarNameNotFoundException, AttributeNameNotFoundException;
+	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException, AttributeNameNotFoundException;
 }

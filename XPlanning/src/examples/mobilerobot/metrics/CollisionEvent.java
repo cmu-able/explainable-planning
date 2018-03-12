@@ -1,8 +1,5 @@
 package examples.mobilerobot.metrics;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
@@ -48,17 +45,9 @@ public class CollisionEvent implements IEvent {
 			StateVar<IStateVarValue> bumpedVarDest = trans.getDestStateVar("rBumped");
 			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc.getValue();
 			RobotBumped bumpedDest = (RobotBumped) bumpedVarDest.getValue();
-			Set<RobotSpeed> possibleSpeeds = new HashSet<>();
-			for (IStateVarValue val : speedVarSrc.getPossibleValues()) {
-				possibleSpeeds.add((RobotSpeed) val);
-			}
-			Set<RobotBumped> possibleBumped = new HashSet<>();
-			for (IStateVarValue val : bumpedVarDest.getPossibleValues()) {
-				possibleBumped.add((RobotBumped) val);
-			}
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc, possibleSpeeds);
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumpedDest, possibleBumped);
+			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumpedDest);
 			return hasCollided(rSpeedSrc, moveTo, rBumpedDest);
 		}
 		return false;

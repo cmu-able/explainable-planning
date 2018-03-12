@@ -6,13 +6,14 @@ import exceptions.VarNameNotFoundException;
 import factors.Transition;
 
 /**
- * {@link IQFunction} is an interface to a function Q_i: S x A x S -> R>=0 that characterizes the QA i at a single {@link Transition}.
+ * {@link IQFunction} is an interface to a function Q_i: S x A x S -> R>=0 that characterizes the QA i at a single
+ * {@link Transition}.
  * 
  * @author rsukkerd
  *
  */
 public interface IQFunction {
 
-	public double getValue(Transition trans) 
+	public double getValue(Transition trans)
 			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException;
 }

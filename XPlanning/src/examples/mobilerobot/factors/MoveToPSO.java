@@ -7,6 +7,7 @@ import java.util.Set;
 import exceptions.AttributeNameNotFoundException;
 import factors.IFactoredPSO;
 import factors.StateVar;
+import factors.StateVarDefinition;
 
 /**
  * {@link MoveToPSO} is a factored PSO representation of a {@link MoveToAction}.
@@ -23,17 +24,22 @@ public class MoveToPSO implements IFactoredPSO {
 	private static final double BUMP_PROB_BLOCKED = 1;
 
 	private MoveToAction mMoveTo;
+	private StateVarDefinition<Location> mrLocDef;
+	private StateVarDefinition<RobotBumped> mrBumpedDef;
 
-	public MoveToPSO(MoveToAction moveTo) {
+	public MoveToPSO(MoveToAction moveTo, StateVarDefinition<Location> rLocDef,
+			StateVarDefinition<RobotBumped> rBumpedDef) {
 		mMoveTo = moveTo;
+		mrLocDef = rLocDef;
+		mrBumpedDef = rBumpedDef;
 	}
 
 	public Map<StateVar<Location>, Double> getLocationEffects(StateVar<Location> rLocSrc)
 			throws AttributeNameNotFoundException {
 		Map<StateVar<Location>, Double> locationEffects = new HashMap<>();
-		Set<Location> possibleLocs = rLocSrc.getPossibleValues();
+		Set<Location> possibleLocs = mrLocDef.getPossibleValues();
 		for (Location loc : possibleLocs) {
-			StateVar<Location> rLocDest = new StateVar<>("rLoc", loc, possibleLocs);
+			StateVar<Location> rLocDest = new StateVar<>("rLoc", loc);
 			double prob = getLocationProbability(rLocDest, rLocSrc);
 			locationEffects.put(rLocDest, prob);
 		}
@@ -43,9 +49,9 @@ public class MoveToPSO implements IFactoredPSO {
 	public Map<StateVar<RobotBumped>, Double> getRobotBumpedEffects(StateVar<Location> rLocSrc,
 			StateVar<RobotBumped> rBumpedSrc) throws AttributeNameNotFoundException {
 		Map<StateVar<RobotBumped>, Double> bumpedEffects = new HashMap<>();
-		Set<RobotBumped> possibleBumped = rBumpedSrc.getPossibleValues();
+		Set<RobotBumped> possibleBumped = mrBumpedDef.getPossibleValues();
 		for (RobotBumped bumped : possibleBumped) {
-			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumped, possibleBumped);
+			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumped);
 			double prob = getRobotBumpedProbability(rBumpedDest, rLocSrc);
 			bumpedEffects.put(rBumpedDest, prob);
 		}

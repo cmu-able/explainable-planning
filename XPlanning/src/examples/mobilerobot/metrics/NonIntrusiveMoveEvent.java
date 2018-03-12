@@ -1,8 +1,5 @@
 package examples.mobilerobot.metrics;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
@@ -32,11 +29,7 @@ public class NonIntrusiveMoveEvent implements IEvent {
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
 			StateVar<IStateVarValue> locVarDest = trans.getDestStateVar("rLoc");
 			Location locDest = (Location) locVarDest.getValue();
-			Set<Location> possibleLocs = new HashSet<>();
-			for (IStateVarValue val : locVarDest.getPossibleValues()) {
-				possibleLocs.add((Location) val);
-			}
-			StateVar<Location> rLocDest = new StateVar<>("rLoc", locDest, possibleLocs);
+			StateVar<Location> rLocDest = new StateVar<>("rLoc", locDest);
 			return isNonIntrusive(moveTo, rLocDest);
 		}
 		return false;

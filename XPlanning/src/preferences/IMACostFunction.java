@@ -1,6 +1,8 @@
 package preferences;
 
-import java.util.List;
+import java.util.Map;
+
+import metrics.IQFunction;
 
 /**
  * {@link IMACostFunction} is an interface to a multi-attribute cost function of n total (i.e., cumulative) values
@@ -17,5 +19,5 @@ public interface IMACostFunction {
 	 *            n total (i.e., cumulative) values characterizing n QAs of a policy execution.
 	 * @return The cost representing preference on the values.
 	 */
-	public double getCost(List<Double> values);
+	public double getCost(Map<IQFunction, Double> values);
 }

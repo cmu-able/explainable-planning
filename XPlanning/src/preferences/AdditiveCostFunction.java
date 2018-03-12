@@ -1,6 +1,9 @@
 package preferences;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import metrics.IQFunction;
 
 /**
  * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs. If the
@@ -12,22 +15,61 @@ import java.util.List;
  */
 public class AdditiveCostFunction implements IMACostFunction {
 
-	private List<? extends ISACostFunction> mSACostFuns;
-	private List<Double> mScalingConsts;
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
 
-	public AdditiveCostFunction(List<? extends ISACostFunction> saCostFuns, List<Double> scalingConsts) {
+	private Map<IQFunction, ? extends ISACostFunction> mSACostFuns;
+	private Map<IQFunction, Double> mScalingConsts;
+
+	public AdditiveCostFunction(Map<IQFunction, ? extends ISACostFunction> saCostFuns,
+			Map<IQFunction, Double> scalingConsts) {
 		mSACostFuns = saCostFuns;
 		mScalingConsts = scalingConsts;
 	}
 
+	public ISACostFunction getSACostFunction(IQFunction qFunction) {
+		return mSACostFuns.get(qFunction);
+	}
+
+	public double getScalingConst(IQFunction qFunction) {
+		return mScalingConsts.get(qFunction);
+	}
+
 	@Override
-	public double getCost(List<Double> values) {
+	public double getCost(Map<IQFunction, Double> values) {
 		double result = 0;
-		for (int i = 0; i < values.size(); i++) {
-			double value = values.get(i);
-			result += mScalingConsts.get(i) * mSACostFuns.get(i).getCost(value);
+		for (Entry<IQFunction, Double> entry : values.entrySet()) {
+			IQFunction qFun = entry.getKey();
+			double value = entry.getValue();
+			result += mScalingConsts.get(qFun) * mSACostFuns.get(qFun).getCost(value);
 		}
 		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof AdditiveCostFunction)) {
+			return false;
+		}
+		AdditiveCostFunction costFun = (AdditiveCostFunction) obj;
+		return costFun.mSACostFuns.equals(mSACostFuns) && costFun.mScalingConsts.equals(mScalingConsts);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mSACostFuns.hashCode();
+			result = 31 * result + mScalingConsts.hashCode();
+			hashCode = result;
+		}
+		return hashCode;
 	}
 
 }

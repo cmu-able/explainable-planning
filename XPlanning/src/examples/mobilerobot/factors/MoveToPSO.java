@@ -23,7 +23,16 @@ public class MoveToPSO implements IFactoredPSO {
 	private static final double BUMP_PROB_CLEAR = 0;
 	private static final double BUMP_PROB_BLOCKED = 1;
 
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
+
 	private MoveToAction mMoveTo;
+
+	/**
+	 * State variables that are affected by this action.
+	 */
 	private StateVarDefinition<Location> mrLocDef;
 	private StateVarDefinition<RobotBumped> mrBumpedDef;
 
@@ -46,8 +55,8 @@ public class MoveToPSO implements IFactoredPSO {
 		return locationEffects;
 	}
 
-	public Map<StateVar<RobotBumped>, Double> getRobotBumpedEffects(StateVar<Location> rLocSrc,
-			StateVar<RobotBumped> rBumpedSrc) throws AttributeNameNotFoundException {
+	public Map<StateVar<RobotBumped>, Double> getRobotBumpedEffects(StateVar<Location> rLocSrc)
+			throws AttributeNameNotFoundException {
 		Map<StateVar<RobotBumped>, Double> bumpedEffects = new HashMap<>();
 		Set<RobotBumped> possibleBumped = mrBumpedDef.getPossibleValues();
 		for (RobotBumped bumped : possibleBumped) {
@@ -88,5 +97,30 @@ public class MoveToPSO implements IFactoredPSO {
 			return BUMP_PROB_BLOCKED;
 		}
 		return 1 - getRobotBumpedProbabilityHelper(!bumped, rLocSrc);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof MoveToPSO)) {
+			return false;
+		}
+		MoveToPSO pso = (MoveToPSO) obj;
+		return pso.mMoveTo.equals(mMoveTo) && pso.mrLocDef.equals(mrLocDef) && pso.mrBumpedDef.equals(mrBumpedDef);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mMoveTo.hashCode();
+			result = 31 * result + mrLocDef.hashCode();
+			result = 31 * result + mrBumpedDef.hashCode();
+			hashCode = result;
+		}
+		return hashCode;
 	}
 }

@@ -1,9 +1,13 @@
 package examples.mobilerobot.metrics;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNameNotFoundException;
+import factors.IStateVarValue;
 import factors.StateVar;
 import factors.Transition;
 import metrics.IEvent;
@@ -38,12 +42,23 @@ public class CollisionEvent implements IEvent {
 
 	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException {
-		if (trans.getSrcStateVarValue("rSpeed") instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVarValue("rBumped") instanceof RobotBumped) {
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", (RobotSpeed) trans.getSrcStateVarValue("rSpeed"));
+		if (trans.getSrcStateVar("rSpeed").getValue() instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
+				&& trans.getDestStateVar("rBumped").getValue() instanceof RobotBumped) {
+			StateVar<IStateVarValue> speedVarSrc = trans.getSrcStateVar("rSpeed");
+			StateVar<IStateVarValue> bumpedVarDest = trans.getDestStateVar("rBumped");
+			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc.getValue();
+			RobotBumped bumpedDest = (RobotBumped) bumpedVarDest.getValue();
+			Set<RobotSpeed> possibleSpeeds = new HashSet<>();
+			for (IStateVarValue val : speedVarSrc.getPossibleValues()) {
+				possibleSpeeds.add((RobotSpeed) val);
+			}
+			Set<RobotBumped> possibleBumped = new HashSet<>();
+			for (IStateVarValue val : bumpedVarDest.getPossibleValues()) {
+				possibleBumped.add((RobotBumped) val);
+			}
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc, possibleSpeeds);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped",
-					(RobotBumped) trans.getDestStateVarValue("rBumped"));
+			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumpedDest, possibleBumped);
 			return hasCollided(rSpeedSrc, moveTo, rBumpedDest);
 		}
 		return false;

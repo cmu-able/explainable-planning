@@ -41,7 +41,8 @@ public class Distance implements IActionAttribute {
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Double.valueOf(mDistance).hashCode();
+			result = 17;
+			result = 31 * result + Double.valueOf(mDistance).hashCode();
 			hashCode = result;
 		}
 		return hashCode;

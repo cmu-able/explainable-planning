@@ -1,5 +1,7 @@
 package factors;
 
+import java.util.Set;
+
 /**
  * {@link StateVar} represents a generic state variable, whose value type is a subtype of {@link IStateVarValue}.
  * 
@@ -15,10 +17,12 @@ public class StateVar<E extends IStateVarValue> {
 
 	private String mName;
 	private E mValue;
+	private Set<E> mPossibleValues;
 
-	public StateVar(String name, E value) {
+	public StateVar(String name, E value, Set<E> possibleValues) {
 		mName = name;
 		mValue = value;
+		mPossibleValues = possibleValues;
 	}
 
 	public String getName() {
@@ -27,6 +31,10 @@ public class StateVar<E extends IStateVarValue> {
 
 	public E getValue() {
 		return mValue;
+	}
+
+	public Set<E> getPossibleValues() {
+		return mPossibleValues;
 	}
 
 	@Override
@@ -38,7 +46,7 @@ public class StateVar<E extends IStateVarValue> {
 			return false;
 		}
 		StateVar<?> var = (StateVar<?>) obj;
-		return var.mName.equals(mName) && var.mValue.equals(mValue);
+		return var.mName.equals(mName) && var.mValue.equals(mValue) && var.mPossibleValues.equals(mPossibleValues);
 	}
 
 	@Override
@@ -48,6 +56,7 @@ public class StateVar<E extends IStateVarValue> {
 			result = 17;
 			result = 31 * result + mName.hashCode();
 			result = 31 * result + mValue.hashCode();
+			result = 31 * result + mPossibleValues.hashCode();
 			hashCode = result;
 		}
 		return result;

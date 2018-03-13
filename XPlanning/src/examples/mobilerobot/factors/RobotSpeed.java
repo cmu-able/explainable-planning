@@ -1,5 +1,7 @@
 package examples.mobilerobot.factors;
 
+import java.text.DecimalFormat;
+
 import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
 import factors.IStateVarValue;
@@ -18,6 +20,8 @@ public class RobotSpeed implements IStateVarValue {
 	private volatile int hashCode;
 
 	private double mSpeed;
+
+	private DecimalFormat decimalFormatter = new DecimalFormat("#.###");;
 
 	public RobotSpeed(double speed) {
 		mSpeed = speed;
@@ -52,6 +56,11 @@ public class RobotSpeed implements IStateVarValue {
 			hashCode = result;
 		}
 		return hashCode;
+	}
+
+	@Override
+	public String toString() {
+		return decimalFormatter.format(mSpeed);
 	}
 
 }

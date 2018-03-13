@@ -54,4 +54,9 @@ public class RobotBumped implements IStateVarValue {
 		return hashCode;
 	}
 
+	@Override
+	public String toString() {
+		return Boolean.toString(mBumped);
+	}
+
 }

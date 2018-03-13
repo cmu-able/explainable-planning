@@ -63,4 +63,9 @@ public class Location implements IStateVarValue {
 		}
 		return hashCode;
 	}
+
+	@Override
+	public String toString() {
+		return "L" + mId;
+	}
 }

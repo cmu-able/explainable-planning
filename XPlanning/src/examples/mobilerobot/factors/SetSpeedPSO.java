@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import factors.IFactoredPSO;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.IFactoredPSO;
 
 /**
  * {@link SetSpeedPSO} is a factored PSO representation of a {@link SetSpeedAction}

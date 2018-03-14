@@ -62,6 +62,11 @@ public class MoveToAction implements IAction {
 	}
 
 	@Override
+	public String getName() {
+		return mAction.getName();
+	}
+
+	@Override
 	public IActionAttribute getAttributeValue(String name) throws AttributeNameNotFoundException {
 		return mAction.getAttributeValue(name);
 	}

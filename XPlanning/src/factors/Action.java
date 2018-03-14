@@ -51,6 +51,11 @@ public class Action implements IAction {
 	}
 
 	@Override
+	public String getName() {
+		return mActionName;
+	}
+
+	@Override
 	public IActionAttribute getAttributeValue(String name) throws AttributeNameNotFoundException {
 		if (!mAttributes.containsKey(name)) {
 			throw new AttributeNameNotFoundException(name);

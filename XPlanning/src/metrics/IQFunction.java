@@ -3,7 +3,7 @@ package metrics;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 
 /**
  * {@link IQFunction} is an interface to a function Q_i: S x A x S -> R>=0 that characterizes the QA i at a single

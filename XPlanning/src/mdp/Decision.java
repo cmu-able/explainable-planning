@@ -7,12 +7,12 @@ import factors.IStateVarValue;
 import factors.StateVar;
 
 /**
- * {@link Command} is a pair of a state description (i.e., a set of state variables) and an action.
+ * {@link Decision} is a pair of a state description (i.e., a set of state variables) and an action.
  * 
  * @author rsukkerd
  *
  */
-public class Command {
+public class Decision {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -22,7 +22,7 @@ public class Command {
 	private Set<StateVar<IStateVarValue>> mGuard;
 	private IAction mAction;
 
-	public Command(Set<StateVar<IStateVarValue>> guard, IAction action) {
+	public Decision(Set<StateVar<IStateVarValue>> guard, IAction action) {
 		mGuard = guard;
 		mAction = action;
 	}
@@ -40,11 +40,11 @@ public class Command {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof Command)) {
+		if (!(obj instanceof Decision)) {
 			return false;
 		}
-		Command cmd = (Command) obj;
-		return cmd.mGuard.equals(mGuard) && cmd.mAction.equals(mAction);
+		Decision decision = (Decision) obj;
+		return decision.mGuard.equals(mGuard) && decision.mAction.equals(mAction);
 	}
 
 	@Override

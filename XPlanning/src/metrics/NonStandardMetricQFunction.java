@@ -5,7 +5,7 @@ import java.util.Map;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 
 /**
  * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard

@@ -7,7 +7,7 @@ import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
-import factors.Transition;
+import mdp.Transition;
 import metrics.IEvent;
 
 /**

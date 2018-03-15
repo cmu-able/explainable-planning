@@ -3,7 +3,7 @@ package metrics;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 
 /**
  * {@link IStandardMetricQFunction} is an interface to a Q_i function that characterizes a QA i using a standard metric.

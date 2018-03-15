@@ -1,7 +1,7 @@
 package examples.mobilerobot.metrics;
 
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 import metrics.ICountQFunction;
 import metrics.IEvent;
 

@@ -35,13 +35,16 @@ public class PRISMTranslator {
 	public String getMDPTranslation() throws VarNameNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
 		String modules = buildModules();
+		String rewards = buildRewards();
 		StringBuilder builder = new StringBuilder();
 		builder.append("mdp");
 		builder.append("\n\n");
 		builder.append(constsDecl);
 		builder.append("\n");
 		builder.append(modules);
-		return null;
+		builder.append("\n");
+		builder.append(rewards);
+		return builder.toString();
 	}
 
 	public String getGoalPropertyTranslation() {
@@ -316,6 +319,12 @@ public class PRISMTranslator {
 		builder.append("=");
 		builder.append(encodedValue);
 		builder.append(")");
+		return builder.toString();
+	}
+
+	private String buildRewards() {
+		StringBuilder builder = new StringBuilder();
+		// TODO
 		return builder.toString();
 	}
 

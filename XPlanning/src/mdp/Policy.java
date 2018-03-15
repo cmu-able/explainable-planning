@@ -4,21 +4,21 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * {@link Policy} contains a set of commands {@link Command}.
+ * {@link Policy} contains a set of commands {@link Decision}.
  * 
  * @author rsukkerd
  *
  */
-public class Policy implements Iterable<Command>, Iterator<Command> {
+public class Policy implements Iterable<Decision>, Iterator<Decision> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Set<Command> mCommands;
+	private Set<Decision> mCommands;
 
-	public Policy(Set<Command> commands) {
+	public Policy(Set<Decision> commands) {
 		mCommands = commands;
 	}
 
@@ -28,12 +28,12 @@ public class Policy implements Iterable<Command>, Iterator<Command> {
 	}
 
 	@Override
-	public Command next() {
+	public Decision next() {
 		return mCommands.iterator().next();
 	}
 
 	@Override
-	public Iterator<Command> iterator() {
+	public Iterator<Decision> iterator() {
 		return mCommands.iterator();
 	}
 

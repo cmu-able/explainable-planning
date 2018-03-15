@@ -6,7 +6,7 @@ import java.util.Map;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 import metrics.IEvent;
 import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;

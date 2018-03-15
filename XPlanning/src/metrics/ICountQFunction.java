@@ -1,7 +1,7 @@
 package metrics;
 
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 
 /**
  * {@link ICountQFunction} is an interface to a Q_i function that characterizes a QA i by the number of occurrences of

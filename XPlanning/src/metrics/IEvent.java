@@ -2,7 +2,7 @@ package metrics;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
-import factors.Transition;
+import mdp.Transition;
 
 /**
  * {@link IEvent} is an interface to an event.

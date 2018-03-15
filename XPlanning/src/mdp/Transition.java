@@ -1,10 +1,13 @@
-package factors;
+package mdp;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import exceptions.VarNameNotFoundException;
+import factors.IAction;
+import factors.IStateVarValue;
+import factors.StateVar;
 
 /**
  * {@link Transition} represents a (s, a, s') transition.

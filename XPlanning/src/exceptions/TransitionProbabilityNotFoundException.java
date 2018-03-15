@@ -1,6 +1,6 @@
 package exceptions;
 
-import factors.Transition;
+import mdp.Transition;
 
 public class TransitionProbabilityNotFoundException extends Exception {
 

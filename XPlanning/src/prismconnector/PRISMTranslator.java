@@ -80,8 +80,9 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @param name
-	 * @param stateVarDefs
-	 * @param actionPSO
+	 * @param actions
+	 *            A set of actions with the same given effect class
+	 * @param effectClass
 	 * @return module {name} ... endmodule
 	 * @throws VarNameNotFoundException
 	 */
@@ -128,7 +129,7 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @param actions
-	 *            A set of actions of the same type
+	 *            A set of actions with the same given effect class
 	 * @param effectClass
 	 * @return [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} -> {updates_p};
 	 */

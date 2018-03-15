@@ -3,7 +3,7 @@ package mdp;
 import java.util.Map;
 import java.util.Set;
 
-import factors.ProbabilisticEffect;
+import factors.IAction;
 
 /**
  * {@link IFactoredPSO} is an interface to a "factored" probabilistic STRIPS operator representation.
@@ -14,6 +14,8 @@ import factors.ProbabilisticEffect;
  *
  */
 public interface IFactoredPSO {
+
+	public IAction getAction();
 
 	public Set<EffectClass> getIndependentEffectClasses();
 

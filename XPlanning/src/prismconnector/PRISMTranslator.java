@@ -1,6 +1,5 @@
 package prismconnector;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -8,13 +7,13 @@ import java.util.Set;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
-import factors.ProbabilisticEffect;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
 import mdp.EffectClass;
 import mdp.IFactoredPSO;
 import mdp.Policy;
+import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
 
@@ -23,11 +22,11 @@ public class PRISMTranslator {
 	private static final String INDENT = "  ";
 
 	private XMDP mXMDP;
-
 	private ValueEncodingScheme mEncodings;
 
 	public PRISMTranslator(XMDP xmdp) {
 		mXMDP = xmdp;
+		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs());
 	}
 
 	public String getMDPTranslation() {
@@ -51,49 +50,29 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
-	private Map<IStateVarValue, Integer> getStateVarValuesIntEncoding(StateVarDefinition<IStateVarValue> stateVarDef) {
-		Map<IStateVarValue, Integer> encoding = new HashMap<>();
-		int e = 0;
-		for (IStateVarValue value : stateVarDef.getPossibleValues()) {
-			encoding.put(value, e);
-			e++;
-		}
-		return encoding;
-	}
-
-	private String getAllConstsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
-		StringBuilder builder = new StringBuilder();
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
-			String decl = getConstsDecl(stateVarDef);
-			builder.append(decl);
-			builder.append("\n");
-		}
-		return builder.toString();
-	}
-
 	/**
 	 * 
-	 * @param stateVarDef
-	 * @return const int {varName}_{value} = {encoded int value};
+	 * @param stateVarDefs
+	 * @return const int {varName}_{value} = {encoded int value}; ...
 	 */
-	private String getConstsDecl(StateVarDefinition<IStateVarValue> stateVarDef) {
+	private String buildConstsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
 		StringBuilder builder = new StringBuilder();
-		String varName = stateVarDef.getName();
-		builder.append("// Possible values of ");
-		builder.append(varName);
-		builder.append("\n");
-		Map<IStateVarValue, Integer> encoding = getStateVarValuesIntEncoding(stateVarDef);
-		for (Entry<IStateVarValue, Integer> e : encoding.entrySet()) {
-			IStateVarValue value = e.getKey();
-			Integer encodedValue = e.getValue();
-			builder.append("const int ");
+		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+			String varName = stateVarDef.getName();
+			builder.append("// Possible values of ");
 			builder.append(varName);
-			builder.append("_");
-			builder.append(value.toString());
-			builder.append(" = ");
-			builder.append(encodedValue.toString());
-			builder.append(";");
 			builder.append("\n");
+			for (IStateVarValue value : stateVarDef.getPossibleValues()) {
+				Integer encodedValue = mEncodings.getEncodedIntValue(new StateVar<IStateVarValue>(varName, value));
+				builder.append("const int ");
+				builder.append(varName);
+				builder.append("_");
+				builder.append(value);
+				builder.append(" = ");
+				builder.append(encodedValue);
+				builder.append(";");
+				builder.append("\n");
+			}
 		}
 		return builder.toString();
 	}
@@ -106,13 +85,13 @@ public class PRISMTranslator {
 	 * @return module {name} ... endmodule
 	 * @throws VarNameNotFoundException
 	 */
-	private String buildModule(String name, Set<StateVarDefinition<IStateVarValue>> stateVarDefs,
-			IFactoredPSO actionPSO) throws VarNameNotFoundException {
+	private String buildModule(String name, Set<IAction> actions, EffectClass effectClass)
+			throws VarNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(name);
 		builder.append("\n");
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : effectClass) {
 			StateVar<IStateVarValue> initStateVar = mXMDP.getInitialStateVar(stateVarDef.getName());
 			String varDecl = buildModuleVarDecl(stateVarDef, initStateVar);
 			builder.append(INDENT);
@@ -120,6 +99,8 @@ public class PRISMTranslator {
 			builder.append("\n");
 		}
 		builder.append("\n");
+		String commands = buildModuleCommands(actions, effectClass);
+		builder.append(commands);
 		builder.append("endmodule");
 		return builder.toString();
 	}
@@ -144,9 +125,27 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
-	private String buildModuleCommands(IFactoredPSO actionPSO, EffectClass effectClass) {
+	/**
+	 * 
+	 * @param actions
+	 *            A set of actions of the same type
+	 * @param effectClass
+	 * @return [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} -> {updates_p};
+	 */
+	private String buildModuleCommands(Set<IAction> actions, EffectClass effectClass) {
 		StringBuilder builder = new StringBuilder();
-		// TODO
+		for (IAction action : actions) {
+			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+			Map<Discriminant, ProbabilisticEffect> actionDesc = actionPSO.getActionDescription(effectClass);
+			for (Entry<Discriminant, ProbabilisticEffect> entry : actionDesc.entrySet()) {
+				Discriminant discriminant = entry.getKey();
+				ProbabilisticEffect probEffect = entry.getValue();
+				String command = buildModuleCommand(action, discriminant, probEffect);
+				builder.append(INDENT);
+				builder.append(command);
+				builder.append("\n");
+			}
+		}
 		return builder.toString();
 	}
 

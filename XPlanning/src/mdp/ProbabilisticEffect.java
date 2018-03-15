@@ -1,9 +1,13 @@
-package factors;
+package mdp;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import factors.IStateVarValue;
+import factors.StateVar;
+
 import java.util.Set;
 
 public class ProbabilisticEffect implements Iterable<Entry<Set<StateVar<IStateVarValue>>, Double>> {

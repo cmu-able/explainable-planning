@@ -1,5 +1,6 @@
 package prismconnector;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -80,27 +81,29 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @param name
-	 * @param actions
-	 *            A set of actions with the same given effect class
-	 * @param effectClass
+	 *            A unique name of the module
+	 * @param overlappingEffectActions
+	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
+	 *            map
 	 * @return module {name} ... endmodule
 	 * @throws VarNameNotFoundException
 	 */
-	private String buildModule(String name, Set<IAction> actions, EffectClass effectClass)
+	private String buildModule(String name, Map<IAction, EffectClass> overlappingEffectActions)
 			throws VarNameNotFoundException {
+		Set<StateVarDefinition<IStateVarValue>> moduleVarDefs = new HashSet<>();
+		for (EffectClass effectClass : overlappingEffectActions.values()) {
+			for (StateVarDefinition<IStateVarValue> varDef : effectClass) {
+				moduleVarDefs.add(varDef);
+			}
+		}
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(name);
 		builder.append("\n");
-		for (StateVarDefinition<IStateVarValue> stateVarDef : effectClass) {
-			StateVar<IStateVarValue> initStateVar = mXMDP.getInitialStateVar(stateVarDef.getName());
-			String varDecl = buildModuleVarDecl(stateVarDef, initStateVar);
-			builder.append(INDENT);
-			builder.append(varDecl);
-			builder.append("\n");
-		}
+		String varsDecl = buildModuleVarsDecl(moduleVarDefs);
+		builder.append(varsDecl);
 		builder.append("\n");
-		String commands = buildModuleCommands(actions, effectClass);
+		String commands = buildModuleCommands(overlappingEffectActions);
 		builder.append(commands);
 		builder.append("endmodule");
 		return builder.toString();
@@ -108,39 +111,48 @@ public class PRISMTranslator {
 
 	/**
 	 * 
-	 * @param initStateVar
-	 * @return {varName} : [0..{maximum encoded value}] init {encoded int value};
+	 * @param stateVarDefs
+	 *            Variables of the module
+	 * @return {varName} : [0..{maximum encoded value}] init {encoded int value}; ...
+	 * @throws VarNameNotFoundException
 	 */
-	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> stateVarDef,
-			StateVar<IStateVarValue> initStateVar) {
+	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs)
+			throws VarNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		String varName = initStateVar.getName();
-		Integer encodedValue = mEncodings.getEncodedIntValue(initStateVar);
-		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(stateVarDef);
-		builder.append(varName);
-		builder.append(" : [0..");
-		builder.append(maxEncodedValue);
-		builder.append("] init ");
-		builder.append(encodedValue);
-		builder.append(";");
+		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+			StateVar<IStateVarValue> initStateVar = mXMDP.getInitialStateVar(stateVarDef.getName());
+			builder.append(INDENT);
+			String varName = stateVarDef.getName();
+			Integer encodedValue = mEncodings.getEncodedIntValue(initStateVar);
+			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(stateVarDef);
+			builder.append(varName);
+			builder.append(" : [0..");
+			builder.append(maxEncodedValue);
+			builder.append("] init ");
+			builder.append(encodedValue);
+			builder.append(";");
+			builder.append("\n");
+		}
 		return builder.toString();
 	}
 
 	/**
 	 * 
-	 * @param actions
-	 *            A set of actions with the same given effect class
-	 * @param effectClass
+	 * @param overlappingEffectActions
+	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
+	 *            map
 	 * @return [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} -> {updates_p};
 	 */
-	private String buildModuleCommands(Set<IAction> actions, EffectClass effectClass) {
+	private String buildModuleCommands(Map<IAction, EffectClass> overlappingEffectActions) {
 		StringBuilder builder = new StringBuilder();
-		for (IAction action : actions) {
+		for (Entry<IAction, EffectClass> entry : overlappingEffectActions.entrySet()) {
+			IAction action = entry.getKey();
+			EffectClass effectClass = entry.getValue();
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
 			Map<Discriminant, ProbabilisticEffect> actionDesc = actionPSO.getActionDescription(effectClass);
-			for (Entry<Discriminant, ProbabilisticEffect> entry : actionDesc.entrySet()) {
-				Discriminant discriminant = entry.getKey();
-				ProbabilisticEffect probEffect = entry.getValue();
+			for (Entry<Discriminant, ProbabilisticEffect> e : actionDesc.entrySet()) {
+				Discriminant discriminant = e.getKey();
+				ProbabilisticEffect probEffect = e.getValue();
 				String command = buildModuleCommand(action, discriminant, probEffect);
 				builder.append(INDENT);
 				builder.append(command);

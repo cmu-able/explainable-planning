@@ -1,6 +1,8 @@
 package prismconnector;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,7 +32,15 @@ public class PRISMTranslator {
 		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs());
 	}
 
-	public String getMDPTranslation() {
+	public String getMDPTranslation() throws VarNameNotFoundException {
+		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
+		String modules = buildModules();
+		StringBuilder builder = new StringBuilder();
+		builder.append("mdp");
+		builder.append("\n\n");
+		builder.append(constsDecl);
+		builder.append("\n");
+		builder.append(modules);
 		return null;
 	}
 
@@ -54,6 +64,7 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @param stateVarDefs
+	 *            Definitions of all state variables
 	 * @return const int {varName}_{value} = {encoded int value}; ...
 	 */
 	private String buildConstsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
@@ -74,6 +85,53 @@ public class PRISMTranslator {
 				builder.append(";");
 				builder.append("\n");
 			}
+			builder.append("\n");
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @return module {name} {vars decl} {commands} endmodule ...
+	 * @throws VarNameNotFoundException
+	 */
+	private String buildModules() throws VarNameNotFoundException {
+		Set<EffectClass> allEffectClasses = new HashSet<>();
+		for (IAction action : mXMDP.getActions()) {
+			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
+			allEffectClasses.addAll(actionEffectClasses);
+		}
+
+		StringBuilder builder = new StringBuilder();
+		int moduleCount = 0;
+
+		while (!allEffectClasses.isEmpty()) {
+			moduleCount++;
+			Iterator<EffectClass> iter = allEffectClasses.iterator();
+			EffectClass effectClass = iter.next();
+			IAction action = effectClass.getAction();
+			iter.remove();
+
+			Set<StateVarDefinition<IStateVarValue>> moduleVarDefs = new HashSet<>();
+			Map<IAction, EffectClass> overlappingEffectActions = new HashMap<>();
+			moduleVarDefs.addAll(effectClass.getAffectedVarDefs());
+			overlappingEffectActions.put(action, effectClass);
+
+			while (iter.hasNext()) {
+				EffectClass nextEffectClass = iter.next();
+				IAction nextAction = nextEffectClass.getAction();
+
+				if (!action.equals(nextAction) && effectClass.overlaps(nextEffectClass)) {
+					moduleVarDefs.addAll(nextEffectClass.getAffectedVarDefs());
+					overlappingEffectActions.put(nextAction, nextEffectClass);
+					iter.remove();
+				}
+			}
+
+			String module = buildModule("module_" + moduleCount, moduleVarDefs, overlappingEffectActions);
+			builder.append(module);
+			builder.append("\n\n");
 		}
 		return builder.toString();
 	}
@@ -82,20 +140,16 @@ public class PRISMTranslator {
 	 * 
 	 * @param name
 	 *            A unique name of the module
+	 * @param moduleVarDefs
+	 *            Variables of the module
 	 * @param overlappingEffectActions
 	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
 	 *            map
-	 * @return module {name} ... endmodule
+	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNameNotFoundException
 	 */
-	private String buildModule(String name, Map<IAction, EffectClass> overlappingEffectActions)
-			throws VarNameNotFoundException {
-		Set<StateVarDefinition<IStateVarValue>> moduleVarDefs = new HashSet<>();
-		for (EffectClass effectClass : overlappingEffectActions.values()) {
-			for (StateVarDefinition<IStateVarValue> varDef : effectClass) {
-				moduleVarDefs.add(varDef);
-			}
-		}
+	private String buildModule(String name, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
+			Map<IAction, EffectClass> overlappingEffectActions) throws VarNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(name);
@@ -111,15 +165,15 @@ public class PRISMTranslator {
 
 	/**
 	 * 
-	 * @param stateVarDefs
+	 * @param moduleVarDefs
 	 *            Variables of the module
 	 * @return {varName} : [0..{maximum encoded value}] init {encoded int value}; ...
 	 * @throws VarNameNotFoundException
 	 */
-	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs)
+	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> moduleVarDefs)
 			throws VarNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarDefs) {
 			StateVar<IStateVarValue> initStateVar = mXMDP.getInitialStateVar(stateVarDef.getName());
 			builder.append(INDENT);
 			String varName = stateVarDef.getName();
@@ -249,12 +303,12 @@ public class PRISMTranslator {
 
 	/**
 	 * 
-	 * @param stateVar
+	 * @param updatedStateVar
 	 * @return ({varName}'={encoded int value})
 	 */
-	private String buildVariableUpdate(StateVar<IStateVarValue> stateVar) {
-		String varName = stateVar.getName();
-		Integer encodedValue = mEncodings.getEncodedIntValue(stateVar);
+	private String buildVariableUpdate(StateVar<IStateVarValue> updatedStateVar) {
+		String varName = updatedStateVar.getName();
+		Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar);
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
 		builder.append(varName);

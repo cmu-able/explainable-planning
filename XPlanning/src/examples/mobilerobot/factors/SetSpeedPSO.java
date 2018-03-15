@@ -6,7 +6,10 @@ import java.util.Set;
 
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.Discriminant;
+import mdp.EffectClass;
 import mdp.IFactoredPSO;
+import mdp.ProbabilisticEffect;
 
 /**
  * {@link SetSpeedPSO} is a factored PSO representation of a {@link SetSpeedAction}
@@ -30,9 +33,17 @@ public class SetSpeedPSO implements IFactoredPSO {
 	 */
 	private StateVarDefinition<RobotSpeed> mrSpeedDef;
 
+	/**
+	 * Independent effect classes
+	 */
+	private Set<EffectClass> mEffectClasses;
+
 	public SetSpeedPSO(SetSpeedAction setSpeed, StateVarDefinition<RobotSpeed> rSpeedDef) {
 		mSetSpeed = setSpeed;
 		mrSpeedDef = rSpeedDef;
+		EffectClass speedEffectClass = new EffectClass(setSpeed);
+		speedEffectClass.add(rSpeedDef);
+		mEffectClasses.add(speedEffectClass);
 	}
 
 	public Map<StateVar<RobotSpeed>, Double> getRobotSpeedEffects() {
@@ -54,6 +65,17 @@ public class SetSpeedPSO implements IFactoredPSO {
 	}
 
 	@Override
+	public Set<EffectClass> getIndependentEffectClasses() {
+		return mEffectClasses;
+	}
+
+	@Override
+	public Map<Discriminant, ProbabilisticEffect> getActionDescription(EffectClass effectClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -62,7 +84,8 @@ public class SetSpeedPSO implements IFactoredPSO {
 			return false;
 		}
 		SetSpeedPSO pso = (SetSpeedPSO) obj;
-		return pso.mSetSpeed.equals(mSetSpeed) && pso.mrSpeedDef.equals(mrSpeedDef);
+		return pso.mSetSpeed.equals(mSetSpeed) && pso.mrSpeedDef.equals(mrSpeedDef)
+				&& pso.mEffectClasses.equals(mEffectClasses);
 	}
 
 	@Override
@@ -72,6 +95,7 @@ public class SetSpeedPSO implements IFactoredPSO {
 			result = 17;
 			result = 31 * result + mSetSpeed.hashCode();
 			result = 31 * result + mrSpeedDef.hashCode();
+			result = 31 * result + mEffectClasses.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

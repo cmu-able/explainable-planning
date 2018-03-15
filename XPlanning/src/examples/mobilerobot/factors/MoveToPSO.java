@@ -7,7 +7,10 @@ import java.util.Set;
 import exceptions.AttributeNameNotFoundException;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.Discriminant;
+import mdp.EffectClass;
 import mdp.IFactoredPSO;
+import mdp.ProbabilisticEffect;
 
 /**
  * {@link MoveToPSO} is a factored PSO representation of a {@link MoveToAction}.
@@ -36,11 +39,22 @@ public class MoveToPSO implements IFactoredPSO {
 	private StateVarDefinition<Location> mrLocDef;
 	private StateVarDefinition<RobotBumped> mrBumpedDef;
 
+	/**
+	 * Independent effect classes
+	 */
+	private Set<EffectClass> mEffectClasses;
+
 	public MoveToPSO(MoveToAction moveTo, StateVarDefinition<Location> rLocDef,
 			StateVarDefinition<RobotBumped> rBumpedDef) {
 		mMoveTo = moveTo;
 		mrLocDef = rLocDef;
 		mrBumpedDef = rBumpedDef;
+		EffectClass locEffectClass = new EffectClass(moveTo);
+		locEffectClass.add(rLocDef);
+		EffectClass bumpedEffectClass = new EffectClass(moveTo);
+		bumpedEffectClass.add(rBumpedDef);
+		mEffectClasses.add(locEffectClass);
+		mEffectClasses.add(bumpedEffectClass);
 	}
 
 	public Map<StateVar<Location>, Double> getLocationEffects(StateVar<Location> rLocSrc)
@@ -100,6 +114,17 @@ public class MoveToPSO implements IFactoredPSO {
 	}
 
 	@Override
+	public Set<EffectClass> getIndependentEffectClasses() {
+		return mEffectClasses;
+	}
+
+	@Override
+	public Map<Discriminant, ProbabilisticEffect> getActionDescription(EffectClass effectClass) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -108,7 +133,8 @@ public class MoveToPSO implements IFactoredPSO {
 			return false;
 		}
 		MoveToPSO pso = (MoveToPSO) obj;
-		return pso.mMoveTo.equals(mMoveTo) && pso.mrLocDef.equals(mrLocDef) && pso.mrBumpedDef.equals(mrBumpedDef);
+		return pso.mMoveTo.equals(mMoveTo) && pso.mrLocDef.equals(mrLocDef) && pso.mrBumpedDef.equals(mrBumpedDef)
+				&& pso.mEffectClasses.equals(mEffectClasses);
 	}
 
 	@Override
@@ -119,6 +145,7 @@ public class MoveToPSO implements IFactoredPSO {
 			result = 31 * result + mMoveTo.hashCode();
 			result = 31 * result + mrLocDef.hashCode();
 			result = 31 * result + mrBumpedDef.hashCode();
+			result = 31 * result + mEffectClasses.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

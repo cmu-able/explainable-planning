@@ -30,8 +30,10 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		mAction = action;
 	}
 
-	public void add(StateVarDefinition<IStateVarValue> stateVarDef) {
-		mEffectClass.add(stateVarDef);
+	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		Set<IStateVarValue> genericValues = new HashSet<>(stateVarDef.getPossibleValues());
+		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(), genericValues);
+		mEffectClass.add(genericVarDef);
 	}
 
 	public Set<StateVarDefinition<IStateVarValue>> getAffectedVarDefs() {

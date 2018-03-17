@@ -16,7 +16,7 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 
 /**
- * {@link RobotBumpedActionDescription} is an action description for the "rBumped" effect class of a instance of
+ * {@link RobotBumpedActionDescription} is an action description for the "rBumped" effect class of an instance of
  * {@link MoveToAction}.
  * 
  * @author rsukkerd
@@ -24,12 +24,13 @@ import mdp.ProbabilisticEffect;
  */
 public class RobotBumpedActionDescription implements IActionDescription {
 
-	private MoveToAction mMoveTo;
+	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
+	private static final double BUMP_PROB_BLOCKED = 1.0;
+	private static final double BUMP_PROB_CLEAR = 0.0;
 	private ActionDescription mrBumpedActionDesc;
 
 	public RobotBumpedActionDescription(MoveToAction moveTo, Set<StateVar<Location>> applicablerLocSrcs,
 			StateVarDefinition<RobotBumped> rBumpedDef) throws AttributeNameNotFoundException {
-		mMoveTo = moveTo;
 		EffectClass rBumpedEffectClass = new EffectClass(moveTo);
 		rBumpedEffectClass.add(rBumpedDef);
 		mrBumpedActionDesc = new ActionDescription(rBumpedEffectClass);
@@ -47,19 +48,19 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 
-			if (isPartiallyOccluded(rLocSrc)) {
-				rBumpedProbEffect.put(bumpedEffect, 0.2);
-				rBumpedProbEffect.put(notBumpedEffect, 0.8);
+			Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
+			if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
+				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
+			} else if (occlusion == Occlusion.BLOCKED) {
+				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
+				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_BLOCKED);
 			} else {
-				rBumpedProbEffect.put(bumpedEffect, 0.0);
-				rBumpedProbEffect.put(notBumpedEffect, 1.0);
+				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_CLEAR);
+				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
 			}
 			mrBumpedActionDesc.put(rLocDiscriminant, rBumpedProbEffect);
 		}
-	}
-
-	public boolean isPartiallyOccluded(StateVar<Location> rLocSrc) throws AttributeNameNotFoundException {
-		return mMoveTo.getOcclusion(rLocSrc) == Occlusion.PARTIALLY_OCCLUDED;
 	}
 
 	@Override

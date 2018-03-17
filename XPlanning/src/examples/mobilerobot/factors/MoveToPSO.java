@@ -1,6 +1,5 @@
 package examples.mobilerobot.factors;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,12 +18,6 @@ import mdp.IFactoredPSO;
  *
  */
 public class MoveToPSO implements IFactoredPSO {
-
-	private static final double SUCC_MOVE_PROB = 1.0;
-	private static final double FAIL_MOVE_PROB = 1.0;
-	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
-	private static final double BUMP_PROB_CLEAR = 0;
-	private static final double BUMP_PROB_BLOCKED = 1;
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -50,67 +43,12 @@ public class MoveToPSO implements IFactoredPSO {
 		mMoveTo = moveTo;
 		mrLocDef = rLocDef;
 		mrBumpedDef = rBumpedDef;
-		RobotLocationActionDescription rLocDesc = new RobotLocationActionDescription(moveTo, rLocDef);
-		RobotBumpedActionDescription rBumpedDesc = new RobotBumpedActionDescription(mMoveTo, applicablerLocSrcs,
+		RobotLocationActionDescription rLocDesc = new RobotLocationActionDescription(moveTo, applicablerLocSrcs,
+				rLocDef);
+		RobotBumpedActionDescription rBumpedDesc = new RobotBumpedActionDescription(moveTo, applicablerLocSrcs,
 				rBumpedDef);
 		mActionDescriptions.put(rLocDesc.getEffectClass(), rLocDesc);
 		mActionDescriptions.put(rBumpedDesc.getEffectClass(), rBumpedDesc);
-	}
-
-	public Map<StateVar<Location>, Double> getLocationEffects(StateVar<Location> rLocSrc)
-			throws AttributeNameNotFoundException {
-		Map<StateVar<Location>, Double> locationEffects = new HashMap<>();
-		Set<Location> possibleLocs = mrLocDef.getPossibleValues();
-		for (Location loc : possibleLocs) {
-			StateVar<Location> rLocDest = new StateVar<>("rLoc", loc);
-			double prob = getLocationProbability(rLocDest, rLocSrc);
-			locationEffects.put(rLocDest, prob);
-		}
-		return locationEffects;
-	}
-
-	public Map<StateVar<RobotBumped>, Double> getRobotBumpedEffects(StateVar<Location> rLocSrc)
-			throws AttributeNameNotFoundException {
-		Map<StateVar<RobotBumped>, Double> bumpedEffects = new HashMap<>();
-		Set<RobotBumped> possibleBumped = mrBumpedDef.getPossibleValues();
-		for (RobotBumped bumped : possibleBumped) {
-			StateVar<RobotBumped> rBumpedDest = new StateVar<>("rBumped", bumped);
-			double prob = getRobotBumpedProbability(rBumpedDest, rLocSrc);
-			bumpedEffects.put(rBumpedDest, prob);
-		}
-		return bumpedEffects;
-	}
-
-	private double getLocationProbability(StateVar<Location> rLocDest, StateVar<Location> rLocSrc)
-			throws AttributeNameNotFoundException {
-		if ((mMoveTo.getOcclusion(rLocSrc) == Occlusion.CLEAR
-				|| mMoveTo.getOcclusion(rLocSrc) == Occlusion.PARTIALLY_OCCLUDED)
-				&& rLocDest.getValue().equals(mMoveTo.getDestination())) {
-			return SUCC_MOVE_PROB;
-		}
-		if (mMoveTo.getOcclusion(rLocSrc) == Occlusion.BLOCKED && rLocDest.getValue().equals(rLocSrc.getValue())) {
-			return FAIL_MOVE_PROB;
-		}
-		return 0;
-	}
-
-	private double getRobotBumpedProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc)
-			throws AttributeNameNotFoundException {
-		return getRobotBumpedProbabilityHelper(rBumpedDest.getValue().hasBumped(), rLocSrc);
-	}
-
-	private double getRobotBumpedProbabilityHelper(boolean bumped, StateVar<Location> rLocSrc)
-			throws AttributeNameNotFoundException {
-		if (bumped) {
-			if (mMoveTo.getOcclusion(rLocSrc) == Occlusion.PARTIALLY_OCCLUDED) {
-				return BUMP_PROB_PARTIALLY_OCCLUDED;
-			}
-			if (mMoveTo.getOcclusion(rLocSrc) == Occlusion.CLEAR) {
-				return BUMP_PROB_CLEAR;
-			}
-			return BUMP_PROB_BLOCKED;
-		}
-		return 1 - getRobotBumpedProbabilityHelper(!bumped, rLocSrc);
 	}
 
 	@Override

@@ -11,6 +11,9 @@ import factors.StateVar;
  * {@link Discriminant} determines what effect an action will have. Each action has a finite set of mutually exclusive
  * and exhaustive discriminants (propositions). Each discriminant is associated with a {@link ProbabilisticEffect}.
  * 
+ * An iterator of a discriminant is over a minimal collection of state variables whose values satisfy the proposition of
+ * the discriminant.
+ * 
  * @author rsukkerd
  *
  */

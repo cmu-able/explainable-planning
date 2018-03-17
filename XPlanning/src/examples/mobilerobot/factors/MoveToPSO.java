@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
+import exceptions.EffectClassNotFoundException;
 import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.Discriminant;
 import mdp.EffectClass;
+import mdp.IActionDescription;
 import mdp.IFactoredPSO;
-import mdp.ProbabilisticEffect;
 
 /**
  * {@link MoveToPSO} is a factored PSO representation of a {@link MoveToAction}.
@@ -40,21 +40,21 @@ public class MoveToPSO implements IFactoredPSO {
 	private StateVarDefinition<RobotBumped> mrBumpedDef;
 
 	/**
-	 * Independent effect classes
+	 * Full action descriptions for all independent effect classes of this action
 	 */
-	private Set<EffectClass> mEffectClasses;
+	private Map<EffectClass, IActionDescription> mActionDescriptions;
 
 	public MoveToPSO(MoveToAction moveTo, StateVarDefinition<Location> rLocDef,
-			StateVarDefinition<RobotBumped> rBumpedDef) {
+			StateVarDefinition<RobotBumped> rBumpedDef, Set<StateVar<Location>> applicablerLocSrcs)
+			throws AttributeNameNotFoundException {
 		mMoveTo = moveTo;
 		mrLocDef = rLocDef;
 		mrBumpedDef = rBumpedDef;
-		EffectClass locEffectClass = new EffectClass(moveTo);
-		locEffectClass.add(rLocDef);
-		EffectClass bumpedEffectClass = new EffectClass(moveTo);
-		bumpedEffectClass.add(rBumpedDef);
-		mEffectClasses.add(locEffectClass);
-		mEffectClasses.add(bumpedEffectClass);
+		RobotLocationActionDescription rLocDesc = new RobotLocationActionDescription(moveTo, rLocDef);
+		RobotBumpedActionDescription rBumpedDesc = new RobotBumpedActionDescription(mMoveTo, applicablerLocSrcs,
+				rBumpedDef);
+		mActionDescriptions.put(rLocDesc.getEffectClass(), rLocDesc);
+		mActionDescriptions.put(rBumpedDesc.getEffectClass(), rBumpedDesc);
 	}
 
 	public Map<StateVar<Location>, Double> getLocationEffects(StateVar<Location> rLocSrc)
@@ -115,13 +115,15 @@ public class MoveToPSO implements IFactoredPSO {
 
 	@Override
 	public Set<EffectClass> getIndependentEffectClasses() {
-		return mEffectClasses;
+		return mActionDescriptions.keySet();
 	}
 
 	@Override
-	public Map<Discriminant, ProbabilisticEffect> getActionDescription(EffectClass effectClass) {
-		// TODO Auto-generated method stub
-		return null;
+	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException {
+		if (!mActionDescriptions.containsKey(effectClass)) {
+			throw new EffectClassNotFoundException(effectClass);
+		}
+		return mActionDescriptions.get(effectClass);
 	}
 
 	@Override
@@ -134,7 +136,7 @@ public class MoveToPSO implements IFactoredPSO {
 		}
 		MoveToPSO pso = (MoveToPSO) obj;
 		return pso.mMoveTo.equals(mMoveTo) && pso.mrLocDef.equals(mrLocDef) && pso.mrBumpedDef.equals(mrBumpedDef)
-				&& pso.mEffectClasses.equals(mEffectClasses);
+				&& pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
 	@Override
@@ -145,7 +147,7 @@ public class MoveToPSO implements IFactoredPSO {
 			result = 31 * result + mMoveTo.hashCode();
 			result = 31 * result + mrLocDef.hashCode();
 			result = 31 * result + mrBumpedDef.hashCode();
-			result = 31 * result + mEffectClasses.hashCode();
+			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

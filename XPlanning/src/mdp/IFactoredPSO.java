@@ -1,7 +1,8 @@
 package mdp;
 
-import java.util.Map;
 import java.util.Set;
+
+import exceptions.EffectClassNotFoundException;
 
 /**
  * {@link IFactoredPSO} is an interface to a "factored" probabilistic STRIPS operator representation.
@@ -15,6 +16,6 @@ public interface IFactoredPSO {
 
 	public Set<EffectClass> getIndependentEffectClasses();
 
-	public Map<Discriminant, ProbabilisticEffect> getActionDescription(EffectClass effectClass);
+	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException;
 
 }

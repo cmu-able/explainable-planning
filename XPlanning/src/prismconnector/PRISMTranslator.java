@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.EffectClassNotFoundException;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
@@ -14,6 +15,7 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
 import mdp.EffectClass;
+import mdp.IActionDescription;
 import mdp.IFactoredPSO;
 import mdp.Policy;
 import mdp.ProbabilisticEffect;
@@ -32,7 +34,7 @@ public class PRISMTranslator {
 		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs());
 	}
 
-	public String getMDPTranslation() throws VarNameNotFoundException {
+	public String getMDPTranslation() throws VarNameNotFoundException, EffectClassNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
 		String modules = buildModules();
 		String rewards = buildRewards();
@@ -97,8 +99,9 @@ public class PRISMTranslator {
 	 * 
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNameNotFoundException
+	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModules() throws VarNameNotFoundException {
+	private String buildModules() throws VarNameNotFoundException, EffectClassNotFoundException {
 		Set<EffectClass> allEffectClasses = new HashSet<>();
 		for (IAction action : mXMDP.getActions()) {
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
@@ -150,9 +153,11 @@ public class PRISMTranslator {
 	 *            map
 	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNameNotFoundException
+	 * @throws EffectClassNotFoundException
 	 */
 	private String buildModule(String name, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
-			Map<IAction, EffectClass> overlappingEffectActions) throws VarNameNotFoundException {
+			Map<IAction, EffectClass> overlappingEffectActions)
+			throws VarNameNotFoundException, EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(name);
@@ -199,15 +204,17 @@ public class PRISMTranslator {
 	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
 	 *            map
 	 * @return [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} -> {updates_p};
+	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModuleCommands(Map<IAction, EffectClass> overlappingEffectActions) {
+	private String buildModuleCommands(Map<IAction, EffectClass> overlappingEffectActions)
+			throws EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (Entry<IAction, EffectClass> entry : overlappingEffectActions.entrySet()) {
 			IAction action = entry.getKey();
 			EffectClass effectClass = entry.getValue();
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
-			Map<Discriminant, ProbabilisticEffect> actionDesc = actionPSO.getActionDescription(effectClass);
-			for (Entry<Discriminant, ProbabilisticEffect> e : actionDesc.entrySet()) {
+			IActionDescription actionDesc = actionPSO.getActionDescription(effectClass);
+			for (Entry<Discriminant, ProbabilisticEffect> e : actionDesc) {
 				Discriminant discriminant = e.getKey();
 				ProbabilisticEffect probEffect = e.getValue();
 				String command = buildModuleCommand(action, discriminant, probEffect);

@@ -4,10 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import factors.IStateVarValue;
-import factors.StateVar;
+import exceptions.EffectNotFoundException;
 
 /**
  * {@link ProbabilisticEffect} is a distribution over the changed state variables as a result of an action.
@@ -15,25 +13,32 @@ import factors.StateVar;
  * @author rsukkerd
  *
  */
-public class ProbabilisticEffect implements Iterable<Entry<Set<StateVar<IStateVarValue>>, Double>> {
+public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Map<Set<StateVar<IStateVarValue>>, Double> mProbEffect;
+	private Map<Effect, Double> mProbEffect;
 
 	public ProbabilisticEffect() {
 		mProbEffect = new HashMap<>();
 	}
 
-	public void put(Set<StateVar<IStateVarValue>> effect, Double prob) {
+	public void put(Effect effect, double prob) {
 		mProbEffect.put(effect, prob);
 	}
 
+	public double getProbability(Effect effect) throws EffectNotFoundException {
+		if (!mProbEffect.containsKey(effect)) {
+			throw new EffectNotFoundException(effect);
+		}
+		return mProbEffect.get(effect);
+	}
+
 	@Override
-	public Iterator<Entry<Set<StateVar<IStateVarValue>>, Double>> iterator() {
+	public Iterator<Entry<Effect, Double>> iterator() {
 		return mProbEffect.entrySet().iterator();
 	}
 

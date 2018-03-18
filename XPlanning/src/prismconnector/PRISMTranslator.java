@@ -14,6 +14,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
+import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
@@ -276,8 +277,8 @@ public class PRISMTranslator {
 	private String buildUpdates(ProbabilisticEffect probEffect) {
 		StringBuilder builder = new StringBuilder();
 		boolean firstBranch = true;
-		for (Entry<Set<StateVar<IStateVarValue>>, Double> entry : probEffect) {
-			Set<StateVar<IStateVarValue>> effect = entry.getKey();
+		for (Entry<Effect, Double> entry : probEffect) {
+			Effect effect = entry.getKey();
 			Double prob = entry.getValue();
 			if (!firstBranch) {
 				builder.append(" + ");
@@ -296,7 +297,7 @@ public class PRISMTranslator {
 	 * @param effect
 	 * @return {var_1 update}&...&{var_n update}
 	 */
-	private String buildUpdate(Set<StateVar<IStateVarValue>> effect) {
+	private String buildUpdate(Effect effect) {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> stateVar : effect) {

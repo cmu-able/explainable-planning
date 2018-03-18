@@ -1,15 +1,13 @@
 package examples.mobilerobot.factors;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import factors.StateVar;
+import exceptions.EffectClassNotFoundException;
 import factors.StateVarDefinition;
-import mdp.Discriminant;
 import mdp.EffectClass;
+import mdp.IActionDescription;
 import mdp.IFactoredPSO;
-import mdp.ProbabilisticEffect;
 
 /**
  * {@link SetSpeedPSO} is a factored PSO representation of a {@link SetSpeedAction}
@@ -18,8 +16,6 @@ import mdp.ProbabilisticEffect;
  *
  */
 public class SetSpeedPSO implements IFactoredPSO {
-
-	private static final double SUCC_SET_SPEED_PROB = 1.0;
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -34,45 +30,28 @@ public class SetSpeedPSO implements IFactoredPSO {
 	private StateVarDefinition<RobotSpeed> mrSpeedDef;
 
 	/**
-	 * Independent effect classes
+	 * Full action descriptions for all independent effect classes of this action
 	 */
-	private Set<EffectClass> mEffectClasses;
+	private Map<EffectClass, IActionDescription> mActionDescriptions;
 
 	public SetSpeedPSO(SetSpeedAction setSpeed, StateVarDefinition<RobotSpeed> rSpeedDef) {
 		mSetSpeed = setSpeed;
 		mrSpeedDef = rSpeedDef;
-		EffectClass speedEffectClass = new EffectClass(setSpeed);
-		speedEffectClass.add(rSpeedDef);
-		mEffectClasses.add(speedEffectClass);
-	}
-
-	public Map<StateVar<RobotSpeed>, Double> getRobotSpeedEffects() {
-		Map<StateVar<RobotSpeed>, Double> speedEffects = new HashMap<>();
-		Set<RobotSpeed> possibleSpeeds = mrSpeedDef.getPossibleValues();
-		for (RobotSpeed speed : possibleSpeeds) {
-			StateVar<RobotSpeed> rSpeedDest = new StateVar<>("rSpeed", speed);
-			double prob = getRobotSpeedProbability(rSpeedDest);
-			speedEffects.put(rSpeedDest, prob);
-		}
-		return speedEffects;
-	}
-
-	private double getRobotSpeedProbability(StateVar<RobotSpeed> rSpeedDest) {
-		if (rSpeedDest.getValue().equals(mSetSpeed.getTargetSpeed())) {
-			return SUCC_SET_SPEED_PROB;
-		}
-		return 0;
+		RobotSpeedActionDescription rSpeedDesc = new RobotSpeedActionDescription(setSpeed, rSpeedDef);
+		mActionDescriptions.put(rSpeedDesc.getEffectClass(), rSpeedDesc);
 	}
 
 	@Override
 	public Set<EffectClass> getIndependentEffectClasses() {
-		return mEffectClasses;
+		return mActionDescriptions.keySet();
 	}
 
 	@Override
-	public Map<Discriminant, ProbabilisticEffect> getActionDescription(EffectClass effectClass) {
-		// TODO Auto-generated method stub
-		return null;
+	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException {
+		if (!mActionDescriptions.containsKey(effectClass)) {
+			throw new EffectClassNotFoundException(effectClass);
+		}
+		return mActionDescriptions.get(effectClass);
 	}
 
 	@Override
@@ -85,7 +64,7 @@ public class SetSpeedPSO implements IFactoredPSO {
 		}
 		SetSpeedPSO pso = (SetSpeedPSO) obj;
 		return pso.mSetSpeed.equals(mSetSpeed) && pso.mrSpeedDef.equals(mrSpeedDef)
-				&& pso.mEffectClasses.equals(mEffectClasses);
+				&& pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
 	@Override
@@ -95,7 +74,7 @@ public class SetSpeedPSO implements IFactoredPSO {
 			result = 17;
 			result = 31 * result + mSetSpeed.hashCode();
 			result = 31 * result + mrSpeedDef.hashCode();
-			result = 31 * result + mEffectClasses.hashCode();
+			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

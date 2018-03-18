@@ -51,8 +51,8 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect();
 			Effect bumpedEffect = new Effect();
 			Effect notBumpedEffect = new Effect();
-			StateVar<IStateVarValue> bumped = new StateVar<>("rBumped", new RobotBumped(true));
-			StateVar<IStateVarValue> notBumped = new StateVar<>("rBumped", new RobotBumped(false));
+			StateVar<IStateVarValue> bumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(true));
+			StateVar<IStateVarValue> notBumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 
@@ -62,9 +62,7 @@ public class RobotBumpedActionDescription implements IActionDescription {
 				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
 			} else if (occlusion == Occlusion.BLOCKED) {
 				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
-				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_BLOCKED);
 			} else {
-				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_CLEAR);
 				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
 			}
 			mrBumpedActionDesc.put(rLocDiscriminant, rBumpedProbEffect);

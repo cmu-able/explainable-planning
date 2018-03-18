@@ -50,17 +50,15 @@ public class RobotLocationActionDescription implements IActionDescription {
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect();
 			Effect newLocEffect = new Effect();
 			Effect oldLocEffect = new Effect();
-			StateVar<IStateVarValue> newLoc = new StateVar<>("rLoc", moveTo.getDestination());
-			StateVar<IStateVarValue> oldLoc = new StateVar<>("rLoc", rLocSrc.getValue());
+			StateVar<IStateVarValue> newLoc = new StateVar<>(rLocDef.getName(), moveTo.getDestination());
+			StateVar<IStateVarValue> oldLoc = new StateVar<>(rLocDef.getName(), rLocSrc.getValue());
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 
 			Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
 			if (occlusion == Occlusion.BLOCKED) {
 				rLocProbEffect.put(oldLocEffect, 1 - MOVE_PROB_BLOCKED);
-				rLocProbEffect.put(newLocEffect, MOVE_PROB_BLOCKED);
 			} else {
-				rLocProbEffect.put(oldLocEffect, 1 - MOVE_PROB_NONBLOCKED);
 				rLocProbEffect.put(newLocEffect, MOVE_PROB_NONBLOCKED);
 			}
 			mrLocActionDesc.put(rLocDiscriminant, rLocProbEffect);

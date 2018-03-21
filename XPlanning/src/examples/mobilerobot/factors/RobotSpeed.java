@@ -4,7 +4,7 @@ import java.text.DecimalFormat;
 
 import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
-import factors.IStateVarValue;
+import factors.IStateVarDouble;
 
 /**
  * {@link RobotSpeed} is a type of speed value of the robot.
@@ -12,7 +12,7 @@ import factors.IStateVarValue;
  * @author rsukkerd
  *
  */
-public class RobotSpeed implements IStateVarValue {
+public class RobotSpeed implements IStateVarDouble {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -21,7 +21,7 @@ public class RobotSpeed implements IStateVarValue {
 
 	private double mSpeed;
 
-	private DecimalFormat decimalFormatter = new DecimalFormat("#.###");;
+	private DecimalFormat decimalFormatter = new DecimalFormat("#.###");
 
 	public RobotSpeed(double speed) {
 		mSpeed = speed;
@@ -29,6 +29,11 @@ public class RobotSpeed implements IStateVarValue {
 
 	public double getSpeed() {
 		return mSpeed;
+	}
+
+	@Override
+	public double getValue() {
+		return getSpeed();
 	}
 
 	@Override

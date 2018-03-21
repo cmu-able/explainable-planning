@@ -10,6 +10,9 @@ import java.util.Set;
 import exceptions.EffectClassNotFoundException;
 import exceptions.VarNameNotFoundException;
 import factors.IAction;
+import factors.IStateVarBoolean;
+import factors.IStateVarDouble;
+import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -98,6 +101,32 @@ public class PRISMTranslator {
 
 	/**
 	 * 
+	 * @param stateVarDef
+	 * @return formula {varName}Double = ({varName}={encoded int}) ? {double value} : ... : -1;
+	 */
+	private String buildVarDoubleFormula(StateVarDefinition<IStateVarDouble> stateVarDef) {
+		StringBuilder builder = new StringBuilder();
+		String formulaName = stateVarDef.getName() + "Double";
+		builder.append("formula ");
+		builder.append(formulaName);
+		builder.append(" = ");
+		for (IStateVarDouble value : stateVarDef.getPossibleValues()) {
+			StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef.getName(), value);
+			Integer encodedInt = mEncodings.getEncodedIntValue(stateVar);
+			builder.append("(");
+			builder.append(stateVarDef.getName());
+			builder.append("=");
+			builder.append(encodedInt);
+			builder.append(") ? ");
+			builder.append(value.getValue());
+			builder.append(" : ");
+		}
+		builder.append("-1;");
+		return builder.toString();
+	}
+
+	/**
+	 * 
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNameNotFoundException
 	 * @throws EffectClassNotFoundException
@@ -176,26 +205,81 @@ public class PRISMTranslator {
 	 * 
 	 * @param moduleVarDefs
 	 *            Variables of the module
-	 * @return {varName} : [0..{maximum encoded value}] init {encoded int value}; ...
+	 * @return varDecl ...
 	 * @throws VarNameNotFoundException
 	 */
 	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> moduleVarDefs)
 			throws VarNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarDefs) {
-			StateVar<IStateVarValue> initStateVar = mXMDP.getInitialStateVar(stateVarDef.getName());
-			builder.append(INDENT);
 			String varName = stateVarDef.getName();
-			Integer encodedValue = mEncodings.getEncodedIntValue(initStateVar);
-			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(stateVarDef);
-			builder.append(varName);
-			builder.append(" : [0..");
-			builder.append(maxEncodedValue);
-			builder.append("] init ");
-			builder.append(encodedValue);
-			builder.append(";");
+			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialStateVar(varName);
+			IStateVarValue iniValue = iniStateVar.getValue();
+			String varDecl;
+			if (iniValue instanceof IStateVarBoolean) {
+				varDecl = buildBooleanModuleVarDecl(varName, (IStateVarBoolean) iniValue);
+			} else if (iniValue instanceof IStateVarInt) {
+				varDecl = buildIntModuleVarDecl(varName, (IStateVarInt) iniValue);
+			} else {
+				varDecl = buildModuleVarDecl(stateVarDef, iniStateVar);
+			}
+			builder.append(INDENT);
+			builder.append(varDecl);
 			builder.append("\n");
 		}
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param varDef
+	 * @param iniVar
+	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value};
+	 */
+	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, StateVar<IStateVarValue> iniVar) {
+		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(varDef);
+		Integer encodedValue = mEncodings.getEncodedIntValue(iniVar);
+		StringBuilder builder = new StringBuilder();
+		builder.append(varDef.getName());
+		builder.append(" : [0..");
+		builder.append(maxEncodedValue);
+		builder.append("] init ");
+		builder.append(encodedValue);
+		builder.append(";");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param varName
+	 * @param iniVarBoolean
+	 * @return {varName} : bool init {initial value};
+	 */
+	private String buildBooleanModuleVarDecl(String varName, IStateVarBoolean iniVarBoolean) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(varName);
+		builder.append(" : bool init ");
+		builder.append(iniVarBoolean.getValue() ? "true" : "false");
+		builder.append(";");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param varName
+	 * @param iniVarInt
+	 * @return {varName} : [{min}..{max}] init {initial value};
+	 */
+	private String buildIntModuleVarDecl(String varName, IStateVarInt iniVarInt) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(varName);
+		builder.append(" : [");
+		builder.append(iniVarInt.getLowerBound());
+		builder.append("..");
+		builder.append(iniVarInt.getUpperBound());
+		builder.append("] init ");
+		builder.append(iniVarInt.getValue());
+		builder.append(";");
 		return builder.toString();
 	}
 

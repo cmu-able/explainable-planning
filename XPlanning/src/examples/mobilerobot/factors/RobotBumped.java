@@ -2,7 +2,7 @@ package examples.mobilerobot.factors;
 
 import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
-import factors.IStateVarValue;
+import factors.IStateVarBoolean;
 
 /**
  * {@link RobotBumped} is a type of bump sensor value (boolean) of the robot.
@@ -10,7 +10,7 @@ import factors.IStateVarValue;
  * @author rsukkerd
  *
  */
-public class RobotBumped implements IStateVarValue {
+public class RobotBumped implements IStateVarBoolean {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -25,6 +25,11 @@ public class RobotBumped implements IStateVarValue {
 
 	public boolean hasBumped() {
 		return mBumped;
+	}
+
+	@Override
+	public boolean getValue() {
+		return hasBumped();
 	}
 
 	@Override

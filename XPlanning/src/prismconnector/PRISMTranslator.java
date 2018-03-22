@@ -84,6 +84,9 @@ public class PRISMTranslator {
 			builder.append(varName);
 			builder.append("\n");
 			for (IStateVarValue value : stateVarDef.getPossibleValues()) {
+				if (value instanceof IStateVarBoolean || value instanceof IStateVarInt) {
+					continue;
+				}
 				Integer encodedValue = mEncodings.getEncodedIntValue(new StateVar<IStateVarValue>(varName, value));
 				builder.append("const int ");
 				builder.append(varName);

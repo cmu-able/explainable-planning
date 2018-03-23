@@ -1,10 +1,5 @@
 package metrics;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
-import exceptions.VarNameNotFoundException;
-import mdp.Transition;
-
 /**
  * {@link IStandardMetricQFunction} is an interface to a Q_i function that characterizes a QA i using a standard metric.
  * 
@@ -13,6 +8,4 @@ import mdp.Transition;
  */
 public interface IStandardMetricQFunction extends IQFunction {
 
-	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException;
 }

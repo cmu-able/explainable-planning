@@ -7,7 +7,6 @@ import java.util.Set;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
-import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
@@ -44,15 +43,14 @@ public class RobotBumpedActionDescription implements IActionDescription {
 		mrBumpedActionDesc = new ActionDescription(rBumpedEffectClass);
 
 		for (StateVar<Location> rLocSrc : applicablerLocSrcs) {
-			StateVar<IStateVarValue> varSrc = new StateVar<>(rLocSrc.getName(), rLocSrc.getValue());
 			Discriminant rLocDiscriminant = new Discriminant();
-			rLocDiscriminant.add(varSrc);
+			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect();
 			Effect bumpedEffect = new Effect();
 			Effect notBumpedEffect = new Effect();
-			StateVar<IStateVarValue> bumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(true));
-			StateVar<IStateVarValue> notBumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(false));
+			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(true));
+			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 
@@ -71,12 +69,10 @@ public class RobotBumpedActionDescription implements IActionDescription {
 
 	public double getProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
-		StateVar<IStateVarValue> varDest = new StateVar<>(rBumpedDest.getName(), rBumpedDest.getValue());
-		StateVar<IStateVarValue> varSrc = new StateVar<>(rLocSrc.getName(), rLocSrc.getValue());
 		Effect rBumpedEffect = new Effect();
-		rBumpedEffect.add(varDest);
+		rBumpedEffect.add(rBumpedDest);
 		Discriminant rLocDiscriminant = new Discriminant();
-		rLocDiscriminant.add(varSrc);
+		rLocDiscriminant.add(rLocSrc);
 		return mrBumpedActionDesc.getProbability(rBumpedEffect, rLocDiscriminant);
 	}
 
@@ -89,6 +85,11 @@ public class RobotBumpedActionDescription implements IActionDescription {
 	public double getProbability(Effect effect, Discriminant discriminant)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
 		return mrBumpedActionDesc.getProbability(effect, discriminant);
+	}
+
+	@Override
+	public Set<Effect> getPossibleEffects() {
+		return mrBumpedActionDesc.getPossibleEffects();
 	}
 
 	@Override

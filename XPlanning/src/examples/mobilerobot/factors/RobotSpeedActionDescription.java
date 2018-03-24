@@ -2,10 +2,10 @@ package examples.mobilerobot.factors;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
-import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
@@ -41,7 +41,7 @@ public class RobotSpeedActionDescription implements IActionDescription {
 		Discriminant emptyDiscriminant = new Discriminant();
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect();
 		Effect newSpeedEffect = new Effect();
-		StateVar<IStateVarValue> newSpeed = new StateVar<>(rSpeedDef.getName(), setSpeed.getTargetSpeed());
+		StateVar<RobotSpeed> newSpeed = new StateVar<>(rSpeedDef.getName(), setSpeed.getTargetSpeed());
 		newSpeedEffect.add(newSpeed);
 		rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
 		mrSpeedActionDesc.put(emptyDiscriminant, rSpeedProbEffect);
@@ -49,9 +49,8 @@ public class RobotSpeedActionDescription implements IActionDescription {
 
 	public double getProbability(StateVar<RobotSpeed> rSpeedDest)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
-		StateVar<IStateVarValue> varDest = new StateVar<>(rSpeedDest.getName(), rSpeedDest.getValue());
 		Effect rSpeedEffect = new Effect();
-		rSpeedEffect.add(varDest);
+		rSpeedEffect.add(rSpeedDest);
 		Discriminant rSpeedDiscriminant = new Discriminant();
 		return mrSpeedActionDesc.getProbability(rSpeedEffect, rSpeedDiscriminant);
 	}
@@ -65,6 +64,11 @@ public class RobotSpeedActionDescription implements IActionDescription {
 	public double getProbability(Effect effect, Discriminant discriminant)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
 		return mrSpeedActionDesc.getProbability(effect, discriminant);
+	}
+
+	@Override
+	public Set<Effect> getPossibleEffects() {
+		return mrSpeedActionDesc.getPossibleEffects();
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import java.util.Set;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
-import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
@@ -43,15 +42,14 @@ public class RobotLocationActionDescription implements IActionDescription {
 		mrLocActionDesc = new ActionDescription(rLocEffectClass);
 
 		for (StateVar<Location> rLocSrc : applicablerLocSrcs) {
-			StateVar<IStateVarValue> varSrc = new StateVar<>(rLocSrc.getName(), rLocSrc.getValue());
 			Discriminant rLocDiscriminant = new Discriminant();
-			rLocDiscriminant.add(varSrc);
+			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect();
 			Effect newLocEffect = new Effect();
 			Effect oldLocEffect = new Effect();
-			StateVar<IStateVarValue> newLoc = new StateVar<>(rLocDef.getName(), moveTo.getDestination());
-			StateVar<IStateVarValue> oldLoc = new StateVar<>(rLocDef.getName(), rLocSrc.getValue());
+			StateVar<Location> newLoc = new StateVar<>(rLocDef.getName(), moveTo.getDestination());
+			StateVar<Location> oldLoc = new StateVar<>(rLocDef.getName(), rLocSrc.getValue());
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 
@@ -67,12 +65,10 @@ public class RobotLocationActionDescription implements IActionDescription {
 
 	public double getProbability(StateVar<Location> rLocDest, StateVar<Location> rLocSrc)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
-		StateVar<IStateVarValue> varDest = new StateVar<>(rLocDest.getName(), rLocDest.getValue());
-		StateVar<IStateVarValue> varSrc = new StateVar<>(rLocSrc.getName(), rLocSrc.getValue());
 		Effect rLocEffect = new Effect();
-		rLocEffect.add(varDest);
+		rLocEffect.add(rLocDest);
 		Discriminant rLocDiscriminant = new Discriminant();
-		rLocDiscriminant.add(varSrc);
+		rLocDiscriminant.add(rLocSrc);
 		return mrLocActionDesc.getProbability(rLocEffect, rLocDiscriminant);
 	}
 
@@ -85,6 +81,11 @@ public class RobotLocationActionDescription implements IActionDescription {
 	public double getProbability(Effect effect, Discriminant discriminant)
 			throws DiscriminantNotFoundException, EffectNotFoundException {
 		return mrLocActionDesc.getProbability(effect, discriminant);
+	}
+
+	@Override
+	public Set<Effect> getPossibleEffects() {
+		return mrLocActionDesc.getPossibleEffects();
 	}
 
 	@Override

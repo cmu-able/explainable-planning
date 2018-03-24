@@ -1,10 +1,6 @@
 package mdp;
 
-import java.util.Set;
-
 import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
 
 /**
  * {@link Decision} is a pair of a state description (i.e., a set of state variables) and an action.
@@ -19,16 +15,16 @@ public class Decision {
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVar<IStateVarValue>> mGuard;
+	private Discriminant mDiscriminant;
 	private IAction mAction;
 
-	public Decision(Set<StateVar<IStateVarValue>> guard, IAction action) {
-		mGuard = guard;
+	public Decision(Discriminant guard, IAction action) {
+		mDiscriminant = guard;
 		mAction = action;
 	}
 
-	public Set<StateVar<IStateVarValue>> getGuard() {
-		return mGuard;
+	public Discriminant getDiscriminant() {
+		return mDiscriminant;
 	}
 
 	public IAction getAction() {
@@ -44,7 +40,7 @@ public class Decision {
 			return false;
 		}
 		Decision decision = (Decision) obj;
-		return decision.mGuard.equals(mGuard) && decision.mAction.equals(mAction);
+		return decision.mDiscriminant.equals(mDiscriminant) && decision.mAction.equals(mAction);
 	}
 
 	@Override
@@ -52,7 +48,7 @@ public class Decision {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mGuard.hashCode();
+			result = 31 * result + mDiscriminant.hashCode();
 			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}

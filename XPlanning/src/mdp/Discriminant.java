@@ -30,8 +30,9 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 		mDiscriminant = new HashSet<>();
 	}
 
-	public void add(StateVar<IStateVarValue> stateVar) {
-		mDiscriminant.add(stateVar);
+	public void add(StateVar<? extends IStateVarValue> stateVar) {
+		StateVar<IStateVarValue> genericStateVar = new StateVar<>(stateVar.getName(), stateVar.getValue());
+		mDiscriminant.add(genericStateVar);
 	}
 
 	@Override

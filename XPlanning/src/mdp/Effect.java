@@ -26,8 +26,9 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		mEffect = new HashSet<>();
 	}
 
-	public void add(StateVar<IStateVarValue> stateVar) {
-		mEffect.add(stateVar);
+	public void add(StateVar<? extends IStateVarValue> stateVar) {
+		StateVar<IStateVarValue> genericStateVar = new StateVar<>(stateVar.getName(), stateVar.getValue());
+		mEffect.add(genericStateVar);
 	}
 
 	@Override

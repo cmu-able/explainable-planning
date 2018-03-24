@@ -1,5 +1,6 @@
 package factors;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -19,9 +20,9 @@ public class StateVarDefinition<E extends IStateVarValue> {
 	private String mName;
 	private Set<E> mPossibleValues;
 
-	public StateVarDefinition(String name, Set<E> possibleValues) {
+	public StateVarDefinition(String name, Set<? extends E> possibleValues) {
 		mName = name;
-		mPossibleValues = possibleValues;
+		mPossibleValues = new HashSet<>(possibleValues);
 	}
 
 	public String getName() {

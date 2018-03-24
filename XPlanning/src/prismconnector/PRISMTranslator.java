@@ -25,6 +25,7 @@ import mdp.Policy;
 import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
+import preferences.ILinearCostFunction;
 
 public class PRISMTranslator {
 
@@ -33,9 +34,12 @@ public class PRISMTranslator {
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
 
-	public PRISMTranslator(XMDP xmdp) {
+	private boolean mThreeParamRewards;
+
+	public PRISMTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
 		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs());
+		mThreeParamRewards = threeParamRewards;
 	}
 
 	public String getMDPTranslation() throws VarNameNotFoundException, EffectClassNotFoundException {
@@ -419,7 +423,14 @@ public class PRISMTranslator {
 
 	private String buildRewards() {
 		StringBuilder builder = new StringBuilder();
+		builder.append("rewards \"cost\"");
+		builder.append("endrewards");
+		return builder.toString();
+	}
+
+	private String buildRewardItems(IQFunction qFunc, ILinearCostFunction linearCostFunc, double scalingConst) {
 		// TODO
+		StringBuilder builder = new StringBuilder();
 		return builder.toString();
 	}
 

@@ -1,9 +1,9 @@
 package examples.mobilerobot.metrics;
 
 import exceptions.VarNameNotFoundException;
-import mdp.Transition;
 import metrics.ICountQFunction;
 import metrics.IEvent;
+import metrics.Transition;
 
 /**
  * {@link CollisionQFunction} determines the collision of the robot of a single transition.

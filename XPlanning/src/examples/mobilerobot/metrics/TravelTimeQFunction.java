@@ -7,10 +7,13 @@ import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
+import factors.ActionDefinition;
 import factors.IStateVarValue;
 import factors.StateVar;
-import mdp.Transition;
+import factors.StateVarDefinition;
 import metrics.IStandardMetricQFunction;
+import metrics.Transition;
+import metrics.TransitionDefinition;
 
 /**
  * {@link TravelTimeQFunction} calculates the travel time of the robot of a single transition.
@@ -19,6 +22,16 @@ import metrics.IStandardMetricQFunction;
  *
  */
 public class TravelTimeQFunction implements IStandardMetricQFunction {
+
+	private TransitionDefinition mTransitionDef;
+
+	public TravelTimeQFunction(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
+			ActionDefinition<MoveToAction> moveToDef, StateVarDefinition<Location> rLocDestDef) {
+		mTransitionDef = new TransitionDefinition(moveToDef);
+		mTransitionDef.addSrcStateVarDef(rLocSrcDef);
+		mTransitionDef.addSrcStateVarDef(rSpeedSrcDef);
+		mTransitionDef.addDestStateVarDef(rLocDestDef);
+	}
 
 	public double getTravelTime(StateVar<Location> rLocSrc, StateVar<RobotSpeed> rSpeedSrc, MoveToAction moveTo,
 			StateVar<Location> rLocDest) throws AttributeNameNotFoundException {
@@ -46,6 +59,11 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
 		}
 		return 0;
+	}
+
+	@Override
+	public TransitionDefinition getTransitionDefinition() {
+		return mTransitionDef;
 	}
 
 }

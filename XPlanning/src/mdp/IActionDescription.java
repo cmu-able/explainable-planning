@@ -1,6 +1,7 @@
 package mdp;
 
 import java.util.Map.Entry;
+import java.util.Set;
 
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
@@ -16,6 +17,8 @@ public interface IActionDescription extends Iterable<Entry<Discriminant, Probabi
 
 	public double getProbability(Effect effect, Discriminant discriminant)
 			throws DiscriminantNotFoundException, EffectNotFoundException;
+
+	public Set<Effect> getPossibleEffects();
 
 	public EffectClass getEffectClass();
 }

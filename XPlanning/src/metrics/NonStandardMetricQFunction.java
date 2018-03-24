@@ -5,7 +5,6 @@ import java.util.Map;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import mdp.Transition;
 
 /**
  * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard
@@ -52,8 +51,8 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 		if (!(obj instanceof NonStandardMetricQFunction)) {
 			return false;
 		}
-		NonStandardMetricQFunction qFun = (NonStandardMetricQFunction) obj;
-		return qFun.mMetric.equals(mMetric);
+		NonStandardMetricQFunction qFunc = (NonStandardMetricQFunction) obj;
+		return qFunc.mMetric.equals(mMetric);
 	}
 
 	@Override

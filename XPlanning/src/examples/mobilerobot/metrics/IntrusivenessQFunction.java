@@ -6,10 +6,10 @@ import java.util.Map;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNameNotFoundException;
-import mdp.Transition;
 import metrics.IEvent;
 import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;
+import metrics.Transition;
 
 /**
  * {@link IntrusivenessQFunction} determines the intrusiveness of the robot of a single transition.

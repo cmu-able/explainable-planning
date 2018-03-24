@@ -7,8 +7,8 @@ import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNameNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
-import mdp.Transition;
 import metrics.IEvent;
+import metrics.Transition;
 
 /**
  * {@link SemiIntrusiveMoveEvent} represents the robot moving into a semi-public area.

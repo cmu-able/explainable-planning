@@ -6,7 +6,7 @@ import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IStateVarValue;
 import factors.StateVar;
@@ -23,6 +23,9 @@ import metrics.TransitionDefinition;
  */
 public class TravelTimeQFunction implements IStandardMetricQFunction {
 
+	private StateVarDefinition<Location> mrLocSrcDef;
+	private StateVarDefinition<RobotSpeed> mrSpeedSrcDef;
+	private StateVarDefinition<Location> mrLocDestDef;
 	private TransitionDefinition mTransitionDef;
 
 	public TravelTimeQFunction(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
@@ -41,21 +44,21 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 
 	@Override
 	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
-		if (trans.getSrcStateVar("rLoc").getValue() instanceof Location
-				&& trans.getSrcStateVar("rSpeed").getValue() instanceof RobotSpeed
+			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+		if (trans.getSrcStateVarValue(mrLocSrcDef) instanceof Location
+				&& trans.getSrcStateVarValue(mrSpeedSrcDef) instanceof RobotSpeed
 				&& trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVar("rLoc").getValue() instanceof Location) {
-			StateVar<IStateVarValue> locVarSrc = trans.getSrcStateVar("rLoc");
-			StateVar<IStateVarValue> speedVarSrc = trans.getSrcStateVar("rSpeed");
-			StateVar<IStateVarValue> locVarDest = trans.getDestStateVar("rLoc");
-			Location locSrc = (Location) locVarSrc.getValue();
-			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc.getValue();
-			Location locDest = (Location) locVarDest.getValue();
-			StateVar<Location> rLocSrc = new StateVar<>("rLoc", locSrc);
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc);
+				&& trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
+			IStateVarValue locVarSrc = trans.getSrcStateVarValue(mrLocSrcDef);
+			IStateVarValue speedVarSrc = trans.getSrcStateVarValue(mrSpeedSrcDef);
+			IStateVarValue locVarDest = trans.getDestStateVarValue(mrLocDestDef);
+			Location locSrc = (Location) locVarSrc;
+			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc;
+			Location locDest = (Location) locVarDest;
+			StateVar<Location> rLocSrc = new StateVar<>(mrLocSrcDef.getName(), locSrc);
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedSrcDef.getName(), speedSrc);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<Location> rLocDest = new StateVar<>("rLoc", locDest);
+			StateVar<Location> rLocDest = new StateVar<>(mrLocDestDef.getName(), locDest);
 			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
 		}
 		return 0;

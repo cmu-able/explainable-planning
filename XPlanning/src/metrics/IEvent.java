@@ -1,7 +1,7 @@
 package metrics;
 
 import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 
 /**
  * {@link IEvent} is an interface to an event.
@@ -11,5 +11,5 @@ import exceptions.VarNameNotFoundException;
  */
 public interface IEvent {
 
-	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException, AttributeNameNotFoundException;
+	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;
 }

@@ -2,12 +2,11 @@ package metrics;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
-import factors.StateVar;
+import factors.StateVarDefinition;
 
 /**
  * {@link Transition} represents a (s, a, s') transition.
@@ -22,33 +21,36 @@ public class Transition {
 	 */
 	private volatile int hashCode;
 
-	private Map<String, StateVar<IStateVarValue>> mSrcStateVars = new HashMap<>();
-	private Map<String, StateVar<IStateVarValue>> mDestStateVars = new HashMap<>();
+	private Map<StateVarDefinition<? extends IStateVarValue>, IStateVarValue> mSrcStateVars = new HashMap<>();
+	private Map<StateVarDefinition<? extends IStateVarValue>, IStateVarValue> mDestStateVars = new HashMap<>();
 	private IAction mAction;
 
-	public Transition(Set<StateVar<IStateVarValue>> srcStateVars, IAction action,
-			Set<StateVar<IStateVarValue>> destStateVars) {
-		for (StateVar<IStateVarValue> var : srcStateVars) {
-			mSrcStateVars.put(var.getName(), var);
-		}
-		for (StateVar<IStateVarValue> var : destStateVars) {
-			mDestStateVars.put(var.getName(), var);
-		}
+	public Transition(IAction action) {
 		mAction = action;
 	}
 
-	public StateVar<IStateVarValue> getSrcStateVar(String srcVarName) throws VarNameNotFoundException {
-		if (!mSrcStateVars.containsKey(srcVarName)) {
-			throw new VarNameNotFoundException(srcVarName);
-		}
-		return mSrcStateVars.get(srcVarName);
+	public <E extends IStateVarValue> void addSrcStateVarValue(StateVarDefinition<E> stateVarDef, E value) {
+		mSrcStateVars.put(stateVarDef, value);
 	}
 
-	public StateVar<IStateVarValue> getDestStateVar(String destVarName) throws VarNameNotFoundException {
-		if (!mDestStateVars.containsKey(destVarName)) {
-			throw new VarNameNotFoundException(destVarName);
+	public <E extends IStateVarValue> void addDestStateVarValue(StateVarDefinition<E> stateVarDef, E value) {
+		mDestStateVars.put(stateVarDef, value);
+	}
+
+	public IStateVarValue getSrcStateVarValue(StateVarDefinition<? extends IStateVarValue> srcVarDef)
+			throws VarNotFoundException {
+		if (!mSrcStateVars.containsKey(srcVarDef)) {
+			throw new VarNotFoundException(srcVarDef);
 		}
-		return mDestStateVars.get(destVarName);
+		return mSrcStateVars.get(srcVarDef);
+	}
+
+	public IStateVarValue getDestStateVarValue(StateVarDefinition<? extends IStateVarValue> destVarDef)
+			throws VarNotFoundException {
+		if (!mDestStateVars.containsKey(destVarDef)) {
+			throw new VarNotFoundException(destVarDef);
+		}
+		return mDestStateVars.get(destVarDef);
 	}
 
 	public IAction getAction() {

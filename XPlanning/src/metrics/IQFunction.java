@@ -2,7 +2,7 @@ package metrics;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 
 /**
  * {@link IQFunction} is an interface to a function Q_i: S x A x S -> R>=0 that characterizes the QA i at a single
@@ -14,5 +14,5 @@ import exceptions.VarNameNotFoundException;
 public interface IQFunction {
 
 	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException;
+			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException;
 }

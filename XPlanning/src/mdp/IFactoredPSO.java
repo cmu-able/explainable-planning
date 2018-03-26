@@ -3,6 +3,8 @@ package mdp;
 import java.util.Set;
 
 import exceptions.EffectClassNotFoundException;
+import factors.IStateVarValue;
+import factors.StateVarDefinition;
 
 /**
  * {@link IFactoredPSO} is an interface to a "factored" probabilistic STRIPS operator representation.
@@ -13,6 +15,8 @@ import exceptions.EffectClassNotFoundException;
  *
  */
 public interface IFactoredPSO {
+
+	public Set<IStateVarValue> getApplicableValues(StateVarDefinition<IStateVarValue> stateVarDef);
 
 	public Set<EffectClass> getIndependentEffectClasses();
 

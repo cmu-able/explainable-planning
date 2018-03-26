@@ -4,7 +4,7 @@ import java.util.Map;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 
 /**
  * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard
@@ -33,7 +33,7 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 
 	@Override
 	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		for (Map.Entry<IEvent, Double> entry : mMetric.entrySet()) {
 			IEvent event = entry.getKey();
 			if (event.hasEventOccurred(trans)) {

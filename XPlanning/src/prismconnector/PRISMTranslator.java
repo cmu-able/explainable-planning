@@ -1,5 +1,6 @@
 package prismconnector;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,7 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.EffectClassNotFoundException;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
+import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarBoolean;
 import factors.IStateVarDouble;
@@ -25,6 +27,9 @@ import mdp.Policy;
 import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
+import metrics.IStandardMetricQFunction;
+import metrics.Transition;
+import metrics.TransitionDefinition;
 import preferences.ILinearCostFunction;
 
 public class PRISMTranslator {
@@ -42,7 +47,7 @@ public class PRISMTranslator {
 		mThreeParamRewards = threeParamRewards;
 	}
 
-	public String getMDPTranslation() throws VarNameNotFoundException, EffectClassNotFoundException {
+	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
 		String modules = buildModules();
 		String rewards = buildRewards();
@@ -135,10 +140,10 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @return module {name} {vars decl} {commands} endmodule ...
-	 * @throws VarNameNotFoundException
+	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModules() throws VarNameNotFoundException, EffectClassNotFoundException {
+	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
 		Set<EffectClass> allEffectClasses = new HashSet<>();
 		for (IAction action : mXMDP.getActions()) {
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
@@ -189,12 +194,12 @@ public class PRISMTranslator {
 	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
 	 *            map
 	 * @return module {name} {vars decl} {commands} endmodule
-	 * @throws VarNameNotFoundException
+	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 */
 	private String buildModule(String name, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
 			Map<IAction, EffectClass> overlappingEffectActions)
-			throws VarNameNotFoundException, EffectClassNotFoundException {
+			throws VarNotFoundException, EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(name);
@@ -213,22 +218,21 @@ public class PRISMTranslator {
 	 * @param moduleVarDefs
 	 *            Variables of the module
 	 * @return varDecl ...
-	 * @throws VarNameNotFoundException
+	 * @throws VarNotFoundException
 	 */
 	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> moduleVarDefs)
-			throws VarNameNotFoundException {
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarDefs) {
-			String varName = stateVarDef.getName();
-			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialStateVar(varName);
+			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialStateVar(stateVarDef);
 			IStateVarValue iniValue = iniStateVar.getValue();
 			String varDecl;
 			if (iniValue instanceof IStateVarBoolean) {
-				varDecl = buildBooleanModuleVarDecl(varName, (IStateVarBoolean) iniValue);
+				varDecl = buildBooleanModuleVarDecl(stateVarDef, (IStateVarBoolean) iniValue);
 			} else if (iniValue instanceof IStateVarInt) {
-				varDecl = buildIntModuleVarDecl(varName, (IStateVarInt) iniValue);
+				varDecl = buildIntModuleVarDecl(stateVarDef, (IStateVarInt) iniValue);
 			} else {
-				varDecl = buildModuleVarDecl(stateVarDef, iniStateVar);
+				varDecl = buildModuleVarDecl(stateVarDef, iniValue);
 			}
 			builder.append(INDENT);
 			builder.append(varDecl);
@@ -240,11 +244,12 @@ public class PRISMTranslator {
 	/**
 	 * 
 	 * @param varDef
-	 * @param iniVar
+	 * @param iniValue
 	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value};
 	 */
-	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, StateVar<IStateVarValue> iniVar) {
+	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, IStateVarValue iniValue) {
 		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(varDef);
+		StateVar<IStateVarValue> iniVar = new StateVar<>(varDef.getName(), iniValue);
 		Integer encodedValue = mEncodings.getEncodedIntValue(iniVar);
 		StringBuilder builder = new StringBuilder();
 		builder.append(varDef.getName());
@@ -258,36 +263,48 @@ public class PRISMTranslator {
 
 	/**
 	 * 
-	 * @param varName
-	 * @param iniVarBoolean
+	 * @param varDef
+	 * @param iniValBoolean
 	 * @return {varName} : bool init {initial value};
 	 */
-	private String buildBooleanModuleVarDecl(String varName, IStateVarBoolean iniVarBoolean) {
+	private String buildBooleanModuleVarDecl(StateVarDefinition<IStateVarValue> varDef,
+			IStateVarBoolean iniValBoolean) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(varName);
+		builder.append(varDef.getName());
 		builder.append(" : bool init ");
-		builder.append(iniVarBoolean.getValue() ? "true" : "false");
+		builder.append(iniValBoolean.getValue() ? "true" : "false");
 		builder.append(";");
 		return builder.toString();
 	}
 
 	/**
 	 * 
-	 * @param varName
-	 * @param iniVarInt
+	 * @param varDef
+	 * @param iniValInt
 	 * @return {varName} : [{min}..{max}] init {initial value};
 	 */
-	private String buildIntModuleVarDecl(String varName, IStateVarInt iniVarInt) {
+	private String buildIntModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, IStateVarInt iniValInt) {
 		StringBuilder builder = new StringBuilder();
-		builder.append(varName);
+		builder.append(varDef.getName());
+		StateVarDefinition<IStateVarInt> intVarDef = getIntStateVarDef(varDef);
+		IStateVarInt lowerBound = Collections.max(intVarDef.getPossibleValues());
+		IStateVarInt uppberBound = Collections.max(intVarDef.getPossibleValues());
 		builder.append(" : [");
-		builder.append(iniVarInt.getLowerBound());
+		builder.append(lowerBound.getValue());
 		builder.append("..");
-		builder.append(iniVarInt.getUpperBound());
+		builder.append(uppberBound.getValue());
 		builder.append("] init ");
-		builder.append(iniVarInt.getValue());
+		builder.append(iniValInt.getValue());
 		builder.append(";");
 		return builder.toString();
+	}
+
+	private StateVarDefinition<IStateVarInt> getIntStateVarDef(StateVarDefinition<IStateVarValue> varDef) {
+		Set<IStateVarInt> possibleValues = new HashSet<>();
+		for (IStateVarValue value : varDef.getPossibleValues()) {
+			possibleValues.add((IStateVarInt) value);
+		}
+		return new StateVarDefinition<>(varDef.getName(), possibleValues);
 	}
 
 	/**
@@ -428,8 +445,31 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
-	private String buildRewardItems(IQFunction qFunc, ILinearCostFunction linearCostFunc, double scalingConst) {
-		// TODO
+	private String buildRewardItems(IStandardMetricQFunction qFunc, ILinearCostFunction linearCostFunc,
+			double scalingConst) throws EffectClassNotFoundException {
+		TransitionDefinition transDef = qFunc.getTransitionDefinition();
+		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
+		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
+		ActionDefinition<IAction> actionDef = transDef.getActionDef();
+
+		for (IAction action : actionDef.getActions()) {
+			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+
+			for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
+				Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
+
+				for (IStateVarValue srcVal : applicableVals) {
+					for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+						for (IStateVarValue destVal : destVarDef.getPossibleValues()) {
+							Transition trans = new Transition(action);
+							trans.addSrcStateVarValue(srcVarDef, srcVal);
+							trans.addDestStateVarValue(destVarDef, destVal);
+						}
+					}
+				}
+			}
+		}
+
 		StringBuilder builder = new StringBuilder();
 		return builder.toString();
 	}

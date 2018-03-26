@@ -6,11 +6,7 @@ package factors;
  * @author rsukkerd
  *
  */
-public interface IStateVarInt extends IStateVarValue {
+public interface IStateVarInt extends IStateVarValue, Comparable<IStateVarInt> {
 
 	public int getValue();
-
-	public int getLowerBound();
-
-	public int getUpperBound();
 }

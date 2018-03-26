@@ -5,7 +5,7 @@ import java.util.Map;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import metrics.IEvent;
 import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;
@@ -45,7 +45,7 @@ public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 
 	@Override
 	public double getValue(Transition trans)
-			throws VarNameNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		return mNonStdQFn.getValue(trans);
 	}
 

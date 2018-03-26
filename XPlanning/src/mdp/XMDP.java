@@ -3,7 +3,7 @@ package mdp;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
@@ -62,22 +62,24 @@ public class XMDP {
 		return mInitialState;
 	}
 
-	public StateVar<IStateVarValue> getInitialStateVar(String varName) throws VarNameNotFoundException {
-		if (!mInitStateVarMap.containsKey(varName)) {
-			throw new VarNameNotFoundException(varName);
+	public StateVar<IStateVarValue> getInitialStateVar(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		if (!mInitStateVarMap.containsKey(stateVarDef.getName())) {
+			throw new VarNotFoundException(stateVarDef);
 		}
-		return mInitStateVarMap.get(varName);
+		return mInitStateVarMap.get(stateVarDef.getName());
 	}
 
 	public Set<StateVar<IStateVarValue>> getGoal() {
 		return mGoal;
 	}
 
-	public StateVar<IStateVarValue> getGoalStateVar(String varName) throws VarNameNotFoundException {
-		if (!mGoalStateVarMap.containsKey(varName)) {
-			throw new VarNameNotFoundException(varName);
+	public StateVar<IStateVarValue> getGoalStateVar(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		if (!mGoalStateVarMap.containsKey(stateVarDef.getName())) {
+			throw new VarNotFoundException(stateVarDef);
 		}
-		return mGoalStateVarMap.get(varName);
+		return mGoalStateVarMap.get(stateVarDef.getName());
 	}
 
 	public Set<IAction> getActions() {

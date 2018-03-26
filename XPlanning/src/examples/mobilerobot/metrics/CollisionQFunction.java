@@ -1,6 +1,6 @@
 package examples.mobilerobot.metrics;
 
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import metrics.ICountQFunction;
 import metrics.IEvent;
 import metrics.Transition;
@@ -30,7 +30,7 @@ public class CollisionQFunction implements ICountQFunction {
 	}
 
 	@Override
-	public double getValue(Transition trans) throws VarNameNotFoundException {
+	public double getValue(Transition trans) throws VarNotFoundException {
 		return mCollisionEvent.hasEventOccurred(trans) ? 1 : 0;
 	}
 

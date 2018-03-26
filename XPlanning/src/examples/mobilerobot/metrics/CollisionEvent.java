@@ -3,7 +3,7 @@ package examples.mobilerobot.metrics;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
-import exceptions.VarNameNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import metrics.IEvent;
@@ -38,11 +38,11 @@ public class CollisionEvent implements IEvent {
 	}
 
 	@Override
-	public boolean hasEventOccurred(Transition trans) throws VarNameNotFoundException {
-		if (trans.getSrcStateVar("rSpeed").getValue() instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVar("rBumped").getValue() instanceof RobotBumped) {
-			StateVar<IStateVarValue> speedVarSrc = trans.getSrcStateVar("rSpeed");
-			StateVar<IStateVarValue> bumpedVarDest = trans.getDestStateVar("rBumped");
+	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException {
+		if (trans.getSrcStateVarValue("rSpeed").getValue() instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
+				&& trans.getDestStateVarValue("rBumped").getValue() instanceof RobotBumped) {
+			StateVar<IStateVarValue> speedVarSrc = trans.getSrcStateVarValue("rSpeed");
+			StateVar<IStateVarValue> bumpedVarDest = trans.getDestStateVarValue("rBumped");
 			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc.getValue();
 			RobotBumped bumpedDest = (RobotBumped) bumpedVarDest.getValue();
 			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>("rSpeed", speedSrc);

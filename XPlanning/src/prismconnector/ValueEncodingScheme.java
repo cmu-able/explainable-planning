@@ -22,10 +22,8 @@ public class ValueEncodingScheme {
 	public ValueEncodingScheme(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
 		mEncodings = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
-			String varName = stateVarDef.getName();
-			Set<IStateVarValue> possibleValues = stateVarDef.getPossibleValues();
-			Map<IStateVarValue, Integer> encoding = buildIntEncoding(possibleValues);
-			mEncodings.put(varName, encoding);
+			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
+			mEncodings.put(stateVarDef.getName(), encoding);
 		}
 	}
 
@@ -39,11 +37,15 @@ public class ValueEncodingScheme {
 		return encoding;
 	}
 
-	public Integer getEncodedIntValue(StateVar<IStateVarValue> stateVar) {
+	public <E extends IStateVarValue> Integer getEncodedIntValue(StateVarDefinition<E> stateVarDef, E value) {
+		return mEncodings.get(stateVarDef.getName()).get(value);
+	}
+
+	public Integer getEncodedIntValue(StateVar<? extends IStateVarValue> stateVar) {
 		return mEncodings.get(stateVar.getName()).get(stateVar.getValue());
 	}
 
-	public Integer getMaximumEncodedIntValue(StateVarDefinition<IStateVarValue> stateVarDef) {
+	public Integer getMaximumEncodedIntValue(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		Map<IStateVarValue, Integer> encoding = mEncodings.get(stateVarDef.getName());
 		return encoding.size() - 1;
 	}

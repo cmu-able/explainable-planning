@@ -9,7 +9,7 @@ import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
 /**
- * {@link Transition} represents a (s, a, s') transition.
+ * {@link Transition} represents a factored (s, a, s') transition.
  * 
  * @author rsukkerd
  *

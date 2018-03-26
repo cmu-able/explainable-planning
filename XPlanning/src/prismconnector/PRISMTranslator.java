@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.AttributeNameNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -96,7 +98,7 @@ public class PRISMTranslator {
 				if (value instanceof IStateVarBoolean || value instanceof IStateVarInt) {
 					continue;
 				}
-				Integer encodedValue = mEncodings.getEncodedIntValue(new StateVar<IStateVarValue>(varName, value));
+				Integer encodedValue = mEncodings.getEncodedIntValue(stateVarDef, value);
 				builder.append("const int ");
 				builder.append(varName);
 				builder.append("_");
@@ -123,8 +125,7 @@ public class PRISMTranslator {
 		builder.append(formulaName);
 		builder.append(" = ");
 		for (IStateVarDouble value : stateVarDef.getPossibleValues()) {
-			StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef.getName(), value);
-			Integer encodedInt = mEncodings.getEncodedIntValue(stateVar);
+			Integer encodedInt = mEncodings.getEncodedIntValue(stateVarDef, value);
 			builder.append("(");
 			builder.append(stateVarDef.getName());
 			builder.append("=");
@@ -249,8 +250,7 @@ public class PRISMTranslator {
 	 */
 	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, IStateVarValue iniValue) {
 		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(varDef);
-		StateVar<IStateVarValue> iniVar = new StateVar<>(varDef.getName(), iniValue);
-		Integer encodedValue = mEncodings.getEncodedIntValue(iniVar);
+		Integer encodedValue = mEncodings.getEncodedIntValue(varDef, iniValue);
 		StringBuilder builder = new StringBuilder();
 		builder.append(varDef.getName());
 		builder.append(" : [0..");
@@ -446,11 +446,14 @@ public class PRISMTranslator {
 	}
 
 	private String buildRewardItems(IStandardMetricQFunction qFunc, ILinearCostFunction linearCostFunc,
-			double scalingConst) throws EffectClassNotFoundException {
+			double scalingConst)
+			throws EffectClassNotFoundException, VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
 		TransitionDefinition transDef = qFunc.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
 		ActionDefinition<IAction> actionDef = transDef.getActionDef();
+
+		StringBuilder builder = new StringBuilder();
 
 		for (IAction action : actionDef.getActions()) {
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
@@ -464,13 +467,21 @@ public class PRISMTranslator {
 							Transition trans = new Transition(action);
 							trans.addSrcStateVarValue(srcVarDef, srcVal);
 							trans.addDestStateVarValue(destVarDef, destVal);
+
+							double qValue = qFunc.getValue(trans);
+							double cost = linearCostFunc.getCost(qValue);
+
+							builder.append(srcVarDef.getName());
+							builder.append("Prev");
+							builder.append("=");
+							Integer encodedSrcVal = mEncodings.getEncodedIntValue(srcVarDef, srcVal);
+							builder.append(encodedSrcVal);
+							// TODO
 						}
 					}
 				}
 			}
 		}
-
-		StringBuilder builder = new StringBuilder();
 		return builder.toString();
 	}
 

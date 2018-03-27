@@ -84,11 +84,6 @@ public class RobotLocationActionDescription implements IActionDescription {
 	}
 
 	@Override
-	public Set<Effect> getPossibleEffects() {
-		return mrLocActionDesc.getPossibleEffects();
-	}
-
-	@Override
 	public EffectClass getEffectClass() {
 		return mrLocActionDesc.getEffectClass();
 	}

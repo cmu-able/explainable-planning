@@ -88,11 +88,6 @@ public class RobotBumpedActionDescription implements IActionDescription {
 	}
 
 	@Override
-	public Set<Effect> getPossibleEffects() {
-		return mrBumpedActionDesc.getPossibleEffects();
-	}
-
-	@Override
 	public EffectClass getEffectClass() {
 		return mrBumpedActionDesc.getEffectClass();
 	}

@@ -21,6 +21,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
+import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
@@ -30,7 +31,6 @@ import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.IStandardMetricQFunction;
-import metrics.Transition;
 import metrics.TransitionDefinition;
 import preferences.ILinearCostFunction;
 
@@ -164,7 +164,7 @@ public class PRISMTranslator {
 
 			Set<StateVarDefinition<IStateVarValue>> moduleVarDefs = new HashSet<>();
 			Map<IAction, EffectClass> overlappingEffectActions = new HashMap<>();
-			moduleVarDefs.addAll(effectClass.getAffectedVarDefs());
+			moduleVarDefs.addAll(effectClass.getAllVarDefs());
 			overlappingEffectActions.put(action, effectClass);
 
 			while (iter.hasNext()) {
@@ -172,7 +172,7 @@ public class PRISMTranslator {
 				IAction nextAction = nextEffectClass.getAction();
 
 				if (!action.equals(nextAction) && effectClass.overlaps(nextEffectClass)) {
-					moduleVarDefs.addAll(nextEffectClass.getAffectedVarDefs());
+					moduleVarDefs.addAll(nextEffectClass.getAllVarDefs());
 					overlappingEffectActions.put(nextAction, nextEffectClass);
 					iter.remove();
 				}
@@ -455,35 +455,84 @@ public class PRISMTranslator {
 		ActionDefinition<IAction> actionDef = transDef.getActionDef();
 
 		StringBuilder builder = new StringBuilder();
+		String actionTypeName = actionDef.getName();
 
 		for (IAction action : actionDef.getActions()) {
+			String actionName = action.getName();
+			builder.append(actionTypeName);
+			builder.append("=");
+			builder.append(actionName);
+
 			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
 
+			Map<StateVarDefinition<IStateVarValue>, Iterator<IStateVarValue>> srcIterMap = new HashMap<>();
+			Map<StateVarDefinition<IStateVarValue>, Iterator<IStateVarValue>> destIterMap = new HashMap<>();
+
+			// FIXME: use recursion
+			Map<StateVarDefinition<IStateVarValue>, IStateVarValue> srcValues = new HashMap<>();
+
 			for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
-				Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
+				Iterator<IStateVarValue> srcValIter;
 
-				for (IStateVarValue srcVal : applicableVals) {
-					for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
-						for (IStateVarValue destVal : destVarDef.getPossibleValues()) {
-							Transition trans = new Transition(action);
-							trans.addSrcStateVarValue(srcVarDef, srcVal);
-							trans.addDestStateVarValue(destVarDef, destVal);
+				if (!srcIterMap.containsKey(srcVarDef)) {
+					Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
+					srcValIter = applicableVals.iterator();
+					srcIterMap.put(srcVarDef, srcValIter);
+				} else {
+					srcValIter = srcIterMap.get(srcVarDef);
+				}
 
-							double qValue = qFunc.getValue(trans);
-							double cost = linearCostFunc.getCost(qValue);
+				if (srcValIter.hasNext()) {
+					IStateVarValue srcValue = srcValIter.next();
+					builder.append(" & ");
+					builder.append(srcVarDef.getName());
+					builder.append("Src");
+					builder.append("=");
+					Integer encodedSrcVal = mEncodings.getEncodedIntValue(srcVarDef, srcValue);
+					builder.append(encodedSrcVal);
 
-							builder.append(srcVarDef.getName());
-							builder.append("Prev");
-							builder.append("=");
-							Integer encodedSrcVal = mEncodings.getEncodedIntValue(srcVarDef, srcVal);
-							builder.append(encodedSrcVal);
-							// TODO
-						}
-					}
+					srcValues.put(srcVarDef, srcValue);
+				}
+			}
+
+			for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+				Iterator<IStateVarValue> destValIter;
+
+				if (!destIterMap.containsKey(destVarDef)) {
+					Discriminant discriminant = getDiscriminant(destVarDef, srcValues, actionPSO);
+					Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant);
+					destValIter = possibleDestVals.iterator();
+					destIterMap.put(destVarDef, destValIter);
+				} else {
+					destValIter = destIterMap.get(destVarDef);
+				}
+
+				if (destValIter.hasNext()) {
+					IStateVarValue destVal = destValIter.next();
+					builder.append(" & ");
+					builder.append(destVarDef.getName());
+					builder.append("=");
+					Integer encodedDestVal = mEncodings.getEncodedIntValue(destVarDef, destVal);
+					builder.append(encodedDestVal);
 				}
 			}
 		}
 		return builder.toString();
+	}
+
+	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
+			Map<StateVarDefinition<IStateVarValue>, IStateVarValue> srcValues, IFactoredPSO actionPSO) {
+		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
+		Discriminant discriminant = new Discriminant();
+		for (Entry<StateVarDefinition<IStateVarValue>, IStateVarValue> e : srcValues.entrySet()) {
+			StateVarDefinition<IStateVarValue> varDef = e.getKey();
+			IStateVarValue value = e.getValue();
+			if (discrClass.contains(varDef)) {
+				StateVar<IStateVarValue> discrVar = new StateVar<>(varDef, value);
+				discriminant.add(discrVar);
+			}
+		}
+		return discriminant;
 	}
 
 }

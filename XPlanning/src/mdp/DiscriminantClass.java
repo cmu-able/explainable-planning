@@ -8,25 +8,18 @@ import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
-/**
- * {@link EffectClass} is a class of state variables that are dependently affected by a particular action. An action can
- * have different classes of effects that occur independently of each other.
- * 
- * @author rsukkerd
- *
- */
-public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>> {
+public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarValue>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<IStateVarValue>> mEffectClass;
+	private Set<StateVarDefinition<IStateVarValue>> mDiscriminantClass;
 	private IAction mAction;
 
-	public EffectClass(IAction action) {
-		mEffectClass = new HashSet<>();
+	public DiscriminantClass(IAction action) {
+		mDiscriminantClass = new HashSet<>();
 		mAction = action;
 	}
 
@@ -34,29 +27,20 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		Set<IStateVarValue> genericValues = new HashSet<>(stateVarDef.getPossibleValues());
 		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
 				genericValues);
-		mEffectClass.add(genericVarDef);
-	}
-
-	public Set<StateVarDefinition<IStateVarValue>> getAllVarDefs() {
-		return mEffectClass;
+		mDiscriminantClass.add(genericVarDef);
 	}
 
 	public IAction getAction() {
 		return mAction;
 	}
 
-	public boolean overlaps(EffectClass other) {
-		for (StateVarDefinition<IStateVarValue> varDef : other) {
-			if (mEffectClass.contains(varDef)) {
-				return true;
-			}
-		}
-		return false;
+	public boolean contains(StateVarDefinition<IStateVarValue> stateVarDef) {
+		return mDiscriminantClass.contains(stateVarDef);
 	}
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return mEffectClass.iterator();
+		return mDiscriminantClass.iterator();
 	}
 
 	@Override
@@ -64,11 +48,11 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof EffectClass)) {
+		if (!(obj instanceof DiscriminantClass)) {
 			return false;
 		}
-		EffectClass effectClass = (EffectClass) obj;
-		return effectClass.mEffectClass.equals(mEffectClass) && effectClass.mAction.equals(mAction);
+		DiscriminantClass discrClass = (DiscriminantClass) obj;
+		return discrClass.mDiscriminantClass.equals(mDiscriminantClass) && discrClass.mAction.equals(mAction);
 	}
 
 	@Override
@@ -76,10 +60,11 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mEffectClass.hashCode();
+			result = 31 * result + mDiscriminantClass.hashCode();
 			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}
 		return hashCode;
 	}
+
 }

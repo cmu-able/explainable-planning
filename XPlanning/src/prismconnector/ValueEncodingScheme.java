@@ -7,12 +7,11 @@ import java.util.Set;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
-import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**
  * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's
- * supported types.
+ * supported types. In the case of 3-parameter reward function: R(s,a,s'), this is also an encoding scheme for actions.
  * 
  * @author rsukkerd
  *

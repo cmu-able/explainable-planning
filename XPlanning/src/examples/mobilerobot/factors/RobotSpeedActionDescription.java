@@ -67,11 +67,6 @@ public class RobotSpeedActionDescription implements IActionDescription {
 	}
 
 	@Override
-	public Set<Effect> getPossibleEffects() {
-		return mrSpeedActionDesc.getPossibleEffects();
-	}
-
-	@Override
 	public EffectClass getEffectClass() {
 		return mrSpeedActionDesc.getEffectClass();
 	}

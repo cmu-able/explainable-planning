@@ -22,4 +22,8 @@ public interface IFactoredPSO {
 
 	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException;
 
+	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef);
+
+	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
+			Discriminant discriminant);
 }

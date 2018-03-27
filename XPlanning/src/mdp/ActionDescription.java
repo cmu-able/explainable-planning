@@ -1,11 +1,9 @@
 package mdp;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
@@ -27,19 +25,14 @@ public class ActionDescription implements IActionDescription {
 
 	private Map<Discriminant, ProbabilisticEffect> mActionDescription;
 	private EffectClass mEffectClass;
-	private Set<Effect> mPossibleEffects;
 
 	public ActionDescription(EffectClass effectClass) {
 		mActionDescription = new HashMap<>();
 		mEffectClass = effectClass;
-		mPossibleEffects = new HashSet<>();
 	}
 
 	public void put(Discriminant discriminant, ProbabilisticEffect probEffect) {
 		mActionDescription.put(discriminant, probEffect);
-		for (Entry<Effect, Double> e : probEffect) {
-			mPossibleEffects.add(e.getKey());
-		}
 	}
 
 	@Override
@@ -54,11 +47,6 @@ public class ActionDescription implements IActionDescription {
 			throw new DiscriminantNotFoundException(discriminant);
 		}
 		return mActionDescription.get(discriminant).getProbability(effect);
-	}
-
-	@Override
-	public Set<Effect> getPossibleEffects() {
-		return mPossibleEffects;
 	}
 
 	@Override

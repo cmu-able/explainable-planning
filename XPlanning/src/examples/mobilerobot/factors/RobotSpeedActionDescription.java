@@ -41,7 +41,7 @@ public class RobotSpeedActionDescription implements IActionDescription {
 		Discriminant emptyDiscriminant = new Discriminant();
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect();
 		Effect newSpeedEffect = new Effect();
-		StateVar<RobotSpeed> newSpeed = new StateVar<>(rSpeedDef.getName(), setSpeed.getTargetSpeed());
+		StateVar<RobotSpeed> newSpeed = new StateVar<>(rSpeedDef, setSpeed.getTargetSpeed());
 		newSpeedEffect.add(newSpeed);
 		rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
 		mrSpeedActionDesc.put(emptyDiscriminant, rSpeedProbEffect);

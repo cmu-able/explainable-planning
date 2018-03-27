@@ -13,16 +13,20 @@ public class StateVar<E extends IStateVarValue> {
 	 */
 	private volatile int hashCode;
 
-	private String mName;
+	private StateVarDefinition<E> mDefinition;
 	private E mValue;
 
-	public StateVar(String name, E value) {
-		mName = name;
+	public StateVar(StateVarDefinition<E> definition, E value) {
+		mDefinition = definition;
 		mValue = value;
 	}
 
+	public StateVarDefinition<E> getDefinition() {
+		return mDefinition;
+	}
+
 	public String getName() {
-		return mName;
+		return mDefinition.getName();
 	}
 
 	public E getValue() {
@@ -38,7 +42,7 @@ public class StateVar<E extends IStateVarValue> {
 			return false;
 		}
 		StateVar<?> var = (StateVar<?>) obj;
-		return var.mName.equals(mName) && var.mValue.equals(mValue);
+		return var.mDefinition.equals(mDefinition) && var.mValue.equals(mValue);
 	}
 
 	@Override
@@ -46,7 +50,7 @@ public class StateVar<E extends IStateVarValue> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mName.hashCode();
+			result = 31 * result + mDefinition.hashCode();
 			result = 31 * result + mValue.hashCode();
 			hashCode = result;
 		}

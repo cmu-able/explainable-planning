@@ -55,10 +55,10 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 			Location locSrc = (Location) locVarSrc;
 			RobotSpeed speedSrc = (RobotSpeed) speedVarSrc;
 			Location locDest = (Location) locVarDest;
-			StateVar<Location> rLocSrc = new StateVar<>(mrLocSrcDef.getName(), locSrc);
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedSrcDef.getName(), speedSrc);
+			StateVar<Location> rLocSrc = new StateVar<>(mrLocSrcDef, locSrc);
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedSrcDef, speedSrc);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<Location> rLocDest = new StateVar<>(mrLocDestDef.getName(), locDest);
+			StateVar<Location> rLocDest = new StateVar<>(mrLocDestDef, locDest);
 			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
 		}
 		return 0;

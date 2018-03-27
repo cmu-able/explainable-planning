@@ -6,6 +6,7 @@ import java.util.Set;
 
 import factors.IStateVarValue;
 import factors.StateVar;
+import factors.StateVarDefinition;
 
 /**
  * {@link Effect} is a set of state variables whose values changed from their previous values in the previous stage.
@@ -27,7 +28,8 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) {
-		StateVar<IStateVarValue> genericStateVar = new StateVar<>(stateVar.getName(), stateVar.getValue());
+		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
+		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
 		mEffect.add(genericStateVar);
 	}
 

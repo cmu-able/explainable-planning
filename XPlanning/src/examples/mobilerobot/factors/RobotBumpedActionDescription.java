@@ -49,8 +49,8 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect();
 			Effect bumpedEffect = new Effect();
 			Effect notBumpedEffect = new Effect();
-			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(true));
-			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDef.getName(), new RobotBumped(false));
+			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDef, new RobotBumped(true));
+			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDef, new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 

@@ -48,8 +48,8 @@ public class RobotLocationActionDescription implements IActionDescription {
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect();
 			Effect newLocEffect = new Effect();
 			Effect oldLocEffect = new Effect();
-			StateVar<Location> newLoc = new StateVar<>(rLocDef.getName(), moveTo.getDestination());
-			StateVar<Location> oldLoc = new StateVar<>(rLocDef.getName(), rLocSrc.getValue());
+			StateVar<Location> newLoc = new StateVar<>(rLocDef, moveTo.getDestination());
+			StateVar<Location> oldLoc = new StateVar<>(rLocDef, rLocSrc.getValue());
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 

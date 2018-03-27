@@ -6,6 +6,7 @@ import java.util.Set;
 
 import factors.IStateVarValue;
 import factors.StateVar;
+import factors.StateVarDefinition;
 
 /**
  * {@link Discriminant} determines what effect an action will have. Each action has a finite set of mutually exclusive
@@ -31,7 +32,8 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) {
-		StateVar<IStateVarValue> genericStateVar = new StateVar<>(stateVar.getName(), stateVar.getValue());
+		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
+		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
 		mDiscriminant.add(genericStateVar);
 	}
 

@@ -45,7 +45,7 @@ public class PRISMTranslator {
 
 	public PRISMTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs());
+		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs(), mXMDP.getActionDefs());
 		mThreeParamRewards = threeParamRewards;
 	}
 
@@ -364,7 +364,7 @@ public class PRISMTranslator {
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : discriminant) {
 			String varName = var.getName();
-			Integer encodedValue = mEncodings.getEncodedIntValue(var);
+			Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), var.getValue());
 			if (!first) {
 				builder.append(" & ");
 			} else {
@@ -427,7 +427,8 @@ public class PRISMTranslator {
 	 */
 	private String buildVariableUpdate(StateVar<IStateVarValue> updatedStateVar) {
 		String varName = updatedStateVar.getName();
-		Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar);
+		Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar.getDefinition(),
+				updatedStateVar.getValue());
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
 		builder.append(varName);

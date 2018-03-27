@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import factors.ActionDefinition;
+import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -17,20 +19,28 @@ import factors.StateVarDefinition;
  */
 public class ValueEncodingScheme {
 
-	private Map<String, Map<IStateVarValue, Integer>> mEncodings;
+	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings;
+	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings;
 
-	public ValueEncodingScheme(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
-		mEncodings = new HashMap<>();
+	public ValueEncodingScheme(Set<StateVarDefinition<IStateVarValue>> stateVarDefs,
+			Set<ActionDefinition<IAction>> actionDefs) {
+		mStateVarEncodings = new HashMap<>();
+		mActionEncodings = new HashMap<>();
+
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
 			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
-			mEncodings.put(stateVarDef.getName(), encoding);
+			mStateVarEncodings.put(stateVarDef, encoding);
+		}
+		for (ActionDefinition<IAction> actionDef : actionDefs) {
+			Map<IAction, Integer> encoding = buildIntEncoding(actionDef.getActions());
+			mActionEncodings.put(actionDef, encoding);
 		}
 	}
 
-	private Map<IStateVarValue, Integer> buildIntEncoding(Set<IStateVarValue> possibleValues) {
-		Map<IStateVarValue, Integer> encoding = new HashMap<>();
+	private <E> Map<E, Integer> buildIntEncoding(Set<E> possibleValues) {
+		Map<E, Integer> encoding = new HashMap<>();
 		int e = 0;
-		for (IStateVarValue value : possibleValues) {
+		for (E value : possibleValues) {
 			encoding.put(value, e);
 			e++;
 		}
@@ -38,15 +48,20 @@ public class ValueEncodingScheme {
 	}
 
 	public <E extends IStateVarValue> Integer getEncodedIntValue(StateVarDefinition<E> stateVarDef, E value) {
-		return mEncodings.get(stateVarDef.getName()).get(value);
+		return mStateVarEncodings.get(stateVarDef).get(value);
 	}
 
-	public Integer getEncodedIntValue(StateVar<? extends IStateVarValue> stateVar) {
-		return mEncodings.get(stateVar.getName()).get(stateVar.getValue());
+	public <E extends IAction> Integer getEncodedIntValue(ActionDefinition<E> actionDef, E action) {
+		return mActionEncodings.get(actionDef).get(action);
 	}
 
 	public Integer getMaximumEncodedIntValue(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		Map<IStateVarValue, Integer> encoding = mEncodings.get(stateVarDef.getName());
+		Map<IStateVarValue, Integer> encoding = mStateVarEncodings.get(stateVarDef);
+		return encoding.size() - 1;
+	}
+
+	public Integer getMaximumEncodedIntValue(ActionDefinition<? extends IAction> actionDef) {
+		Map<IAction, Integer> encoding = mActionEncodings.get(actionDef);
 		return encoding.size() - 1;
 	}
 }

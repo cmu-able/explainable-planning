@@ -1,6 +1,11 @@
 package examples.mobilerobot.metrics;
 
+import examples.mobilerobot.factors.MoveToAction;
+import examples.mobilerobot.factors.RobotBumped;
+import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNotFoundException;
+import factors.ActionDefinition;
+import factors.StateVarDefinition;
 import metrics.ICountQFunction;
 import metrics.IEvent;
 import metrics.Transition;
@@ -20,8 +25,9 @@ public class CollisionQFunction implements ICountQFunction {
 
 	private CollisionEvent mCollisionEvent;
 
-	public CollisionQFunction(double speedThreshold) {
-		mCollisionEvent = new CollisionEvent(speedThreshold);
+	public CollisionQFunction(StateVarDefinition<RobotSpeed> rSpeedSrcDef, ActionDefinition<MoveToAction> moveToDef,
+			StateVarDefinition<RobotBumped> rBumpedDestDef, double speedThreshold) {
+		mCollisionEvent = new CollisionEvent(rSpeedSrcDef, moveToDef, rBumpedDestDef, speedThreshold);
 	}
 
 	@Override

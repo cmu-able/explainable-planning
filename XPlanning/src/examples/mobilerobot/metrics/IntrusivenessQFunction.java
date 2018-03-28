@@ -3,9 +3,14 @@ package examples.mobilerobot.metrics;
 import java.util.HashMap;
 import java.util.Map;
 
+import examples.mobilerobot.factors.Area;
+import examples.mobilerobot.factors.Location;
+import examples.mobilerobot.factors.MoveToAction;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
+import factors.ActionDefinition;
+import factors.StateVarDefinition;
 import metrics.IEvent;
 import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;
@@ -30,11 +35,11 @@ public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 
 	private NonStandardMetricQFunction mNonStdQFn;
 
-	public IntrusivenessQFunction() {
+	public IntrusivenessQFunction(ActionDefinition<MoveToAction> moveTo, StateVarDefinition<Location> rLocDestDef) {
 		Map<IEvent, Double> metric = new HashMap<>();
-		metric.put(new NonIntrusiveMoveEvent(), NON_INTRUSIVE_PENALTY);
-		metric.put(new SemiIntrusiveMoveEvent(), SEMI_INTRUSIVE_PEANLTY);
-		metric.put(new VeryIntrusiveMoveEvent(), VERY_INTRUSIVE_PENALTY);
+		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PUBLIC), NON_INTRUSIVE_PENALTY);
+		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.SEMI_PRIVATE), SEMI_INTRUSIVE_PEANLTY);
+		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PRIVATE), VERY_INTRUSIVE_PENALTY);
 		mNonStdQFn = new NonStandardMetricQFunction(metric);
 	}
 

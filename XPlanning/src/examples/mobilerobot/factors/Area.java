@@ -10,6 +10,6 @@ import factors.IStateVarAttribute;
  */
 public enum Area implements IStateVarAttribute {
 	PUBLIC,
-	SEMI_PUBLIC,
+	SEMI_PRIVATE,
 	PRIVATE
 }

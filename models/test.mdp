@@ -1,0 +1,129 @@
+const double HALFSPEED=0.35;
+const double FULLSPEED=0.7;
+
+const double DISTANCE_L1L2=1;
+const double DISTANCE_L2L3=2;
+const double DISTANCE_L3L1=3;
+const double DISTANCE_L2L1=1;
+
+const int PUBLIC=0;
+const int SEMI_PRIVATE=1;
+const int PRIVATE=2;
+
+const int AREA_L1=SEMI_PRIVATE;
+const int AREA_L2=PUBLIC;
+const int AREA_L3=PRIVATE;
+
+const int CLEAR=0;
+const int PARTIALLY_OCCLUDED=1;
+const int BLOCKED=2;
+
+const int OCCLUSION_L1L2=CLEAR;
+const int OCCLUSION_L2L3=CLEAR;
+const int OCCLUSION_L3L1=CLEAR;
+const int OCCLUSION_L2L1=PARTIALLY_OCCLUDED;
+
+formula rSpeedDouble = (rSpeed=1) ? HALFSPEED : (rSpeed=2) ? FULLSPEED : -1;
+
+mdp
+
+module navigation
+  rLoc : [1..3] init 1;
+  navigation_go : bool init true;
+
+  [moveToL2] rLoc=1 & navigation_go -> (rLoc'=2) & (navigation_go'=false);
+  [moveToL3] rLoc=2 & navigation_go -> (rLoc'=3) & (navigation_go'=false);
+  [moveToL1] rLoc=3 & navigation_go -> (rLoc'=1) & (navigation_go'=false);
+  [moveToL1] rLoc=2 & navigation_go -> (rLoc'=1) & (navigation_go'=false);
+  [next] !navigation_go -> (navigation_go'=true);
+endmodule
+
+module bump_sensor
+  rBumped : bool init false;
+  bump_sensor_go : bool init true;
+
+  [moveToL2] rLoc=1 -> (rBumped'=false);
+  [moveToL3] rLoc=2 -> (rBumped'=false);
+  [moveToL1] rLoc=3 -> (rBumped'=false);
+  [moveToL1] rLoc=2 -> 0.2 : (rBumped'=true) + 0.8 : (rBumped'=false);
+endmodule
+
+module speed_control
+  rSpeed : [1..2] init 1;
+  speed_control_go : bool init true;
+
+  [setSpeedFull] rSpeed=1 -> (rSpeed'=2);
+  [setSpeedHalf] rSpeed=2 -> (rSpeed'=1);
+endmodule
+
+module copy_prev
+  rLocPrev : [1..3] init 1;
+  rBumpedPrev :bool init false;
+  rSpeedPrev : [1..2] init 1;
+  moveToPrev : [1..5] init 1;
+  setSpeedPrev : [1..2] init 1;
+  readyToCopy : bool init true;
+
+  [moveToL2] readyToCopy -> (rLocPrev'=rLoc) & (rBumpedPrev'=rBumped) & (moveToPrev'=1) & (readyToCopy'=false);
+  [moveToL3] readyToCopy -> (rLocPrev'=rLoc) & (rBumpedPrev'=rBumped) & (moveToPrev'=2) & (readyToCopy'=false);
+  [moveTol1] readyToCopy -> (rLocPrev'=rLoc) & (rBumpedPrev'=rBumped) & (moveToPrev'=3) & (readyToCopy'=false);
+  [setSpeedFull] readyToCopy -> (rSpeedPrev'=rSpeed) & (setSpeedPrev'=1) & (readyToCopy'=false);
+  [setSpeedFull] readyToCopy -> (rSpeedPrev'=rSpeed) & (setSpeedPrev'=2) & (readyToCopy'=false);
+  [next] !readyToCopy -> (readyToCopy'=true);
+endmodule
+
+rewards "cost"
+  moveToPrev=1 & rLocPrev=1 & rLoc=2 : 1;
+  moveToPrev=3 & rLocPrev=2 & rLoc=1 : 1;
+endrewards
+
+rewards "time"
+  [moveToL2] rLoc=1 : DISTANCE_L1L2 / rSpeedDouble;
+  [moveToL3] rLoc=2 : DISTANCE_L2L3 / rSpeedDouble;
+  [moveToL1] rLoc=3 : DISTANCE_L3L1 / rSpeedDouble;
+  [moveToL1] rLoc=2 : DISTANCE_L2L1 / rSpeedDouble;
+endrewards
+
+rewards "collision"
+  rBumped=true : 1;
+endrewards
+
+formula L1_intrusive_val = (AREA_L1=PUBLIC) ? 0 : (AREA_L1=SEMI_PRIVATE) ? 1 : 3;
+formula L2_intrusive_val = (AREA_L2=PUBLIC) ? 0 : (AREA_L2=SEMI_PRIVATE) ? 1 : 3;
+formula L3_intrusive_val = (AREA_L3=PUBLIC) ? 0 : (AREA_L3=SEMI_PRIVATE) ? 1 : 3;
+
+rewards "intrusiveness"
+  [moveToL2] rLoc=1 : L2_intrusive_val;
+  [moveToL3] rLoc=2 : L3_intrusive_val;
+  [moveToL1] rLoc=3 : L1_intrusive_val;
+  [moveToL1] rLoc=2 : L1_intrusive_val;
+endrewards
+
+const double a_time;
+const double b_time;
+const double a_collision;
+const double b_collision;
+const double a_intrusive;
+const double b_intrusive;
+
+rewards "time_cost"
+  [moveToL2] rLoc=1 : a_time + b_time * (DISTANCE_L1L2 / rSpeedDouble);
+  [moveToL3] rLoc=2 : a_time + b_time * (DISTANCE_L2L3 / rSpeedDouble);
+  [moveToL1] rLoc=3 : a_time + b_time * (DISTANCE_L3L1 / rSpeedDouble);
+  [moveToL1] rLoc=2 : a_time + b_time * (DISTANCE_L2L1 / rSpeedDouble);
+endrewards
+
+rewards "collision_cost"
+  rBumped=true : a_collision + b_collision * (1);
+endrewards
+
+rewards "intrusive_cost"
+  [moveToL2] rLoc=1 : a_intrusive + b_intrusive * (L2_intrusive_val);
+  [moveToL3] rLoc=2 : a_intrusive + b_intrusive * (L3_intrusive_val);
+  [moveToL1] rLoc=3 : a_intrusive + b_intrusive * (L1_intrusive_val);
+  [moveToL1] rLoc=2 : a_intrusive + b_intrusive * (L1_intrusive_val);
+endrewards
+
+const double w_time = 0.3;
+const double w_collision = 0.4;
+const double w_intrusive = 0.3;

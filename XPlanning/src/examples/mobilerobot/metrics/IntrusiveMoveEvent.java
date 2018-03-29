@@ -35,12 +35,17 @@ public class IntrusiveMoveEvent implements IEvent {
 		return mArea;
 	}
 
+	public boolean isIntrusive(MoveToAction moveTo, StateVar<Location> rLocDest) throws AttributeNameNotFoundException {
+		return rLocDest.getValue().getArea() == getArea();
+	}
+
 	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
 		if (trans.getAction() instanceof MoveToAction && trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
+			MoveToAction moveTo = (MoveToAction) trans.getAction();
 			Location locDest = (Location) trans.getDestStateVarValue(mrLocDestDef);
 			StateVar<Location> rLocDest = new StateVar<>(mrLocDestDef, locDest);
-			return rLocDest.getValue().getArea() == getArea();
+			return isIntrusive(moveTo, rLocDest);
 		}
 		return false;
 	}

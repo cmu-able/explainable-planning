@@ -535,4 +535,61 @@ public class PRISMTranslator {
 		return discriminant;
 	}
 
+	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(IAction action,
+			Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) {
+		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
+		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
+			Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
+			srcVarValues.put(srcVarDef, applicableVals);
+		}
+		return getCombinations(srcVarValues);
+	}
+
+	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination() {
+		// TODO
+		return null;
+	}
+
+	private Set<Set<StateVar<IStateVarValue>>> getCombinations(
+			Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> varValues) {
+		Set<Set<StateVar<IStateVarValue>>> combinations = new HashSet<>();
+		Set<StateVar<IStateVarValue>> emptyCombination = new HashSet<>();
+		combinations.add(emptyCombination);
+
+		// Base case: no variable
+		if (varValues.isEmpty()) {
+			return combinations;
+		}
+
+		StateVarDefinition<IStateVarValue> varDef = varValues.keySet().iterator().next();
+		Set<IStateVarValue> values = varValues.get(varDef);
+
+		// Base case: 1 variable
+		if (varValues.size() == 1) {
+			return getCombinationsHelper(varDef, values, combinations);
+		}
+
+		// Recursive case: >1 variables
+		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> partialVarValues = new HashMap<>(varValues);
+		partialVarValues.remove(varDef);
+		Set<Set<StateVar<IStateVarValue>>> partialCombinations = getCombinations(partialVarValues);
+		return getCombinationsHelper(varDef, values, partialCombinations);
+	}
+
+	private Set<Set<StateVar<IStateVarValue>>> getCombinationsHelper(StateVarDefinition<IStateVarValue> varDef,
+			Set<IStateVarValue> values, Set<Set<StateVar<IStateVarValue>>> partialCombinations) {
+		Set<Set<StateVar<IStateVarValue>>> newCombinations = new HashSet<>();
+		for (IStateVarValue value : values) {
+			StateVar<IStateVarValue> newVar = new StateVar<>(varDef, value);
+			for (Set<StateVar<IStateVarValue>> prevCombination : partialCombinations) {
+				Set<StateVar<IStateVarValue>> newCombination = new HashSet<>();
+				newCombination.addAll(prevCombination);
+				newCombination.add(newVar);
+				newCombinations.add(newCombination);
+			}
+		}
+		return newCombinations;
+	}
+
 }

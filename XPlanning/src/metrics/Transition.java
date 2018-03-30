@@ -2,10 +2,12 @@ package metrics;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import exceptions.VarNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
+import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**
@@ -27,6 +29,16 @@ public class Transition {
 
 	public Transition(IAction action) {
 		mAction = action;
+	}
+
+	public Transition(IAction action, Set<StateVar<IStateVarValue>> srcVars, Set<StateVar<IStateVarValue>> destVars) {
+		mAction = action;
+		for (StateVar<IStateVarValue> var : srcVars) {
+			mSrcStateVars.put(var.getDefinition(), var.getValue());
+		}
+		for (StateVar<IStateVarValue> var : destVars) {
+			mDestStateVars.put(var.getDefinition(), var.getValue());
+		}
 	}
 
 	public <E extends IStateVarValue> void addSrcStateVarValue(StateVarDefinition<E> stateVarDef, E value) {

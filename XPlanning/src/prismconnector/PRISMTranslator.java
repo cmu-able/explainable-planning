@@ -31,6 +31,7 @@ import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.IStandardMetricQFunction;
+import metrics.Transition;
 import metrics.TransitionDefinition;
 import preferences.ILinearCostFunction;
 
@@ -446,6 +447,18 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @param qFunc
+	 * @param linearCostFunc
+	 * @param scalingConst
+	 * @return {actionTypeName}={encoded action value} & {srcVarName}Src={value} ... & {destVarName}={value} ... :
+	 *         {scaled cost}; ...
+	 * @throws EffectClassNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws QValueNotFound
+	 * @throws AttributeNameNotFoundException
+	 */
 	private String buildRewardItems(IStandardMetricQFunction qFunc, ILinearCostFunction linearCostFunc,
 			double scalingConst)
 			throws EffectClassNotFoundException, VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
@@ -458,81 +471,56 @@ public class PRISMTranslator {
 		String actionTypeName = actionDef.getName();
 
 		for (IAction action : actionDef.getActions()) {
-			String actionName = action.getName();
-			builder.append(actionTypeName);
-			builder.append("=");
-			builder.append(actionName);
+			Integer encodedActionValue = mEncodings.getEncodedIntValue(actionDef, action);
 
-			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(action,
+					srcStateVarDefs);
+			for (Set<StateVar<IStateVarValue>> srcVars : srcCombinations) {
+				String srcPartialGuard = buildPartialGuard(srcVars);
 
-			Map<StateVarDefinition<IStateVarValue>, Iterator<IStateVarValue>> srcIterMap = new HashMap<>();
-			Map<StateVarDefinition<IStateVarValue>, Iterator<IStateVarValue>> destIterMap = new HashMap<>();
+				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(action,
+						destStateVarDefs, srcVars);
+				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
+					String destPartialGuard = buildPartialGuard(destVars);
 
-			// FIXME: use recursion
-			Map<StateVarDefinition<IStateVarValue>, IStateVarValue> srcValues = new HashMap<>();
+					Transition trans = new Transition(action, srcVars, destVars);
+					double qValue = qFunc.getValue(trans);
+					double cost = linearCostFunc.getCost(qValue);
+					double scaledCost = scalingConst * cost;
 
-			for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
-				Iterator<IStateVarValue> srcValIter;
-
-				if (!srcIterMap.containsKey(srcVarDef)) {
-					Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
-					srcValIter = applicableVals.iterator();
-					srcIterMap.put(srcVarDef, srcValIter);
-				} else {
-					srcValIter = srcIterMap.get(srcVarDef);
-				}
-
-				if (srcValIter.hasNext()) {
-					IStateVarValue srcValue = srcValIter.next();
-					builder.append(" & ");
-					builder.append(srcVarDef.getName());
-					builder.append("Src");
+					builder.append(actionTypeName);
 					builder.append("=");
-					Integer encodedSrcVal = mEncodings.getEncodedIntValue(srcVarDef, srcValue);
-					builder.append(encodedSrcVal);
-
-					srcValues.put(srcVarDef, srcValue);
-				}
-			}
-
-			for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
-				Iterator<IStateVarValue> destValIter;
-
-				if (!destIterMap.containsKey(destVarDef)) {
-					Discriminant discriminant = getDiscriminant(destVarDef, srcValues, actionPSO);
-					Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant);
-					destValIter = possibleDestVals.iterator();
-					destIterMap.put(destVarDef, destValIter);
-				} else {
-					destValIter = destIterMap.get(destVarDef);
-				}
-
-				if (destValIter.hasNext()) {
-					IStateVarValue destVal = destValIter.next();
+					builder.append(encodedActionValue);
 					builder.append(" & ");
-					builder.append(destVarDef.getName());
-					builder.append("=");
-					Integer encodedDestVal = mEncodings.getEncodedIntValue(destVarDef, destVal);
-					builder.append(encodedDestVal);
+					builder.append(srcPartialGuard);
+					builder.append(" & ");
+					builder.append(destPartialGuard);
+					builder.append(" : ");
+					builder.append(scaledCost);
+					builder.append(";");
+					builder.append("\n");
 				}
 			}
 		}
 		return builder.toString();
 	}
 
-	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
-			Map<StateVarDefinition<IStateVarValue>, IStateVarValue> srcValues, IFactoredPSO actionPSO) {
-		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
-		Discriminant discriminant = new Discriminant();
-		for (Entry<StateVarDefinition<IStateVarValue>, IStateVarValue> e : srcValues.entrySet()) {
-			StateVarDefinition<IStateVarValue> varDef = e.getKey();
-			IStateVarValue value = e.getValue();
-			if (discrClass.contains(varDef)) {
-				StateVar<IStateVarValue> discrVar = new StateVar<>(varDef, value);
-				discriminant.add(discrVar);
+	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) {
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
+		for (StateVar<IStateVarValue> var : stateVars) {
+			String varName = var.getName();
+			Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), var.getValue());
+			if (!first) {
+				builder.append(" & ");
+			} else {
+				first = false;
 			}
+			builder.append(varName);
+			builder.append("=");
+			builder.append(encodedValue);
 		}
-		return discriminant;
+		return builder.toString();
 	}
 
 	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(IAction action,
@@ -546,9 +534,29 @@ public class PRISMTranslator {
 		return getCombinations(srcVarValues);
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination() {
-		// TODO
-		return null;
+	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(IAction action,
+			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, Set<StateVar<IStateVarValue>> srcVars) {
+		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
+		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+			Discriminant discriminant = getDiscriminant(destVarDef, srcVars, actionPSO);
+			Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant);
+			destVarValues.put(destVarDef, possibleDestVals);
+		}
+		return getCombinations(destVarValues);
+	}
+
+	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
+			Set<StateVar<IStateVarValue>> srcVars, IFactoredPSO actionPSO) {
+		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
+		Discriminant discriminant = new Discriminant();
+		for (StateVar<IStateVarValue> var : srcVars) {
+			if (discrClass.contains(var.getDefinition())) {
+				StateVar<IStateVarValue> discrVar = new StateVar<>(var.getDefinition(), var.getValue());
+				discriminant.add(discrVar);
+			}
+		}
+		return discriminant;
 	}
 
 	private Set<Set<StateVar<IStateVarValue>>> getCombinations(

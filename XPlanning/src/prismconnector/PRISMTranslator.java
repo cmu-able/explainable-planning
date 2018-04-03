@@ -145,10 +145,12 @@ public class PRISMTranslator {
 	 */
 	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
 		Set<EffectClass> allEffectClasses = new HashSet<>();
-		for (IAction action : mXMDP.getActions()) {
-			IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
-			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
-			allEffectClasses.addAll(actionEffectClasses);
+		for (ActionDefinition<IAction> actionDef : mXMDP.getActionDefs()) {
+			for (IAction action : actionDef.getActions()) {
+				IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+				Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
+				allEffectClasses.addAll(actionEffectClasses);
+			}
 		}
 
 		StringBuilder builder = new StringBuilder();

@@ -28,6 +28,10 @@ public class CostFunction implements IMACostFunction {
 		return (ILinearCostFunction) mCostFun.getSACostFunction(qFunction);
 	}
 
+	public double getScalingConstant(IQFunction qFunction) {
+		return mCostFun.getScalingConst(qFunction);
+	}
+
 	@Override
 	public double getCost(Map<IQFunction, Double> values) {
 		return mCostFun.getCost(values);

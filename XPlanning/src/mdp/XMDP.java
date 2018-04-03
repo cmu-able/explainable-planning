@@ -29,7 +29,6 @@ public class XMDP {
 	private Set<ActionDefinition<IAction>> mActionDefs;
 	private Set<StateVar<IStateVarValue>> mInitialState;
 	private Set<StateVar<IStateVarValue>> mGoal;
-	private Set<IAction> mActions;
 	private Map<IAction, IFactoredPSO> mTransitions;
 	private Set<IQFunction> mQFunctions;
 	private CostFunction mCostFunction;
@@ -38,13 +37,12 @@ public class XMDP {
 	private Map<String, StateVar<IStateVarValue>> mGoalStateVarMap;
 
 	public XMDP(Set<StateVarDefinition<IStateVarValue>> stateVarDefs, Set<ActionDefinition<IAction>> actionDefs,
-			Set<StateVar<IStateVarValue>> initialState, Set<StateVar<IStateVarValue>> goal, Set<IAction> actions,
+			Set<StateVar<IStateVarValue>> initialState, Set<StateVar<IStateVarValue>> goal,
 			Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions, CostFunction costFunction) {
 		mStateVarDefs = stateVarDefs;
 		mActionDefs = actionDefs;
 		mInitialState = initialState;
 		mGoal = goal;
-		mActions = actions;
 		mTransitions = transitions;
 		mQFunctions = qFunctions;
 		mCostFunction = costFunction;
@@ -89,10 +87,6 @@ public class XMDP {
 		return mGoalStateVarMap.get(stateVarDef.getName());
 	}
 
-	public Set<IAction> getActions() {
-		return mActions;
-	}
-
 	public IFactoredPSO getTransitionFunction(IAction action) {
 		return mTransitions.get(action);
 	}
@@ -115,7 +109,7 @@ public class XMDP {
 		}
 		XMDP mdp = (XMDP) obj;
 		return mdp.mStateVarDefs.equals(mStateVarDefs) && mdp.mActionDefs.equals(mActionDefs)
-				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal) && mdp.mActions.equals(mActions)
+				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
 				&& mdp.mTransitions.equals(mTransitions) && mdp.mQFunctions.equals(mQFunctions)
 				&& mdp.mCostFunction.equals(mCostFunction);
 	}
@@ -129,7 +123,6 @@ public class XMDP {
 			result = 31 * result + mActionDefs.hashCode();
 			result = 31 * result + mInitialState.hashCode();
 			result = 31 * result + mGoal.hashCode();
-			result = 31 * result + mActions.hashCode();
 			result = 31 * result + mTransitions.hashCode();
 			result = 31 * result + mQFunctions.hashCode();
 			result = 31 * result + mCostFunction.hashCode();

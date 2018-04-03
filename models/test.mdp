@@ -56,7 +56,7 @@ module speed_control
   [setSpeedHalf] rSpeed=2 -> (rSpeed'=1);
 endmodule
 
-module copy_prev
+module helper
   rLocPrev : [1..3] init 1;
   rBumpedPrev :bool init false;
   rSpeedPrev : [1..2] init 1;
@@ -68,13 +68,15 @@ module copy_prev
   [moveToL3] readyToCopy -> (rLocPrev'=rLoc) & (rBumpedPrev'=rBumped) & (moveToPrev'=2) & (readyToCopy'=false);
   [moveTol1] readyToCopy -> (rLocPrev'=rLoc) & (rBumpedPrev'=rBumped) & (moveToPrev'=3) & (readyToCopy'=false);
   [setSpeedFull] readyToCopy -> (rSpeedPrev'=rSpeed) & (setSpeedPrev'=1) & (readyToCopy'=false);
-  [setSpeedFull] readyToCopy -> (rSpeedPrev'=rSpeed) & (setSpeedPrev'=2) & (readyToCopy'=false);
+  [setSpeedHalf] readyToCopy -> (rSpeedPrev'=rSpeed) & (setSpeedPrev'=2) & (readyToCopy'=false);
   [next] !readyToCopy -> (readyToCopy'=true);
 endmodule
 
+formula computeCost = !readyToCopy;
+
 rewards "cost"
-  moveToPrev=1 & rLocPrev=1 & rLoc=2 : 1;
-  moveToPrev=3 & rLocPrev=2 & rLoc=1 : 1;
+  computeCost & moveToPrev=1 & rLocPrev=1 & rLoc=2 : 1;
+  computeCost & moveToPrev=3 & rLocPrev=2 & rLoc=1 : 1;
 endrewards
 
 rewards "time"

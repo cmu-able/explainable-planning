@@ -31,6 +31,7 @@ import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
+import preferences.CostFunction;
 import preferences.ILinearCostFunction;
 
 public class PRISMTranslator {
@@ -48,7 +49,8 @@ public class PRISMTranslator {
 		mThreeParamRewards = threeParamRewards;
 	}
 
-	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException {
+	public String getMDPTranslation()
+			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
 		String modules = buildModules();
 		String rewards = buildRewards();
@@ -440,9 +442,21 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
-	private String buildRewards() {
+	/**
+	 * 
+	 * @return rewards "cost" {actionTypeName}={encoded action value} & {srcVarName}Src={value} ... &
+	 *         {destVarName}={value} ... : {scaled cost}; ... endrewards
+	 * @throws VarNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
+	private String buildRewards() throws VarNotFoundException, AttributeNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("rewards \"cost\"");
+		Set<IQFunction> qFunctions = mXMDP.getQFunctions();
+		for (IQFunction qFunction : qFunctions) {
+			String rewardItems = buildRewardItems(qFunction);
+			builder.append(rewardItems);
+		}
 		builder.append("endrewards");
 		return builder.toString();
 	}
@@ -450,18 +464,16 @@ public class PRISMTranslator {
 	/**
 	 * Build reward items for a given QA function.
 	 * 
-	 * @param qFunc
+	 * @param qFunction
 	 * @param linearCostFunc
 	 * @param scalingConst
 	 * @return {actionTypeName}={encoded action value} & {srcVarName}Src={value} ... & {destVarName}={value} ... :
 	 *         {scaled cost}; ...
-	 * @throws EffectClassNotFoundException
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
-	private String buildRewardItems(IQFunction qFunc, ILinearCostFunction linearCostFunc, double scalingConst)
-			throws EffectClassNotFoundException, VarNotFoundException, AttributeNameNotFoundException {
-		TransitionDefinition transDef = qFunc.getTransitionDefinition();
+	private String buildRewardItems(IQFunction qFunction) throws VarNotFoundException, AttributeNameNotFoundException {
+		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
 		ActionDefinition<IAction> actionDef = transDef.getActionDef();
@@ -483,7 +495,10 @@ public class PRISMTranslator {
 					String destPartialGuard = buildPartialGuard(destVars);
 
 					Transition trans = new Transition(action, srcVars, destVars);
-					double qValue = qFunc.getValue(trans);
+					double qValue = qFunction.getValue(trans);
+					CostFunction costFunc = mXMDP.getCostFunction();
+					ILinearCostFunction linearCostFunc = costFunc.getLinearCostFunction(qFunction);
+					double scalingConst = costFunc.getScalingConstant(qFunction);
 					double cost = linearCostFunc.getCost(qValue);
 					double scaledCost = scalingConst * cost;
 

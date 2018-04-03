@@ -40,6 +40,11 @@ public class IntrusiveMoveEvent implements IEvent {
 	}
 
 	@Override
+	public TransitionDefinition getTransitionDefinition() {
+		return mTransitionDef;
+	}
+
+	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
 		if (trans.getAction() instanceof MoveToAction && trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
 			MoveToAction moveTo = (MoveToAction) trans.getAction();

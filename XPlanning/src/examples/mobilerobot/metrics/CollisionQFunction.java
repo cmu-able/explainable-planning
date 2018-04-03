@@ -9,6 +9,7 @@ import factors.StateVarDefinition;
 import metrics.ICountQFunction;
 import metrics.IEvent;
 import metrics.Transition;
+import metrics.TransitionDefinition;
 
 /**
  * {@link CollisionQFunction} determines the collision of the robot of a single transition.
@@ -33,6 +34,11 @@ public class CollisionQFunction implements ICountQFunction {
 	@Override
 	public IEvent getEvent() {
 		return mCollisionEvent;
+	}
+
+	@Override
+	public TransitionDefinition getTransitionDefinition() {
+		return mCollisionEvent.getTransitionDefinition();
 	}
 
 	@Override

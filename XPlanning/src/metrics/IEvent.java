@@ -11,5 +11,7 @@ import exceptions.VarNotFoundException;
  */
 public interface IEvent {
 
+	public TransitionDefinition getTransitionDefinition();
+
 	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;
 }

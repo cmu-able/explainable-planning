@@ -1,9 +1,6 @@
 package metrics;
 
-import java.util.Map;
-
 import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 
 /**
@@ -20,27 +17,25 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 	 */
 	private volatile int hashCode;
 
-	private Map<IEvent, Double> mMetric;
+	private EventBasedMetric mMetric;
 
-	public NonStandardMetricQFunction(Map<IEvent, Double> metric) {
+	public NonStandardMetricQFunction(EventBasedMetric metric) {
 		mMetric = metric;
 	}
 
 	@Override
-	public Map<IEvent, Double> getMetric() {
+	public EventBasedMetric getMetric() {
 		return mMetric;
 	}
 
 	@Override
-	public double getValue(Transition trans)
-			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
-		for (Map.Entry<IEvent, Double> entry : mMetric.entrySet()) {
-			IEvent event = entry.getKey();
-			if (event.hasEventOccurred(trans)) {
-				return mMetric.get(event);
-			}
-		}
-		throw new QValueNotFound(trans);
+	public TransitionDefinition getTransitionDefinition() {
+		return mMetric.getTransitionDefinition();
+	}
+
+	@Override
+	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
+		return mMetric.getValue(trans);
 	}
 
 	@Override

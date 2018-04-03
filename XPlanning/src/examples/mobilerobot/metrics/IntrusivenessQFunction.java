@@ -1,20 +1,17 @@
 package examples.mobilerobot.metrics;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.StateVarDefinition;
-import metrics.IEvent;
+import metrics.EventBasedMetric;
 import metrics.INonStandardMetricQFunction;
 import metrics.NonStandardMetricQFunction;
 import metrics.Transition;
+import metrics.TransitionDefinition;
 
 /**
  * {@link IntrusivenessQFunction} determines the intrusiveness of the robot of a single transition.
@@ -36,7 +33,9 @@ public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 	private NonStandardMetricQFunction mNonStdQFn;
 
 	public IntrusivenessQFunction(ActionDefinition<MoveToAction> moveTo, StateVarDefinition<Location> rLocDestDef) {
-		Map<IEvent, Double> metric = new HashMap<>();
+		TransitionDefinition transitionDef = new TransitionDefinition(moveTo);
+		transitionDef.addDestStateVarDef(rLocDestDef);
+		EventBasedMetric metric = new EventBasedMetric(transitionDef);
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PUBLIC), NON_INTRUSIVE_PENALTY);
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.SEMI_PRIVATE), SEMI_INTRUSIVE_PEANLTY);
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PRIVATE), VERY_INTRUSIVE_PENALTY);
@@ -44,13 +43,17 @@ public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 	}
 
 	@Override
-	public Map<IEvent, Double> getMetric() {
+	public EventBasedMetric getMetric() {
 		return mNonStdQFn.getMetric();
 	}
 
 	@Override
-	public double getValue(Transition trans)
-			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	public TransitionDefinition getTransitionDefinition() {
+		return mNonStdQFn.getTransitionDefinition();
+	}
+
+	@Override
+	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
 		return mNonStdQFn.getValue(trans);
 	}
 

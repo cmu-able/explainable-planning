@@ -10,7 +10,6 @@ import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.EffectClassNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -30,7 +29,6 @@ import mdp.Policy;
 import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
-import metrics.IStandardMetricQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
 import preferences.ILinearCostFunction;
@@ -448,6 +446,7 @@ public class PRISMTranslator {
 	}
 
 	/**
+	 * Build reward items for a given QA function.
 	 * 
 	 * @param qFunc
 	 * @param linearCostFunc
@@ -456,12 +455,10 @@ public class PRISMTranslator {
 	 *         {scaled cost}; ...
 	 * @throws EffectClassNotFoundException
 	 * @throws VarNotFoundException
-	 * @throws QValueNotFound
 	 * @throws AttributeNameNotFoundException
 	 */
-	private String buildRewardItems(IStandardMetricQFunction qFunc, ILinearCostFunction linearCostFunc,
-			double scalingConst)
-			throws EffectClassNotFoundException, VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	private String buildRewardItems(IQFunction qFunc, ILinearCostFunction linearCostFunc, double scalingConst)
+			throws EffectClassNotFoundException, VarNotFoundException, AttributeNameNotFoundException {
 		TransitionDefinition transDef = qFunc.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();

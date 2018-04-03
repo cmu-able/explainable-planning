@@ -5,7 +5,6 @@ import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.StateVar;
@@ -50,8 +49,7 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 	}
 
 	@Override
-	public double getValue(Transition trans)
-			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException {
+	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
 		if (trans.getSrcStateVarValue(mrLocSrcDef) instanceof Location
 				&& trans.getSrcStateVarValue(mrSpeedSrcDef) instanceof RobotSpeed
 				&& trans.getAction() instanceof MoveToAction

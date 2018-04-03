@@ -49,6 +49,11 @@ public class CollisionEvent implements IEvent {
 	}
 
 	@Override
+	public TransitionDefinition getTransitionDefinition() {
+		return mTransitionDef;
+	}
+
+	@Override
 	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException {
 		if (trans.getSrcStateVarValue(mrSpeedSrcDef) instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
 				&& trans.getDestStateVarValue(mrBumpedDestDef) instanceof RobotBumped) {

@@ -1,7 +1,6 @@
 package metrics;
 
 import exceptions.AttributeNameNotFoundException;
-import exceptions.QValueNotFound;
 import exceptions.VarNotFoundException;
 
 /**
@@ -13,6 +12,7 @@ import exceptions.VarNotFoundException;
  */
 public interface IQFunction {
 
-	public double getValue(Transition trans)
-			throws VarNotFoundException, QValueNotFound, AttributeNameNotFoundException;
+	public TransitionDefinition getTransitionDefinition();
+
+	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;
 }

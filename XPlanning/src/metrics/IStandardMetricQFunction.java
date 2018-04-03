@@ -8,5 +8,4 @@ package metrics;
  */
 public interface IStandardMetricQFunction extends IQFunction {
 
-	public TransitionDefinition getTransitionDefinition();
 }

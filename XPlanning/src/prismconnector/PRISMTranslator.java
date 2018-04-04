@@ -185,12 +185,19 @@ public class PRISMTranslator {
 			builder.append(module);
 			builder.append("\n\n");
 		}
+
+		if (mThreeParamRewards) {
+			String helperModule = buildHelperModule();
+			builder.append(helperModule);
+			builder.append("\n\n");
+		}
+
 		return builder.toString();
 	}
 
 	/**
 	 * 
-	 * @param name
+	 * @param moduleName
 	 *            A unique name of the module
 	 * @param moduleVarDefs
 	 *            Variables of the module
@@ -201,20 +208,54 @@ public class PRISMTranslator {
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModule(String name, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
+	private String buildModule(String moduleName, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
 			Map<IAction, EffectClass> overlappingEffectActions)
 			throws VarNotFoundException, EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
-		builder.append(name);
+		builder.append(moduleName);
 		builder.append("\n");
 		String varsDecl = buildModuleVarsDecl(moduleVarDefs);
 		builder.append(varsDecl);
+
+		if (mThreeParamRewards) {
+			builder.append(INDENT);
+			String moduleSyncVarDecl = buildModuleSyncVarDecl(moduleName);
+			builder.append(moduleSyncVarDecl);
+			builder.append("\n");
+		}
+
 		builder.append("\n");
 		String commands = buildModuleCommands(overlappingEffectActions);
 		builder.append(commands);
+
+		if (mThreeParamRewards) {
+			builder.append(INDENT);
+			String moduleSyncCommand = buildModuleSyncCommand(moduleName);
+			builder.append(moduleSyncCommand);
+			builder.append("\n");
+		}
+
 		builder.append("endmodule");
 		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param moduleName
+	 * @return {moduleName}_go : bool init true;
+	 */
+	private String buildModuleSyncVarDecl(String moduleName) {
+		return moduleName + "_go : bool init true;";
+	}
+
+	/**
+	 * 
+	 * @param moduleName
+	 * @return [next] !{moduleName}_go -> ({moduleName}_go'=true);
+	 */
+	private String buildModuleSyncCommand(String moduleName) {
+		return "[next] !" + moduleName + "_go -> (" + moduleName + "_go'=true);";
 	}
 
 	/**
@@ -658,10 +699,21 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @param stateVars
+	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
+	 */
 	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) {
 		return buildPartialGuard(stateVars, "");
 	}
 
+	/**
+	 * 
+	 * @param stateVars
+	 * @param nameSuffix
+	 * @return {varName_1{Suffix}}={encoded int value} & ... & {varName_m{Suffix}}={encoded int value}
+	 */
 	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix) {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;

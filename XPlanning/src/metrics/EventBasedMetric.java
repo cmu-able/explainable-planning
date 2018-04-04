@@ -7,6 +7,12 @@ import java.util.Map.Entry;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
 
+/**
+ * {@link EventBasedMetric} is an event-based metric that assigns a specific value to a particular event.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class EventBasedMetric {
 
 	/*

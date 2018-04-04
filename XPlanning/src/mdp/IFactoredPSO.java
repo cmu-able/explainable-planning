@@ -16,7 +16,7 @@ import factors.StateVarDefinition;
  */
 public interface IFactoredPSO {
 
-	public Set<IStateVarValue> getApplicableValues(StateVarDefinition<IStateVarValue> stateVarDef);
+	public Precondition getPrecondition();
 
 	public Set<EffectClass> getIndependentEffectClasses();
 

@@ -35,21 +35,23 @@ public class RobotLocationActionDescription implements IActionDescription {
 
 	private ActionDescription mrLocActionDesc;
 
-	public RobotLocationActionDescription(MoveToAction moveTo, Set<StateVar<Location>> applicablerLocSrcs,
-			StateVarDefinition<Location> rLocDef) throws AttributeNameNotFoundException {
+	public RobotLocationActionDescription(MoveToAction moveTo, StateVarDefinition<Location> rLocSrcDef,
+			Set<Location> applicablerLocSrcValues, StateVarDefinition<Location> rLocDestDef)
+			throws AttributeNameNotFoundException {
 		EffectClass rLocEffectClass = new EffectClass(moveTo);
-		rLocEffectClass.add(rLocDef);
+		rLocEffectClass.add(rLocDestDef);
 		mrLocActionDesc = new ActionDescription(rLocEffectClass);
 
-		for (StateVar<Location> rLocSrc : applicablerLocSrcs) {
+		for (Location rLocSrcValue : applicablerLocSrcValues) {
+			StateVar<Location> rLocSrc = new StateVar<>(rLocSrcDef, rLocSrcValue);
 			Discriminant rLocDiscriminant = new Discriminant();
 			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect();
 			Effect newLocEffect = new Effect();
 			Effect oldLocEffect = new Effect();
-			StateVar<Location> newLoc = new StateVar<>(rLocDef, moveTo.getDestination());
-			StateVar<Location> oldLoc = new StateVar<>(rLocDef, rLocSrc.getValue());
+			StateVar<Location> newLoc = new StateVar<>(rLocDestDef, moveTo.getDestination());
+			StateVar<Location> oldLoc = new StateVar<>(rLocDestDef, rLocSrc.getValue());
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 

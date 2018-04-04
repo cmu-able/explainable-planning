@@ -26,6 +26,7 @@ import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
 import mdp.Policy;
+import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -759,9 +760,10 @@ public class PRISMTranslator {
 	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(IAction action,
 			Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) {
 		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+		Precondition precond = actionPSO.getPrecondition();
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
-			Set<IStateVarValue> applicableVals = actionPSO.getApplicableValues(srcVarDef);
+			Set<IStateVarValue> applicableVals = precond.getApplicableValues(srcVarDef);
 			srcVarValues.put(srcVarDef, applicableVals);
 		}
 		return getCombinations(srcVarValues);

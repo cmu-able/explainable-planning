@@ -1,15 +1,18 @@
 package examples.mobilerobot.factors;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.AttributeNameNotFoundException;
 import exceptions.EffectClassNotFoundException;
-import factors.StateVar;
+import factors.IStateVarValue;
 import factors.StateVarDefinition;
+import mdp.Discriminant;
+import mdp.DiscriminantClass;
 import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
+import mdp.Precondition;
 
 /**
  * {@link MoveToPSO} is a factored PSO representation of a {@link MoveToAction}.
@@ -27,28 +30,27 @@ public class MoveToPSO implements IFactoredPSO {
 	private MoveToAction mMoveTo;
 
 	/**
-	 * State variables that are affected by this action.
+	 * Precondition of this action
 	 */
-	private StateVarDefinition<Location> mrLocDef;
-	private StateVarDefinition<RobotBumped> mrBumpedDef;
+	private Precondition mPrecondition;
 
 	/**
 	 * Full action descriptions for all independent effect classes of this action
 	 */
 	private Map<EffectClass, IActionDescription> mActionDescriptions;
 
-	public MoveToPSO(MoveToAction moveTo, StateVarDefinition<Location> rLocDef,
-			StateVarDefinition<RobotBumped> rBumpedDef, Set<StateVar<Location>> applicablerLocSrcs)
-			throws AttributeNameNotFoundException {
+	public MoveToPSO(MoveToAction moveTo, Precondition precondition, RobotLocationActionDescription rLocActionDesc,
+			RobotBumpedActionDescription rBumpedActionDesc) {
 		mMoveTo = moveTo;
-		mrLocDef = rLocDef;
-		mrBumpedDef = rBumpedDef;
-		RobotLocationActionDescription rLocDesc = new RobotLocationActionDescription(moveTo, applicablerLocSrcs,
-				rLocDef);
-		RobotBumpedActionDescription rBumpedDesc = new RobotBumpedActionDescription(moveTo, applicablerLocSrcs,
-				rBumpedDef);
-		mActionDescriptions.put(rLocDesc.getEffectClass(), rLocDesc);
-		mActionDescriptions.put(rBumpedDesc.getEffectClass(), rBumpedDesc);
+		mPrecondition = precondition;
+		mActionDescriptions = new HashMap<>();
+		mActionDescriptions.put(rLocActionDesc.getEffectClass(), rLocActionDesc);
+		mActionDescriptions.put(rBumpedActionDesc.getEffectClass(), rBumpedActionDesc);
+	}
+
+	@Override
+	public Precondition getPrecondition() {
+		return mPrecondition;
 	}
 
 	@Override
@@ -65,6 +67,19 @@ public class MoveToPSO implements IFactoredPSO {
 	}
 
 	@Override
+	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
+			Discriminant discriminant) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -73,7 +88,7 @@ public class MoveToPSO implements IFactoredPSO {
 			return false;
 		}
 		MoveToPSO pso = (MoveToPSO) obj;
-		return pso.mMoveTo.equals(mMoveTo) && pso.mrLocDef.equals(mrLocDef) && pso.mrBumpedDef.equals(mrBumpedDef)
+		return pso.mMoveTo.equals(mMoveTo) && pso.mPrecondition.equals(mPrecondition)
 				&& pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
@@ -83,8 +98,7 @@ public class MoveToPSO implements IFactoredPSO {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mMoveTo.hashCode();
-			result = 31 * result + mrLocDef.hashCode();
-			result = 31 * result + mrBumpedDef.hashCode();
+			result = 31 * result + mPrecondition.hashCode();
 			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;
 		}

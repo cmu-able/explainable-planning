@@ -37,6 +37,7 @@ import preferences.ILinearCostFunction;
 public class PRISMTranslator {
 
 	private static final String INDENT = "  ";
+	private static final String SRC_SUFFIX = "Src";
 
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
@@ -65,11 +66,32 @@ public class PRISMTranslator {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @return P>=1 [ F "{varName}={encoded int value} & ..." ]
+	 */
 	public String getGoalPropertyTranslation() {
-		return null;
+		Set<StateVar<IStateVarValue>> goalVars = mXMDP.getGoal();
+		StringBuilder builder = new StringBuilder();
+		builder.append("P>=1 [ F \"");
+		boolean firstVar = true;
+		for (StateVar<IStateVarValue> goalVar : goalVars) {
+			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
+			if (!firstVar) {
+				builder.append(" & ");
+			} else {
+				firstVar = false;
+			}
+			builder.append(goalVar.getName());
+			builder.append("=");
+			builder.append(encodedValue);
+		}
+		builder.append("\" ]");
+		return builder.toString();
 	}
 
 	public String getQFunctionTranslation(IQFunction qFunction) {
+		// TODO
 		return null;
 	}
 
@@ -78,6 +100,7 @@ public class PRISMTranslator {
 		builder.append("dtmc");
 		builder.append("\n");
 		builder.append("module policy");
+		// TODO
 		builder.append("endmodule");
 		return builder.toString();
 	}
@@ -514,7 +537,7 @@ public class PRISMTranslator {
 	 * @throws VarNotFoundException
 	 */
 	private String buildHelperModule() throws VarNotFoundException {
-		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateVarDefs(), "Src");
+		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateVarDefs(), SRC_SUFFIX);
 		String actionsDecl = buildHelperActionsDecl(mXMDP.getActionDefs());
 		String readyToCopyDecl = "readyToCopy : bool init true;";
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
@@ -527,7 +550,7 @@ public class PRISMTranslator {
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
 		builder.append("\n\n");
-		String copyCmds = buildHelperCopyCommands(mXMDP.getActionDefs(), "Src");
+		String copyCmds = buildHelperCopyCommands(mXMDP.getActionDefs(), SRC_SUFFIX);
 		builder.append(copyCmds);
 		builder.append(INDENT);
 		builder.append(nextCmd);
@@ -665,7 +688,7 @@ public class PRISMTranslator {
 			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(action,
 					srcStateVarDefs);
 			for (Set<StateVar<IStateVarValue>> srcVars : srcCombinations) {
-				String srcPartialGuard = buildPartialGuard(srcVars, "Src");
+				String srcPartialGuard = buildPartialGuard(srcVars, SRC_SUFFIX);
 
 				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(action,
 						destStateVarDefs, srcVars);

@@ -1,10 +1,13 @@
 package mdp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -27,24 +30,37 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private Set<StateVar<IStateVarValue>> mDiscriminant;
+	private Map<StateVarDefinition<IStateVarValue>, IStateVarValue> mDiscriminantValues;
 	private DiscriminantClass mDiscriminantClass;
 
 	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscriminant = new HashSet<>();
+		mDiscriminantValues = new HashMap<>();
 		mDiscriminantClass = discriminantClass;
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
-		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
-		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
-		if (!sanityCheck(genericStateVar)) {
-			throw new IncompatibleVarException(genericDef);
+		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVar
+				.getDefinition();
+		StateVar<IStateVarValue> genericVar = new StateVar<>(genericVarDef, stateVar.getValue());
+		if (!sanityCheck(genericVar)) {
+			throw new IncompatibleVarException(genericVarDef);
 		}
-		mDiscriminant.add(genericStateVar);
+		mDiscriminant.add(genericVar);
+		mDiscriminantValues.put(genericVarDef, genericVar.getValue());
 	}
 
 	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
 		return mDiscriminantClass.contains(stateVar.getDefinition());
+	}
+
+	public IStateVarValue getDiscriminantValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVarDef;
+		if (!mDiscriminantValues.containsKey(genericVarDef)) {
+			throw new VarNotFoundException(stateVarDef);
+		}
+		return mDiscriminantValues.get(genericVarDef);
 	}
 
 	public DiscriminantClass getDiscriminantClass() {

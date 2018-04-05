@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
+import exceptions.IncompatibleDiscriminantClassException;
+import exceptions.IncompatibleEffectClassException;
 
 /**
  * 
@@ -24,15 +26,32 @@ public class ActionDescription implements IActionDescription {
 	private volatile int hashCode;
 
 	private Map<Discriminant, ProbabilisticEffect> mActionDescription;
+	private DiscriminantClass mDiscriminantClass;
 	private EffectClass mEffectClass;
 
-	public ActionDescription(EffectClass effectClass) {
+	public ActionDescription(DiscriminantClass discriminantClass, EffectClass effectClass) {
 		mActionDescription = new HashMap<>();
+		mDiscriminantClass = discriminantClass;
 		mEffectClass = effectClass;
 	}
 
-	public void put(Discriminant discriminant, ProbabilisticEffect probEffect) {
+	public void put(Discriminant discriminant, ProbabilisticEffect probEffect)
+			throws IncompatibleDiscriminantClassException, IncompatibleEffectClassException {
+		if (!sanityCheck(discriminant)) {
+			throw new IncompatibleDiscriminantClassException(discriminant.getDiscriminantClass());
+		}
+		if (!sanityCheck(probEffect)) {
+			throw new IncompatibleEffectClassException(probEffect.getEffectClass());
+		}
 		mActionDescription.put(discriminant, probEffect);
+	}
+
+	private boolean sanityCheck(Discriminant discriminant) {
+		return discriminant.getDiscriminantClass().equals(mDiscriminantClass);
+	}
+
+	private boolean sanityCheck(ProbabilisticEffect probEffect) {
+		return probEffect.getEffectClass().equals(mEffectClass);
 	}
 
 	@Override
@@ -50,6 +69,19 @@ public class ActionDescription implements IActionDescription {
 	}
 
 	@Override
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant) throws DiscriminantNotFoundException {
+		if (!mActionDescription.containsKey(discriminant)) {
+			throw new DiscriminantNotFoundException(discriminant);
+		}
+		return mActionDescription.get(discriminant);
+	}
+
+	@Override
+	public DiscriminantClass getDiscriminantClass() {
+		return mDiscriminantClass;
+	}
+
+	@Override
 	public EffectClass getEffectClass() {
 		return mEffectClass;
 	}
@@ -63,7 +95,9 @@ public class ActionDescription implements IActionDescription {
 			return false;
 		}
 		ActionDescription actionDesc = (ActionDescription) obj;
-		return actionDesc.mActionDescription.equals(mActionDescription) && actionDesc.mEffectClass.equals(mEffectClass);
+		return actionDesc.mActionDescription.equals(mActionDescription)
+				&& actionDesc.mDiscriminantClass.equals(mDiscriminantClass)
+				&& actionDesc.mEffectClass.equals(mEffectClass);
 	}
 
 	@Override
@@ -72,6 +106,7 @@ public class ActionDescription implements IActionDescription {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mActionDescription.hashCode();
+			result = 31 * result + mDiscriminantClass.hashCode();
 			result = 31 * result + mEffectClass.hashCode();
 			hashCode = result;
 		}

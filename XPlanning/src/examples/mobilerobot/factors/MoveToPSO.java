@@ -1,18 +1,24 @@
 package examples.mobilerobot.factors;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
+import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
 import mdp.Precondition;
+import mdp.ProbabilisticEffect;
 
 /**
  * {@link MoveToPSO} is a factored PSO representation of a {@link MoveToAction}.
@@ -67,16 +73,36 @@ public class MoveToPSO implements IFactoredPSO {
 	}
 
 	@Override
-	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef) {
-		// TODO Auto-generated method stub
-		return null;
+	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		for (Entry<EffectClass, IActionDescription> e : mActionDescriptions.entrySet()) {
+			EffectClass effectClass = e.getKey();
+			IActionDescription actionDesc = e.getValue();
+			if (effectClass.contains(stateVarDef)) {
+				return actionDesc.getDiscriminantClass();
+			}
+		}
+		throw new VarNotFoundException(stateVarDef);
 	}
 
 	@Override
 	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
-			Discriminant discriminant) {
-		// TODO Auto-generated method stub
-		return null;
+			Discriminant discriminant) throws VarNotFoundException, DiscriminantNotFoundException {
+		for (Entry<EffectClass, IActionDescription> e : mActionDescriptions.entrySet()) {
+			EffectClass effectClass = e.getKey();
+			IActionDescription actionDesc = e.getValue();
+			if (effectClass.contains(stateVarDef)) {
+				ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant);
+				Set<IStateVarValue> possibleImpact = new HashSet<>();
+				for (Entry<Effect, Double> en : probEffect) {
+					Effect effect = en.getKey();
+					IStateVarValue value = effect.getEffectValue(stateVarDef);
+					possibleImpact.add(value);
+				}
+				return possibleImpact;
+			}
+		}
+		throw new VarNotFoundException(stateVarDef);
 	}
 
 	@Override

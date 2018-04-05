@@ -2,7 +2,9 @@ package mdp;
 
 import java.util.Set;
 
+import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
@@ -22,8 +24,9 @@ public interface IFactoredPSO {
 
 	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException;
 
-	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef);
+	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef)
+			throws VarNotFoundException;
 
 	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
-			Discriminant discriminant);
+			Discriminant discriminant) throws VarNotFoundException, DiscriminantNotFoundException;
 }

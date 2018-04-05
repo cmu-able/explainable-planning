@@ -1,10 +1,13 @@
 package mdp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -23,24 +26,37 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private Set<StateVar<IStateVarValue>> mEffect;
+	private Map<StateVarDefinition<IStateVarValue>, IStateVarValue> mEffectValues;
 	private EffectClass mEffectClass;
 
 	public Effect(EffectClass effectClass) {
 		mEffect = new HashSet<>();
+		mEffectValues = new HashMap<>();
 		mEffectClass = effectClass;
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
-		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
-		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
-		if (!sanityCheck(genericStateVar)) {
-			throw new IncompatibleVarException(genericDef);
+		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVar
+				.getDefinition();
+		StateVar<IStateVarValue> genericVar = new StateVar<>(genericVarDef, stateVar.getValue());
+		if (!sanityCheck(genericVar)) {
+			throw new IncompatibleVarException(genericVarDef);
 		}
-		mEffect.add(genericStateVar);
+		mEffect.add(genericVar);
+		mEffectValues.put(genericVarDef, genericVar.getValue());
 	}
 
 	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
 		return mEffectClass.contains(stateVar.getDefinition());
+	}
+
+	public IStateVarValue getEffectValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVarDef;
+		if (!mEffectValues.containsKey(genericVarDef)) {
+			throw new VarNotFoundException(stateVarDef);
+		}
+		return mEffectValues.get(genericVarDef);
 	}
 
 	public EffectClass getEffectClass() {

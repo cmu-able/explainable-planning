@@ -9,7 +9,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
+import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -51,8 +53,8 @@ public class PRISMTranslator {
 		mThreeParamRewards = threeParamRewards;
 	}
 
-	public String getMDPTranslation()
-			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException {
+	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
 		String modules = buildModules();
 		String rewards = buildRewards();
@@ -648,8 +650,11 @@ public class PRISMTranslator {
 	 * @return formula computeCost = !readyToCopy; rewards "cost" ... endrewards
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
 	 */
-	private String buildRewards() throws VarNotFoundException, AttributeNameNotFoundException {
+	private String buildRewards() throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula computeCost = !readyToCopy;");
 		builder.append("\n\n");
@@ -673,8 +678,11 @@ public class PRISMTranslator {
 	 *         ... : {scaled cost}; ...
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
 	 */
-	private String buildRewardItems(IQFunction qFunction) throws VarNotFoundException, AttributeNameNotFoundException {
+	private String buildRewardItems(IQFunction qFunction) throws VarNotFoundException, AttributeNameNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException {
 		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
@@ -770,7 +778,8 @@ public class PRISMTranslator {
 	}
 
 	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(IAction action,
-			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, Set<StateVar<IStateVarValue>> srcVars) {
+			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, Set<StateVar<IStateVarValue>> srcVars)
+			throws IncompatibleVarException, VarNotFoundException, DiscriminantNotFoundException {
 		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
@@ -782,9 +791,10 @@ public class PRISMTranslator {
 	}
 
 	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
-			Set<StateVar<IStateVarValue>> srcVars, IFactoredPSO actionPSO) {
+			Set<StateVar<IStateVarValue>> srcVars, IFactoredPSO actionPSO)
+			throws IncompatibleVarException, VarNotFoundException {
 		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
-		Discriminant discriminant = new Discriminant();
+		Discriminant discriminant = new Discriminant(discrClass);
 		for (StateVar<IStateVarValue> var : srcVars) {
 			if (discrClass.contains(var.getDefinition())) {
 				StateVar<IStateVarValue> discrVar = new StateVar<>(var.getDefinition(), var.getValue());

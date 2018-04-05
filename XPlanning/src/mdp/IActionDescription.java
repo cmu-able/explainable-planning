@@ -17,5 +17,9 @@ public interface IActionDescription extends Iterable<Entry<Discriminant, Probabi
 	public double getProbability(Effect effect, Discriminant discriminant)
 			throws DiscriminantNotFoundException, EffectNotFoundException;
 
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant) throws DiscriminantNotFoundException;
+
+	public DiscriminantClass getDiscriminantClass();
+
 	public EffectClass getEffectClass();
 }

@@ -56,12 +56,9 @@ public class RobotSpeedActionDescription implements IActionDescription {
 
 	public double getProbability(StateVar<RobotSpeed> rSpeedDest)
 			throws DiscriminantNotFoundException, EffectNotFoundException, IncompatibleVarException {
-		EffectClass rSpeedEffectClass = new EffectClass(mSetSpeed);
-		rSpeedEffectClass.add(rSpeedDest.getDefinition());
-		Effect rSpeedEffect = new Effect(rSpeedEffectClass);
+		Effect rSpeedEffect = new Effect(mSetSpeed, rSpeedDest.getDefinition());
 		rSpeedEffect.add(rSpeedDest);
-		DiscriminantClass emptyDiscrClass = new DiscriminantClass(mSetSpeed);
-		Discriminant rSpeedDiscriminant = new Discriminant(emptyDiscrClass);
+		Discriminant rSpeedDiscriminant = new Discriminant(mSetSpeed);
 		return mrSpeedActionDesc.getProbability(rSpeedEffect, rSpeedDiscriminant);
 	}
 

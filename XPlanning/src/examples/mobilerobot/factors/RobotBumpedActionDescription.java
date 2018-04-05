@@ -80,13 +80,9 @@ public class RobotBumpedActionDescription implements IActionDescription {
 
 	public double getProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc)
 			throws DiscriminantNotFoundException, EffectNotFoundException, IncompatibleVarException {
-		EffectClass rBumpedEffectClass = new EffectClass(mMoveTo);
-		rBumpedEffectClass.add(rBumpedDest.getDefinition());
-		Effect rBumpedEffect = new Effect(rBumpedEffectClass);
+		Effect rBumpedEffect = new Effect(mMoveTo, rBumpedDest.getDefinition());
 		rBumpedEffect.add(rBumpedDest);
-		DiscriminantClass rLocDiscrClass = new DiscriminantClass(mMoveTo);
-		rLocDiscrClass.add(rLocSrc.getDefinition());
-		Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
+		Discriminant rLocDiscriminant = new Discriminant(mMoveTo, rLocSrc.getDefinition());
 		rLocDiscriminant.add(rLocSrc);
 		return mrBumpedActionDesc.getProbability(rBumpedEffect, rLocDiscriminant);
 	}

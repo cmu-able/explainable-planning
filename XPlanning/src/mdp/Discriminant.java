@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import exceptions.IncompatibleVarException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -26,15 +27,28 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private Set<StateVar<IStateVarValue>> mDiscriminant;
+	private DiscriminantClass mDiscriminantClass;
 
-	public Discriminant() {
+	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscriminant = new HashSet<>();
+		mDiscriminantClass = discriminantClass;
 	}
 
-	public void add(StateVar<? extends IStateVarValue> stateVar) {
+	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
 		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
 		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
+		if (!sanityCheck(genericStateVar)) {
+			throw new IncompatibleVarException(genericDef);
+		}
 		mDiscriminant.add(genericStateVar);
+	}
+
+	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
+		return mDiscriminantClass.contains(stateVar.getDefinition());
+	}
+
+	public DiscriminantClass getDiscriminantClass() {
+		return mDiscriminantClass;
 	}
 
 	@Override
@@ -51,7 +65,7 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 			return false;
 		}
 		Discriminant discr = (Discriminant) obj;
-		return discr.mDiscriminant.equals(mDiscriminant);
+		return discr.mDiscriminant.equals(mDiscriminant) && discr.mDiscriminantClass.equals(mDiscriminantClass);
 	}
 
 	@Override
@@ -60,6 +74,7 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDiscriminant.hashCode();
+			result = 31 * result + mDiscriminantClass.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

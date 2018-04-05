@@ -45,6 +45,10 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		return mAction;
 	}
 
+	public boolean contains(StateVarDefinition<IStateVarValue> stateVarDef) {
+		return mEffectClass.contains(stateVarDef);
+	}
+
 	public boolean overlaps(EffectClass other) {
 		for (StateVarDefinition<IStateVarValue> varDef : other) {
 			if (mEffectClass.contains(varDef)) {

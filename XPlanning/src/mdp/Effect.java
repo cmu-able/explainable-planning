@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import exceptions.IncompatibleVarException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -22,15 +23,28 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private Set<StateVar<IStateVarValue>> mEffect;
+	private EffectClass mEffectClass;
 
-	public Effect() {
+	public Effect(EffectClass effectClass) {
 		mEffect = new HashSet<>();
+		mEffectClass = effectClass;
 	}
 
-	public void add(StateVar<? extends IStateVarValue> stateVar) {
+	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
 		StateVarDefinition<IStateVarValue> genericDef = (StateVarDefinition<IStateVarValue>) stateVar.getDefinition();
 		StateVar<IStateVarValue> genericStateVar = new StateVar<>(genericDef, stateVar.getValue());
+		if (!sanityCheck(genericStateVar)) {
+			throw new IncompatibleVarException(genericDef);
+		}
 		mEffect.add(genericStateVar);
+	}
+
+	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
+		return mEffectClass.contains(stateVar.getDefinition());
+	}
+
+	public EffectClass getEffectClass() {
+		return mEffectClass;
 	}
 
 	@Override
@@ -47,7 +61,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 			return false;
 		}
 		Effect effect = (Effect) obj;
-		return effect.mEffect.equals(mEffect);
+		return effect.mEffect.equals(mEffect) && effect.mEffectClass.equals(mEffectClass);
 	}
 
 	@Override
@@ -56,6 +70,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mEffect.hashCode();
+			result = 31 * result + mEffectClass.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

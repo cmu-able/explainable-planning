@@ -4,10 +4,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
+/**
+ * {@link DiscriminantClass} is a set of {@link StateVarDefinition} that defines a class of {@link Discriminant}s.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarValue>> {
 
 	/*
@@ -16,11 +21,9 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 	private volatile int hashCode;
 
 	private Set<StateVarDefinition<IStateVarValue>> mDiscriminantClass;
-	private IAction mAction;
 
-	public DiscriminantClass(IAction action) {
+	public DiscriminantClass() {
 		mDiscriminantClass = new HashSet<>();
-		mAction = action;
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
@@ -28,10 +31,6 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
 				genericValues);
 		mDiscriminantClass.add(genericVarDef);
-	}
-
-	public IAction getAction() {
-		return mAction;
 	}
 
 	public boolean contains(StateVarDefinition<IStateVarValue> stateVarDef) {
@@ -52,7 +51,7 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 			return false;
 		}
 		DiscriminantClass discrClass = (DiscriminantClass) obj;
-		return discrClass.mDiscriminantClass.equals(mDiscriminantClass) && discrClass.mAction.equals(mAction);
+		return discrClass.mDiscriminantClass.equals(mDiscriminantClass);
 	}
 
 	@Override
@@ -61,7 +60,6 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDiscriminantClass.hashCode();
-			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

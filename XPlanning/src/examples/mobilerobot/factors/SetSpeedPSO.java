@@ -1,13 +1,19 @@
 package examples.mobilerobot.factors;
 
-import java.util.Map;
 import java.util.Set;
 
+import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.VarNotFoundException;
+import factors.IStateVarValue;
 import factors.StateVarDefinition;
+import mdp.Discriminant;
+import mdp.DiscriminantClass;
 import mdp.EffectClass;
+import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
+import mdp.Precondition;
 
 /**
  * {@link SetSpeedPSO} is a factored PSO representation of a {@link SetSpeedAction}
@@ -23,35 +29,40 @@ public class SetSpeedPSO implements IFactoredPSO {
 	private volatile int hashCode;
 
 	private SetSpeedAction mSetSpeed;
+	private FactoredPSO mActionPSO;
 
-	/**
-	 * State variable that is affected by this action.
-	 */
-	private StateVarDefinition<RobotSpeed> mrSpeedDef;
-
-	/**
-	 * Full action descriptions for all independent effect classes of this action
-	 */
-	private Map<EffectClass, IActionDescription> mActionDescriptions;
-
-	public SetSpeedPSO(SetSpeedAction setSpeed, StateVarDefinition<RobotSpeed> rSpeedDef) {
+	public SetSpeedPSO(SetSpeedAction setSpeed, Precondition precondition,
+			RobotSpeedActionDescription rSpeedActionDesc) {
 		mSetSpeed = setSpeed;
-		mrSpeedDef = rSpeedDef;
-		RobotSpeedActionDescription rSpeedDesc = new RobotSpeedActionDescription(setSpeed, rSpeedDef);
-		mActionDescriptions.put(rSpeedDesc.getEffectClass(), rSpeedDesc);
+		mActionPSO = new FactoredPSO(precondition);
+		mActionPSO.addActionDescription(rSpeedActionDesc);
+	}
+
+	@Override
+	public Precondition getPrecondition() {
+		return mActionPSO.getPrecondition();
 	}
 
 	@Override
 	public Set<EffectClass> getIndependentEffectClasses() {
-		return mActionDescriptions.keySet();
+		return mActionPSO.getIndependentEffectClasses();
 	}
 
 	@Override
 	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException {
-		if (!mActionDescriptions.containsKey(effectClass)) {
-			throw new EffectClassNotFoundException(effectClass);
-		}
-		return mActionDescriptions.get(effectClass);
+		return mActionPSO.getActionDescription(effectClass);
+	}
+
+	@Override
+	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef)
+			throws VarNotFoundException {
+		return mActionPSO.getDiscriminantClass(stateVarDef);
+	}
+
+	@Override
+	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
+			Discriminant discriminant) throws VarNotFoundException, DiscriminantNotFoundException {
+		return mActionPSO.getPossibleImpact(stateVarDef, discriminant);
 	}
 
 	@Override
@@ -63,8 +74,7 @@ public class SetSpeedPSO implements IFactoredPSO {
 			return false;
 		}
 		SetSpeedPSO pso = (SetSpeedPSO) obj;
-		return pso.mSetSpeed.equals(mSetSpeed) && pso.mrSpeedDef.equals(mrSpeedDef)
-				&& pso.mActionDescriptions.equals(mActionDescriptions);
+		return pso.mSetSpeed.equals(mSetSpeed) && pso.mActionPSO.equals(mActionPSO);
 	}
 
 	@Override
@@ -73,8 +83,7 @@ public class SetSpeedPSO implements IFactoredPSO {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mSetSpeed.hashCode();
-			result = 31 * result + mrSpeedDef.hashCode();
-			result = 31 * result + mActionDescriptions.hashCode();
+			result = 31 * result + mActionPSO.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

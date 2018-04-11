@@ -17,15 +17,22 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 	 */
 	private volatile int hashCode;
 
+	private String mName;
 	private EventBasedMetric mMetric;
 
-	public NonStandardMetricQFunction(EventBasedMetric metric) {
+	public NonStandardMetricQFunction(String name, EventBasedMetric metric) {
+		mName = name;
 		mMetric = metric;
 	}
 
 	@Override
 	public EventBasedMetric getMetric() {
 		return mMetric;
+	}
+
+	@Override
+	public String getName() {
+		return mName;
 	}
 
 	@Override
@@ -47,7 +54,7 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 			return false;
 		}
 		NonStandardMetricQFunction qFunc = (NonStandardMetricQFunction) obj;
-		return qFunc.mMetric.equals(mMetric);
+		return qFunc.mName.equals(mName) && qFunc.mMetric.equals(mMetric);
 	}
 
 	@Override
@@ -55,6 +62,7 @@ public class NonStandardMetricQFunction implements INonStandardMetricQFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mName.hashCode();
 			result = 31 * result + mMetric.hashCode();
 			hashCode = result;
 		}

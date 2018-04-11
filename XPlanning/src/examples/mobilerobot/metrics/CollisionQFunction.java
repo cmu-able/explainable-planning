@@ -19,6 +19,8 @@ import metrics.TransitionDefinition;
  */
 public class CollisionQFunction implements ICountQFunction {
 
+	private static final String NAME = "collision";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -34,6 +36,11 @@ public class CollisionQFunction implements ICountQFunction {
 	@Override
 	public IEvent getEvent() {
 		return mCollisionEvent;
+	}
+
+	@Override
+	public String getName() {
+		return NAME;
 	}
 
 	@Override

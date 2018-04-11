@@ -12,6 +12,8 @@ import exceptions.VarNotFoundException;
  */
 public interface IQFunction {
 
+	public String getName();
+
 	public TransitionDefinition getTransitionDefinition();
 
 	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;

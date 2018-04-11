@@ -21,6 +21,7 @@ import metrics.TransitionDefinition;
  */
 public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 
+	private static final String NAME = "intrusiveness";
 	private static final double NON_INTRUSIVE_PENALTY = 0;
 	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
 	private static final double VERY_INTRUSIVE_PENALTY = 3;
@@ -39,12 +40,17 @@ public class IntrusivenessQFunction implements INonStandardMetricQFunction {
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PUBLIC), NON_INTRUSIVE_PENALTY);
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.SEMI_PRIVATE), SEMI_INTRUSIVE_PEANLTY);
 		metric.put(new IntrusiveMoveEvent(moveTo, rLocDestDef, Area.PRIVATE), VERY_INTRUSIVE_PENALTY);
-		mNonStdQFn = new NonStandardMetricQFunction(metric);
+		mNonStdQFn = new NonStandardMetricQFunction(NAME, metric);
 	}
 
 	@Override
 	public EventBasedMetric getMetric() {
 		return mNonStdQFn.getMetric();
+	}
+
+	@Override
+	public String getName() {
+		return mNonStdQFn.getName();
 	}
 
 	@Override

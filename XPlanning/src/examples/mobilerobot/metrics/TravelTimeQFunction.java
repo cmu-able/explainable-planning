@@ -21,6 +21,7 @@ import metrics.TransitionDefinition;
  */
 public class TravelTimeQFunction implements IStandardMetricQFunction {
 
+	private static final String NAME = "travelTime";
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -64,6 +65,11 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
 		}
 		return 0;
+	}
+
+	@Override
+	public String getName() {
+		return NAME;
 	}
 
 	@Override

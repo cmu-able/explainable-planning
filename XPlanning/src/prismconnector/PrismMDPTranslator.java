@@ -27,7 +27,6 @@ import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.IFactoredPSO;
-import mdp.Policy;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 import mdp.XMDP;
@@ -37,7 +36,7 @@ import metrics.TransitionDefinition;
 import preferences.CostFunction;
 import preferences.ILinearCostFunction;
 
-public class PRISMTranslator {
+public class PrismMDPTranslator {
 
 	private static final String INDENT = "  ";
 	private static final String SRC_SUFFIX = "Src";
@@ -47,7 +46,7 @@ public class PRISMTranslator {
 
 	private boolean mThreeParamRewards;
 
-	public PRISMTranslator(XMDP xmdp, boolean threeParamRewards) {
+	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
 		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs(), mXMDP.getActionDefs());
 		mThreeParamRewards = threeParamRewards;
@@ -90,21 +89,6 @@ public class PRISMTranslator {
 			builder.append(encodedValue);
 		}
 		builder.append("\" ]");
-		return builder.toString();
-	}
-
-	public String getQFunctionTranslation(IQFunction qFunction) {
-		// TODO
-		return null;
-	}
-
-	public String getDTMC(Policy policy) {
-		StringBuilder builder = new StringBuilder();
-		builder.append("dtmc");
-		builder.append("\n");
-		builder.append("module policy");
-		// TODO
-		builder.append("endmodule");
 		return builder.toString();
 	}
 

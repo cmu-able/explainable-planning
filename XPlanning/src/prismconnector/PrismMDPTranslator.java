@@ -29,6 +29,7 @@ import mdp.IActionDescription;
 import mdp.IFactoredPSO;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
+import mdp.StateSpace;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.Transition;
@@ -48,13 +49,13 @@ public class PrismMDPTranslator {
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(mXMDP.getStateVarDefs(), mXMDP.getActionDefs());
+		mEncodings = new ValueEncodingScheme(mXMDP.getStateSpace(), mXMDP.getActionDefs());
 		mThreeParamRewards = threeParamRewards;
 	}
 
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException {
-		String constsDecl = buildConstsDecl(mXMDP.getStateVarDefs());
+		String constsDecl = buildConstsDecl(mXMDP.getStateSpace());
 		String modules = buildModules();
 		String rewards = buildRewards();
 		StringBuilder builder = new StringBuilder();
@@ -94,13 +95,13 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @param stateVarDefs
+	 * @param stateSpace
 	 *            Definitions of all state variables
 	 * @return const int {varName}_{value} = {encoded int value}; ...
 	 */
-	private String buildConstsDecl(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
+	private String buildConstsDecl(StateSpace stateSpace) {
 		StringBuilder builder = new StringBuilder();
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
 			String varName = stateVarDef.getName();
 			builder.append("// Possible values of ");
 			builder.append(varName);
@@ -175,9 +176,9 @@ public class PrismMDPTranslator {
 			IAction action = effectClass.getAction();
 			iter.remove();
 
-			Set<StateVarDefinition<IStateVarValue>> moduleVarDefs = new HashSet<>();
+			StateSpace moduleVarSpace = new StateSpace();
 			Map<IAction, EffectClass> overlappingEffectActions = new HashMap<>();
-			moduleVarDefs.addAll(effectClass.getAllVarDefs());
+			moduleVarSpace.addStateVarDefinitions(effectClass.getAllVarDefs());
 			overlappingEffectActions.put(action, effectClass);
 
 			while (iter.hasNext()) {
@@ -185,13 +186,13 @@ public class PrismMDPTranslator {
 				IAction nextAction = nextEffectClass.getAction();
 
 				if (!action.equals(nextAction) && effectClass.overlaps(nextEffectClass)) {
-					moduleVarDefs.addAll(nextEffectClass.getAllVarDefs());
+					moduleVarSpace.addStateVarDefinitions(nextEffectClass.getAllVarDefs());
 					overlappingEffectActions.put(nextAction, nextEffectClass);
 					iter.remove();
 				}
 			}
 
-			String module = buildModule("module_" + moduleCount, moduleVarDefs, overlappingEffectActions);
+			String module = buildModule("module_" + moduleCount, moduleVarSpace, overlappingEffectActions);
 			builder.append(module);
 			builder.append("\n\n");
 		}
@@ -209,7 +210,7 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param moduleName
 	 *            A unique name of the module
-	 * @param moduleVarDefs
+	 * @param moduleVarSpace
 	 *            Variables of the module
 	 * @param overlappingEffectActions
 	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
@@ -218,14 +219,14 @@ public class PrismMDPTranslator {
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModule(String moduleName, Set<StateVarDefinition<IStateVarValue>> moduleVarDefs,
+	private String buildModule(String moduleName, StateSpace moduleVarSpace,
 			Map<IAction, EffectClass> overlappingEffectActions)
 			throws VarNotFoundException, EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(moduleName);
 		builder.append("\n");
-		String varsDecl = buildModuleVarsDecl(moduleVarDefs);
+		String varsDecl = buildModuleVarsDecl(moduleVarSpace);
 		builder.append(varsDecl);
 
 		if (mThreeParamRewards) {
@@ -270,28 +271,26 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @param moduleVarDefs
+	 * @param moduleVarSpace
 	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
-	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> moduleVarDefs)
-			throws VarNotFoundException {
-		return buildModuleVarsDecl(moduleVarDefs, "");
+	private String buildModuleVarsDecl(StateSpace moduleVarSpace) throws VarNotFoundException {
+		return buildModuleVarsDecl(moduleVarSpace, "");
 	}
 
 	/**
 	 * 
-	 * @param moduleVarDefs
+	 * @param moduleVarSpace
 	 *            Variables of the module
 	 * @param nameSuffix
 	 *            Suffix for each variable's name
 	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
-	private String buildModuleVarsDecl(Set<StateVarDefinition<IStateVarValue>> moduleVarDefs, String nameSuffix)
-			throws VarNotFoundException {
+	private String buildModuleVarsDecl(StateSpace moduleVarSpace, String nameSuffix) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarSpace) {
 			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialStateVar(stateVarDef);
 			IStateVarValue iniValue = iniStateVar.getValue();
 			String varDecl;
@@ -524,7 +523,7 @@ public class PrismMDPTranslator {
 	 * @throws VarNotFoundException
 	 */
 	private String buildHelperModule() throws VarNotFoundException {
-		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateVarDefs(), SRC_SUFFIX);
+		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateSpace(), SRC_SUFFIX);
 		String actionsDecl = buildHelperActionsDecl(mXMDP.getActionDefs());
 		String readyToCopyDecl = "readyToCopy : bool init true;";
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";

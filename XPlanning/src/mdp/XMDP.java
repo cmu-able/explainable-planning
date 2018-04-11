@@ -25,7 +25,7 @@ public class XMDP {
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<IStateVarValue>> mStateVarDefs;
+	private StateSpace mStateSpace;
 	private Set<ActionDefinition<IAction>> mActionDefs;
 	private Set<StateVar<IStateVarValue>> mInitialState;
 	private Set<StateVar<IStateVarValue>> mGoal;
@@ -36,10 +36,10 @@ public class XMDP {
 	private Map<String, StateVar<IStateVarValue>> mInitStateVarMap;
 	private Map<String, StateVar<IStateVarValue>> mGoalStateVarMap;
 
-	public XMDP(Set<StateVarDefinition<IStateVarValue>> stateVarDefs, Set<ActionDefinition<IAction>> actionDefs,
+	public XMDP(StateSpace stateVarDefs, Set<ActionDefinition<IAction>> actionDefs,
 			Set<StateVar<IStateVarValue>> initialState, Set<StateVar<IStateVarValue>> goal,
 			Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions, CostFunction costFunction) {
-		mStateVarDefs = stateVarDefs;
+		mStateSpace = stateVarDefs;
 		mActionDefs = actionDefs;
 		mInitialState = initialState;
 		mGoal = goal;
@@ -55,8 +55,8 @@ public class XMDP {
 		}
 	}
 
-	public Set<StateVarDefinition<IStateVarValue>> getStateVarDefs() {
-		return mStateVarDefs;
+	public StateSpace getStateSpace() {
+		return mStateSpace;
 	}
 
 	public Set<ActionDefinition<IAction>> getActionDefs() {
@@ -108,7 +108,7 @@ public class XMDP {
 			return false;
 		}
 		XMDP mdp = (XMDP) obj;
-		return mdp.mStateVarDefs.equals(mStateVarDefs) && mdp.mActionDefs.equals(mActionDefs)
+		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionDefs.equals(mActionDefs)
 				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
 				&& mdp.mTransitions.equals(mTransitions) && mdp.mQFunctions.equals(mQFunctions)
 				&& mdp.mCostFunction.equals(mCostFunction);
@@ -119,7 +119,7 @@ public class XMDP {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mStateVarDefs.hashCode();
+			result = 31 * result + mStateSpace.hashCode();
 			result = 31 * result + mActionDefs.hashCode();
 			result = 31 * result + mInitialState.hashCode();
 			result = 31 * result + mGoal.hashCode();

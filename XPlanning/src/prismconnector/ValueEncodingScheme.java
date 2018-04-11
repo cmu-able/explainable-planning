@@ -8,6 +8,7 @@ import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
+import mdp.StateSpace;
 
 /**
  * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's
@@ -21,12 +22,11 @@ public class ValueEncodingScheme {
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings;
 	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings;
 
-	public ValueEncodingScheme(Set<StateVarDefinition<IStateVarValue>> stateVarDefs,
-			Set<ActionDefinition<IAction>> actionDefs) {
+	public ValueEncodingScheme(StateSpace stateSpace, Set<ActionDefinition<IAction>> actionDefs) {
 		mStateVarEncodings = new HashMap<>();
 		mActionEncodings = new HashMap<>();
 
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
 			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
 			mStateVarEncodings.put(stateVarDef, encoding);
 		}

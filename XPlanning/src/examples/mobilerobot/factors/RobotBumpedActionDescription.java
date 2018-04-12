@@ -18,6 +18,7 @@ import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
+import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 
 /**
@@ -42,17 +43,18 @@ public class RobotBumpedActionDescription implements IActionDescription {
 	private MoveToAction mMoveTo;
 
 	public RobotBumpedActionDescription(MoveToAction moveTo, StateVarDefinition<Location> rLocSrcDef,
-			Set<Location> applicablerLocSrcValues, StateVarDefinition<RobotBumped> rBumpedDef)
+			StateVarDefinition<RobotBumped> rBumpedDestDef, Precondition precondition)
 			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException {
 		mMoveTo = moveTo;
 		DiscriminantClass rLocDiscrClass = new DiscriminantClass(moveTo);
 		rLocDiscrClass.add(rLocSrcDef);
 		EffectClass rBumpedEffectClass = new EffectClass(moveTo);
-		rBumpedEffectClass.add(rBumpedDef);
+		rBumpedEffectClass.add(rBumpedDestDef);
 		mrBumpedActionDesc = new ActionDescription(rLocDiscrClass, rBumpedEffectClass);
 
-		for (Location rLocSrcValue : applicablerLocSrcValues) {
+		Set<Location> applicableLocs = precondition.getApplicableValues(rLocSrcDef);
+		for (Location rLocSrcValue : applicableLocs) {
 			StateVar<Location> rLocSrc = new StateVar<>(rLocSrcDef, rLocSrcValue);
 			Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
 			rLocDiscriminant.add(rLocSrc);
@@ -60,8 +62,8 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(rBumpedEffectClass);
 			Effect bumpedEffect = new Effect(rBumpedEffectClass);
 			Effect notBumpedEffect = new Effect(rBumpedEffectClass);
-			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDef, new RobotBumped(true));
-			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDef, new RobotBumped(false));
+			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDestDef, new RobotBumped(true));
+			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDestDef, new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 

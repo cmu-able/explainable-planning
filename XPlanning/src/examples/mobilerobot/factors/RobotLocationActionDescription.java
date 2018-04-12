@@ -18,6 +18,7 @@ import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
+import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 
 /**
@@ -40,27 +41,27 @@ public class RobotLocationActionDescription implements IActionDescription {
 	private ActionDescription mrLocActionDesc;
 	private MoveToAction mMoveTo;
 
-	public RobotLocationActionDescription(MoveToAction moveTo, StateVarDefinition<Location> rLocSrcDef,
-			Set<Location> applicablerLocSrcValues, StateVarDefinition<Location> rLocDestDef)
-			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException {
+	public RobotLocationActionDescription(MoveToAction moveTo, StateVarDefinition<Location> rLocDef,
+			Precondition precondition) throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
 		mMoveTo = moveTo;
 		DiscriminantClass rLocDiscrClass = new DiscriminantClass(moveTo);
-		rLocDiscrClass.add(rLocSrcDef);
+		rLocDiscrClass.add(rLocDef);
 		EffectClass rLocEffectClass = new EffectClass(moveTo);
-		rLocEffectClass.add(rLocDestDef);
+		rLocEffectClass.add(rLocDef);
 		mrLocActionDesc = new ActionDescription(rLocDiscrClass, rLocEffectClass);
 
-		for (Location rLocSrcValue : applicablerLocSrcValues) {
-			StateVar<Location> rLocSrc = new StateVar<>(rLocSrcDef, rLocSrcValue);
+		Set<Location> applicableLocs = precondition.getApplicableValues(rLocDef);
+		for (Location rLocSrcValue : applicableLocs) {
+			StateVar<Location> rLocSrc = new StateVar<>(rLocDef, rLocSrcValue);
 			Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
 			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect(rLocEffectClass);
 			Effect newLocEffect = new Effect(rLocEffectClass);
 			Effect oldLocEffect = new Effect(rLocEffectClass);
-			StateVar<Location> newLoc = new StateVar<>(rLocDestDef, moveTo.getDestination());
-			StateVar<Location> oldLoc = new StateVar<>(rLocDestDef, rLocSrc.getValue());
+			StateVar<Location> newLoc = new StateVar<>(rLocDef, moveTo.getDestination());
+			StateVar<Location> oldLoc = new StateVar<>(rLocDef, rLocSrc.getValue());
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 

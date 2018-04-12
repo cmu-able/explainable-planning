@@ -3,11 +3,7 @@ package mdp;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.VarNotFoundException;
 import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import metrics.IQFunction;
 import preferences.CostFunction;
 
@@ -26,18 +22,14 @@ public class XMDP {
 
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
-	private Set<StateVar<IStateVarValue>> mInitialState;
-	private Set<StateVar<IStateVarValue>> mGoal;
+	private State mInitialState;
+	private State mGoal;
 	private Map<IAction, IFactoredPSO> mTransitions;
 	private Set<IQFunction> mQFunctions;
 	private CostFunction mCostFunction;
 
-	private Map<String, StateVar<IStateVarValue>> mInitStateVarMap;
-	private Map<String, StateVar<IStateVarValue>> mGoalStateVarMap;
-
-	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, Set<StateVar<IStateVarValue>> initialState,
-			Set<StateVar<IStateVarValue>> goal, Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions,
-			CostFunction costFunction) {
+	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, State initialState, State goal,
+			Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions, CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
@@ -45,13 +37,6 @@ public class XMDP {
 		mTransitions = transitions;
 		mQFunctions = qFunctions;
 		mCostFunction = costFunction;
-
-		for (StateVar<IStateVarValue> var : initialState) {
-			mInitStateVarMap.put(var.getName(), var);
-		}
-		for (StateVar<IStateVarValue> var : goal) {
-			mGoalStateVarMap.put(var.getName(), var);
-		}
 	}
 
 	public StateSpace getStateSpace() {
@@ -62,28 +47,12 @@ public class XMDP {
 		return mActionSpace;
 	}
 
-	public Set<StateVar<IStateVarValue>> getInitialState() {
+	public State getInitialState() {
 		return mInitialState;
 	}
 
-	public StateVar<IStateVarValue> getInitialStateVar(StateVarDefinition<? extends IStateVarValue> stateVarDef)
-			throws VarNotFoundException {
-		if (!mInitStateVarMap.containsKey(stateVarDef.getName())) {
-			throw new VarNotFoundException(stateVarDef);
-		}
-		return mInitStateVarMap.get(stateVarDef.getName());
-	}
-
-	public Set<StateVar<IStateVarValue>> getGoal() {
+	public State getGoal() {
 		return mGoal;
-	}
-
-	public StateVar<IStateVarValue> getGoalStateVar(StateVarDefinition<? extends IStateVarValue> stateVarDef)
-			throws VarNotFoundException {
-		if (!mGoalStateVarMap.containsKey(stateVarDef.getName())) {
-			throw new VarNotFoundException(stateVarDef);
-		}
-		return mGoalStateVarMap.get(stateVarDef.getName());
 	}
 
 	public IFactoredPSO getTransitionFunction(IAction action) {

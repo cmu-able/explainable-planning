@@ -30,6 +30,7 @@ import mdp.IActionDescription;
 import mdp.IFactoredPSO;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
+import mdp.State;
 import mdp.StateSpace;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -75,11 +76,11 @@ public class PrismMDPTranslator {
 	 * @return P>=1 [ F "{varName}={encoded int value} & ..." ]
 	 */
 	public String getGoalPropertyTranslation() {
-		Set<StateVar<IStateVarValue>> goalVars = mXMDP.getGoal();
+		State goal = mXMDP.getGoal();
 		StringBuilder builder = new StringBuilder();
 		builder.append("P>=1 [ F \"");
 		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goalVars) {
+		for (StateVar<IStateVarValue> goalVar : goal) {
 			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
 			if (!firstVar) {
 				builder.append(" & ");
@@ -292,7 +293,7 @@ public class PrismMDPTranslator {
 	private String buildModuleVarsDecl(StateSpace moduleVarSpace, String nameSuffix) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarSpace) {
-			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialStateVar(stateVarDef);
+			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialState().getStateVar(stateVarDef);
 			IStateVarValue iniValue = iniStateVar.getValue();
 			String varDecl;
 			if (iniValue instanceof IStateVarBoolean) {

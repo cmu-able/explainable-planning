@@ -1,10 +1,9 @@
 package prismconnector;
 
-import java.util.Set;
-
 import factors.IStateVarValue;
 import factors.StateVar;
 import mdp.Policy;
+import mdp.State;
 import mdp.XMDP;
 import metrics.IQFunction;
 
@@ -46,14 +45,14 @@ public class PrismDTMCTranslator {
 	 * @return R{"{objectiveName}"}=? [ F "{varName}={encoded int value} & ..." ]
 	 */
 	public String getObjectivePropertyTranslation(IQFunction qFunction) {
-		Set<StateVar<IStateVarValue>> goalVars = mXMDP.getGoal();
+		State goal = mXMDP.getGoal();
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}=? ");
 		builder.append("[ F \"");
 		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goalVars) {
+		for (StateVar<IStateVarValue> goalVar : goal) {
 			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
 			if (!firstVar) {
 				builder.append(" & ");

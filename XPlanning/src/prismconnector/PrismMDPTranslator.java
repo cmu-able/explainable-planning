@@ -21,6 +21,7 @@ import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.ActionSpace;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
@@ -49,7 +50,7 @@ public class PrismMDPTranslator {
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(mXMDP.getStateSpace(), mXMDP.getActionDefs());
+		mEncodings = new ValueEncodingScheme(mXMDP.getStateSpace(), mXMDP.getActionSpace());
 		mThreeParamRewards = threeParamRewards;
 	}
 
@@ -158,7 +159,7 @@ public class PrismMDPTranslator {
 	 */
 	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
 		Set<EffectClass> allEffectClasses = new HashSet<>();
-		for (ActionDefinition<IAction> actionDef : mXMDP.getActionDefs()) {
+		for (ActionDefinition<IAction> actionDef : mXMDP.getActionSpace()) {
 			for (IAction action : actionDef.getActions()) {
 				IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
 				Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
@@ -524,7 +525,7 @@ public class PrismMDPTranslator {
 	 */
 	private String buildHelperModule() throws VarNotFoundException {
 		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateSpace(), SRC_SUFFIX);
-		String actionsDecl = buildHelperActionsDecl(mXMDP.getActionDefs());
+		String actionsDecl = buildHelperActionsDecl(mXMDP.getActionSpace());
 		String readyToCopyDecl = "readyToCopy : bool init true;";
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
 
@@ -536,7 +537,7 @@ public class PrismMDPTranslator {
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
 		builder.append("\n\n");
-		String copyCmds = buildHelperCopyCommands(mXMDP.getActionDefs(), SRC_SUFFIX);
+		String copyCmds = buildHelperCopyCommands(mXMDP.getActionSpace(), SRC_SUFFIX);
 		builder.append(copyCmds);
 		builder.append(INDENT);
 		builder.append(nextCmd);
@@ -547,12 +548,12 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @param actionDefs
+	 * @param actionSpace
 	 * @return {actionTypeName} : [0..{maximum encoded int}] init 0; ...
 	 */
-	private String buildHelperActionsDecl(Set<ActionDefinition<IAction>> actionDefs) {
+	private String buildHelperActionsDecl(ActionSpace actionSpace) {
 		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionDefs) {
+		for (ActionDefinition<IAction> actionDef : actionSpace) {
 			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(actionDef);
 			builder.append(INDENT);
 			builder.append(actionDef.getName());
@@ -565,14 +566,14 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @param actionDefs
+	 * @param actionSpace
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & ({actionTypeName}'={encoded action
 	 *         value}) & (readyToCopy'=false); ...
 	 */
-	private String buildHelperCopyCommands(Set<ActionDefinition<IAction>> actionDefs, String nameSuffix) {
+	private String buildHelperCopyCommands(ActionSpace actionSpace, String nameSuffix) {
 		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionDefs) {
+		for (ActionDefinition<IAction> actionDef : actionSpace) {
 			for (IAction action : actionDef.getActions()) {
 				builder.append(INDENT);
 				builder.append("[");

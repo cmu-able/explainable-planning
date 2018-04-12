@@ -18,7 +18,7 @@ public class PrismDTMCTranslator {
 	public PrismDTMCTranslator(Policy policy, XMDP xmdp, boolean threeParamRewards) {
 		mPolicy = policy;
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionDefs());
+		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
 		mThreeParamRewards = threeParamRewards;
 	}
 

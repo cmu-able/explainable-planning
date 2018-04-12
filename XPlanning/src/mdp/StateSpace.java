@@ -20,7 +20,7 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 	 */
 	private volatile int hashCode;
 
-	Set<StateVarDefinition<IStateVarValue>> mStateVarDefs;
+	private Set<StateVarDefinition<IStateVarValue>> mStateVarDefs;
 
 	public StateSpace() {
 		mStateVarDefs = new HashSet<>();

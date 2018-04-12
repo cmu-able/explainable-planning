@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import exceptions.VarNotFoundException;
-import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
@@ -26,7 +25,7 @@ public class XMDP {
 	private volatile int hashCode;
 
 	private StateSpace mStateSpace;
-	private Set<ActionDefinition<IAction>> mActionDefs;
+	private ActionSpace mActionSpace;
 	private Set<StateVar<IStateVarValue>> mInitialState;
 	private Set<StateVar<IStateVarValue>> mGoal;
 	private Map<IAction, IFactoredPSO> mTransitions;
@@ -36,11 +35,11 @@ public class XMDP {
 	private Map<String, StateVar<IStateVarValue>> mInitStateVarMap;
 	private Map<String, StateVar<IStateVarValue>> mGoalStateVarMap;
 
-	public XMDP(StateSpace stateVarDefs, Set<ActionDefinition<IAction>> actionDefs,
-			Set<StateVar<IStateVarValue>> initialState, Set<StateVar<IStateVarValue>> goal,
-			Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions, CostFunction costFunction) {
+	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, Set<StateVar<IStateVarValue>> initialState,
+			Set<StateVar<IStateVarValue>> goal, Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions,
+			CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
-		mActionDefs = actionDefs;
+		mActionSpace = actionSpace;
 		mInitialState = initialState;
 		mGoal = goal;
 		mTransitions = transitions;
@@ -59,8 +58,8 @@ public class XMDP {
 		return mStateSpace;
 	}
 
-	public Set<ActionDefinition<IAction>> getActionDefs() {
-		return mActionDefs;
+	public ActionSpace getActionSpace() {
+		return mActionSpace;
 	}
 
 	public Set<StateVar<IStateVarValue>> getInitialState() {
@@ -108,7 +107,7 @@ public class XMDP {
 			return false;
 		}
 		XMDP mdp = (XMDP) obj;
-		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionDefs.equals(mActionDefs)
+		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionSpace.equals(mActionSpace)
 				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
 				&& mdp.mTransitions.equals(mTransitions) && mdp.mQFunctions.equals(mQFunctions)
 				&& mdp.mCostFunction.equals(mCostFunction);
@@ -120,7 +119,7 @@ public class XMDP {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mStateSpace.hashCode();
-			result = 31 * result + mActionDefs.hashCode();
+			result = 31 * result + mActionSpace.hashCode();
 			result = 31 * result + mInitialState.hashCode();
 			result = 31 * result + mGoal.hashCode();
 			result = 31 * result + mTransitions.hashCode();

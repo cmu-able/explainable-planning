@@ -8,6 +8,7 @@ import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
+import mdp.ActionSpace;
 import mdp.StateSpace;
 
 /**
@@ -22,7 +23,7 @@ public class ValueEncodingScheme {
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings;
 	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings;
 
-	public ValueEncodingScheme(StateSpace stateSpace, Set<ActionDefinition<IAction>> actionDefs) {
+	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace) {
 		mStateVarEncodings = new HashMap<>();
 		mActionEncodings = new HashMap<>();
 
@@ -30,7 +31,7 @@ public class ValueEncodingScheme {
 			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
 			mStateVarEncodings.put(stateVarDef, encoding);
 		}
-		for (ActionDefinition<IAction> actionDef : actionDefs) {
+		for (ActionDefinition<IAction> actionDef : actionSpace) {
 			Map<IAction, Integer> encoding = buildIntEncoding(actionDef.getActions());
 			mActionEncodings.put(actionDef, encoding);
 		}

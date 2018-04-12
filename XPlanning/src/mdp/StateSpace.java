@@ -20,25 +20,38 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<IStateVarValue>> mStateVarDefs;
+	private Set<StateVarDefinition<? extends IStateVarValue>> mStateVarDefs;
 
 	public StateSpace() {
 		mStateVarDefs = new HashSet<>();
 	}
 
 	public void addStateVarDefinition(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
-				stateVarDef.getPossibleValues());
-		mStateVarDefs.add(genericVarDef);
+		mStateVarDefs.add(stateVarDef);
 	}
 
-	public void addStateVarDefinitions(Set<StateVarDefinition<IStateVarValue>> stateVarDefs) {
-		mStateVarDefs.addAll(stateVarDefs);
+	public void addStateVarDefinitions(Iterable<StateVarDefinition<IStateVarValue>> stateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
+			mStateVarDefs.add(stateVarDef);
+		}
 	}
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return mStateVarDefs.iterator();
+		return new Iterator<StateVarDefinition<IStateVarValue>>() {
+
+			private Iterator<StateVarDefinition<? extends IStateVarValue>> iter = mStateVarDefs.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public StateVarDefinition<IStateVarValue> next() {
+				return (StateVarDefinition<IStateVarValue>) iter.next();
+			}
+		};
 	}
 
 	@Override

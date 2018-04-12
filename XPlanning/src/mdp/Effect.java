@@ -1,10 +1,8 @@
 package mdp;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
@@ -26,47 +24,39 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVar<IStateVarValue>> mEffect;
-	private Map<StateVarDefinition<IStateVarValue>, IStateVarValue> mEffectValues;
 	private EffectClass mEffectClass;
+	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mEffectVarMap;
 
 	public Effect(EffectClass effectClass) {
-		mEffect = new HashSet<>();
-		mEffectValues = new HashMap<>();
 		mEffectClass = effectClass;
+		mEffectVarMap = new HashMap<>();
 	}
 
 	public Effect(IAction action, StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mEffect = new HashSet<>();
-		mEffectValues = new HashMap<>();
 		mEffectClass = new EffectClass(action);
 		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
 			mEffectClass.add(varDef);
 		}
+		mEffectVarMap = new HashMap<>();
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
-		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVar
-				.getDefinition();
-		StateVar<IStateVarValue> genericVar = new StateVar<>(genericVarDef, stateVar.getValue());
-		if (!sanityCheck(genericVar)) {
-			throw new IncompatibleVarException(genericVarDef);
+		if (!sanityCheck(stateVar)) {
+			throw new IncompatibleVarException(stateVar.getDefinition());
 		}
-		mEffect.add(genericVar);
-		mEffectValues.put(genericVarDef, genericVar.getValue());
+		mEffectVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
-	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
+	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mEffectClass.contains(stateVar.getDefinition());
 	}
 
-	public IStateVarValue getEffectValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+	public <E extends IStateVarValue> E getEffectValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException {
-		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVarDef;
-		if (!mEffectValues.containsKey(genericVarDef)) {
+		if (!mEffectVarMap.containsKey(stateVarDef)) {
 			throw new VarNotFoundException(stateVarDef);
 		}
-		return mEffectValues.get(genericVarDef);
+		return valueType.cast(mEffectVarMap.get(stateVarDef).getValue());
 	}
 
 	public EffectClass getEffectClass() {
@@ -75,7 +65,20 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 
 	@Override
 	public Iterator<StateVar<IStateVarValue>> iterator() {
-		return mEffect.iterator();
+		return new Iterator<StateVar<IStateVarValue>>() {
+
+			private Iterator<StateVar<? extends IStateVarValue>> iter = mEffectVarMap.values().iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public StateVar<IStateVarValue> next() {
+				return (StateVar<IStateVarValue>) iter.next();
+			}
+		};
 	}
 
 	@Override
@@ -87,7 +90,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 			return false;
 		}
 		Effect effect = (Effect) obj;
-		return effect.mEffect.equals(mEffect) && effect.mEffectClass.equals(mEffectClass);
+		return effect.mEffectClass.equals(mEffectClass) && effect.mEffectVarMap.equals(mEffectVarMap);
 	}
 
 	@Override
@@ -95,8 +98,8 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mEffect.hashCode();
 			result = 31 * result + mEffectClass.hashCode();
+			result = 31 * result + mEffectVarMap.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

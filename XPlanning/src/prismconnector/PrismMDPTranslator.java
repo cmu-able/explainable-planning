@@ -180,7 +180,7 @@ public class PrismMDPTranslator {
 
 			StateSpace moduleVarSpace = new StateSpace();
 			Map<IAction, EffectClass> overlappingEffectActions = new HashMap<>();
-			moduleVarSpace.addStateVarDefinitions(effectClass.getAllVarDefs());
+			moduleVarSpace.addStateVarDefinitions(effectClass);
 			overlappingEffectActions.put(action, effectClass);
 
 			while (iter.hasNext()) {
@@ -188,7 +188,7 @@ public class PrismMDPTranslator {
 				IAction nextAction = nextEffectClass.getAction();
 
 				if (!action.equals(nextAction) && effectClass.overlaps(nextEffectClass)) {
-					moduleVarSpace.addStateVarDefinitions(nextEffectClass.getAllVarDefs());
+					moduleVarSpace.addStateVarDefinitions(nextEffectClass);
 					overlappingEffectActions.put(nextAction, nextEffectClass);
 					iter.remove();
 				}
@@ -293,8 +293,7 @@ public class PrismMDPTranslator {
 	private String buildModuleVarsDecl(StateSpace moduleVarSpace, String nameSuffix) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarSpace) {
-			StateVar<IStateVarValue> iniStateVar = mXMDP.getInitialState().getStateVar(stateVarDef);
-			IStateVarValue iniValue = iniStateVar.getValue();
+			IStateVarValue iniValue = mXMDP.getInitialState().getStateVarValue(IStateVarValue.class, stateVarDef);
 			String varDecl;
 			if (iniValue instanceof IStateVarBoolean) {
 				StateVarDefinition<IStateVarBoolean> boolVarDef = castTypeStateVarDef(stateVarDef,

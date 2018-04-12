@@ -21,7 +21,7 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<IStateVarValue>> mDiscriminantClass;
+	private Set<StateVarDefinition<? extends IStateVarValue>> mDiscriminantClass;
 	private IAction mAction;
 
 	public DiscriminantClass(IAction action) {
@@ -30,23 +30,33 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		Set<IStateVarValue> genericValues = new HashSet<>(stateVarDef.getPossibleValues());
-		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
-				genericValues);
-		mDiscriminantClass.add(genericVarDef);
+		mDiscriminantClass.add(stateVarDef);
 	}
 
 	public IAction getAction() {
 		return mAction;
 	}
 
-	public boolean contains(StateVarDefinition<IStateVarValue> stateVarDef) {
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mDiscriminantClass.contains(stateVarDef);
 	}
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return mDiscriminantClass.iterator();
+		return new Iterator<StateVarDefinition<IStateVarValue>>() {
+
+			private Iterator<StateVarDefinition<? extends IStateVarValue>> iter = mDiscriminantClass.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public StateVarDefinition<IStateVarValue> next() {
+				return (StateVarDefinition<IStateVarValue>) iter.next();
+			}
+		};
 	}
 
 	@Override

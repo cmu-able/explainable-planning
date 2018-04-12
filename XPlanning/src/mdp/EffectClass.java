@@ -22,7 +22,7 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<IStateVarValue>> mEffectClass;
+	private Set<StateVarDefinition<? extends IStateVarValue>> mEffectClass;
 	private IAction mAction;
 
 	public EffectClass(IAction action) {
@@ -31,26 +31,19 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		Set<IStateVarValue> genericValues = new HashSet<>(stateVarDef.getPossibleValues());
-		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
-				genericValues);
-		mEffectClass.add(genericVarDef);
-	}
-
-	public Set<StateVarDefinition<IStateVarValue>> getAllVarDefs() {
-		return mEffectClass;
+		mEffectClass.add(stateVarDef);
 	}
 
 	public IAction getAction() {
 		return mAction;
 	}
 
-	public boolean contains(StateVarDefinition<IStateVarValue> stateVarDef) {
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mEffectClass.contains(stateVarDef);
 	}
 
 	public boolean overlaps(EffectClass other) {
-		for (StateVarDefinition<IStateVarValue> varDef : other) {
+		for (StateVarDefinition<? extends IStateVarValue> varDef : other.mEffectClass) {
 			if (mEffectClass.contains(varDef)) {
 				return true;
 			}
@@ -60,7 +53,20 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return mEffectClass.iterator();
+		return new Iterator<StateVarDefinition<IStateVarValue>>() {
+
+			private Iterator<StateVarDefinition<? extends IStateVarValue>> iter = mEffectClass.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public StateVarDefinition<IStateVarValue> next() {
+				return (StateVarDefinition<IStateVarValue>) iter.next();
+			}
+		};
 	}
 
 	@Override

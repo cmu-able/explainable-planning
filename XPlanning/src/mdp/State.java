@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -31,9 +32,12 @@ public class State implements Iterable<StateVar<IStateVarValue>> {
 		mStateVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
-	public <E extends IStateVarValue> StateVar<E> getStateVar(StateVarDefinition<E> stateVarDef) {
-		StateVar<E> stateVar = (StateVar<E>) mStateVarMap.get(stateVarDef);
-		return stateVar;
+	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
+			throws VarNotFoundException {
+		if (!mStateVarMap.containsKey(stateVarDef)) {
+			throw new VarNotFoundException(stateVarDef);
+		}
+		return valueType.cast(mStateVarMap.get(stateVarDef).getValue());
 	}
 
 	@Override

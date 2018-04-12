@@ -1,10 +1,8 @@
 package mdp;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
@@ -30,56 +28,61 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVar<IStateVarValue>> mDiscriminant;
-	private Map<StateVarDefinition<IStateVarValue>, IStateVarValue> mDiscriminantValues;
-	private DiscriminantClass mDiscriminantClass;
+	private DiscriminantClass mDiscrClass;
+	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mDiscrVarMap;
 
 	public Discriminant(DiscriminantClass discriminantClass) {
-		mDiscriminant = new HashSet<>();
-		mDiscriminantValues = new HashMap<>();
-		mDiscriminantClass = discriminantClass;
+		mDiscrClass = discriminantClass;
+		mDiscrVarMap = new HashMap<>();
 	}
 
 	public Discriminant(IAction action, StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mDiscriminant = new HashSet<>();
-		mDiscriminantValues = new HashMap<>();
-		mDiscriminantClass = new DiscriminantClass(action);
+		mDiscrClass = new DiscriminantClass(action);
 		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
-			mDiscriminantClass.add(varDef);
+			mDiscrClass.add(varDef);
 		}
+		mDiscrVarMap = new HashMap<>();
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
-		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVar
-				.getDefinition();
-		StateVar<IStateVarValue> genericVar = new StateVar<>(genericVarDef, stateVar.getValue());
-		if (!sanityCheck(genericVar)) {
-			throw new IncompatibleVarException(genericVarDef);
+		if (!sanityCheck(stateVar)) {
+			throw new IncompatibleVarException(stateVar.getDefinition());
 		}
-		mDiscriminant.add(genericVar);
-		mDiscriminantValues.put(genericVarDef, genericVar.getValue());
+		mDiscrVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
-	private boolean sanityCheck(StateVar<IStateVarValue> stateVar) {
-		return mDiscriminantClass.contains(stateVar.getDefinition());
+	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
+		return mDiscrClass.contains(stateVar.getDefinition());
 	}
 
-	public IStateVarValue getDiscriminantValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
+	public <E extends IStateVarValue> E getDiscriminantValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException {
-		StateVarDefinition<IStateVarValue> genericVarDef = (StateVarDefinition<IStateVarValue>) stateVarDef;
-		if (!mDiscriminantValues.containsKey(genericVarDef)) {
+		if (!mDiscrVarMap.containsKey(stateVarDef)) {
 			throw new VarNotFoundException(stateVarDef);
 		}
-		return mDiscriminantValues.get(genericVarDef);
+		return valueType.cast(mDiscrVarMap.get(stateVarDef).getValue());
 	}
 
 	public DiscriminantClass getDiscriminantClass() {
-		return mDiscriminantClass;
+		return mDiscrClass;
 	}
 
 	@Override
 	public Iterator<StateVar<IStateVarValue>> iterator() {
-		return mDiscriminant.iterator();
+		return new Iterator<StateVar<IStateVarValue>>() {
+
+			private Iterator<StateVar<? extends IStateVarValue>> iter = mDiscrVarMap.values().iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public StateVar<IStateVarValue> next() {
+				return (StateVar<IStateVarValue>) iter.next();
+			}
+		};
 	}
 
 	@Override
@@ -91,7 +94,7 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 			return false;
 		}
 		Discriminant discr = (Discriminant) obj;
-		return discr.mDiscriminant.equals(mDiscriminant) && discr.mDiscriminantClass.equals(mDiscriminantClass);
+		return discr.mDiscrClass.equals(mDiscrClass) && discr.mDiscrVarMap.equals(mDiscrVarMap);
 	}
 
 	@Override
@@ -99,8 +102,8 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDiscriminant.hashCode();
-			result = 31 * result + mDiscriminantClass.hashCode();
+			result = 31 * result + mDiscrClass.hashCode();
+			result = 31 * result + mDiscrVarMap.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

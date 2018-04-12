@@ -20,21 +20,32 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 	 */
 	private volatile int hashCode;
 
-	private Set<ActionDefinition<IAction>> mActionDefs;
+	private Set<ActionDefinition<? extends IAction>> mActionDefs;
 
 	public ActionSpace() {
 		mActionDefs = new HashSet<>();
 	}
 
 	public void addActionDefinition(ActionDefinition<? extends IAction> actionDef) {
-		ActionDefinition<IAction> genericActionDef = new ActionDefinition<>(actionDef.getName(),
-				actionDef.getActions());
-		mActionDefs.add(genericActionDef);
+		mActionDefs.add(actionDef);
 	}
 
 	@Override
 	public Iterator<ActionDefinition<IAction>> iterator() {
-		return mActionDefs.iterator();
+		return new Iterator<ActionDefinition<IAction>>() {
+
+			private Iterator<ActionDefinition<? extends IAction>> iter = mActionDefs.iterator();
+
+			@Override
+			public boolean hasNext() {
+				return iter.hasNext();
+			}
+
+			@Override
+			public ActionDefinition<IAction> next() {
+				return (ActionDefinition<IAction>) iter.next();
+			}
+		};
 	}
 
 	@Override

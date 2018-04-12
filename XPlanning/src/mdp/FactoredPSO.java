@@ -86,7 +86,7 @@ public class FactoredPSO implements IFactoredPSO {
 				Set<IStateVarValue> possibleImpact = new HashSet<>();
 				for (Entry<Effect, Double> en : probEffect) {
 					Effect effect = en.getKey();
-					IStateVarValue value = effect.getEffectValue(stateVarDef);
+					IStateVarValue value = effect.getEffectValue(IStateVarValue.class, stateVarDef);
 					possibleImpact.add(value);
 				}
 				return possibleImpact;

@@ -6,7 +6,6 @@ import java.util.Map;
 
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
-import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -32,8 +31,8 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		mEffectVarMap = new HashMap<>();
 	}
 
-	public Effect(IAction action, StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mEffectClass = new EffectClass(action);
+	public Effect(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
+		mEffectClass = new EffectClass();
 		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
 			mEffectClass.add(varDef);
 		}

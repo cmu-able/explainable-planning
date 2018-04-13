@@ -6,7 +6,6 @@ import java.util.Map;
 
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
-import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -36,8 +35,8 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 		mDiscrVarMap = new HashMap<>();
 	}
 
-	public Discriminant(IAction action, StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mDiscrClass = new DiscriminantClass(action);
+	public Discriminant(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
+		mDiscrClass = new DiscriminantClass();
 		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
 			mDiscrClass.add(varDef);
 		}

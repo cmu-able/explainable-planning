@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
@@ -22,19 +21,13 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 	private volatile int hashCode;
 
 	private Set<StateVarDefinition<? extends IStateVarValue>> mDiscriminantClass;
-	private IAction mAction;
 
-	public DiscriminantClass(IAction action) {
+	public DiscriminantClass() {
 		mDiscriminantClass = new HashSet<>();
-		mAction = action;
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mDiscriminantClass.add(stateVarDef);
-	}
-
-	public IAction getAction() {
-		return mAction;
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

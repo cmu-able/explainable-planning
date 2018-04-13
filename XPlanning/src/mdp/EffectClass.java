@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
@@ -23,19 +22,13 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 	private volatile int hashCode;
 
 	private Set<StateVarDefinition<? extends IStateVarValue>> mEffectClass;
-	private IAction mAction;
 
-	public EffectClass(IAction action) {
+	public EffectClass() {
 		mEffectClass = new HashSet<>();
-		mAction = action;
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mEffectClass.add(stateVarDef);
-	}
-
-	public IAction getAction() {
-		return mAction;
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
@@ -78,7 +71,7 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 			return false;
 		}
 		EffectClass effectClass = (EffectClass) obj;
-		return effectClass.mEffectClass.equals(mEffectClass) && effectClass.mAction.equals(mAction);
+		return effectClass.mEffectClass.equals(mEffectClass);
 	}
 
 	@Override
@@ -87,7 +80,6 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mEffectClass.hashCode();
-			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -11,6 +11,8 @@ import exceptions.EffectNotFoundException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import factors.IAction;
+import factors.IStateVarValue;
+import factors.StateVarDefinition;
 
 /**
  * 
@@ -31,10 +33,18 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	private DiscriminantClass mDiscriminantClass;
 	private EffectClass mEffectClass;
 
-	public ActionDescription(DiscriminantClass discriminantClass, EffectClass effectClass) {
+	public ActionDescription() {
 		mActionDescriptions = new HashMap<>();
-		mDiscriminantClass = discriminantClass;
-		mEffectClass = effectClass;
+		mDiscriminantClass = new DiscriminantClass();
+		mEffectClass = new EffectClass();
+	}
+
+	public void addDiscriminantVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		mDiscriminantClass.add(stateVarDef);
+	}
+
+	public void addEffectVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		mEffectClass.add(stateVarDef);
 	}
 
 	public void put(ProbabilisticEffect probEffect, Discriminant discriminant, E action)

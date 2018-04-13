@@ -45,11 +45,9 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 
 	public RobotLocationActionDescription(StateVarDefinition<Location> rLocDef) {
 		mrLocDef = rLocDef;
-		DiscriminantClass rLocDiscrClass = new DiscriminantClass();
-		rLocDiscrClass.add(rLocDef);
-		EffectClass rLocEffectClass = new EffectClass();
-		rLocEffectClass.add(rLocDef);
-		mrLocActionDesc = new ActionDescription<>(rLocDiscrClass, rLocEffectClass);
+		mrLocActionDesc = new ActionDescription<>();
+		mrLocActionDesc.addDiscriminantVarDef(rLocDef);
+		mrLocActionDesc.addEffectVarDef(rLocDef);
 	}
 
 	public void put(MoveToAction moveTo, Precondition precondition) throws IncompatibleVarException,
@@ -83,9 +81,9 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	public double getProbability(StateVar<Location> rLocDest, StateVar<Location> rLocSrc, MoveToAction moveTo)
 			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
 			IncompatibleVarException {
-		Effect rLocEffect = new Effect(rLocDest.getDefinition());
+		Effect rLocEffect = new Effect(getEffectClass());
 		rLocEffect.add(rLocDest);
-		Discriminant rLocDiscriminant = new Discriminant(rLocSrc.getDefinition());
+		Discriminant rLocDiscriminant = new Discriminant(getDiscriminantClass());
 		rLocDiscriminant.add(rLocSrc);
 		return mrLocActionDesc.getProbability(rLocEffect, rLocDiscriminant, moveTo);
 	}

@@ -147,9 +147,10 @@ class MobileRobotTest {
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(rLocDef);
 		rLocActionDesc.put(moveToL1, preMoveToL1);
 		rLocActionDesc.put(moveToL2, preMoveToL2);
+		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(rLocDef, rBumpedDef);
+		rBumpedActionDesc.put(moveToL1, preMoveToL1);
+		rBumpedActionDesc.put(moveToL2, preMoveToL2);
 		// TODO
-		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToL1, rLocDef, rBumpedDef,
-				preMoveToL1);
 		IFactoredPSO moveToL1PSO = new MoveToPSO(moveToL1, preMoveToL1, rLocActionDesc, rBumpedActionDesc);
 		transitions.put(moveToL1, moveToL1PSO);
 		// TODO

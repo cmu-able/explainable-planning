@@ -1,9 +1,11 @@
 package examples.mobilerobot.factors;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
@@ -28,7 +30,7 @@ import mdp.ProbabilisticEffect;
  * @author rsukkerd
  *
  */
-public class RobotBumpedActionDescription implements IActionDescription {
+public class RobotBumpedActionDescription implements IActionDescription<MoveToAction> {
 
 	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
 	private static final double BUMP_PROB_BLOCKED = 1.0;
@@ -39,31 +41,34 @@ public class RobotBumpedActionDescription implements IActionDescription {
 	 */
 	private volatile int hashCode;
 
-	private ActionDescription mrBumpedActionDesc;
-	private MoveToAction mMoveTo;
+	private StateVarDefinition<Location> mrLocSrcDef;
+	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
+	private ActionDescription<MoveToAction> mrBumpedActionDesc;
 
-	public RobotBumpedActionDescription(MoveToAction moveTo, StateVarDefinition<Location> rLocSrcDef,
-			StateVarDefinition<RobotBumped> rBumpedDestDef, Precondition precondition)
-			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException {
-		mMoveTo = moveTo;
-		DiscriminantClass rLocDiscrClass = new DiscriminantClass(moveTo);
-		rLocDiscrClass.add(rLocSrcDef);
-		EffectClass rBumpedEffectClass = new EffectClass(moveTo);
-		rBumpedEffectClass.add(rBumpedDestDef);
-		mrBumpedActionDesc = new ActionDescription(rLocDiscrClass, rBumpedEffectClass);
+	public RobotBumpedActionDescription(StateVarDefinition<Location> rLocSrcDef,
+			StateVarDefinition<RobotBumped> rBumpedDestDef) {
+		mrLocSrcDef = rLocSrcDef;
+		mrBumpedDestDef = rBumpedDestDef;
+		mrBumpedActionDesc = new ActionDescription<>();
+		mrBumpedActionDesc.addDiscriminantVarDef(rLocSrcDef);
+		mrBumpedActionDesc.addEffectVarDef(rBumpedDestDef);
+	}
 
-		Set<Location> applicableLocs = precondition.getApplicableValues(rLocSrcDef);
+	public void put(MoveToAction moveTo, Precondition precondition) throws IncompatibleVarException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+		DiscriminantClass rBumpedDiscrClass = mrBumpedActionDesc.getDiscriminantClass();
+		EffectClass rBumpedEffectClass = mrBumpedActionDesc.getEffectClass();
+		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocSrcDef);
 		for (Location rLocSrcValue : applicableLocs) {
-			StateVar<Location> rLocSrc = new StateVar<>(rLocSrcDef, rLocSrcValue);
-			Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
+			StateVar<Location> rLocSrc = new StateVar<>(mrLocSrcDef, rLocSrcValue);
+			Discriminant rLocDiscriminant = new Discriminant(rBumpedDiscrClass);
 			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(rBumpedEffectClass);
 			Effect bumpedEffect = new Effect(rBumpedEffectClass);
 			Effect notBumpedEffect = new Effect(rBumpedEffectClass);
-			StateVar<RobotBumped> bumped = new StateVar<>(rBumpedDestDef, new RobotBumped(true));
-			StateVar<RobotBumped> notBumped = new StateVar<>(rBumpedDestDef, new RobotBumped(false));
+			StateVar<RobotBumped> bumped = new StateVar<>(mrBumpedDestDef, new RobotBumped(true));
+			StateVar<RobotBumped> notBumped = new StateVar<>(mrBumpedDestDef, new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 
@@ -76,33 +81,35 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			} else {
 				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
 			}
-			mrBumpedActionDesc.put(rLocDiscriminant, rBumpedProbEffect);
+			mrBumpedActionDesc.put(rBumpedProbEffect, rLocDiscriminant, moveTo);
 		}
 	}
 
-	public double getProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc)
-			throws DiscriminantNotFoundException, EffectNotFoundException, IncompatibleVarException {
-		Effect rBumpedEffect = new Effect(mMoveTo, rBumpedDest.getDefinition());
+	public double getProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc, MoveToAction moveTo)
+			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
+			IncompatibleVarException {
+		Effect rBumpedEffect = new Effect(getEffectClass());
 		rBumpedEffect.add(rBumpedDest);
-		Discriminant rLocDiscriminant = new Discriminant(mMoveTo, rLocSrc.getDefinition());
+		Discriminant rLocDiscriminant = new Discriminant(getDiscriminantClass());
 		rLocDiscriminant.add(rLocSrc);
-		return mrBumpedActionDesc.getProbability(rBumpedEffect, rLocDiscriminant);
+		return mrBumpedActionDesc.getProbability(rBumpedEffect, rLocDiscriminant, moveTo);
 	}
 
 	@Override
-	public Iterator<Entry<Discriminant, ProbabilisticEffect>> iterator() {
+	public Iterator<Entry<MoveToAction, Map<Discriminant, ProbabilisticEffect>>> iterator() {
 		return mrBumpedActionDesc.iterator();
 	}
 
 	@Override
-	public double getProbability(Effect effect, Discriminant discriminant)
-			throws DiscriminantNotFoundException, EffectNotFoundException {
-		return mrBumpedActionDesc.getProbability(effect, discriminant);
+	public double getProbability(Effect effect, Discriminant discriminant, MoveToAction moveTo)
+			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException {
+		return mrBumpedActionDesc.getProbability(effect, discriminant, moveTo);
 	}
 
 	@Override
-	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant) throws DiscriminantNotFoundException {
-		return mrBumpedActionDesc.getProbabilisticEffect(discriminant);
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, MoveToAction moveTo)
+			throws ActionNotFoundException, DiscriminantNotFoundException {
+		return mrBumpedActionDesc.getProbabilisticEffect(discriminant, moveTo);
 	}
 
 	@Override
@@ -124,7 +131,7 @@ public class RobotBumpedActionDescription implements IActionDescription {
 			return false;
 		}
 		RobotBumpedActionDescription actionDesc = (RobotBumpedActionDescription) obj;
-		return actionDesc.mrBumpedActionDesc.equals(mrBumpedActionDesc) && actionDesc.mMoveTo.equals(mMoveTo);
+		return actionDesc.mrBumpedActionDesc.equals(mrBumpedActionDesc);
 	}
 
 	@Override
@@ -133,7 +140,6 @@ public class RobotBumpedActionDescription implements IActionDescription {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mrBumpedActionDesc.hashCode();
-			result = 31 * result + mMoveTo.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

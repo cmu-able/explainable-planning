@@ -142,8 +142,12 @@ class MobileRobotTest {
 		Map<IAction, IFactoredPSO> transitions = new HashMap<>();
 		Precondition preMoveToL1 = new Precondition();
 		preMoveToL1.add(rLocDef, locL2);
-		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToL1, rLocDef,
-				preMoveToL1);
+		Precondition preMoveToL2 = new Precondition();
+		preMoveToL2.add(rLocDef, locL1);
+		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(rLocDef);
+		rLocActionDesc.put(moveToL1, preMoveToL1);
+		rLocActionDesc.put(moveToL2, preMoveToL2);
+		// TODO
 		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToL1, rLocDef, rBumpedDef,
 				preMoveToL1);
 		IFactoredPSO moveToL1PSO = new MoveToPSO(moveToL1, preMoveToL1, rLocActionDesc, rBumpedActionDesc);

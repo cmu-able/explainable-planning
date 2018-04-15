@@ -1,8 +1,10 @@
 package examples.mobilerobot.factors;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
 import exceptions.IncompatibleDiscriminantClassException;
@@ -25,7 +27,7 @@ import mdp.ProbabilisticEffect;
  * @author rsukkerd
  *
  */
-public class RobotSpeedActionDescription implements IActionDescription {
+public class RobotSpeedActionDescription implements IActionDescription<SetSpeedAction> {
 
 	private static final double SET_SPEED_PROB = 1.0;
 
@@ -34,48 +36,52 @@ public class RobotSpeedActionDescription implements IActionDescription {
 	 */
 	private volatile int hashCode;
 
-	private ActionDescription mrSpeedActionDesc;
-	private SetSpeedAction mSetSpeed;
+	private StateVarDefinition<RobotSpeed> mrSpeedDestDef;
+	private ActionDescription<SetSpeedAction> mrSpeedActionDesc;
 
-	public RobotSpeedActionDescription(SetSpeedAction setSpeed, StateVarDefinition<RobotSpeed> rSpeedSrcDef)
+	public RobotSpeedActionDescription(StateVarDefinition<RobotSpeed> rSpeedDestDef) {
+		mrSpeedDestDef = rSpeedDestDef;
+		mrSpeedActionDesc = new ActionDescription<>();
+		mrSpeedActionDesc.addEffectVarDef(rSpeedDestDef);
+	}
+
+	public void put(SetSpeedAction setSpeed)
 			throws IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
-		mSetSpeed = setSpeed;
-		DiscriminantClass emptyDiscrClass = new DiscriminantClass(setSpeed);
-		EffectClass rSpeedEffectClass = new EffectClass(setSpeed);
-		rSpeedEffectClass.add(rSpeedSrcDef);
-		mrSpeedActionDesc = new ActionDescription(emptyDiscrClass, rSpeedEffectClass);
-
+		DiscriminantClass emptyDiscrClass = mrSpeedActionDesc.getDiscriminantClass();
+		EffectClass rSpeedEffectClass = mrSpeedActionDesc.getEffectClass();
 		Discriminant emptyDiscriminant = new Discriminant(emptyDiscrClass);
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(rSpeedEffectClass);
 		Effect newSpeedEffect = new Effect(rSpeedEffectClass);
-		StateVar<RobotSpeed> newSpeed = new StateVar<>(rSpeedSrcDef, setSpeed.getTargetSpeed());
+		StateVar<RobotSpeed> newSpeed = new StateVar<>(mrSpeedDestDef, setSpeed.getTargetSpeed());
 		newSpeedEffect.add(newSpeed);
 		rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
-		mrSpeedActionDesc.put(emptyDiscriminant, rSpeedProbEffect);
+		mrSpeedActionDesc.put(rSpeedProbEffect, emptyDiscriminant, setSpeed);
 	}
 
-	public double getProbability(StateVar<RobotSpeed> rSpeedDest)
-			throws DiscriminantNotFoundException, EffectNotFoundException, IncompatibleVarException {
-		Effect rSpeedEffect = new Effect(mSetSpeed, rSpeedDest.getDefinition());
+	public double getProbability(StateVar<RobotSpeed> rSpeedDest, SetSpeedAction setSpeed)
+			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
+			IncompatibleVarException {
+		Effect rSpeedEffect = new Effect(getEffectClass());
 		rSpeedEffect.add(rSpeedDest);
-		Discriminant rSpeedDiscriminant = new Discriminant(mSetSpeed);
-		return mrSpeedActionDesc.getProbability(rSpeedEffect, rSpeedDiscriminant);
+		Discriminant rSpeedDiscriminant = new Discriminant(getDiscriminantClass());
+		return mrSpeedActionDesc.getProbability(rSpeedEffect, rSpeedDiscriminant, setSpeed);
 	}
 
 	@Override
-	public Iterator<Entry<Discriminant, ProbabilisticEffect>> iterator() {
+	public Iterator<Entry<SetSpeedAction, Map<Discriminant, ProbabilisticEffect>>> iterator() {
 		return mrSpeedActionDesc.iterator();
 	}
 
 	@Override
-	public double getProbability(Effect effect, Discriminant discriminant)
-			throws DiscriminantNotFoundException, EffectNotFoundException {
-		return mrSpeedActionDesc.getProbability(effect, discriminant);
+	public double getProbability(Effect effect, Discriminant discriminant, SetSpeedAction setSpeed)
+			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException {
+		return mrSpeedActionDesc.getProbability(effect, discriminant, setSpeed);
 	}
 
 	@Override
-	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant) throws DiscriminantNotFoundException {
-		return mrSpeedActionDesc.getProbabilisticEffect(discriminant);
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, SetSpeedAction setSpeed)
+			throws ActionNotFoundException, DiscriminantNotFoundException {
+		return mrSpeedActionDesc.getProbabilisticEffect(discriminant, setSpeed);
 	}
 
 	@Override
@@ -97,7 +103,7 @@ public class RobotSpeedActionDescription implements IActionDescription {
 			return false;
 		}
 		RobotSpeedActionDescription actionDesc = (RobotSpeedActionDescription) obj;
-		return actionDesc.mrSpeedActionDesc.equals(mrSpeedActionDesc) && actionDesc.mSetSpeed.equals(mSetSpeed);
+		return actionDesc.mrSpeedActionDesc.equals(mrSpeedActionDesc);
 	}
 
 	@Override
@@ -106,7 +112,6 @@ public class RobotSpeedActionDescription implements IActionDescription {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mrSpeedActionDesc.hashCode();
-			result = 31 * result + mSetSpeed.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
-import examples.mobilerobot.factors.MoveToPSO;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotBumpedActionDescription;
 import examples.mobilerobot.factors.RobotLocationActionDescription;
@@ -24,14 +23,14 @@ import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
-import factors.IAction;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionSpace;
-import mdp.IFactoredPSO;
+import mdp.FactoredPSO;
 import mdp.Precondition;
 import mdp.State;
 import mdp.StateSpace;
+import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import preferences.CostFunction;
@@ -90,10 +89,10 @@ class MobileRobotTest {
 		ActionSpace actionSpace = createActionSpace();
 		State initialState = createInitialState();
 		State goal = createGoal();
-		Map<IAction, IFactoredPSO> transitions = createTransitions();
+		TransitionFunction transFunction = createTransitions();
 		Set<IQFunction> qFunctions = createQFunctions();
 		CostFunction costFunction = createCostFunction();
-		XMDP xmdp = new XMDP(stateSpace, actionSpace, initialState, goal, transitions, qFunctions, costFunction);
+		XMDP xmdp = new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qFunctions, costFunction);
 		return xmdp;
 	}
 
@@ -137,9 +136,8 @@ class MobileRobotTest {
 		return goal;
 	}
 
-	private Map<IAction, IFactoredPSO> createTransitions() throws AttributeNameNotFoundException,
-			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
-		Map<IAction, IFactoredPSO> transitions = new HashMap<>();
+	private TransitionFunction createTransitions() throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
 		Precondition preMoveToL1 = new Precondition();
 		preMoveToL1.add(rLocDef, locL2);
 		Precondition preMoveToL2 = new Precondition();
@@ -150,11 +148,14 @@ class MobileRobotTest {
 		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(rLocDef, rBumpedDef);
 		rBumpedActionDesc.put(moveToL1, preMoveToL1);
 		rBumpedActionDesc.put(moveToL2, preMoveToL2);
-		// TODO
-		IFactoredPSO moveToL1PSO = new MoveToPSO(moveToL1, preMoveToL1, rLocActionDesc, rBumpedActionDesc);
-		transitions.put(moveToL1, moveToL1PSO);
-		// TODO
-		return transitions;
+		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>();
+		moveToPSO.putPrecondition(moveToL1, preMoveToL1);
+		moveToPSO.putPrecondition(moveToL2, preMoveToL2);
+		moveToPSO.addActionDescription(rLocActionDesc);
+		moveToPSO.addActionDescription(rBumpedActionDesc);
+		TransitionFunction transFunction = new TransitionFunction();
+		transFunction.add(moveToPSO);
+		return transFunction;
 	}
 
 	private Set<IQFunction> createQFunctions() {

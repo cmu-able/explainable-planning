@@ -1,9 +1,7 @@
 package mdp;
 
-import java.util.Map;
 import java.util.Set;
 
-import factors.IAction;
 import metrics.IQFunction;
 import preferences.CostFunction;
 
@@ -24,17 +22,17 @@ public class XMDP {
 	private ActionSpace mActionSpace;
 	private State mInitialState;
 	private State mGoal;
-	private Map<IAction, IFactoredPSO> mTransitions;
+	private TransitionFunction mTransFunction;
 	private Set<IQFunction> mQFunctions;
 	private CostFunction mCostFunction;
 
 	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, State initialState, State goal,
-			Map<IAction, IFactoredPSO> transitions, Set<IQFunction> qFunctions, CostFunction costFunction) {
+			TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
 		mGoal = goal;
-		mTransitions = transitions;
+		mTransFunction = transFunction;
 		mQFunctions = qFunctions;
 		mCostFunction = costFunction;
 	}
@@ -55,8 +53,8 @@ public class XMDP {
 		return mGoal;
 	}
 
-	public IFactoredPSO getTransitionFunction(IAction action) {
-		return mTransitions.get(action);
+	public TransitionFunction getTransitionFunction() {
+		return mTransFunction;
 	}
 
 	public Set<IQFunction> getQFunctions() {
@@ -78,7 +76,7 @@ public class XMDP {
 		XMDP mdp = (XMDP) obj;
 		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionSpace.equals(mActionSpace)
 				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
-				&& mdp.mTransitions.equals(mTransitions) && mdp.mQFunctions.equals(mQFunctions)
+				&& mdp.mTransFunction.equals(mTransFunction) && mdp.mQFunctions.equals(mQFunctions)
 				&& mdp.mCostFunction.equals(mCostFunction);
 	}
 
@@ -91,7 +89,7 @@ public class XMDP {
 			result = 31 * result + mActionSpace.hashCode();
 			result = 31 * result + mInitialState.hashCode();
 			result = 31 * result + mGoal.hashCode();
-			result = 31 * result + mTransitions.hashCode();
+			result = 31 * result + mTransFunction.hashCode();
 			result = 31 * result + mQFunctions.hashCode();
 			result = 31 * result + mCostFunction.hashCode();
 			hashCode = result;

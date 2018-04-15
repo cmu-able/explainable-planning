@@ -21,6 +21,7 @@ import factors.StateVarDefinition;
  * 
  * @author rsukkerd
  *
+ * @param <E>
  */
 public class ActionDescription<E extends IAction> implements IActionDescription<E> {
 

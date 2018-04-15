@@ -78,6 +78,17 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 		}
 	}
 
+	/**
+	 * 
+	 * @param rLocDest
+	 * @param rLocSrc
+	 * @param moveTo
+	 * @return Pr(rLoc' | rLoc, moveTo(L))
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws EffectNotFoundException
+	 * @throws IncompatibleVarException
+	 */
 	public double getProbability(StateVar<Location> rLocDest, StateVar<Location> rLocSrc, MoveToAction moveTo)
 			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
 			IncompatibleVarException {

@@ -85,6 +85,17 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 		}
 	}
 
+	/**
+	 * 
+	 * @param rBumpedDest
+	 * @param rLocSrc
+	 * @param moveTo
+	 * @return Pr(rBumped' | rLoc, moveTo(L))
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws EffectNotFoundException
+	 * @throws IncompatibleVarException
+	 */
 	public double getProbability(StateVar<RobotBumped> rBumpedDest, StateVar<Location> rLocSrc, MoveToAction moveTo)
 			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
 			IncompatibleVarException {

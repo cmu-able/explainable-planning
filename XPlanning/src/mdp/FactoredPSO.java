@@ -6,19 +6,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.VarNotFoundException;
+import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
 /**
- * {@link FactoredPSO} is a generic factored PSO representation.
+ * {@link FactoredPSO} is a generic "factored" probabilistic STRIPS operator (PSO) representation.
+ * 
+ * Reference: Using Abstractions for Decision-Theoretic Planning with Time Constraints, Boutilier & Dearden, 1994
  * 
  * @author rsukkerd
  *
+ * @param <E>
  */
-public class FactoredPSO implements IFactoredPSO {
+public class FactoredPSO<E extends IAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -26,48 +31,51 @@ public class FactoredPSO implements IFactoredPSO {
 	private volatile int hashCode;
 
 	/**
-	 * Precondition of this action
+	 * Preconditions of actions of this type
 	 */
-	private Precondition mPrecondition;
+	private Map<E, Precondition> mPreconditions;
 
 	/**
-	 * Full action descriptions for all independent effect classes of this action
+	 * Full action descriptions for all independent effect classes of this type of action
 	 */
-	private Map<EffectClass, IActionDescription> mActionDescriptions;
+	private Map<EffectClass, IActionDescription<E>> mActionDescriptions;
 
-	public FactoredPSO(Precondition precondition) {
-		mPrecondition = precondition;
+	public FactoredPSO() {
+		mPreconditions = new HashMap<>();
 		mActionDescriptions = new HashMap<>();
 	}
 
-	public void addActionDescription(IActionDescription actionDesc) {
+	public void putPrecondition(E action, Precondition precondition) {
+		mPreconditions.put(action, precondition);
+	}
+
+	public void addActionDescription(IActionDescription<E> actionDesc) {
 		mActionDescriptions.put(actionDesc.getEffectClass(), actionDesc);
 	}
 
-	@Override
-	public Precondition getPrecondition() {
-		return mPrecondition;
+	public Precondition getPrecondition(E action) throws ActionNotFoundException {
+		if (!mPreconditions.containsKey(action)) {
+			throw new ActionNotFoundException(action);
+		}
+		return mPreconditions.get(action);
 	}
 
-	@Override
 	public Set<EffectClass> getIndependentEffectClasses() {
 		return mActionDescriptions.keySet();
 	}
 
-	@Override
-	public IActionDescription getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException {
+	public IActionDescription<E> getActionDescription(EffectClass effectClass) throws EffectClassNotFoundException {
 		if (!mActionDescriptions.containsKey(effectClass)) {
 			throw new EffectClassNotFoundException(effectClass);
 		}
 		return mActionDescriptions.get(effectClass);
 	}
 
-	@Override
 	public DiscriminantClass getDiscriminantClass(StateVarDefinition<IStateVarValue> stateVarDef)
 			throws VarNotFoundException {
-		for (Entry<EffectClass, IActionDescription> e : mActionDescriptions.entrySet()) {
+		for (Entry<EffectClass, IActionDescription<E>> e : mActionDescriptions.entrySet()) {
 			EffectClass effectClass = e.getKey();
-			IActionDescription actionDesc = e.getValue();
+			IActionDescription<E> actionDesc = e.getValue();
 			if (effectClass.contains(stateVarDef)) {
 				return actionDesc.getDiscriminantClass();
 			}
@@ -75,14 +83,14 @@ public class FactoredPSO implements IFactoredPSO {
 		throw new VarNotFoundException(stateVarDef);
 	}
 
-	@Override
 	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
-			Discriminant discriminant) throws VarNotFoundException, DiscriminantNotFoundException {
-		for (Entry<EffectClass, IActionDescription> e : mActionDescriptions.entrySet()) {
+			Discriminant discriminant, E action)
+			throws ActionNotFoundException, VarNotFoundException, DiscriminantNotFoundException {
+		for (Entry<EffectClass, IActionDescription<E>> e : mActionDescriptions.entrySet()) {
 			EffectClass effectClass = e.getKey();
-			IActionDescription actionDesc = e.getValue();
+			IActionDescription<E> actionDesc = e.getValue();
 			if (effectClass.contains(stateVarDef)) {
-				ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant);
+				ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, action);
 				Set<IStateVarValue> possibleImpact = new HashSet<>();
 				for (Entry<Effect, Double> en : probEffect) {
 					Effect effect = en.getKey();
@@ -100,11 +108,11 @@ public class FactoredPSO implements IFactoredPSO {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof FactoredPSO)) {
+		if (!(obj instanceof FactoredPSO<?>)) {
 			return false;
 		}
-		FactoredPSO pso = (FactoredPSO) obj;
-		return pso.mPrecondition.equals(mPrecondition) && pso.mActionDescriptions.equals(mActionDescriptions);
+		FactoredPSO<?> pso = (FactoredPSO<?>) obj;
+		return pso.mPreconditions.equals(mPreconditions) && pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
 	@Override
@@ -112,7 +120,7 @@ public class FactoredPSO implements IFactoredPSO {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mPrecondition.hashCode();
+			result = 31 * result + mPreconditions.hashCode();
 			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;
 		}

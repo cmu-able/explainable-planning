@@ -148,7 +148,7 @@ class MobileRobotTest {
 		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(rLocDef, rBumpedDef);
 		rBumpedActionDesc.put(moveToL1, preMoveToL1);
 		rBumpedActionDesc.put(moveToL2, preMoveToL2);
-		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>();
+		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef);
 		moveToPSO.putPrecondition(moveToL1, preMoveToL1);
 		moveToPSO.putPrecondition(moveToL2, preMoveToL2);
 		moveToPSO.addActionDescription(rLocActionDesc);

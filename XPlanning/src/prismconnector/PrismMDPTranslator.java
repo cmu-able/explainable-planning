@@ -3,7 +3,6 @@ package prismconnector;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,12 +25,13 @@ import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
+import mdp.FactoredPSO;
 import mdp.IActionDescription;
-import mdp.IFactoredPSO;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 import mdp.State;
 import mdp.StateSpace;
+import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.Transition;
@@ -159,41 +159,18 @@ public class PrismMDPTranslator {
 	 * @throws EffectClassNotFoundException
 	 */
 	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
-		Set<EffectClass> allEffectClasses = new HashSet<>();
-		for (ActionDefinition<IAction> actionDef : mXMDP.getActionSpace()) {
-			for (IAction action : actionDef.getActions()) {
-				IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
-				Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
-				allEffectClasses.addAll(actionEffectClasses);
-			}
-		}
-
+		Set<Map<EffectClass, ActionDefinition<IAction>>> chainsOfEffectClasses = getChainsOfEffectClassesHelper();
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
 
-		while (!allEffectClasses.isEmpty()) {
+		for (Map<EffectClass, ActionDefinition<IAction>> chain : chainsOfEffectClasses) {
 			moduleCount++;
-			Iterator<EffectClass> iter = allEffectClasses.iterator();
-			EffectClass effectClass = iter.next();
-			IAction action = effectClass.getAction();
-			iter.remove();
-
 			StateSpace moduleVarSpace = new StateSpace();
-			Map<IAction, EffectClass> overlappingEffectActions = new HashMap<>();
-			moduleVarSpace.addStateVarDefinitions(effectClass);
-			overlappingEffectActions.put(action, effectClass);
-
-			while (iter.hasNext()) {
-				EffectClass nextEffectClass = iter.next();
-				IAction nextAction = nextEffectClass.getAction();
-
-				if (!action.equals(nextAction) && effectClass.overlaps(nextEffectClass)) {
-					moduleVarSpace.addStateVarDefinitions(nextEffectClass);
-					overlappingEffectActions.put(nextAction, nextEffectClass);
-					iter.remove();
-				}
+			for (EffectClass effectClass : chain.keySet()) {
+				moduleVarSpace.addStateVarDefinitions(effectClass);
 			}
 
+			// FIXME
 			String module = buildModule("module_" + moduleCount, moduleVarSpace, overlappingEffectActions);
 			builder.append(module);
 			builder.append("\n\n");
@@ -206,6 +183,52 @@ public class PrismMDPTranslator {
 		}
 
 		return builder.toString();
+	}
+
+	private Set<Map<EffectClass, ActionDefinition<IAction>>> getChainsOfEffectClassesHelper() {
+		Set<Map<EffectClass, ActionDefinition<IAction>>> currChains = new HashSet<>();
+		TransitionFunction transFunction = mXMDP.getTransitionFunction();
+		boolean firstPSO = true;
+		for (FactoredPSO<IAction> actionPSO : transFunction) {
+			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
+			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
+			if (firstPSO) {
+				for (EffectClass effectClass : actionEffectClasses) {
+					Map<EffectClass, ActionDefinition<IAction>> iniChain = new HashMap<>();
+					iniChain.put(effectClass, actionDef);
+					currChains.add(iniChain);
+				}
+				firstPSO = false;
+				continue;
+			}
+			for (EffectClass effectClass : actionEffectClasses) {
+				currChains = getChainsOfEffectClasses(currChains, effectClass, actionDef);
+			}
+		}
+		return currChains;
+	}
+
+	private Set<Map<EffectClass, ActionDefinition<IAction>>> getChainsOfEffectClasses(
+			Set<Map<EffectClass, ActionDefinition<IAction>>> currChains, EffectClass effectClass,
+			ActionDefinition<IAction> actionDef) {
+		Set<Map<EffectClass, ActionDefinition<IAction>>> res = new HashSet<>();
+		Map<EffectClass, ActionDefinition<IAction>> newChain = new HashMap<>();
+		for (Map<EffectClass, ActionDefinition<IAction>> chain : currChains) {
+			boolean overlapped = false;
+			for (EffectClass currEffectClass : chain.keySet()) {
+				if (effectClass.overlaps(currEffectClass)) {
+					newChain.putAll(chain);
+					overlapped = true;
+					break;
+				}
+			}
+			if (!overlapped) {
+				res.add(chain);
+			}
+		}
+		newChain.put(effectClass, actionDef);
+		res.add(newChain);
+		return res;
 	}
 
 	/**

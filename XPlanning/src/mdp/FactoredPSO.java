@@ -10,6 +10,7 @@ import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.VarNotFoundException;
+import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
@@ -31,6 +32,11 @@ public class FactoredPSO<E extends IAction> {
 	private volatile int hashCode;
 
 	/**
+	 * Action definition of this type
+	 */
+	private ActionDefinition<E> mActionDef;
+
+	/**
 	 * Preconditions of actions of this type
 	 */
 	private Map<E, Precondition> mPreconditions;
@@ -40,7 +46,8 @@ public class FactoredPSO<E extends IAction> {
 	 */
 	private Map<EffectClass, IActionDescription<E>> mActionDescriptions;
 
-	public FactoredPSO() {
+	public FactoredPSO(ActionDefinition<E> actionDef) {
+		mActionDef = actionDef;
 		mPreconditions = new HashMap<>();
 		mActionDescriptions = new HashMap<>();
 	}
@@ -51,6 +58,10 @@ public class FactoredPSO<E extends IAction> {
 
 	public void addActionDescription(IActionDescription<E> actionDesc) {
 		mActionDescriptions.put(actionDesc.getEffectClass(), actionDesc);
+	}
+
+	public ActionDefinition<E> getActionDefinition() {
+		return mActionDef;
 	}
 
 	public Precondition getPrecondition(E action) throws ActionNotFoundException {
@@ -112,7 +123,8 @@ public class FactoredPSO<E extends IAction> {
 			return false;
 		}
 		FactoredPSO<?> pso = (FactoredPSO<?>) obj;
-		return pso.mPreconditions.equals(mPreconditions) && pso.mActionDescriptions.equals(mActionDescriptions);
+		return pso.mActionDef.equals(mActionDef) && pso.mPreconditions.equals(mPreconditions)
+				&& pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
 	@Override
@@ -120,6 +132,7 @@ public class FactoredPSO<E extends IAction> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mActionDef.hashCode();
 			result = 31 * result + mPreconditions.hashCode();
 			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;

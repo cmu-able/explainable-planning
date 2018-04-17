@@ -159,11 +159,11 @@ public class PrismMDPTranslator {
 	 * @throws EffectClassNotFoundException
 	 */
 	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
-		Set<Map<EffectClass, ActionDefinition<IAction>>> chainsOfEffectClasses = getChainsOfEffectClassesHelper();
+		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClassesHelper();
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
 
-		for (Map<EffectClass, ActionDefinition<IAction>> chain : chainsOfEffectClasses) {
+		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
 			moduleCount++;
 			StateSpace moduleVarSpace = new StateSpace();
 			for (EffectClass effectClass : chain.keySet()) {
@@ -185,35 +185,34 @@ public class PrismMDPTranslator {
 		return builder.toString();
 	}
 
-	private Set<Map<EffectClass, ActionDefinition<IAction>>> getChainsOfEffectClassesHelper() {
-		Set<Map<EffectClass, ActionDefinition<IAction>>> currChains = new HashSet<>();
+	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClassesHelper() {
+		Set<Map<EffectClass, FactoredPSO<IAction>>> currChains = new HashSet<>();
 		TransitionFunction transFunction = mXMDP.getTransitionFunction();
 		boolean firstPSO = true;
 		for (FactoredPSO<IAction> actionPSO : transFunction) {
-			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
 			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
 			if (firstPSO) {
 				for (EffectClass effectClass : actionEffectClasses) {
-					Map<EffectClass, ActionDefinition<IAction>> iniChain = new HashMap<>();
-					iniChain.put(effectClass, actionDef);
+					Map<EffectClass, FactoredPSO<IAction>> iniChain = new HashMap<>();
+					iniChain.put(effectClass, actionPSO);
 					currChains.add(iniChain);
 				}
 				firstPSO = false;
 				continue;
 			}
 			for (EffectClass effectClass : actionEffectClasses) {
-				currChains = getChainsOfEffectClasses(currChains, effectClass, actionDef);
+				currChains = getChainsOfEffectClasses(currChains, effectClass, actionPSO);
 			}
 		}
 		return currChains;
 	}
 
-	private Set<Map<EffectClass, ActionDefinition<IAction>>> getChainsOfEffectClasses(
-			Set<Map<EffectClass, ActionDefinition<IAction>>> currChains, EffectClass effectClass,
-			ActionDefinition<IAction> actionDef) {
-		Set<Map<EffectClass, ActionDefinition<IAction>>> res = new HashSet<>();
-		Map<EffectClass, ActionDefinition<IAction>> newChain = new HashMap<>();
-		for (Map<EffectClass, ActionDefinition<IAction>> chain : currChains) {
+	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClasses(
+			Set<Map<EffectClass, FactoredPSO<IAction>>> currChains, EffectClass effectClass,
+			FactoredPSO<IAction> actionPSO) {
+		Set<Map<EffectClass, FactoredPSO<IAction>>> res = new HashSet<>();
+		Map<EffectClass, FactoredPSO<IAction>> newChain = new HashMap<>();
+		for (Map<EffectClass, FactoredPSO<IAction>> chain : currChains) {
 			boolean overlapped = false;
 			for (EffectClass currEffectClass : chain.keySet()) {
 				if (effectClass.overlaps(currEffectClass)) {
@@ -226,7 +225,7 @@ public class PrismMDPTranslator {
 				res.add(chain);
 			}
 		}
-		newChain.put(effectClass, actionDef);
+		newChain.put(effectClass, actionPSO);
 		res.add(newChain);
 		return res;
 	}
@@ -416,7 +415,7 @@ public class PrismMDPTranslator {
 	 * @return [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} -> {updates_p};
 	 * @throws EffectClassNotFoundException
 	 */
-	private String buildModuleCommands(Map<IAction, EffectClass> overlappingEffectActions)
+	private String buildModuleCommandsOld(Map<IAction, EffectClass> overlappingEffectActions)
 			throws EffectClassNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (Entry<IAction, EffectClass> entry : overlappingEffectActions.entrySet()) {
@@ -433,6 +432,77 @@ public class PrismMDPTranslator {
 				builder.append("\n");
 			}
 		}
+		return builder.toString();
+	}
+
+	private String buildModuleCommands(Map<EffectClass, ActionDefinition<IAction>> chainOfEffectClasses) {
+		StringBuilder builder = new StringBuilder();
+		for (Entry<EffectClass, ActionDefinition<IAction>> entry : chainOfEffectClasses.entrySet()) {
+			EffectClass effectClass = entry.getKey();
+			ActionDefinition<IAction> actionDef = entry.getValue();
+
+		}
+		return builder.toString();
+	}
+
+	private String buildModuleCommands1(FactoredPSO<IAction> actionPSO, Set<EffectClass> effectClasses)
+			throws EffectClassNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		for (EffectClass effectClass : effectClasses) {
+			IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
+			for (Entry<IAction, Map<Discriminant, ProbabilisticEffect>> entry : actionDesc) {
+				IAction action = entry.getKey();
+				Map<Discriminant, ProbabilisticEffect> transitions = entry.getValue();
+				String command = buildModuleCommands(action, transitions);
+				builder.append(INDENT);
+				builder.append(command);
+				builder.append("\n");
+			}
+		}
+		return builder.toString();
+	}
+
+	private String buildModuleCommands(FactoredPSO<IAction> actionPSO, Set<EffectClass> effectClasses)
+			throws EffectClassNotFoundException, IncompatibleVarException {
+		DiscriminantClass aggrDiscrClass = new DiscriminantClass();
+		EffectClass aggrEffectClass = new EffectClass();
+
+		for (EffectClass effectClass : effectClasses) {
+			IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
+			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
+			aggrDiscrClass.allAll(discrClass);
+			aggrEffectClass.addAll(effectClass);
+		}
+
+		// FIXME: use recursion
+		Discriminant aggrDiscr = new Discriminant(aggrDiscrClass);
+		ProbabilisticEffect aggrProbEffect = new ProbabilisticEffect(aggrEffectClass);
+		Effect aggrEffect = new Effect(aggrEffectClass);
+
+		for (EffectClass effectClass : effectClasses) {
+			IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
+			for (Entry<IAction, Map<Discriminant, ProbabilisticEffect>> e1 : actionDesc) {
+				IAction action = e1.getKey();
+				Map<Discriminant, ProbabilisticEffect> transitions = e1.getValue();
+
+				for (Entry<Discriminant, ProbabilisticEffect> e2 : transitions.entrySet()) {
+					Discriminant discriminant = e2.getKey();
+					ProbabilisticEffect probEffect = e2.getValue();
+
+					aggrDiscr.addAll(discriminant);
+
+					for (Entry<Effect, Double> e3 : probEffect) {
+						Effect effect = e3.getKey();
+						Double prob = e3.getValue();
+
+						aggrEffect.addAll(effect);
+					}
+				}
+			}
+		}
+
+		StringBuilder builder = new StringBuilder();
+		// TODO
 		return builder.toString();
 	}
 

@@ -30,6 +30,12 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 		mDiscriminantClass.add(stateVarDef);
 	}
 
+	public void allAll(DiscriminantClass discriminantClass) {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : discriminantClass) {
+			mDiscriminantClass.add(stateVarDef);
+		}
+	}
+
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mDiscriminantClass.contains(stateVarDef);
 	}

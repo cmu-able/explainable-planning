@@ -46,6 +46,12 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		mEffectVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
+	public void addAll(Effect effect) throws IncompatibleVarException {
+		for (StateVar<IStateVarValue> stateVar : effect) {
+			add(stateVar);
+		}
+	}
+
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mEffectClass.contains(stateVar.getDefinition());
 	}

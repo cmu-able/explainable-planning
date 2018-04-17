@@ -50,6 +50,12 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 		mDiscrVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
+	public void addAll(Discriminant discriminant) throws IncompatibleVarException {
+		for (StateVar<IStateVarValue> stateVar : discriminant) {
+			add(stateVar);
+		}
+	}
+
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mDiscrClass.contains(stateVar.getDefinition());
 	}

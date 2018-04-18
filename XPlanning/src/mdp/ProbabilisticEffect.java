@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import exceptions.EffectNotFoundException;
 import exceptions.IncompatibleEffectClassException;
+import exceptions.IncompatibleVarException;
 
 /**
  * {@link ProbabilisticEffect} is a distribution over the changed state variables as a result of an action.
@@ -34,6 +35,47 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 			throw new IncompatibleEffectClassException(effect.getEffectClass());
 		}
 		mProbEffect.put(effect, prob);
+	}
+
+	public void putAll(ProbabilisticEffect probEffect) throws IncompatibleEffectClassException {
+		for (Entry<Effect, Double> e : probEffect) {
+			Effect effect = e.getKey();
+			Double prob = e.getValue();
+			put(effect, prob);
+		}
+	}
+
+	public void putAll(ProbabilisticEffect... probEffects)
+			throws IncompatibleVarException, IncompatibleEffectClassException {
+		EffectClass emptyEffectClass = new EffectClass();
+		ProbabilisticEffect runningProbEffect = new ProbabilisticEffect(emptyEffectClass);
+		for (ProbabilisticEffect probEffect : probEffects) {
+			runningProbEffect = putAllHelper(runningProbEffect, probEffect);
+		}
+	}
+
+	private ProbabilisticEffect putAllHelper(ProbabilisticEffect probEffectA, ProbabilisticEffect probEffectB)
+			throws IncompatibleVarException, IncompatibleEffectClassException {
+		EffectClass aggrEffectClass = new EffectClass();
+		aggrEffectClass.addAll(probEffectA.getEffectClass());
+		aggrEffectClass.addAll(probEffectB.getEffectClass());
+		ProbabilisticEffect aggrProbEffect = new ProbabilisticEffect(aggrEffectClass);
+
+		for (Entry<Effect, Double> eA : probEffectA) {
+			Effect effectA = eA.getKey();
+			Double probA = eA.getValue();
+			for (Entry<Effect, Double> eB : probEffectB) {
+				Effect effectB = eB.getKey();
+				Double probB = eB.getValue();
+
+				Effect aggrEffect = new Effect(aggrEffectClass);
+				aggrEffect.addAll(effectA);
+				aggrEffect.addAll(effectB);
+				double jointProb = probA * probB;
+				aggrProbEffect.put(aggrEffect, jointProb);
+			}
+		}
+		return aggrProbEffect;
 	}
 
 	private boolean sanityCheck(Effect effect) {

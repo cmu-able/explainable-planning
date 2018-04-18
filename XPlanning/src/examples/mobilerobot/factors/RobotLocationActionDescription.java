@@ -1,17 +1,16 @@
 package examples.mobilerobot.factors;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
+import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
@@ -22,6 +21,7 @@ import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
+import mdp.ProbabilisticTransition;
 
 /**
  * {@link RobotLocationActionDescription} is an action description for the "rLoc" effect class of an instance of
@@ -43,15 +43,17 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	private StateVarDefinition<Location> mrLocDef;
 	private ActionDescription<MoveToAction> mrLocActionDesc;
 
-	public RobotLocationActionDescription(StateVarDefinition<Location> rLocDef) {
+	public RobotLocationActionDescription(ActionDefinition<MoveToAction> moveToDef,
+			StateVarDefinition<Location> rLocDef) {
 		mrLocDef = rLocDef;
-		mrLocActionDesc = new ActionDescription<>();
+		mrLocActionDesc = new ActionDescription<>(moveToDef);
 		mrLocActionDesc.addDiscriminantVarDef(rLocDef);
 		mrLocActionDesc.addEffectVarDef(rLocDef);
 	}
 
-	public void put(MoveToAction moveTo, Precondition precondition) throws IncompatibleVarException,
-			AttributeNameNotFoundException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+	public void put(MoveToAction moveTo, Precondition precondition)
+			throws IncompatibleVarException, AttributeNameNotFoundException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException {
 		DiscriminantClass rLocDiscrClass = mrLocActionDesc.getDiscriminantClass();
 		EffectClass rLocEffectClass = mrLocActionDesc.getEffectClass();
 		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocDef);
@@ -100,8 +102,9 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	}
 
 	@Override
-	public Iterator<Entry<MoveToAction, Map<Discriminant, ProbabilisticEffect>>> iterator() {
-		return mrLocActionDesc.iterator();
+	public Set<ProbabilisticTransition> getProbabilisticTransitions(MoveToAction action)
+			throws ActionNotFoundException {
+		return mrLocActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
@@ -114,6 +117,11 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, MoveToAction moveTo)
 			throws ActionNotFoundException, DiscriminantNotFoundException {
 		return mrLocActionDesc.getProbabilisticEffect(discriminant, moveTo);
+	}
+
+	@Override
+	public ActionDefinition<MoveToAction> getActionDefinition() {
+		return mrLocActionDesc.getActionDefinition();
 	}
 
 	@Override

@@ -1,11 +1,11 @@
 package mdp;
 
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
+import factors.ActionDefinition;
 import factors.IAction;
 
 /**
@@ -17,14 +17,17 @@ import factors.IAction;
  *
  * @param <E>
  */
-public interface IActionDescription<E extends IAction>
-		extends Iterable<Entry<E, Map<Discriminant, ProbabilisticEffect>>> {
+public interface IActionDescription<E extends IAction> {
+
+	public Set<ProbabilisticTransition> getProbabilisticTransitions(E action) throws ActionNotFoundException;
 
 	public double getProbability(Effect effect, Discriminant discriminant, E action)
 			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException;
 
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
 			throws ActionNotFoundException, DiscriminantNotFoundException;
+
+	public ActionDefinition<E> getActionDefinition();
 
 	public DiscriminantClass getDiscriminantClass();
 

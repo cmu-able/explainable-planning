@@ -1,15 +1,15 @@
 package examples.mobilerobot.factors;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectNotFoundException;
+import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
@@ -19,6 +19,7 @@ import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
+import mdp.ProbabilisticTransition;
 
 /**
  * {@link RobotSpeedActionDescription} is an action description for the "rSpeed" effect class of an instance of
@@ -39,14 +40,15 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	private StateVarDefinition<RobotSpeed> mrSpeedDestDef;
 	private ActionDescription<SetSpeedAction> mrSpeedActionDesc;
 
-	public RobotSpeedActionDescription(StateVarDefinition<RobotSpeed> rSpeedDestDef) {
+	public RobotSpeedActionDescription(ActionDefinition<SetSpeedAction> setSpeedDef,
+			StateVarDefinition<RobotSpeed> rSpeedDestDef) {
 		mrSpeedDestDef = rSpeedDestDef;
-		mrSpeedActionDesc = new ActionDescription<>();
+		mrSpeedActionDesc = new ActionDescription<>(setSpeedDef);
 		mrSpeedActionDesc.addEffectVarDef(rSpeedDestDef);
 	}
 
-	public void put(SetSpeedAction setSpeed)
-			throws IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+	public void put(SetSpeedAction setSpeed) throws IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException {
 		DiscriminantClass emptyDiscrClass = mrSpeedActionDesc.getDiscriminantClass();
 		EffectClass rSpeedEffectClass = mrSpeedActionDesc.getEffectClass();
 		Discriminant emptyDiscriminant = new Discriminant(emptyDiscrClass);
@@ -68,8 +70,9 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	}
 
 	@Override
-	public Iterator<Entry<SetSpeedAction, Map<Discriminant, ProbabilisticEffect>>> iterator() {
-		return mrSpeedActionDesc.iterator();
+	public Set<ProbabilisticTransition> getProbabilisticTransitions(SetSpeedAction action)
+			throws ActionNotFoundException {
+		return mrSpeedActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
@@ -82,6 +85,11 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, SetSpeedAction setSpeed)
 			throws ActionNotFoundException, DiscriminantNotFoundException {
 		return mrSpeedActionDesc.getProbabilisticEffect(discriminant, setSpeed);
+	}
+
+	@Override
+	public ActionDefinition<SetSpeedAction> getActionDefinition() {
+		return mrSpeedActionDesc.getActionDefinition();
 	}
 
 	@Override

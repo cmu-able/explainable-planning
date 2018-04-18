@@ -18,6 +18,7 @@ import examples.mobilerobot.factors.RobotLocationActionDescription;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
@@ -63,7 +64,7 @@ class MobileRobotTest {
 		try {
 			XMDP xmdp = createXMDP();
 		} catch (AttributeNameNotFoundException | IncompatibleVarException | IncompatibleEffectClassException
-				| IncompatibleDiscriminantClassException e) {
+				| IncompatibleDiscriminantClassException | IncompatibleActionException e) {
 			fail("Exception thrown");
 			e.printStackTrace();
 		}
@@ -71,7 +72,7 @@ class MobileRobotTest {
 
 	@Test
 	public void testPrismMDPTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
 		try {
@@ -84,7 +85,7 @@ class MobileRobotTest {
 	}
 
 	private XMDP createXMDP() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
 		StateSpace stateSpace = createStateSpace();
 		ActionSpace actionSpace = createActionSpace();
 		State initialState = createInitialState();
@@ -137,15 +138,16 @@ class MobileRobotTest {
 	}
 
 	private TransitionFunction createTransitions() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
 		Precondition preMoveToL1 = new Precondition();
 		preMoveToL1.add(rLocDef, locL2);
 		Precondition preMoveToL2 = new Precondition();
 		preMoveToL2.add(rLocDef, locL1);
-		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(rLocDef);
+		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, rLocDef);
 		rLocActionDesc.put(moveToL1, preMoveToL1);
 		rLocActionDesc.put(moveToL2, preMoveToL2);
-		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(rLocDef, rBumpedDef);
+		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, rLocDef,
+				rBumpedDef);
 		rBumpedActionDesc.put(moveToL1, preMoveToL1);
 		rBumpedActionDesc.put(moveToL2, preMoveToL2);
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef);

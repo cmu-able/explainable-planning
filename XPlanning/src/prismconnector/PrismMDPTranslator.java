@@ -163,8 +163,15 @@ public class PrismMDPTranslator {
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleActionException
+	 * @throws ActionNotFoundException
 	 */
-	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException {
+	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException {
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClassesHelper();
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
@@ -172,12 +179,21 @@ public class PrismMDPTranslator {
 		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
 			moduleCount++;
 			StateSpace moduleVarSpace = new StateSpace();
-			for (EffectClass effectClass : chain.keySet()) {
+			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs = new HashMap<>();
+
+			for (Entry<EffectClass, FactoredPSO<IAction>> entry : chain.entrySet()) {
+				EffectClass effectClass = entry.getKey();
+				FactoredPSO<IAction> actionPSO = entry.getValue();
+
 				moduleVarSpace.addStateVarDefinitions(effectClass);
+
+				if (!actionPSOs.containsKey(actionPSO)) {
+					actionPSOs.put(actionPSO, new HashSet<>());
+				}
+				actionPSOs.get(actionPSO).add(effectClass);
 			}
 
-			// FIXME
-			String module = buildModule("module_" + moduleCount, moduleVarSpace, overlappingEffectActions);
+			String module = buildModule("module_" + moduleCount, moduleVarSpace, actionPSOs);
 			builder.append(module);
 			builder.append("\n\n");
 		}
@@ -242,16 +258,22 @@ public class PrismMDPTranslator {
 	 *            A unique name of the module
 	 * @param moduleVarSpace
 	 *            Variables of the module
-	 * @param overlappingEffectActions
-	 *            A mapping from each action to its (one) effect class that overlaps with those of other actions in the
-	 *            map
+	 * @param actionPSOs
+	 *            A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other effect
+	 *            classes of other action types
 	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNotFoundException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleActionException
+	 * @throws ActionNotFoundException
 	 * @throws EffectClassNotFoundException
 	 */
 	private String buildModule(String moduleName, StateSpace moduleVarSpace,
-			Map<IAction, EffectClass> overlappingEffectActions)
-			throws VarNotFoundException, EffectClassNotFoundException {
+			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs) throws VarNotFoundException,
+			EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
+			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(moduleName);
@@ -267,7 +289,7 @@ public class PrismMDPTranslator {
 		}
 
 		builder.append("\n");
-		String commands = buildModuleCommands(overlappingEffectActions);
+		String commands = buildModuleCommands(actionPSOs);
 		builder.append(commands);
 
 		if (mThreeParamRewards) {
@@ -416,6 +438,8 @@ public class PrismMDPTranslator {
 	/**
 	 * 
 	 * @param actionPSOs
+	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
+	 *            effect classes of other action types
 	 * @return all commands of a module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
 	 *         {updates_p};
 	 * @throws EffectClassNotFoundException

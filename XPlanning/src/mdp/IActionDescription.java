@@ -19,7 +19,7 @@ import factors.IAction;
  */
 public interface IActionDescription<E extends IAction> {
 
-	public Set<ProbabilisticTransition> getProbabilisticTransitions(E action) throws ActionNotFoundException;
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws ActionNotFoundException;
 
 	public double getProbability(Effect effect, Discriminant discriminant, E action)
 			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException;

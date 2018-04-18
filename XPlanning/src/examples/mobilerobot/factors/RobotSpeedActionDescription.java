@@ -70,7 +70,7 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	}
 
 	@Override
-	public Set<ProbabilisticTransition> getProbabilisticTransitions(SetSpeedAction action)
+	public Set<ProbabilisticTransition<SetSpeedAction>> getProbabilisticTransitions(SetSpeedAction action)
 			throws ActionNotFoundException {
 		return mrSpeedActionDesc.getProbabilisticTransitions(action);
 	}

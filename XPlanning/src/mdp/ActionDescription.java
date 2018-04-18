@@ -36,7 +36,7 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	private DiscriminantClass mDiscriminantClass;
 	private EffectClass mEffectClass;
 
-	private Map<E, Set<ProbabilisticTransition>> mActionDescriptions;
+	private Map<E, Set<ProbabilisticTransition<E>>> mActionDescriptions;
 	private Map<E, Map<Discriminant, ProbabilisticEffect>> mLookupTable; // For fast look-up
 
 	public ActionDescription(ActionDefinition<E> actionDefinition) {
@@ -59,6 +59,16 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	public void put(ProbabilisticEffect probEffect, Discriminant discriminant, E action)
 			throws IncompatibleActionException, IncompatibleDiscriminantClassException,
 			IncompatibleEffectClassException {
+		ProbabilisticTransition<E> probTrans = new ProbabilisticTransition<>(probEffect, discriminant, action);
+		put(probTrans);
+	}
+
+	public void put(ProbabilisticTransition<E> probTrans) throws IncompatibleActionException,
+			IncompatibleDiscriminantClassException, IncompatibleEffectClassException {
+		E action = probTrans.getAction();
+		Discriminant discriminant = probTrans.getDiscriminant();
+		ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
+
 		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);
 		}
@@ -69,8 +79,7 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 			throw new IncompatibleEffectClassException(probEffect.getEffectClass());
 		}
 		if (!mActionDescriptions.containsKey(action)) {
-			ProbabilisticTransition probTrans = new ProbabilisticTransition(probEffect, discriminant, action);
-			Set<ProbabilisticTransition> actionDesc = new HashSet<>();
+			Set<ProbabilisticTransition<E>> actionDesc = new HashSet<>();
 			actionDesc.add(probTrans);
 			mActionDescriptions.put(action, actionDesc);
 
@@ -79,11 +88,17 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 			table.put(discriminant, probEffect);
 			mLookupTable.put(action, table);
 		} else {
-			ProbabilisticTransition probTrans = new ProbabilisticTransition(probEffect, discriminant, action);
 			mActionDescriptions.get(action).add(probTrans);
 
 			// For fast look-up
 			mLookupTable.get(action).put(discriminant, probEffect);
+		}
+	}
+
+	public void putAll(Set<ProbabilisticTransition<E>> probTransitions) throws IncompatibleActionException,
+			IncompatibleDiscriminantClassException, IncompatibleEffectClassException {
+		for (ProbabilisticTransition<E> probTrans : probTransitions) {
+			put(probTrans);
 		}
 	}
 
@@ -100,7 +115,7 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	}
 
 	@Override
-	public Set<ProbabilisticTransition> getProbabilisticTransitions(E action) throws ActionNotFoundException {
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws ActionNotFoundException {
 		if (!mActionDescriptions.containsKey(action)) {
 			throw new ActionNotFoundException(action);
 		}

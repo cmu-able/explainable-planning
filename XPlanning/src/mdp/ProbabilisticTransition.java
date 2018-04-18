@@ -7,8 +7,9 @@ import factors.IAction;
  * 
  * @author rsukkerd
  *
+ * @param <E>
  */
-public class ProbabilisticTransition {
+public class ProbabilisticTransition<E extends IAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -17,9 +18,9 @@ public class ProbabilisticTransition {
 
 	private ProbabilisticEffect mProbEffect;
 	private Discriminant mDiscriminant;
-	private IAction mAction;
+	private E mAction;
 
-	public ProbabilisticTransition(ProbabilisticEffect probEffect, Discriminant discriminant, IAction action) {
+	public ProbabilisticTransition(ProbabilisticEffect probEffect, Discriminant discriminant, E action) {
 		mProbEffect = probEffect;
 		mDiscriminant = discriminant;
 		mAction = action;
@@ -33,7 +34,7 @@ public class ProbabilisticTransition {
 		return mDiscriminant;
 	}
 
-	public IAction getAction() {
+	public E getAction() {
 		return mAction;
 	}
 
@@ -42,10 +43,10 @@ public class ProbabilisticTransition {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof ProbabilisticTransition)) {
+		if (!(obj instanceof ProbabilisticTransition<?>)) {
 			return false;
 		}
-		ProbabilisticTransition probTrans = (ProbabilisticTransition) obj;
+		ProbabilisticTransition<?> probTrans = (ProbabilisticTransition<?>) obj;
 		return probTrans.mProbEffect.equals(mProbEffect) && probTrans.mDiscriminant.equals(mDiscriminant)
 				&& probTrans.mAction.equals(mAction);
 	}

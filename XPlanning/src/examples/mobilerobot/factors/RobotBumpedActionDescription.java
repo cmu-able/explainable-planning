@@ -108,7 +108,7 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 	}
 
 	@Override
-	public Set<ProbabilisticTransition> getProbabilisticTransitions(MoveToAction action)
+	public Set<ProbabilisticTransition<MoveToAction>> getProbabilisticTransitions(MoveToAction action)
 			throws ActionNotFoundException {
 		return mrBumpedActionDesc.getProbabilisticTransitions(action);
 	}

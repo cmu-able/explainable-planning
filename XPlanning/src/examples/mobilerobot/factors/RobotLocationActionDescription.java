@@ -102,7 +102,7 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	}
 
 	@Override
-	public Set<ProbabilisticTransition> getProbabilisticTransitions(MoveToAction action)
+	public Set<ProbabilisticTransition<MoveToAction>> getProbabilisticTransitions(MoveToAction action)
 			throws ActionNotFoundException {
 		return mrLocActionDesc.getProbabilisticTransitions(action);
 	}

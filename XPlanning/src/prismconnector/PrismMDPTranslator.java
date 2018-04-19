@@ -300,6 +300,11 @@ public class PrismMDPTranslator {
 
 		if (mThreeParamRewards) {
 			builder.append(INDENT);
+			String doNothingCommand = buildModuleDoNothingCommand(moduleName);
+			builder.append(doNothingCommand);
+			builder.append("\n\n");
+
+			builder.append(INDENT);
 			String moduleSyncCommand = buildModuleSyncCommand(moduleName);
 			builder.append(moduleSyncCommand);
 			builder.append("\n");
@@ -325,6 +330,15 @@ public class PrismMDPTranslator {
 	 */
 	private String buildModuleSyncCommand(String moduleName) {
 		return "[next] !" + moduleName + "_go -> (" + moduleName + "_go'=true);";
+	}
+
+	/**
+	 * 
+	 * @param moduleName
+	 * @return [] {moduleName}_go -> ({moduleName}_go'=false);
+	 */
+	private String buildModuleDoNothingCommand(String moduleName) {
+		return "[] " + moduleName + "_go -> (" + moduleName + "_go'=false);";
 	}
 
 	/**

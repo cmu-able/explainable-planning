@@ -21,11 +21,10 @@ public class EventBasedMetric {
 	private volatile int hashCode;
 
 	private TransitionDefinition mTransitionDef;
-	private Map<IEvent, Double> mMetric;
+	private Map<IEvent, Double> mMetric = new HashMap<>();
 
 	public EventBasedMetric(TransitionDefinition transitionDef) {
 		mTransitionDef = transitionDef;
-		mMetric = new HashMap<>();
 	}
 
 	public void put(IEvent event, Double value) {

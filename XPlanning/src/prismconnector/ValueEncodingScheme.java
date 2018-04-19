@@ -20,13 +20,10 @@ import mdp.StateSpace;
  */
 public class ValueEncodingScheme {
 
-	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings;
-	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings;
+	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
+	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings = new HashMap<>();
 
 	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace) {
-		mStateVarEncodings = new HashMap<>();
-		mActionEncodings = new HashMap<>();
-
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
 			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
 			mStateVarEncodings.put(stateVarDef, encoding);

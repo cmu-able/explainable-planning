@@ -23,12 +23,11 @@ public class AdditiveCostFunction implements IMACostFunction {
 	 */
 	private volatile int hashCode;
 
-	private Map<IQFunction, AttributeCostFunction<? extends IQFunction>> mAttrCostFuncs;
-	private Map<IQFunction, Double> mScalingConsts;
+	private Map<IQFunction, AttributeCostFunction<? extends IQFunction>> mAttrCostFuncs = new HashMap<>();
+	private Map<IQFunction, Double> mScalingConsts = new HashMap<>();
 
 	public AdditiveCostFunction() {
-		mAttrCostFuncs = new HashMap<>();
-		mScalingConsts = new HashMap<>();
+		// mAttrCostFuncs and mScalingConsts initially empty
 	}
 
 	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {

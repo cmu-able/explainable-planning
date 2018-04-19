@@ -19,10 +19,10 @@ public class CostFunction implements IMACostFunction {
 	 */
 	private volatile int hashCode;
 
-	private AdditiveCostFunction mCostFunc;
+	private AdditiveCostFunction mCostFunc = new AdditiveCostFunction();
 
 	public CostFunction() {
-		mCostFunc = new AdditiveCostFunction();
+		// mCostFunc initially empty
 	}
 
 	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {

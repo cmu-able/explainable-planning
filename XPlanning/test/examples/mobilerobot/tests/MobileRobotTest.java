@@ -90,6 +90,7 @@ class MobileRobotTest {
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
 		try {
 			String mdpTranslation = mdpTranslator.getMDPTranslation();
+			System.out.println(mdpTranslation);
 		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
 				| IncompatibleVarException | DiscriminantNotFoundException e) {
 			fail("Exception thrown");

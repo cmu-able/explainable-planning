@@ -53,8 +53,9 @@ public class PrismMDPTranslator {
 
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
-
 	private boolean mThreeParamRewards;
+
+	private String currModuleName;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
@@ -277,6 +278,8 @@ public class PrismMDPTranslator {
 			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs) throws VarNotFoundException,
 			EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
 			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+		currModuleName = moduleName;
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(moduleName);
@@ -601,6 +604,13 @@ public class PrismMDPTranslator {
 		builder.append("[");
 		builder.append(action.getName());
 		builder.append("] ");
+
+		if (mThreeParamRewards) {
+			builder.append(currModuleName);
+			builder.append("_go");
+			builder.append(" & ");
+		}
+
 		builder.append(buildGuard(discriminant));
 		builder.append(" -> ");
 		builder.append(buildUpdates(probEffect));
@@ -650,6 +660,13 @@ public class PrismMDPTranslator {
 			builder.append(prob);
 			builder.append(":");
 			builder.append(buildUpdate(effect));
+
+			if (mThreeParamRewards) {
+				builder.append("&(");
+				builder.append(currModuleName);
+				builder.append("_go");
+				builder.append("'=false)");
+			}
 		}
 		return builder.toString();
 	}
@@ -715,6 +732,7 @@ public class PrismMDPTranslator {
 		builder.append("\n\n");
 		String copyCmds = buildHelperCopyCommands(SRC_SUFFIX);
 		builder.append(copyCmds);
+		builder.append("\n");
 		builder.append(INDENT);
 		builder.append(nextCmd);
 		builder.append("\n");
@@ -736,6 +754,7 @@ public class PrismMDPTranslator {
 			builder.append(" : [0..");
 			builder.append(maxEncodedValue);
 			builder.append("] init 0;");
+			builder.append("\n");
 		}
 		return builder.toString();
 	}
@@ -822,6 +841,7 @@ public class PrismMDPTranslator {
 		builder.append("formula computeCost = !readyToCopy;");
 		builder.append("\n\n");
 		builder.append("rewards \"cost\"");
+		builder.append("\n");
 		Set<IQFunction> qFunctions = mXMDP.getQFunctions();
 		for (IQFunction qFunction : qFunctions) {
 			String rewardItems = buildRewardItems(qFunction);

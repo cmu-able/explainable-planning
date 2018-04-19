@@ -15,6 +15,7 @@ import examples.mobilerobot.factors.Occlusion;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import exceptions.ActionDefinitionNotFoundException;
@@ -187,24 +188,45 @@ class MobileRobotTest {
 
 	private TransitionFunction createTransitions() throws AttributeNameNotFoundException, IncompatibleVarException,
 			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+		// MoveTo:
+		// Precondition
 		Precondition preMoveToL1 = new Precondition();
 		preMoveToL1.add(rLocDef, locL2);
 		Precondition preMoveToL2 = new Precondition();
 		preMoveToL2.add(rLocDef, locL1);
+
+		// Action description
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, rLocDef);
 		rLocActionDesc.put(moveToL1, preMoveToL1);
 		rLocActionDesc.put(moveToL2, preMoveToL2);
-		// RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, rLocDef,
-		// rBumpedDef);
-		// rBumpedActionDesc.put(moveToL1, preMoveToL1);
-		// rBumpedActionDesc.put(moveToL2, preMoveToL2);
+
+		// PSO
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef);
 		moveToPSO.putPrecondition(moveToL1, preMoveToL1);
 		moveToPSO.putPrecondition(moveToL2, preMoveToL2);
 		moveToPSO.addActionDescription(rLocActionDesc);
-		// moveToPSO.addActionDescription(rBumpedActionDesc);
+
+		// SetSpeed:
+		// Precondition
+		Precondition preSetSpeedHalf = new Precondition();
+		preSetSpeedHalf.add(rSpeedDef, fullSpeed);
+		Precondition preSetSpeedFull = new Precondition();
+		preSetSpeedFull.add(rSpeedDef, halfSpeed);
+
+		// Action description
+		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, rSpeedDef);
+		rSpeedActionDesc.put(setSpeedHalf, preSetSpeedHalf);
+		rSpeedActionDesc.put(setSpeedFull, preSetSpeedFull);
+
+		// PSO
+		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef);
+		setSpeedPSO.putPrecondition(setSpeedHalf, preSetSpeedHalf);
+		setSpeedPSO.putPrecondition(setSpeedFull, preSetSpeedFull);
+		setSpeedPSO.addActionDescription(rSpeedActionDesc);
+
 		TransitionFunction transFunction = new TransitionFunction();
 		transFunction.add(moveToPSO);
+		transFunction.add(setSpeedPSO);
 		return transFunction;
 	}
 

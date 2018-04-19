@@ -18,6 +18,7 @@ import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
 import mdp.IActionDescription;
+import mdp.Precondition;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
 
@@ -37,27 +38,34 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	 */
 	private volatile int hashCode;
 
-	private StateVarDefinition<RobotSpeed> mrSpeedDestDef;
+	private StateVarDefinition<RobotSpeed> mrSpeedDef;
 	private ActionDescription<SetSpeedAction> mrSpeedActionDesc;
 
 	public RobotSpeedActionDescription(ActionDefinition<SetSpeedAction> setSpeedDef,
-			StateVarDefinition<RobotSpeed> rSpeedDestDef) {
-		mrSpeedDestDef = rSpeedDestDef;
+			StateVarDefinition<RobotSpeed> rSpeedDef) {
+		mrSpeedDef = rSpeedDef;
 		mrSpeedActionDesc = new ActionDescription<>(setSpeedDef);
-		mrSpeedActionDesc.addEffectVarDef(rSpeedDestDef);
+		mrSpeedActionDesc.addDiscriminantVarDef(rSpeedDef);
+		mrSpeedActionDesc.addEffectVarDef(rSpeedDef);
 	}
 
-	public void put(SetSpeedAction setSpeed) throws IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, IncompatibleActionException {
-		DiscriminantClass emptyDiscrClass = mrSpeedActionDesc.getDiscriminantClass();
+	public void put(SetSpeedAction setSpeed, Precondition precondition) throws IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+		DiscriminantClass rSpeedDiscrClass = mrSpeedActionDesc.getDiscriminantClass();
 		EffectClass rSpeedEffectClass = mrSpeedActionDesc.getEffectClass();
-		Discriminant emptyDiscriminant = new Discriminant(emptyDiscrClass);
-		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(rSpeedEffectClass);
-		Effect newSpeedEffect = new Effect(rSpeedEffectClass);
-		StateVar<RobotSpeed> newSpeed = new StateVar<>(mrSpeedDestDef, setSpeed.getTargetSpeed());
-		newSpeedEffect.add(newSpeed);
-		rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
-		mrSpeedActionDesc.put(rSpeedProbEffect, emptyDiscriminant, setSpeed);
+		Set<RobotSpeed> applicableSpeeds = precondition.getApplicableValues(mrSpeedDef);
+		for (RobotSpeed rSpeedSrcValue : applicableSpeeds) {
+			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedDef, rSpeedSrcValue);
+			Discriminant rSpeedDiscriminant = new Discriminant(rSpeedDiscrClass);
+			rSpeedDiscriminant.add(rSpeedSrc);
+
+			ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(rSpeedEffectClass);
+			Effect newSpeedEffect = new Effect(rSpeedEffectClass);
+			StateVar<RobotSpeed> newSpeed = new StateVar<>(mrSpeedDef, setSpeed.getTargetSpeed());
+			newSpeedEffect.add(newSpeed);
+			rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
+			mrSpeedActionDesc.put(rSpeedProbEffect, rSpeedDiscriminant, setSpeed);
+		}
 	}
 
 	public double getProbability(StateVar<RobotSpeed> rSpeedDest, SetSpeedAction setSpeed)

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
@@ -62,7 +63,9 @@ public class PrismMDPTranslator {
 	}
 
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException {
+			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
 		String constsDecl = buildConstsDecl(mXMDP.getStateSpace());
 		String modules = buildModules();
 		String rewards = buildRewards();
@@ -710,7 +713,7 @@ public class PrismMDPTranslator {
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
 		builder.append("\n\n");
-		String copyCmds = buildHelperCopyCommands(mXMDP.getActionSpace(), SRC_SUFFIX);
+		String copyCmds = buildHelperCopyCommands(SRC_SUFFIX);
 		builder.append(copyCmds);
 		builder.append(INDENT);
 		builder.append(nextCmd);
@@ -739,21 +742,22 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @param actionSpace
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & ({actionTypeName}'={encoded action
 	 *         value}) & (readyToCopy'=false); ...
 	 */
-	private String buildHelperCopyCommands(ActionSpace actionSpace, String nameSuffix) {
+	private String buildHelperCopyCommands(String nameSuffix) {
 		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionSpace) {
+		TransitionFunction transFunc = mXMDP.getTransitionFunction();
+		for (FactoredPSO<IAction> actionPSO : transFunc) {
+			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
 			for (IAction action : actionDef.getActions()) {
 				builder.append(INDENT);
 				builder.append("[");
 				builder.append(action.getName());
 				builder.append("]");
 				builder.append(" readyToCopy -> ");
-				IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+
 				Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 				boolean firstClass = true;
 				for (EffectClass effectClass : effectClasses) {
@@ -809,9 +813,11 @@ public class PrismMDPTranslator {
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
 	 */
 	private String buildRewards() throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException {
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula computeCost = !readyToCopy;");
 		builder.append("\n\n");
@@ -837,9 +843,12 @@ public class PrismMDPTranslator {
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
 	 */
-	private String buildRewardItems(IQFunction qFunction) throws VarNotFoundException, AttributeNameNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException {
+	private String buildRewardItems(IQFunction qFunction)
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
 		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
@@ -851,13 +860,13 @@ public class PrismMDPTranslator {
 		for (IAction action : actionDef.getActions()) {
 			Integer encodedActionValue = mEncodings.getEncodedIntValue(actionDef, action);
 
-			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(action,
+			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(actionDef, action,
 					srcStateVarDefs);
 			for (Set<StateVar<IStateVarValue>> srcVars : srcCombinations) {
 				String srcPartialGuard = buildPartialGuard(srcVars, SRC_SUFFIX);
 
-				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(action,
-						destStateVarDefs, srcVars);
+				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(actionDef,
+						action, destStateVarDefs, srcVars);
 				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
 					String destPartialGuard = buildPartialGuard(destVars);
 
@@ -922,10 +931,11 @@ public class PrismMDPTranslator {
 		return builder.toString();
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(IAction action,
-			Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) {
-		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
-		Precondition precond = actionPSO.getPrecondition();
+	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(ActionDefinition<IAction> actionDef,
+			IAction action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs)
+			throws ActionNotFoundException, ActionDefinitionNotFoundException {
+		FactoredPSO<IAction> actionPSO = mXMDP.getTransitionFunction().getActionPSO(actionDef);
+		Precondition precond = actionPSO.getPrecondition(action);
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
 			Set<IStateVarValue> applicableVals = precond.getApplicableValues(srcVarDef);
@@ -934,21 +944,22 @@ public class PrismMDPTranslator {
 		return getCombinations(srcVarValues);
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(IAction action,
-			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, Set<StateVar<IStateVarValue>> srcVars)
-			throws IncompatibleVarException, VarNotFoundException, DiscriminantNotFoundException {
-		IFactoredPSO actionPSO = mXMDP.getTransitionFunction(action);
+	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(ActionDefinition<IAction> actionDef,
+			IAction action, Set<StateVarDefinition<IStateVarValue>> destStateVarDefs,
+			Set<StateVar<IStateVarValue>> srcVars) throws IncompatibleVarException, VarNotFoundException,
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+		FactoredPSO<IAction> actionPSO = mXMDP.getTransitionFunction().getActionPSO(actionDef);
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
 			Discriminant discriminant = getDiscriminant(destVarDef, srcVars, actionPSO);
-			Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant);
+			Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant, action);
 			destVarValues.put(destVarDef, possibleDestVals);
 		}
 		return getCombinations(destVarValues);
 	}
 
 	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
-			Set<StateVar<IStateVarValue>> srcVars, IFactoredPSO actionPSO)
+			Set<StateVar<IStateVarValue>> srcVars, FactoredPSO<IAction> actionPSO)
 			throws IncompatibleVarException, VarNotFoundException {
 		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
 		Discriminant discriminant = new Discriminant(discrClass);

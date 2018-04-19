@@ -1,9 +1,13 @@
 package mdp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
+import exceptions.ActionDefinitionNotFoundException;
+import factors.ActionDefinition;
 import factors.IAction;
 
 /**
@@ -21,13 +25,24 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 	private volatile int hashCode;
 
 	private Set<FactoredPSO<? extends IAction>> mTransitions;
+	private Map<ActionDefinition<? extends IAction>, FactoredPSO<? extends IAction>> mLookupTable; // For fast look-up
 
 	public TransitionFunction() {
 		mTransitions = new HashSet<>();
+		mLookupTable = new HashMap<>();
 	}
 
 	public void add(FactoredPSO<? extends IAction> actionPSO) {
 		mTransitions.add(actionPSO);
+		mLookupTable.put(actionPSO.getActionDefinition(), actionPSO);
+	}
+
+	public <E extends IAction> FactoredPSO<E> getActionPSO(ActionDefinition<E> actionDefinition)
+			throws ActionDefinitionNotFoundException {
+		if (!mLookupTable.containsKey(actionDefinition)) {
+			throw new ActionDefinitionNotFoundException(actionDefinition);
+		}
+		return (FactoredPSO<E>) mLookupTable.get(actionDefinition);
 	}
 
 	@Override

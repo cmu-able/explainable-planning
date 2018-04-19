@@ -15,6 +15,8 @@ import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotBumpedActionDescription;
 import examples.mobilerobot.factors.RobotLocationActionDescription;
+import exceptions.ActionDefinitionNotFoundException;
+import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
@@ -72,7 +74,8 @@ class MobileRobotTest {
 
 	@Test
 	public void testPrismMDPTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException,
+			ActionNotFoundException, ActionDefinitionNotFoundException {
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
 		try {

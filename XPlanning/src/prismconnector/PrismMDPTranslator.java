@@ -126,7 +126,8 @@ public class PrismMDPTranslator {
 				builder.append("const int ");
 				builder.append(varName);
 				builder.append("_");
-				builder.append(value);
+				String valueString = String.valueOf(value);
+				builder.append(sanitizeNameString(valueString));
 				builder.append(" = ");
 				builder.append(encodedValue);
 				builder.append(";");
@@ -616,7 +617,7 @@ public class PrismMDPTranslator {
 	private String buildModuleCommand(IAction action, Discriminant discriminant, ProbabilisticEffect probEffect) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
-		builder.append(action.getName());
+		builder.append(sanitizeNameString(action.getName()));
 		builder.append("] ");
 
 		if (mThreeParamRewards) {
@@ -787,7 +788,7 @@ public class PrismMDPTranslator {
 			for (IAction action : actionDef.getActions()) {
 				builder.append(INDENT);
 				builder.append("[");
-				builder.append(action.getName());
+				builder.append(sanitizeNameString(action.getName()));
 				builder.append("]");
 				builder.append(" readyToCopy -> ");
 
@@ -1044,6 +1045,10 @@ public class PrismMDPTranslator {
 			}
 		}
 		return newCombinations;
+	}
+
+	private String sanitizeNameString(String name) {
+		return name.replace(".", "_");
 	}
 
 }

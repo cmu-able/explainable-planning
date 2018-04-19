@@ -22,12 +22,11 @@ public class TransitionDefinition {
 	private volatile int hashCode;
 
 	private ActionDefinition<IAction> mActionDef;
-	private Set<StateVarDefinition<IStateVarValue>> mSrcStateVarDefs;
-	private Set<StateVarDefinition<IStateVarValue>> mDestStateVarDefs;
+	private Set<StateVarDefinition<IStateVarValue>> mSrcStateVarDefs = new HashSet<>();
+	private Set<StateVarDefinition<IStateVarValue>> mDestStateVarDefs = new HashSet<>();
 
 	public TransitionDefinition(ActionDefinition<? extends IAction> actionDef) {
 		mActionDef = new ActionDefinition<>(actionDef.getName(), actionDef.getActions());
-		mSrcStateVarDefs = new HashSet<>();
 	}
 
 	public void addSrcStateVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

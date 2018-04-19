@@ -19,10 +19,10 @@ public class StateVarValue implements IStateVarValue {
 	 */
 	private volatile int hashCode;
 
-	private Map<String, IStateVarAttribute> mAttributes;
+	private Map<String, IStateVarAttribute> mAttributes = new HashMap<>();
 
 	public StateVarValue() {
-		mAttributes = new HashMap<>();
+		// mAttributes initially empty
 	}
 
 	public void putAttributeValue(String name, IStateVarAttribute value) {

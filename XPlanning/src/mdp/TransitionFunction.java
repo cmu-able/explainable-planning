@@ -24,12 +24,12 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 	 */
 	private volatile int hashCode;
 
-	private Set<FactoredPSO<? extends IAction>> mTransitions;
-	private Map<ActionDefinition<? extends IAction>, FactoredPSO<? extends IAction>> mLookupTable; // For fast look-up
+	private Set<FactoredPSO<? extends IAction>> mTransitions = new HashSet<>();
+	// For fast look-up
+	private Map<ActionDefinition<? extends IAction>, FactoredPSO<? extends IAction>> mLookupTable = new HashMap<>();
 
 	public TransitionFunction() {
-		mTransitions = new HashSet<>();
-		mLookupTable = new HashMap<>();
+		// mTransitions and mLookupTable initially empty
 	}
 
 	public void add(FactoredPSO<? extends IAction> actionPSO) {

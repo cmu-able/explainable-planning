@@ -22,10 +22,10 @@ public class State implements Iterable<StateVar<IStateVarValue>> {
 	 */
 	private volatile int hashCode;
 
-	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mStateVarMap;
+	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mStateVarMap = new HashMap<>();
 
 	public State() {
-		mStateVarMap = new HashMap<>();
+		// mStateVarMap initially empty
 	}
 
 	public void addStateVar(StateVar<? extends IStateVarValue> stateVar) {

@@ -21,10 +21,10 @@ public class Precondition {
 	 */
 	private volatile int hashCode;
 
-	private Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> mApplicableValues;
+	private Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> mApplicableValues = new HashMap<>();
 
 	public Precondition() {
-		mApplicableValues = new HashMap<>();
+		// mApplicableValues initially empty
 	}
 
 	public <E extends IStateVarValue> void add(StateVarDefinition<E> stateVarDef, E value) {

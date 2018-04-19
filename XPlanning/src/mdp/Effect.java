@@ -24,11 +24,10 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private EffectClass mEffectClass;
-	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mEffectVarMap;
+	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mEffectVarMap = new HashMap<>();
 
 	public Effect(EffectClass effectClass) {
 		mEffectClass = effectClass;
-		mEffectVarMap = new HashMap<>();
 	}
 
 	public Effect(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {

@@ -1,5 +1,6 @@
 package factors;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public class DerivedActionAttribute {
 	private volatile int hashCode;
 
 	private String mName;
-	private Map<Set<StateVar<? extends IStateVarValue>>, IActionAttribute> mValues;
+	private Map<Set<StateVar<? extends IStateVarValue>>, IActionAttribute> mValues = new HashMap<>();
 
 	public DerivedActionAttribute(String name) {
 		mName = name;

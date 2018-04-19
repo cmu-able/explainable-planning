@@ -20,15 +20,12 @@ public class Action implements IAction {
 	private volatile int hashCode;
 
 	private String mActionName;
-	private Map<String, StateVar<? extends IStateVarValue>> mParameters;
-	private Map<String, IActionAttribute> mAttributes;
-	private Map<String, DerivedActionAttribute> mDerivedAttributes;
+	private Map<String, StateVar<? extends IStateVarValue>> mParameters = new HashMap<>();
+	private Map<String, IActionAttribute> mAttributes = new HashMap<>();
+	private Map<String, DerivedActionAttribute> mDerivedAttributes = new HashMap<>();
 
 	public Action(String actionName) {
 		mActionName = actionName;
-		mParameters = new HashMap<>();
-		mAttributes = new HashMap<>();
-		mDerivedAttributes = new HashMap<>();
 	}
 
 	public void addParameter(StateVar<? extends IStateVarValue> parameter) {

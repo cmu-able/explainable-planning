@@ -39,17 +39,15 @@ public class FactoredPSO<E extends IAction> {
 	/**
 	 * Preconditions of actions of this type
 	 */
-	private Map<E, Precondition> mPreconditions;
+	private Map<E, Precondition> mPreconditions = new HashMap<>();
 
 	/**
 	 * Full action descriptions for all independent effect classes of this type of action
 	 */
-	private Map<EffectClass, IActionDescription<E>> mActionDescriptions;
+	private Map<EffectClass, IActionDescription<E>> mActionDescriptions = new HashMap<>();
 
 	public FactoredPSO(ActionDefinition<E> actionDef) {
 		mActionDef = actionDef;
-		mPreconditions = new HashMap<>();
-		mActionDescriptions = new HashMap<>();
 	}
 
 	public void putPrecondition(E action, Precondition precondition) {

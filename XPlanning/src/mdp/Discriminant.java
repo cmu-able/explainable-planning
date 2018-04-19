@@ -28,11 +28,10 @@ public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private DiscriminantClass mDiscrClass;
-	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mDiscrVarMap;
+	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mDiscrVarMap = new HashMap<>();
 
 	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscrClass = discriminantClass;
-		mDiscrVarMap = new HashMap<>();
 	}
 
 	public Discriminant(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {

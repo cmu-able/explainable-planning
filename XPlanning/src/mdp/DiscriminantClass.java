@@ -20,10 +20,10 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mDiscriminantClass;
+	private Set<StateVarDefinition<? extends IStateVarValue>> mDiscriminantClass = new HashSet<>();
 
 	public DiscriminantClass() {
-		mDiscriminantClass = new HashSet<>();
+		// mDiscriminantClass initially empty
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

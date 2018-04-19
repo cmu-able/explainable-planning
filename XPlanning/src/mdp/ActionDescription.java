@@ -33,18 +33,14 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDefinition;
-	private DiscriminantClass mDiscriminantClass;
-	private EffectClass mEffectClass;
+	private DiscriminantClass mDiscriminantClass = new DiscriminantClass();
+	private EffectClass mEffectClass = new EffectClass();
 
-	private Map<E, Set<ProbabilisticTransition<E>>> mActionDescriptions;
-	private Map<E, Map<Discriminant, ProbabilisticEffect>> mLookupTable; // For fast look-up
+	private Map<E, Set<ProbabilisticTransition<E>>> mActionDescriptions = new HashMap<>();
+	private Map<E, Map<Discriminant, ProbabilisticEffect>> mLookupTable = new HashMap<>(); // For fast look-up
 
 	public ActionDescription(ActionDefinition<E> actionDefinition) {
 		mActionDefinition = actionDefinition;
-		mDiscriminantClass = new DiscriminantClass();
-		mEffectClass = new EffectClass();
-		mActionDescriptions = new HashMap<>();
-		mLookupTable = new HashMap<>();
 
 	}
 

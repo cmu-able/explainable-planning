@@ -2,19 +2,21 @@ package examples.mobilerobot.tests;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 import examples.mobilerobot.factors.Area;
+import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
+import examples.mobilerobot.factors.Occlusion;
 import examples.mobilerobot.factors.RobotBumped;
-import examples.mobilerobot.factors.RobotBumpedActionDescription;
 import examples.mobilerobot.factors.RobotLocationActionDescription;
+import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.factors.SetSpeedAction;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
 import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
@@ -36,8 +38,8 @@ import mdp.StateSpace;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
+import preferences.AttributeCostFunction;
 import preferences.CostFunction;
-import preferences.ILinearCostFunction;
 import prismconnector.PrismMDPTranslator;
 
 class MobileRobotTest {
@@ -45,12 +47,20 @@ class MobileRobotTest {
 	private StateVarDefinition<Location> rLocDef;
 	private Location locL1;
 	private Location locL2;
+	private StateVarDefinition<RobotSpeed> rSpeedDef;
+	private RobotSpeed halfSpeed;
+	private RobotSpeed fullSpeed;
 	private StateVarDefinition<RobotBumped> rBumpedDef;
 	private RobotBumped bumped;
 	private RobotBumped notBumped;
 	private ActionDefinition<MoveToAction> moveToDef;
 	private MoveToAction moveToL1;
 	private MoveToAction moveToL2;
+	private ActionDefinition<SetSpeedAction> setSpeedDef;
+	private SetSpeedAction setSpeedHalf;
+	private SetSpeedAction setSpeedFull;
+	private TravelTimeQFunction timeQFunction;
+	private AttributeCostFunction<TravelTimeQFunction> timeCostFunction;
 
 	MobileRobotTest() {
 
@@ -107,29 +117,63 @@ class MobileRobotTest {
 		possibleLocs.add(locL1);
 		possibleLocs.add(locL2);
 		rLocDef = new StateVarDefinition<>("rLoc", possibleLocs);
+
+		halfSpeed = new RobotSpeed(0.35);
+		fullSpeed = new RobotSpeed(0.7);
+		Set<RobotSpeed> possibleSpeedSettings = new HashSet<>();
+		possibleSpeedSettings.add(halfSpeed);
+		possibleSpeedSettings.add(fullSpeed);
+		rSpeedDef = new StateVarDefinition<>("rSpeed", possibleSpeedSettings);
+
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(rLocDef);
+		stateSpace.addStateVarDefinition(rSpeedDef);
 		return stateSpace;
 	}
 
 	private ActionSpace createActionSpace() {
 		StateVar<Location> rLocL1 = new StateVar<>(rLocDef, locL1);
 		StateVar<Location> rLocL2 = new StateVar<>(rLocDef, locL2);
+		Distance distanceL1L2 = new Distance(10);
+		Distance distanceL2L1 = new Distance(10);
+		Occlusion occlusionL1L2 = Occlusion.CLEAR;
+		Occlusion occlusionL2L1 = Occlusion.CLEAR;
 		moveToL1 = new MoveToAction(rLocL1);
 		moveToL2 = new MoveToAction(rLocL2);
+
+		moveToL1.putDistanceValue(distanceL2L1, rLocL2);
+		moveToL2.putDistanceValue(distanceL1L2, rLocL1);
+
+		moveToL1.putOcclusionValue(occlusionL2L1, rLocL2);
+		moveToL2.putOcclusionValue(occlusionL1L2, rLocL2);
+
 		Set<MoveToAction> moveToActions = new HashSet<>();
 		moveToActions.add(moveToL1);
 		moveToActions.add(moveToL2);
 		moveToDef = new ActionDefinition<>("moveTo", moveToActions);
+
+		StateVar<RobotSpeed> rSpeedHalf = new StateVar<>(rSpeedDef, halfSpeed);
+		StateVar<RobotSpeed> rSpeedFull = new StateVar<>(rSpeedDef, fullSpeed);
+		setSpeedHalf = new SetSpeedAction(rSpeedHalf);
+		setSpeedFull = new SetSpeedAction(rSpeedFull);
+		Set<SetSpeedAction> setSpeedActions = new HashSet<>();
+		setSpeedActions.add(setSpeedHalf);
+		setSpeedActions.add(setSpeedFull);
+		setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedActions);
+
 		ActionSpace actionSpace = new ActionSpace();
 		actionSpace.addActionDefinition(moveToDef);
+		actionSpace.addActionDefinition(setSpeedDef);
 		return actionSpace;
 	}
 
 	private State createInitialState() {
 		State initialState = new State();
 		StateVar<Location> rLocL1 = new StateVar<>(rLocDef, locL1);
+		StateVar<RobotSpeed> rSpeedHalf = new StateVar<>(rSpeedDef, halfSpeed);
+
 		initialState.addStateVar(rLocL1);
+		initialState.addStateVar(rSpeedHalf);
 		return initialState;
 	}
 
@@ -149,15 +193,15 @@ class MobileRobotTest {
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, rLocDef);
 		rLocActionDesc.put(moveToL1, preMoveToL1);
 		rLocActionDesc.put(moveToL2, preMoveToL2);
-		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, rLocDef,
-				rBumpedDef);
-		rBumpedActionDesc.put(moveToL1, preMoveToL1);
-		rBumpedActionDesc.put(moveToL2, preMoveToL2);
+		// RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, rLocDef,
+		// rBumpedDef);
+		// rBumpedActionDesc.put(moveToL1, preMoveToL1);
+		// rBumpedActionDesc.put(moveToL2, preMoveToL2);
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef);
 		moveToPSO.putPrecondition(moveToL1, preMoveToL1);
 		moveToPSO.putPrecondition(moveToL2, preMoveToL2);
 		moveToPSO.addActionDescription(rLocActionDesc);
-		moveToPSO.addActionDescription(rBumpedActionDesc);
+		// moveToPSO.addActionDescription(rBumpedActionDesc);
 		TransitionFunction transFunction = new TransitionFunction();
 		transFunction.add(moveToPSO);
 		return transFunction;
@@ -165,15 +209,15 @@ class MobileRobotTest {
 
 	private Set<IQFunction> createQFunctions() {
 		Set<IQFunction> qFunctions = new HashSet<>();
-		// TODO
+		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
+		qFunctions.add(timeQFunction);
 		return qFunctions;
 	}
 
 	private CostFunction createCostFunction() {
-		Map<IQFunction, ILinearCostFunction> linearCostFuns = new HashMap<>();
-		Map<IQFunction, Double> scalingConsts = new HashMap<>();
-		CostFunction costFunction = new CostFunction(linearCostFuns, scalingConsts);
-		// TODO
+		timeCostFunction = new AttributeCostFunction<>(timeQFunction, 1, 0);
+		CostFunction costFunction = new CostFunction();
+		costFunction.put(timeQFunction, timeCostFunction, 1.0);
 		return costFunction;
 	}
 

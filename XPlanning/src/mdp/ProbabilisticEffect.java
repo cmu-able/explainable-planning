@@ -22,11 +22,10 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 	 */
 	private volatile int hashCode;
 
-	private Map<Effect, Double> mProbEffect;
+	private Map<Effect, Double> mProbEffect = new HashMap<>();
 	private EffectClass mEffectClass;
 
 	public ProbabilisticEffect(EffectClass effectClass) {
-		mProbEffect = new HashMap<>();
 		mEffectClass = effectClass;
 	}
 

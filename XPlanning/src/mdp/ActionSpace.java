@@ -20,10 +20,10 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 	 */
 	private volatile int hashCode;
 
-	private Set<ActionDefinition<? extends IAction>> mActionDefs;
+	private Set<ActionDefinition<? extends IAction>> mActionDefs = new HashSet<>();
 
 	public ActionSpace() {
-		mActionDefs = new HashSet<>();
+		// mActionDefs initially empty
 	}
 
 	public void addActionDefinition(ActionDefinition<? extends IAction> actionDef) {

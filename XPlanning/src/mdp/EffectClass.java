@@ -21,10 +21,10 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mEffectClass;
+	private Set<StateVarDefinition<? extends IStateVarValue>> mEffectClass = new HashSet<>();
 
 	public EffectClass() {
-		mEffectClass = new HashSet<>();
+		// mEffectClass initially empty
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

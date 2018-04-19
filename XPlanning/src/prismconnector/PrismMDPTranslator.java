@@ -43,8 +43,8 @@ import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
+import preferences.AttributeCostFunction;
 import preferences.CostFunction;
-import preferences.ILinearCostFunction;
 
 public class PrismMDPTranslator {
 
@@ -871,12 +871,11 @@ public class PrismMDPTranslator {
 					String destPartialGuard = buildPartialGuard(destVars);
 
 					Transition trans = new Transition(action, srcVars, destVars);
-					double qValue = qFunction.getValue(trans);
 					CostFunction costFunc = mXMDP.getCostFunction();
-					ILinearCostFunction linearCostFunc = costFunc.getLinearCostFunction(qFunction);
+					AttributeCostFunction<IQFunction> attrCostFunc = costFunc.getAttributeCostFunction(qFunction);
 					double scalingConst = costFunc.getScalingConstant(qFunction);
-					double cost = linearCostFunc.getCost(qValue);
-					double scaledCost = scalingConst * cost;
+					double attrCost = attrCostFunc.getCost(trans);
+					double scaledAttrCost = scalingConst * attrCost;
 
 					builder.append(INDENT);
 					builder.append("computeCost & ");
@@ -888,7 +887,7 @@ public class PrismMDPTranslator {
 					builder.append(" & ");
 					builder.append(destPartialGuard);
 					builder.append(" : ");
-					builder.append(scaledCost);
+					builder.append(scaledAttrCost);
 					builder.append(";");
 					builder.append("\n");
 				}

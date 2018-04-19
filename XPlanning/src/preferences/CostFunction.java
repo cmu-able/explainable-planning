@@ -1,8 +1,9 @@
 package preferences;
 
-import java.util.Map;
-
+import exceptions.AttributeNameNotFoundException;
+import exceptions.VarNotFoundException;
 import metrics.IQFunction;
+import metrics.Transition;
 
 /**
  * {@link CostFunction} is a cost function of a regular Markov Decision Process (MDP). This is an additive
@@ -18,23 +19,29 @@ public class CostFunction implements IMACostFunction {
 	 */
 	private volatile int hashCode;
 
-	private AdditiveCostFunction mCostFun;
+	private AdditiveCostFunction mCostFunc;
 
-	public CostFunction(Map<IQFunction, ILinearCostFunction> linearCostFuns, Map<IQFunction, Double> scalingConsts) {
-		mCostFun = new AdditiveCostFunction(linearCostFuns, scalingConsts);
+	public CostFunction() {
+		mCostFunc = new AdditiveCostFunction();
 	}
 
-	public ILinearCostFunction getLinearCostFunction(IQFunction qFunction) {
-		return (ILinearCostFunction) mCostFun.getSACostFunction(qFunction);
-	}
-
-	public double getScalingConstant(IQFunction qFunction) {
-		return mCostFun.getScalingConst(qFunction);
+	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {
+		mCostFunc.put(qFunction, attrCostFunc, scalingConst);
 	}
 
 	@Override
-	public double getCost(Map<IQFunction, Double> values) {
-		return mCostFun.getCost(values);
+	public <E extends IQFunction> AttributeCostFunction<E> getAttributeCostFunction(E qFunction) {
+		return mCostFunc.getAttributeCostFunction(qFunction);
+	}
+
+	@Override
+	public double getScalingConstant(IQFunction qFunction) {
+		return mCostFunc.getScalingConstant(qFunction);
+	}
+
+	@Override
+	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
+		return mCostFunc.getCost(transition);
 	}
 
 	@Override
@@ -46,7 +53,7 @@ public class CostFunction implements IMACostFunction {
 			return false;
 		}
 		CostFunction costFun = (CostFunction) obj;
-		return costFun.mCostFun.equals(mCostFun);
+		return costFun.mCostFunc.equals(mCostFunc);
 	}
 
 	@Override
@@ -54,7 +61,7 @@ public class CostFunction implements IMACostFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mCostFun.hashCode();
+			result = 31 * result + mCostFunc.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

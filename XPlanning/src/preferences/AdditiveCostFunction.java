@@ -1,14 +1,17 @@
 package preferences;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import exceptions.AttributeNameNotFoundException;
+import exceptions.VarNotFoundException;
 import metrics.IQFunction;
+import metrics.Transition;
 
 /**
- * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs. If the
- * single-attribute component cost functions are linear, then the input values to this cost function can be either of an
- * entire policy execution, or of a single transition.
+ * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs of a single
+ * transition. Assume that the single-attribute component cost functions are linear.
  * 
  * @author rsukkerd
  *
@@ -20,32 +23,40 @@ public class AdditiveCostFunction implements IMACostFunction {
 	 */
 	private volatile int hashCode;
 
-	private Map<IQFunction, ? extends ISACostFunction> mSACostFuns;
+	private Map<IQFunction, AttributeCostFunction<? extends IQFunction>> mAttrCostFuncs;
 	private Map<IQFunction, Double> mScalingConsts;
 
-	public AdditiveCostFunction(Map<IQFunction, ? extends ISACostFunction> saCostFuns,
-			Map<IQFunction, Double> scalingConsts) {
-		mSACostFuns = saCostFuns;
-		mScalingConsts = scalingConsts;
+	public AdditiveCostFunction() {
+		mAttrCostFuncs = new HashMap<>();
+		mScalingConsts = new HashMap<>();
 	}
 
-	public ISACostFunction getSACostFunction(IQFunction qFunction) {
-		return mSACostFuns.get(qFunction);
+	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {
+		mAttrCostFuncs.put(qFunction, attrCostFunc);
+		mScalingConsts.put(qFunction, scalingConst);
 	}
 
-	public double getScalingConst(IQFunction qFunction) {
+	@Override
+	public <E extends IQFunction> AttributeCostFunction<E> getAttributeCostFunction(E qFunction) {
+		return (AttributeCostFunction<E>) (mAttrCostFuncs.get(qFunction));
+	}
+
+	@Override
+	public double getScalingConstant(IQFunction qFunction) {
 		return mScalingConsts.get(qFunction);
 	}
 
 	@Override
-	public double getCost(Map<IQFunction, Double> values) {
-		double result = 0;
-		for (Entry<IQFunction, Double> entry : values.entrySet()) {
-			IQFunction qFun = entry.getKey();
-			double value = entry.getValue();
-			result += mScalingConsts.get(qFun) * mSACostFuns.get(qFun).getCost(value);
+	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
+		double cost = 0;
+		for (Entry<IQFunction, AttributeCostFunction<? extends IQFunction>> entry : mAttrCostFuncs.entrySet()) {
+			IQFunction qFunc = entry.getKey();
+			AttributeCostFunction<? extends IQFunction> attrCostFunc = entry.getValue();
+			double attrCost = attrCostFunc.getCost(transition);
+			double scaledAttrCost = mScalingConsts.get(qFunc) * attrCost;
+			cost += scaledAttrCost;
 		}
-		return result;
+		return cost;
 	}
 
 	@Override
@@ -57,7 +68,7 @@ public class AdditiveCostFunction implements IMACostFunction {
 			return false;
 		}
 		AdditiveCostFunction costFun = (AdditiveCostFunction) obj;
-		return costFun.mSACostFuns.equals(mSACostFuns) && costFun.mScalingConsts.equals(mScalingConsts);
+		return costFun.mAttrCostFuncs.equals(mAttrCostFuncs) && costFun.mScalingConsts.equals(mScalingConsts);
 	}
 
 	@Override
@@ -65,7 +76,7 @@ public class AdditiveCostFunction implements IMACostFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mSACostFuns.hashCode();
+			result = 31 * result + mAttrCostFuncs.hashCode();
 			result = 31 * result + mScalingConsts.hashCode();
 			hashCode = result;
 		}

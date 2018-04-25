@@ -1,6 +1,7 @@
-package mdp;
+package policy;
 
 import factors.IAction;
+import mdp.Discriminant;
 
 /**
  * {@link Decision} is a pair of a state description (i.e., a set of state variables) and an action.

@@ -1,5 +1,6 @@
-package mdp;
+package policy;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -16,10 +17,14 @@ public class Policy implements Iterable<Decision>, Iterator<Decision> {
 	 */
 	private volatile int hashCode;
 
-	private Set<Decision> mCommands;
+	private Set<Decision> mCommands = new HashSet<>();
 
-	public Policy(Set<Decision> commands) {
-		mCommands = commands;
+	public Policy() {
+		// mCommands is initially empty
+	}
+
+	public void add(Decision decision) {
+		mCommands.add(decision);
 	}
 
 	@Override

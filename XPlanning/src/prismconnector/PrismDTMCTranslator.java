@@ -2,10 +2,10 @@ package prismconnector;
 
 import factors.IStateVarValue;
 import factors.StateVar;
-import mdp.Policy;
 import mdp.State;
 import mdp.XMDP;
 import metrics.IQFunction;
+import policy.Policy;
 
 public class PrismDTMCTranslator {
 

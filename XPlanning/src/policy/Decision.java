@@ -1,7 +1,7 @@
 package policy;
 
 import factors.IAction;
-import mdp.Discriminant;
+import mdp.State;
 
 /**
  * {@link Decision} is a pair of a state description (i.e., a set of state variables) and an action.
@@ -16,16 +16,16 @@ public class Decision {
 	 */
 	private volatile int hashCode;
 
-	private Discriminant mDiscriminant;
+	private State mState;
 	private IAction mAction;
 
-	public Decision(Discriminant guard, IAction action) {
-		mDiscriminant = guard;
+	public Decision(State state, IAction action) {
+		mState = state;
 		mAction = action;
 	}
 
-	public Discriminant getDiscriminant() {
-		return mDiscriminant;
+	public State getState() {
+		return mState;
 	}
 
 	public IAction getAction() {
@@ -41,7 +41,7 @@ public class Decision {
 			return false;
 		}
 		Decision decision = (Decision) obj;
-		return decision.mDiscriminant.equals(mDiscriminant) && decision.mAction.equals(mAction);
+		return decision.mState.equals(mState) && decision.mAction.equals(mAction);
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class Decision {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDiscriminant.hashCode();
+			result = 31 * result + mState.hashCode();
 			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}

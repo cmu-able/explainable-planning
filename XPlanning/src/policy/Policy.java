@@ -1,8 +1,14 @@
 package policy;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+
+import exceptions.StateNotFoundException;
+import factors.IAction;
+import mdp.State;
 
 /**
  * {@link Policy} contains a set of commands {@link Decision}.
@@ -10,36 +16,36 @@ import java.util.Set;
  * @author rsukkerd
  *
  */
-public class Policy implements Iterable<Decision>, Iterator<Decision> {
+public class Policy implements Iterable<Decision> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Set<Decision> mCommands = new HashSet<>();
+	private Set<Decision> mDecisions = new HashSet<>();
+	private Map<State, IAction> mPolicy = new HashMap<>(); // For fast look-up
 
 	public Policy() {
-		// mCommands is initially empty
+		// mDecisions and mPolicy are initially empty
 	}
 
-	public void add(Decision decision) {
-		mCommands.add(decision);
+	public void put(State state, IAction action) {
+		Decision decision = new Decision(state, action);
+		mDecisions.add(decision);
+		mPolicy.put(state, action);
 	}
 
-	@Override
-	public boolean hasNext() {
-		return mCommands.iterator().hasNext();
-	}
-
-	@Override
-	public Decision next() {
-		return mCommands.iterator().next();
+	public IAction getAction(State state) throws StateNotFoundException {
+		if (!mPolicy.containsKey(state)) {
+			throw new StateNotFoundException(state);
+		}
+		return mPolicy.get(state);
 	}
 
 	@Override
 	public Iterator<Decision> iterator() {
-		return mCommands.iterator();
+		return mDecisions.iterator();
 	}
 
 	@Override
@@ -51,7 +57,7 @@ public class Policy implements Iterable<Decision>, Iterator<Decision> {
 			return false;
 		}
 		Policy policy = (Policy) obj;
-		return policy.mCommands.equals(mCommands);
+		return policy.mDecisions.equals(mDecisions);
 	}
 
 	@Override
@@ -59,7 +65,7 @@ public class Policy implements Iterable<Decision>, Iterator<Decision> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mCommands.hashCode();
+			result = 31 * result + mDecisions.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

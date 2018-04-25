@@ -3,8 +3,10 @@ package policy;
 import java.util.HashSet;
 import java.util.Set;
 
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
+import factors.StateVarDefinition;
 import mdp.State;
 
 /**
@@ -21,6 +23,7 @@ public class Predicate {
 	private volatile int hashCode;
 
 	private Set<StateVar<? extends IStateVarValue>> mStateVars = new HashSet<>();
+	private State mState = new State(); // For fast look-up
 
 	public Predicate() {
 		// mStateVars is initially empty
@@ -28,6 +31,12 @@ public class Predicate {
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) {
 		mStateVars.add(stateVar);
+		mState.addStateVar(stateVar);
+	}
+
+	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
+			throws VarNotFoundException {
+		return mState.getStateVarValue(valueType, stateVarDef);
 	}
 
 	public boolean isTrue(State state) {

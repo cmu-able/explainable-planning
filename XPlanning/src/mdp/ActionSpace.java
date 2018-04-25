@@ -1,7 +1,9 @@
 package mdp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import factors.ActionDefinition;
@@ -21,13 +23,22 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 	private volatile int hashCode;
 
 	private Set<ActionDefinition<? extends IAction>> mActionDefs = new HashSet<>();
+	private Map<IAction, ActionDefinition<? extends IAction>> mActionDefsLookup = new HashMap<>();
 
 	public ActionSpace() {
-		// mActionDefs initially empty
+		// mActionDefs and mActionDefsLookup are initially empty
 	}
 
 	public void addActionDefinition(ActionDefinition<? extends IAction> actionDef) {
 		mActionDefs.add(actionDef);
+
+		for (IAction action : actionDef.getActions()) {
+			mActionDefsLookup.put(action, actionDef);
+		}
+	}
+
+	public <E extends IAction> ActionDefinition<E> getActionDefinition(E action) {
+		return (ActionDefinition<E>) mActionDefsLookup.get(action);
 	}
 
 	@Override

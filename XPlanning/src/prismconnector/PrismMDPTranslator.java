@@ -18,9 +18,7 @@ import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
-import factors.IStateVarBoolean;
 import factors.IStateVarDouble;
-import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -46,8 +44,6 @@ public class PrismMDPTranslator {
 	private boolean mThreeParamRewards;
 	private PrismTranslatorUtilities mUtilities;
 
-	private String currModuleName;
-
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
 		mThreeParamRewards = threeParamRewards;
@@ -64,7 +60,7 @@ public class PrismMDPTranslator {
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
-		String constsDecl = buildConstsDecl(mXMDP.getStateSpace());
+		String constsDecl = mUtilities.buildConstsDecl(mXMDP.getStateSpace());
 		String modules = buildModules();
 		String rewards = mUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
 				mXMDP.getCostFunction());
@@ -102,40 +98,6 @@ public class PrismMDPTranslator {
 			builder.append(encodedValue);
 		}
 		builder.append("\" ]");
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param stateSpace
-	 *            Definitions of all state variables
-	 * @return const int {varName}_{value} = {encoded int value}; ...
-	 * @throws VarNotFoundException
-	 */
-	private String buildConstsDecl(StateSpace stateSpace) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
-			String varName = stateVarDef.getName();
-			builder.append("// Possible values of ");
-			builder.append(varName);
-			builder.append("\n");
-			for (IStateVarValue value : stateVarDef.getPossibleValues()) {
-				if (value instanceof IStateVarBoolean || value instanceof IStateVarInt) {
-					continue;
-				}
-				Integer encodedValue = mUtilities.getValueEncodingScheme().getEncodedIntValue(stateVarDef, value);
-				builder.append("const int ");
-				builder.append(varName);
-				builder.append("_");
-				String valueString = String.valueOf(value);
-				builder.append(sanitizeNameString(valueString));
-				builder.append(" = ");
-				builder.append(encodedValue);
-				builder.append(";");
-				builder.append("\n");
-			}
-			builder.append("\n");
-		}
 		return builder.toString();
 	}
 
@@ -283,7 +245,7 @@ public class PrismMDPTranslator {
 			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs) throws VarNotFoundException,
 			EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
 			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
-		currModuleName = moduleName;
+		mUtilities.setCurrentModuleName(moduleName);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
@@ -320,10 +282,11 @@ public class PrismMDPTranslator {
 	}
 
 	/**
+	 * Build all module commands for MDP.
 	 * 
 	 * @param actionPSOs
-	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
-	 *            effect classes of other action types
+	 *            A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other effect
+	 *            classes of other action types
 	 * @return all commands of a module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
 	 *         {updates_p};
 	 * @throws EffectClassNotFoundException
@@ -350,7 +313,7 @@ public class PrismMDPTranslator {
 				actionDesc = actionPSO.getActionDescription(effectClass);
 			}
 			String actionDefName = actionPSO.getActionDefinition().getName();
-			String commands = buildModuleCommands(actionDesc);
+			String commands = mUtilities.buildPartialModuleCommands(actionDesc);
 			builder.append(INDENT);
 			builder.append("// ");
 			builder.append(actionDefName);
@@ -446,36 +409,6 @@ public class PrismMDPTranslator {
 			}
 		}
 		return mergedProbTransitions;
-	}
-
-	/**
-	 * 
-	 * @param actionDescription
-	 * @return commands for updating a particular effect class
-	 * @throws ActionNotFoundException
-	 * @throws VarNotFoundException
-	 */
-	private String buildModuleCommands(IActionDescription<IAction> actionDescription)
-			throws ActionNotFoundException, VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
-		for (IAction action : actionDef.getActions()) {
-			Set<ProbabilisticTransition<IAction>> probTransitions = actionDescription
-					.getProbabilisticTransitions(action);
-			for (ProbabilisticTransition<IAction> probTrans : probTransitions) {
-				Discriminant discriminant = probTrans.getDiscriminant();
-				ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
-				String command = mUtilities.buildModuleCommand(action, discriminant, probEffect);
-				builder.append(INDENT);
-				builder.append(command);
-				builder.append("\n");
-			}
-		}
-		return builder.toString();
-	}
-
-	private String sanitizeNameString(String name) {
-		return name.replace(".", "_");
 	}
 
 }

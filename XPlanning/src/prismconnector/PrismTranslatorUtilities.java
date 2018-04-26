@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import dtmc.TwoTBN;
 import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
@@ -26,14 +27,18 @@ import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
+import mdp.IActionDescription;
+import mdp.IPredicate;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
+import mdp.ProbabilisticTransition;
 import mdp.State;
 import mdp.StateSpace;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
+import policy.Predicate;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
 
@@ -45,6 +50,8 @@ public class PrismTranslatorUtilities {
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
 
+	private String currModuleName; // Book-keeping
+
 	public PrismTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards) {
 		mEncodings = encodings;
 		mThreeParamRewards = threeParamRewards;
@@ -52,6 +59,10 @@ public class PrismTranslatorUtilities {
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
+	}
+
+	void setCurrentModuleName(String moduleName) {
+		currModuleName = moduleName;
 	}
 
 	/**
@@ -350,6 +361,71 @@ public class PrismTranslatorUtilities {
 	}
 
 	/**
+	 * Build partial module commands for MDP.
+	 * 
+	 * @param actionDescription
+	 *            Action description of an effect class (possibly merged)
+	 * @return commands for updating a particular effect class of actionDescription
+	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
+	 */
+	String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
+			throws ActionNotFoundException, VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
+		for (IAction action : actionDef.getActions()) {
+			Set<ProbabilisticTransition<IAction>> probTransitions = actionDescription
+					.getProbabilisticTransitions(action);
+			for (ProbabilisticTransition<IAction> probTrans : probTransitions) {
+				Discriminant discriminant = probTrans.getDiscriminant();
+				ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
+				String command = buildModuleCommand(action, discriminant, probEffect);
+				builder.append(INDENT);
+				builder.append(command);
+				builder.append("\n");
+			}
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Build partial module commands for DTMC.
+	 * 
+	 * @param actionDescription
+	 *            Action description of an effect class (possibly merged)
+	 * @param twoTBN
+	 *            2TBN of the same action type as that of actionDescription
+	 * @return commands for updating a particular effect class of actionDescription
+	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 */
+	<E extends IAction> String buildPartialModuleCommands(IActionDescription<E> actionDescription, TwoTBN<E> twoTBN)
+			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
+		for (Entry<Predicate, E> entry : twoTBN) {
+			Predicate predicate = entry.getKey();
+			E action = entry.getValue();
+
+			Discriminant discriminant = new Discriminant(discrClass);
+			for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
+				IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
+				StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef, value);
+				discriminant.add(stateVar);
+			}
+			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);
+			String command = buildModuleCommand(action, predicate, probEffect);
+			builder.append(INDENT);
+			builder.append(command);
+			builder.append("\n");
+		}
+		return builder.toString();
+	}
+
+	/**
 	 * 
 	 * @param action
 	 * @param predicate
@@ -357,8 +433,8 @@ public class PrismTranslatorUtilities {
 	 * @return [actionName] {guard} -> {updates};
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleCommand(IAction action, Iterable<StateVar<IStateVarValue>> predicate,
-			ProbabilisticEffect probEffect) throws VarNotFoundException {
+	String buildModuleCommand(IAction action, IPredicate predicate, ProbabilisticEffect probEffect)
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		String sanitizedActionName = sanitizeNameString(action.getName());
@@ -406,14 +482,14 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param probEffect
+	 * @param probEffects
 	 * @return {prob_1}:{update_1} + ... + {prob_k}:{update_k}
 	 * @throws VarNotFoundException
 	 */
-	String buildUpdates(ProbabilisticEffect probEffect) throws VarNotFoundException {
+	String buildUpdates(ProbabilisticEffect probEffects) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstBranch = true;
-		for (Entry<Effect, Double> entry : probEffect) {
+		for (Entry<Effect, Double> entry : probEffects) {
 			Effect effect = entry.getKey();
 			Double prob = entry.getValue();
 			if (!firstBranch) {
@@ -441,7 +517,7 @@ public class PrismTranslatorUtilities {
 	 * @return {var_1 update}&...&{var_n update}
 	 * @throws VarNotFoundException
 	 */
-	String buildUpdate(Iterable<StateVar<IStateVarValue>> update) throws VarNotFoundException {
+	String buildUpdate(IPredicate update) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> stateVar : update) {
@@ -688,11 +764,11 @@ public class PrismTranslatorUtilities {
 		return newCombinations;
 	}
 
-	String sanitizeNameString(String name) {
+	private String sanitizeNameString(String name) {
 		return name.replace(".", "_");
 	}
 
-	<E extends IStateVarValue> StateVarDefinition<E> castTypeStateVarDef(
+	private <E extends IStateVarValue> StateVarDefinition<E> castTypeStateVarDef(
 			StateVarDefinition<IStateVarValue> genericVarDef, Class<E> type) {
 		Set<E> possibleValues = new HashSet<>();
 		for (IStateVarValue value : genericVarDef.getPossibleValues()) {

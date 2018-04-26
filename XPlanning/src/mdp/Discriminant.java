@@ -20,7 +20,7 @@ import factors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class Discriminant implements Iterable<StateVar<IStateVarValue>> {
+public class Discriminant implements IPredicate {
 
 	/*
 	 * Cached hashCode -- Effective Java

@@ -8,6 +8,7 @@ import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.IPredicate;
 import mdp.State;
 
 /**
@@ -16,7 +17,7 @@ import mdp.State;
  * @author rsukkerd
  *
  */
-public class Predicate implements Iterable<StateVar<IStateVarValue>> {
+public class Predicate implements IPredicate {
 
 	/*
 	 * Cached hashCode -- Effective Java

@@ -3,7 +3,7 @@ package policy;
 import factors.IAction;
 
 /**
- * {@link Decision} is a pair of a state description {@link Predicate} and an action.
+ * {@link Decision} is a pair of a state {@link Predicate} and an action.
  * 
  * @author rsukkerd
  *

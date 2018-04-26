@@ -27,6 +27,13 @@ import policy.Decision;
 import policy.Policy;
 import policy.Predicate;
 
+/**
+ * {@link XDTMC} is a discrete-time Markov chain induced from a policy and a MDP. It is consists of a 2TBN for each
+ * action type.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class XDTMC {
 
 	/*

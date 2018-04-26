@@ -12,6 +12,14 @@ import mdp.EffectClass;
 import mdp.ProbabilisticEffect;
 import policy.Predicate;
 
+/**
+ * {@link TwoTBN} is a 2-step Temporal Bayesian Network (2TBN) for a particular action type (i.e.,
+ * {@link ActionDefinition}).
+ * 
+ * @author rsukkerd
+ *
+ * @param <E>
+ */
 public class TwoTBN<E extends IAction> {
 
 	/*

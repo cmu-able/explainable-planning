@@ -10,7 +10,7 @@ import factors.StateVarDefinition;
 import mdp.State;
 
 /**
- * {@link Predicate} is a description of a state.
+ * {@link Predicate} is a predicate on a set of state variables.
  * 
  * @author rsukkerd
  *

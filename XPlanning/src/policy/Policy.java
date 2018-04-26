@@ -10,7 +10,7 @@ import exceptions.PredicateNotFoundException;
 import factors.IAction;
 
 /**
- * {@link Policy} contains a set of commands {@link Decision}.
+ * {@link Policy} contains a set of {@link Decision}s.
  * 
  * @author rsukkerd
  *

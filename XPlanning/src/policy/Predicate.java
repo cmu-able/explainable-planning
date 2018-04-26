@@ -1,6 +1,7 @@
 package policy;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import exceptions.VarNotFoundException;
@@ -15,7 +16,7 @@ import mdp.State;
  * @author rsukkerd
  *
  */
-public class Predicate {
+public class Predicate implements Iterable<StateVar<IStateVarValue>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -46,6 +47,11 @@ public class Predicate {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public Iterator<StateVar<IStateVarValue>> iterator() {
+		return mState.iterator();
 	}
 
 	@Override

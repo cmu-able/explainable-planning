@@ -1,6 +1,7 @@
 package dtmc;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,18 +35,22 @@ import policy.Predicate;
  * @author rsukkerd
  *
  */
-public class XDTMC {
+public class XDTMC implements Iterable<TwoTBN<IAction>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
+	private XMDP mXMDP;
+	private Policy mPolicy;
 	private Map<ActionDefinition<IAction>, TwoTBN<IAction>> mDTMC = new HashMap<>();
 
 	public XDTMC(XMDP xmdp, Policy policy) throws ActionDefinitionNotFoundException, EffectClassNotFoundException,
 			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
 			IncompatibleActionException {
+		mXMDP = xmdp;
+		mPolicy = policy;
 		induceDTMC(xmdp, policy);
 	}
 
@@ -86,6 +91,19 @@ public class XDTMC {
 
 	public TwoTBN<IAction> get2TBN(ActionDefinition<IAction> actionDef) {
 		return mDTMC.get(actionDef);
+	}
+
+	public XMDP getXMDP() {
+		return mXMDP;
+	}
+
+	public Policy getPolicy() {
+		return mPolicy;
+	}
+
+	@Override
+	public Iterator<TwoTBN<IAction>> iterator() {
+		return mDTMC.values().iterator();
 	}
 
 	@Override

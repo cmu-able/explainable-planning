@@ -20,6 +20,7 @@ public class PrismDTMCTranslator {
 	private XDTMC mXDTMC;
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
+	private PrismTranslatorUtilities mUtilities;
 
 	public PrismDTMCTranslator(XMDP xmdp, Policy policy, boolean threeParamRewards)
 			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
@@ -32,15 +33,21 @@ public class PrismDTMCTranslator {
 		} else {
 			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
+		mUtilities = new PrismTranslatorUtilities(mEncodings);
 	}
 
 	public String getDTMCTranslation() {
+		String constsDecl = mUtilities.buildConstsDecl(mXDTMC.getXMDP().getStateSpace());
+		String modules = buildModules();
+		String rewards = buildRewards();
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");
+		builder.append("\n\n");
+		builder.append(constsDecl);
 		builder.append("\n");
-		builder.append("module policy");
-		// TODO
-		builder.append("endmodule");
+		builder.append(modules);
+		builder.append("\n");
+		builder.append(rewards);
 		return builder.toString();
 	}
 
@@ -80,4 +87,11 @@ public class PrismDTMCTranslator {
 		builder.append("\" ]");
 		return builder.toString();
 	}
+
+	private String buildModules() {
+		StringBuilder builder = new StringBuilder();
+
+		return builder.toString();
+	}
+
 }

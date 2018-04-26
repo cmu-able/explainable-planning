@@ -1,7 +1,9 @@
 package dtmc;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import exceptions.EffectClassNotFoundException;
 import exceptions.IncompatibleActionException;
@@ -20,7 +22,7 @@ import policy.Predicate;
  *
  * @param <E>
  */
-public class TwoTBN<E extends IAction> {
+public class TwoTBN<E extends IAction> implements Iterable<Entry<Predicate, E>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -63,6 +65,11 @@ public class TwoTBN<E extends IAction> {
 			throw new EffectClassNotFoundException(effectClass);
 		}
 		return m2TBN.get(predicate).get(effectClass);
+	}
+
+	@Override
+	public Iterator<Entry<Predicate, E>> iterator() {
+		return mSubPolicy.entrySet().iterator();
 	}
 
 	@Override

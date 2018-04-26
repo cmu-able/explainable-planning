@@ -1,5 +1,13 @@
 package prismconnector;
 
+import dtmc.XDTMC;
+import exceptions.ActionDefinitionNotFoundException;
+import exceptions.ActionNotFoundException;
+import exceptions.DiscriminantNotFoundException;
+import exceptions.EffectClassNotFoundException;
+import exceptions.IncompatibleActionException;
+import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import mdp.State;
@@ -9,16 +17,21 @@ import policy.Policy;
 
 public class PrismDTMCTranslator {
 
-	private Policy mPolicy;
-	private XMDP mXMDP;
+	private XDTMC mXDTMC;
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
 
-	public PrismDTMCTranslator(Policy policy, XMDP xmdp, boolean threeParamRewards) {
-		mPolicy = policy;
-		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
+	public PrismDTMCTranslator(XMDP xmdp, Policy policy, boolean threeParamRewards)
+			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
+			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException {
+		mXDTMC = new XDTMC(xmdp, policy);
 		mThreeParamRewards = threeParamRewards;
+		if (threeParamRewards) {
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
+		} else {
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
+		}
 	}
 
 	public String getDTMCTranslation() {
@@ -43,9 +56,10 @@ public class PrismDTMCTranslator {
 	 * 
 	 * @param qFunction
 	 * @return R{"{objectiveName}"}=? [ F "{varName}={encoded int value} & ..." ]
+	 * @throws VarNotFoundException
 	 */
-	public String getObjectivePropertyTranslation(IQFunction qFunction) {
-		State goal = mXMDP.getGoal();
+	public String getObjectivePropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
+		State goal = mXDTMC.getXMDP().getGoal();
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(qFunction.getName());

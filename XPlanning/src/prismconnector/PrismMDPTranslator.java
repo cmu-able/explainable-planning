@@ -59,8 +59,12 @@ public class PrismMDPTranslator {
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(mXMDP.getStateSpace(), mXMDP.getActionSpace());
 		mThreeParamRewards = threeParamRewards;
+		if (threeParamRewards) {
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
+		} else {
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
+		}
 	}
 
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
@@ -84,8 +88,9 @@ public class PrismMDPTranslator {
 	/**
 	 * 
 	 * @return P>=1 [ F "{varName}={encoded int value} & ..." ]
+	 * @throws VarNotFoundException
 	 */
-	public String getGoalPropertyTranslation() {
+	public String getGoalPropertyTranslation() throws VarNotFoundException {
 		State goal = mXMDP.getGoal();
 		StringBuilder builder = new StringBuilder();
 		builder.append("P>=1 [ F \"");
@@ -110,8 +115,9 @@ public class PrismMDPTranslator {
 	 * @param stateSpace
 	 *            Definitions of all state variables
 	 * @return const int {varName}_{value} = {encoded int value}; ...
+	 * @throws VarNotFoundException
 	 */
-	private String buildConstsDecl(StateSpace stateSpace) {
+	private String buildConstsDecl(StateSpace stateSpace) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
 			String varName = stateVarDef.getName();
@@ -142,8 +148,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param stateVarDef
 	 * @return formula {varName}Double = ({varName}={encoded int}) ? {double value} : ... : -1;
+	 * @throws VarNotFoundException
 	 */
-	private String buildVarDoubleFormula(StateVarDefinition<IStateVarDouble> stateVarDef) {
+	private String buildVarDoubleFormula(StateVarDefinition<IStateVarDouble> stateVarDef) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		String formulaName = stateVarDef.getName() + "Double";
 		builder.append("formula ");
@@ -173,10 +180,11 @@ public class PrismMDPTranslator {
 	 * @throws IncompatibleVarException
 	 * @throws IncompatibleActionException
 	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
 	 */
 	private String buildModules() throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException {
+			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClassesHelper();
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
@@ -389,9 +397,10 @@ public class PrismMDPTranslator {
 	 * @param nameSuffix
 	 * @param iniValue
 	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value};
+	 * @throws VarNotFoundException
 	 */
 	private String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, String nameSuffix,
-			IStateVarValue iniValue) {
+			IStateVarValue iniValue) throws VarNotFoundException {
 		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(varDef);
 		Integer encodedIniValue = mEncodings.getEncodedIntValue(varDef, iniValue);
 		StringBuilder builder = new StringBuilder();
@@ -469,10 +478,12 @@ public class PrismMDPTranslator {
 	 * @throws IncompatibleVarException
 	 * @throws IncompatibleEffectClassException
 	 * @throws IncompatibleDiscriminantClassException
+	 * @throws VarNotFoundException
 	 */
 	private String buildModuleCommands(Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs)
 			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
-			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (Entry<FactoredPSO<IAction>, Set<EffectClass>> entry : actionPSOs.entrySet()) {
 			FactoredPSO<IAction> actionPSO = entry.getKey();
@@ -588,8 +599,10 @@ public class PrismMDPTranslator {
 	 * @param actionDescription
 	 * @return commands for updating a particular effect class
 	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
 	 */
-	private String buildModuleCommands(IActionDescription<IAction> actionDescription) throws ActionNotFoundException {
+	private String buildModuleCommands(IActionDescription<IAction> actionDescription)
+			throws ActionNotFoundException, VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
 		for (IAction action : actionDef.getActions()) {
@@ -613,8 +626,10 @@ public class PrismMDPTranslator {
 	 * @param context
 	 * @param effects
 	 * @return [actionName] {guard} -> {updates};
+	 * @throws VarNotFoundException
 	 */
-	private String buildModuleCommand(IAction action, Discriminant discriminant, ProbabilisticEffect probEffect) {
+	private String buildModuleCommand(IAction action, Discriminant discriminant, ProbabilisticEffect probEffect)
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		builder.append(sanitizeNameString(action.getName()));
@@ -637,8 +652,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param discriminant
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
+	 * @throws VarNotFoundException
 	 */
-	private String buildGuard(Discriminant discriminant) {
+	private String buildGuard(Discriminant discriminant) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : discriminant) {
@@ -660,8 +676,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param effects
 	 * @return {prob_1}:{update_1} + ... + {prob_k}:{update_k}
+	 * @throws VarNotFoundException
 	 */
-	private String buildUpdates(ProbabilisticEffect probEffect) {
+	private String buildUpdates(ProbabilisticEffect probEffect) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstBranch = true;
 		for (Entry<Effect, Double> entry : probEffect) {
@@ -690,8 +707,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param effect
 	 * @return {var_1 update}&...&{var_n update}
+	 * @throws VarNotFoundException
 	 */
-	private String buildUpdate(Effect effect) {
+	private String buildUpdate(Effect effect) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> stateVar : effect) {
@@ -710,8 +728,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param updatedStateVar
 	 * @return ({varName}'={encoded int value})
+	 * @throws VarNotFoundException
 	 */
-	private String buildVariableUpdate(StateVar<IStateVarValue> updatedStateVar) {
+	private String buildVariableUpdate(StateVar<IStateVarValue> updatedStateVar) throws VarNotFoundException {
 		String varName = updatedStateVar.getName();
 		Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar.getDefinition(),
 				updatedStateVar.getValue());
@@ -730,8 +749,9 @@ public class PrismMDPTranslator {
 	 * @return A helper module that copies values of the variables in the source state when an action is taken, and
 	 *         saves the value of that action
 	 * @throws VarNotFoundException
+	 * @throws ActionDefinitionNotFoundException
 	 */
-	private String buildHelperModule() throws VarNotFoundException {
+	private String buildHelperModule() throws VarNotFoundException, ActionDefinitionNotFoundException {
 		String srcVarsDecl = buildModuleVarsDecl(mXMDP.getStateSpace(), SRC_SUFFIX);
 		String actionsDecl = buildHelperActionsDecl(mXMDP.getActionSpace());
 		String readyToCopyDecl = "readyToCopy : bool init true;";
@@ -759,8 +779,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param actionSpace
 	 * @return {actionTypeName} : [0..{maximum encoded int}] init 0; ...
+	 * @throws ActionDefinitionNotFoundException
 	 */
-	private String buildHelperActionsDecl(ActionSpace actionSpace) {
+	private String buildHelperActionsDecl(ActionSpace actionSpace) throws ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (ActionDefinition<IAction> actionDef : actionSpace) {
 			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(actionDef);
@@ -779,8 +800,9 @@ public class PrismMDPTranslator {
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & ({actionTypeName}'={encoded action
 	 *         value}) & (readyToCopy'=false); ...
+	 * @throws ActionDefinitionNotFoundException
 	 */
-	private String buildHelperCopyCommands(String nameSuffix) {
+	private String buildHelperCopyCommands(String nameSuffix) throws ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		TransitionFunction transFunc = mXMDP.getTransitionFunction();
 		for (FactoredPSO<IAction> actionPSO : transFunc) {
@@ -935,8 +957,9 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param stateVars
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
+	 * @throws VarNotFoundException
 	 */
-	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) {
+	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) throws VarNotFoundException {
 		return buildPartialGuard(stateVars, "");
 	}
 
@@ -945,8 +968,10 @@ public class PrismMDPTranslator {
 	 * @param stateVars
 	 * @param nameSuffix
 	 * @return {varName_1{Suffix}}={encoded int value} & ... & {varName_m{Suffix}}={encoded int value}
+	 * @throws VarNotFoundException
 	 */
-	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix) {
+	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix)
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : stateVars) {

@@ -44,6 +44,7 @@ import policy.Policy;
 import policy.Predicate;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
+import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismMDPTranslator;
 
 class MobileRobotTest {
@@ -107,6 +108,22 @@ class MobileRobotTest {
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
 			fail("Exception thrown while creating XDTMC");
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testPrismDTMCTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+		XMDP xmdp = createXMDP();
+		Policy policy = createPolicy();
+		try {
+			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xmdp, policy, true);
+			String dtmcTranslation = dtmcTranslator.getDTMCTranslation();
+			System.out.println(dtmcTranslation);
+		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
+				| ActionNotFoundException | DiscriminantNotFoundException e) {
+			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");
 			e.printStackTrace();
 		}
 	}

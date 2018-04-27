@@ -7,11 +7,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import dtmc.TwoTBN;
 import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
+import exceptions.EffectClassNotFoundException;
+import exceptions.IncompatibleActionException;
+import exceptions.IncompatibleDiscriminantClassException;
+import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
@@ -21,6 +24,7 @@ import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.ActionDescription;
 import mdp.ActionSpace;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
@@ -38,13 +42,12 @@ import mdp.TransitionFunction;
 import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
-import policy.Predicate;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
 
 public class PrismTranslatorUtilities {
 
-	private static final String INDENT = "  ";
+	public static final String INDENT = "  ";
 	private static final String SRC_SUFFIX = "Src";
 
 	private ValueEncodingScheme mEncodings;
@@ -59,10 +62,6 @@ public class PrismTranslatorUtilities {
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
-	}
-
-	void setCurrentModuleName(String moduleName) {
-		currModuleName = moduleName;
 	}
 
 	/**
@@ -361,65 +360,168 @@ public class PrismTranslatorUtilities {
 	}
 
 	/**
-	 * Build partial module commands for MDP.
 	 * 
-	 * @param actionDescription
-	 *            Action description of an effect class (possibly merged)
-	 * @return commands for updating a particular effect class of actionDescription
-	 * @throws ActionNotFoundException
+	 * @param stateSpace
+	 * @param iniState
+	 * @param actionSpace
+	 * @param transFunction
+	 * @param partialCommandsBuilder
+	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleActionException
+	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws DiscriminantNotFoundException
 	 */
-	String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
-			throws ActionNotFoundException, VarNotFoundException {
+	String buildModules(StateSpace stateSpace, State iniState, ActionSpace actionSpace,
+			TransitionFunction transFunction, BuildPartialModuleCommands partialCommandsBuilder)
+			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
+		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(transFunction);
 		StringBuilder builder = new StringBuilder();
-		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
-		for (IAction action : actionDef.getActions()) {
-			Set<ProbabilisticTransition<IAction>> probTransitions = actionDescription
-					.getProbabilisticTransitions(action);
-			for (ProbabilisticTransition<IAction> probTrans : probTransitions) {
-				Discriminant discriminant = probTrans.getDiscriminant();
-				ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
-				String command = buildModuleCommand(action, discriminant, probEffect);
-				builder.append(INDENT);
-				builder.append(command);
-				builder.append("\n");
+		int moduleCount = 0;
+
+		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
+			moduleCount++;
+			StateSpace moduleVarSpace = new StateSpace();
+			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs = new HashMap<>();
+
+			for (Entry<EffectClass, FactoredPSO<IAction>> entry : chain.entrySet()) {
+				EffectClass effectClass = entry.getKey();
+				FactoredPSO<IAction> actionPSO = entry.getValue();
+
+				moduleVarSpace.addStateVarDefinitions(effectClass);
+
+				if (!actionPSOs.containsKey(actionPSO)) {
+					actionPSOs.put(actionPSO, new HashSet<>());
+				}
+				actionPSOs.get(actionPSO).add(effectClass);
 			}
+
+			String module = buildModule("module_" + moduleCount, moduleVarSpace, iniState, actionPSOs,
+					partialCommandsBuilder);
+			builder.append(module);
+			builder.append("\n\n");
 		}
+
+		if (mThreeParamRewards) {
+			String helperModule = buildHelperModule(stateSpace, iniState, actionSpace, transFunction);
+			builder.append(helperModule);
+			builder.append("\n\n");
+		}
+
 		return builder.toString();
 	}
 
 	/**
-	 * Build partial module commands for DTMC.
 	 * 
-	 * @param actionDescription
-	 *            Action description of an effect class (possibly merged)
-	 * @param twoTBN
-	 *            2TBN of the same action type as that of actionDescription
-	 * @return commands for updating a particular effect class of actionDescription
-	 * @throws ActionNotFoundException
+	 * @param moduleName
+	 *            A unique name of the module
+	 * @param moduleVarSpace
+	 *            Variables of the module
+	 * @param iniState
+	 *            Initial state
+	 * @param actionPSOs
+	 *            A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other effect
+	 *            classes of other action types
+	 * @param partialCommandsBuilder
+	 *            A function that builds partial commands of the module
+	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNotFoundException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws IncompatibleEffectClassException
 	 * @throws IncompatibleVarException
+	 * @throws IncompatibleActionException
+	 * @throws ActionNotFoundException
+	 * @throws EffectClassNotFoundException
 	 * @throws DiscriminantNotFoundException
 	 */
-	<E extends IAction> String buildPartialModuleCommands(IActionDescription<E> actionDescription, TwoTBN<E> twoTBN)
-			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
-		for (Entry<Predicate, E> entry : twoTBN) {
-			Predicate predicate = entry.getKey();
-			E action = entry.getValue();
+	String buildModule(String moduleName, StateSpace moduleVarSpace, State iniState,
+			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs, BuildPartialModuleCommands partialCommandsBuilder)
+			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
+		setCurrentModuleName(moduleName);
 
-			Discriminant discriminant = new Discriminant(discrClass);
-			for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
-				IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
-				StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef, value);
-				discriminant.add(stateVar);
-			}
-			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);
-			String command = buildModuleCommand(action, predicate, probEffect);
+		StringBuilder builder = new StringBuilder();
+		builder.append("module ");
+		builder.append(moduleName);
+		builder.append("\n");
+		String varsDecl = buildModuleVarsDecl(moduleVarSpace, iniState);
+		builder.append(varsDecl);
+
+		if (mThreeParamRewards) {
 			builder.append(INDENT);
-			builder.append(command);
+			String moduleSyncVarDecl = buildModuleSyncVarDecl(moduleName);
+			builder.append(moduleSyncVarDecl);
+			builder.append("\n");
+		}
+		builder.append("\n");
+
+		String commands = buildModuleCommands(actionPSOs, partialCommandsBuilder);
+		builder.append(commands);
+
+		if (mThreeParamRewards) {
+			builder.append(INDENT);
+			String doNothingCommand = buildModuleDoNothingCommand(moduleName);
+			builder.append(doNothingCommand);
+			builder.append("\n\n");
+
+			builder.append(INDENT);
+			String moduleSyncCommand = buildModuleSyncCommand(moduleName);
+			builder.append(moduleSyncCommand);
+			builder.append("\n");
+		}
+
+		builder.append("endmodule");
+		return builder.toString();
+	}
+
+	/**
+	 * Build all module commands for MDP or DTMC.
+	 * 
+	 * @param actionPSOs
+	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
+	 *            effect classes of other action types
+	 * @return all commands of a module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
+	 *         {updates_p};
+	 * @throws EffectClassNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws VarNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 */
+	String buildModuleCommands(Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs,
+			BuildPartialModuleCommands partialCommandsBuilder)
+			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
+			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			VarNotFoundException, DiscriminantNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		for (Entry<FactoredPSO<IAction>, Set<EffectClass>> entry : actionPSOs.entrySet()) {
+			FactoredPSO<IAction> actionPSO = entry.getKey();
+			Set<EffectClass> chainedEffectClasses = entry.getValue();
+			IActionDescription<IAction> actionDesc;
+			if (chainedEffectClasses.size() > 1) {
+				actionDesc = mergeActionDescriptions(actionPSO, chainedEffectClasses);
+			} else {
+				EffectClass effectClass = chainedEffectClasses.iterator().next();
+				actionDesc = actionPSO.getActionDescription(effectClass);
+			}
+			String actionDefName = actionPSO.getActionDefinition().getName();
+			String commands = partialCommandsBuilder.buildPartialModuleCommands(actionDesc);
+			builder.append(INDENT);
+			builder.append("// ");
+			builder.append(actionDefName);
+			builder.append("\n");
+			builder.append(commands);
 			builder.append("\n");
 		}
 		return builder.toString();
@@ -654,7 +756,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) throws VarNotFoundException {
+	String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars) throws VarNotFoundException {
 		return buildPartialGuard(stateVars, "");
 	}
 
@@ -665,8 +767,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1{Suffix}}={encoded int value} & ... & {varName_m{Suffix}}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	private String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix)
-			throws VarNotFoundException {
+	String buildPartialGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : stateVars) {
@@ -776,4 +877,156 @@ public class PrismTranslatorUtilities {
 		}
 		return new StateVarDefinition<>(genericVarDef.getName(), possibleValues);
 	}
+
+	/**
+	 * 
+	 * @param transFunction
+	 * @return A set of "chains" of effect classes. Each effect class is mapped to its corresponding action PSO. Two
+	 *         effect classes are "chained" iff: (1)~they are associated with different action types, but they have
+	 *         overlapping state variables, or (2)~they are associated with the same action type (they do not overlap),
+	 *         but they overlap with other effect classes of other action types that are "chained".
+	 */
+	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClasses(TransitionFunction transFunction) {
+		Set<Map<EffectClass, FactoredPSO<IAction>>> currChains = new HashSet<>();
+		boolean firstPSO = true;
+		for (FactoredPSO<IAction> actionPSO : transFunction) {
+			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
+			if (firstPSO) {
+				for (EffectClass effectClass : actionEffectClasses) {
+					Map<EffectClass, FactoredPSO<IAction>> iniChain = new HashMap<>();
+					iniChain.put(effectClass, actionPSO);
+					currChains.add(iniChain);
+				}
+				firstPSO = false;
+				continue;
+			}
+			for (EffectClass effectClass : actionEffectClasses) {
+				currChains = getChainsOfEffectClassesHelper(currChains, effectClass, actionPSO);
+			}
+		}
+		return currChains;
+	}
+
+	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClassesHelper(
+			Set<Map<EffectClass, FactoredPSO<IAction>>> currChains, EffectClass effectClass,
+			FactoredPSO<IAction> actionPSO) {
+		Set<Map<EffectClass, FactoredPSO<IAction>>> res = new HashSet<>();
+		Map<EffectClass, FactoredPSO<IAction>> newChain = new HashMap<>();
+		for (Map<EffectClass, FactoredPSO<IAction>> chain : currChains) {
+			boolean overlapped = false;
+			for (EffectClass currEffectClass : chain.keySet()) {
+				if (effectClass.overlaps(currEffectClass)) {
+					newChain.putAll(chain);
+					overlapped = true;
+					break;
+				}
+			}
+			if (!overlapped) {
+				res.add(chain);
+			}
+		}
+		newChain.put(effectClass, actionPSO);
+		res.add(newChain);
+		return res;
+	}
+
+	/**
+	 * 
+	 * @param actionPSO
+	 *            : An action PSO whose (some of) effect classes are "chained"
+	 * @param chainedEffectClasses
+	 *            : A subset of effect classes of actionPSO that are "chained"
+	 * @return An action description of a merged effect class of chainedEffectClasses
+	 * @throws EffectClassNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 */
+	private IActionDescription<IAction> mergeActionDescriptions(FactoredPSO<IAction> actionPSO,
+			Set<EffectClass> chainedEffectClasses)
+			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
+			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+		ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
+
+		ActionDescription<IAction> mergedActionDesc = new ActionDescription<>(actionDef);
+		Set<ProbabilisticTransition<IAction>> mergedProbTransitions = new HashSet<>();
+
+		for (IAction action : actionDef.getActions()) {
+			for (EffectClass effectClass : chainedEffectClasses) {
+				IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
+				Set<ProbabilisticTransition<IAction>> probTransitions = actionDesc.getProbabilisticTransitions(action);
+				mergedProbTransitions = merge(action, mergedProbTransitions, probTransitions);
+			}
+			mergedActionDesc.putAll(mergedProbTransitions);
+		}
+		return mergedActionDesc;
+	}
+
+	/**
+	 * 
+	 * @param action
+	 *            : Action of all probabilistic transitions in probTransitionsA and probTransitionsB
+	 * @param probTransitionsA
+	 *            : All probabilistic transitions of effect class A
+	 * @param probTransitionsB
+	 *            : All probabilistic transitions of effect class B
+	 * @return All probabilistic transitions of a merged effect class A and B
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleEffectClassException
+	 */
+	private Set<ProbabilisticTransition<IAction>> merge(IAction action,
+			Set<ProbabilisticTransition<IAction>> probTransitionsA,
+			Set<ProbabilisticTransition<IAction>> probTransitionsB)
+			throws IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException {
+		Set<ProbabilisticTransition<IAction>> mergedProbTransitions = new HashSet<>();
+
+		for (ProbabilisticTransition<IAction> probTransA : probTransitionsA) {
+			if (!action.equals(probTransA.getAction())) {
+				throw new IncompatibleActionException(probTransA.getAction());
+			}
+
+			Discriminant discrA = probTransA.getDiscriminant();
+			ProbabilisticEffect probEffectA = probTransA.getProbabilisticEffect();
+
+			for (ProbabilisticTransition<IAction> probTransB : probTransitionsB) {
+				if (!action.equals(probTransB.getAction())) {
+					throw new IncompatibleActionException(probTransB.getAction());
+				}
+
+				Discriminant discrB = probTransB.getDiscriminant();
+				ProbabilisticEffect probEffectB = probTransB.getProbabilisticEffect();
+
+				DiscriminantClass aggrDiscrClass = new DiscriminantClass();
+				aggrDiscrClass.addAll(discrA.getDiscriminantClass());
+				aggrDiscrClass.addAll(discrB.getDiscriminantClass());
+				Discriminant aggrDiscr = new Discriminant(aggrDiscrClass);
+				aggrDiscr.addAll(discrA);
+				aggrDiscr.addAll(discrB);
+
+				EffectClass aggrEffectClass = new EffectClass();
+				aggrEffectClass.addAll(probEffectA.getEffectClass());
+				aggrEffectClass.addAll(probEffectB.getEffectClass());
+				ProbabilisticEffect aggrProbEffect = new ProbabilisticEffect(aggrEffectClass);
+				aggrProbEffect.putAll(probEffectA, probEffectB);
+
+				ProbabilisticTransition<IAction> mergedProbTrans = new ProbabilisticTransition<>(aggrProbEffect,
+						aggrDiscr, action);
+				mergedProbTransitions.add(mergedProbTrans);
+			}
+		}
+		return mergedProbTransitions;
+	}
+
+	private void setCurrentModuleName(String moduleName) {
+		currModuleName = moduleName;
+	}
+
+	interface BuildPartialModuleCommands {
+		String buildPartialModuleCommands(IActionDescription<IAction> actionDescription) throws ActionNotFoundException,
+				VarNotFoundException, IncompatibleVarException, DiscriminantNotFoundException;
+	}
+
 }

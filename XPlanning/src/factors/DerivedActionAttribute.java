@@ -61,4 +61,9 @@ public class DerivedActionAttribute {
 		return hashCode;
 	}
 
+	@Override
+	public String toString() {
+		return mName;
+	}
+
 }

@@ -56,4 +56,9 @@ public class StateVarDefinition<E extends IStateVarValue> {
 		}
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return getName();
+	}
 }

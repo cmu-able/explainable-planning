@@ -96,4 +96,9 @@ public class Action implements IAction {
 		return hashCode;
 	}
 
+	@Override
+	public String toString() {
+		return mActionName;
+	}
+
 }

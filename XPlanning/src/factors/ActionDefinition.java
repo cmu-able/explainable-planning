@@ -56,4 +56,9 @@ public class ActionDefinition<E extends IAction> {
 		}
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return mName;
+	}
 }

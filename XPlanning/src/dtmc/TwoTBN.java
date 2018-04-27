@@ -49,6 +49,10 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<Predicate, E>> 
 		m2TBN.get(predicate).put(probEffect.getEffectClass(), probEffect);
 	}
 
+	public ActionDefinition<E> getActionDefinition() {
+		return mActionDef;
+	}
+
 	public E getAction(Predicate predicate) throws PredicateNotFoundException {
 		if (!mSubPolicy.containsKey(predicate)) {
 			throw new PredicateNotFoundException(predicate);

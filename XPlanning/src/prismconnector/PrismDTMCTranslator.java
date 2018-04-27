@@ -1,6 +1,8 @@
 package prismconnector;
 
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import dtmc.TwoTBN;
 import dtmc.XDTMC;
@@ -14,12 +16,14 @@ import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
+import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
+import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.State;
@@ -32,7 +36,6 @@ import prismconnector.PrismTranslatorUtilities.BuildPartialModuleCommands;
 public class PrismDTMCTranslator {
 
 	private XDTMC mXDTMC;
-	private boolean mThreeParamRewards;
 	private PrismTranslatorUtilities mUtilities;
 
 	public PrismDTMCTranslator(XMDP xmdp, Policy policy, boolean threeParamRewards)
@@ -40,7 +43,6 @@ public class PrismDTMCTranslator {
 			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
 			IncompatibleActionException {
 		mXDTMC = new XDTMC(xmdp, policy);
-		mThreeParamRewards = threeParamRewards;
 		ValueEncodingScheme encodings;
 		if (threeParamRewards) {
 			encodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
@@ -54,7 +56,17 @@ public class PrismDTMCTranslator {
 			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
 			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
 			DiscriminantNotFoundException, AttributeNameNotFoundException {
-		XMDP mdp = mXDTMC.getXMDP();
+		XMDP xmdp = mXDTMC.getXMDP();
+
+		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
+		Set<FactoredPSO<IAction>> actionPSOs = new HashSet<>();
+		for (TwoTBN<IAction> twoTBN : mXDTMC) {
+			ActionDefinition<IAction> actionDef = twoTBN.getActionDefinition();
+			FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
+			actionDefs.add(actionDef);
+			actionPSOs.add(actionPSO);
+		}
+
 		BuildPartialModuleCommands partialCommandsBuilder = new BuildPartialModuleCommands() {
 
 			@Override
@@ -65,11 +77,11 @@ public class PrismDTMCTranslator {
 			}
 		};
 
-		String constsDecl = mUtilities.buildConstsDecl(mdp.getStateSpace());
-		String modules = mUtilities.buildModules(mdp.getStateSpace(), mdp.getInitialState(), mdp.getActionSpace(),
-				mdp.getTransitionFunction(), partialCommandsBuilder);
-		String rewards = mUtilities.buildRewards(mdp.getTransitionFunction(), mdp.getQFunctions(),
-				mdp.getCostFunction());
+		String constsDecl = mUtilities.buildConstsDecl(xmdp.getStateSpace());
+		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
+				partialCommandsBuilder);
+		String rewards = mUtilities.buildRewards(xmdp.getTransitionFunction(), xmdp.getQFunctions(),
+				xmdp.getCostFunction());
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");
 		builder.append("\n\n");

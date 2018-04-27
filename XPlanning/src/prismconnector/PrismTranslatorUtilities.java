@@ -25,7 +25,6 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
-import mdp.ActionSpace;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
@@ -101,17 +100,17 @@ public class PrismTranslatorUtilities {
 	 * 
 	 * @param stateSpace
 	 * @param iniState
-	 * @param actionSpace
-	 * @param transFunction
+	 * @param actionDefs
+	 * @param actionPSOs
 	 * @return A helper module that copies values of the variables in the source state when an action is taken, and
 	 *         saves the value of that action
 	 * @throws VarNotFoundException
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	String buildHelperModule(StateSpace stateSpace, State iniState, ActionSpace actionSpace,
-			TransitionFunction transFunction) throws VarNotFoundException, ActionDefinitionNotFoundException {
+	String buildHelperModule(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
+			Iterable<FactoredPSO<IAction>> actionPSOs) throws VarNotFoundException, ActionDefinitionNotFoundException {
 		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
-		String actionsDecl = buildHelperActionsDecl(actionSpace);
+		String actionsDecl = buildHelperActionsDecl(actionDefs);
 		String readyToCopyDecl = "readyToCopy : bool init true;";
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
 
@@ -123,7 +122,7 @@ public class PrismTranslatorUtilities {
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
 		builder.append("\n\n");
-		String copyCmds = buildHelperCopyCommands(transFunction, SRC_SUFFIX);
+		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
 		builder.append(copyCmds);
 		builder.append("\n");
 		builder.append(INDENT);
@@ -135,13 +134,14 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param actionSpace
+	 * @param actionDefs
 	 * @return {actionTypeName} : [0..{maximum encoded int}] init 0; ...
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	String buildHelperActionsDecl(ActionSpace actionSpace) throws ActionDefinitionNotFoundException {
+	String buildHelperActionsDecl(Iterable<ActionDefinition<IAction>> actionDefs)
+			throws ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionSpace) {
+		for (ActionDefinition<IAction> actionDef : actionDefs) {
 			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(actionDef);
 			builder.append(INDENT);
 			builder.append(actionDef.getName());
@@ -155,16 +155,16 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param transFunction
+	 * @param actionPSOs
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & ({actionTypeName}'={encoded action
 	 *         value}) & (readyToCopy'=false); ...
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	String buildHelperCopyCommands(TransitionFunction transFunction, String nameSuffix)
+	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs, String nameSuffix)
 			throws ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		for (FactoredPSO<IAction> actionPSO : transFunction) {
+		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
 			for (IAction action : actionDef.getActions()) {
 				builder.append(INDENT);
@@ -363,8 +363,9 @@ public class PrismTranslatorUtilities {
 	 * 
 	 * @param stateSpace
 	 * @param iniState
-	 * @param actionSpace
-	 * @param transFunction
+	 * @param actionDefs
+	 * @param actionPSOs
+	 * @param chainsOfEffectClasses
 	 * @param partialCommandsBuilder
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNotFoundException
@@ -377,19 +378,19 @@ public class PrismTranslatorUtilities {
 	 * @throws ActionDefinitionNotFoundException
 	 * @throws DiscriminantNotFoundException
 	 */
-	String buildModules(StateSpace stateSpace, State iniState, ActionSpace actionSpace,
-			TransitionFunction transFunction, BuildPartialModuleCommands partialCommandsBuilder)
+	String buildModules(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
+			Iterable<FactoredPSO<IAction>> actionPSOs, BuildPartialModuleCommands partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
-		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(transFunction);
+		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
 
 		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
 			moduleCount++;
 			StateSpace moduleVarSpace = new StateSpace();
-			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs = new HashMap<>();
+			Map<FactoredPSO<IAction>, Set<EffectClass>> moduleActionPSOs = new HashMap<>();
 
 			for (Entry<EffectClass, FactoredPSO<IAction>> entry : chain.entrySet()) {
 				EffectClass effectClass = entry.getKey();
@@ -397,20 +398,20 @@ public class PrismTranslatorUtilities {
 
 				moduleVarSpace.addStateVarDefinitions(effectClass);
 
-				if (!actionPSOs.containsKey(actionPSO)) {
-					actionPSOs.put(actionPSO, new HashSet<>());
+				if (!moduleActionPSOs.containsKey(actionPSO)) {
+					moduleActionPSOs.put(actionPSO, new HashSet<>());
 				}
-				actionPSOs.get(actionPSO).add(effectClass);
+				moduleActionPSOs.get(actionPSO).add(effectClass);
 			}
 
-			String module = buildModule("module_" + moduleCount, moduleVarSpace, iniState, actionPSOs,
+			String module = buildModule("module_" + moduleCount, moduleVarSpace, iniState, moduleActionPSOs,
 					partialCommandsBuilder);
 			builder.append(module);
 			builder.append("\n\n");
 		}
 
 		if (mThreeParamRewards) {
-			String helperModule = buildHelperModule(stateSpace, iniState, actionSpace, transFunction);
+			String helperModule = buildHelperModule(stateSpace, iniState, actionDefs, actionPSOs);
 			builder.append(helperModule);
 			builder.append("\n\n");
 		}
@@ -880,16 +881,16 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param transFunction
+	 * @param actionPSOs
 	 * @return A set of "chains" of effect classes. Each effect class is mapped to its corresponding action PSO. Two
 	 *         effect classes are "chained" iff: (1)~they are associated with different action types, but they have
 	 *         overlapping state variables, or (2)~they are associated with the same action type (they do not overlap),
 	 *         but they overlap with other effect classes of other action types that are "chained".
 	 */
-	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClasses(TransitionFunction transFunction) {
+	Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClasses(Iterable<FactoredPSO<IAction>> actionPSOs) {
 		Set<Map<EffectClass, FactoredPSO<IAction>>> currChains = new HashSet<>();
 		boolean firstPSO = true;
-		for (FactoredPSO<IAction> actionPSO : transFunction) {
+		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
 			if (firstPSO) {
 				for (EffectClass effectClass : actionEffectClasses) {

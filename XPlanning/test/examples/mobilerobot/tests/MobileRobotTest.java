@@ -68,11 +68,6 @@ class MobileRobotTest {
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
-
-	@Test
 	public void testMDPConstructor() {
 		try {
 			XMDP xmdp = createXMDP();
@@ -115,8 +110,8 @@ class MobileRobotTest {
 	}
 
 	private StateSpace createStateSpace() {
-		locL1 = new Location("l1", Area.PUBLIC);
-		locL2 = new Location("l2", Area.PUBLIC);
+		locL1 = new Location("1", Area.PUBLIC);
+		locL2 = new Location("2", Area.PUBLIC);
 		Set<Location> possibleLocs = new HashSet<>();
 		possibleLocs.add(locL1);
 		possibleLocs.add(locL2);

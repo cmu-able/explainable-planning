@@ -19,6 +19,8 @@ import factors.StateVar;
  */
 public class MoveToAction implements IAction {
 
+	private static final String ACTION_NAME_PREFIX = "moveTo";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -28,7 +30,7 @@ public class MoveToAction implements IAction {
 	private StateVar<Location> mrLocDest;
 
 	public MoveToAction(StateVar<Location> rLocDest) {
-		mAction = new Action("moveToL" + rLocDest.getValue().getId());
+		mAction = new Action(ACTION_NAME_PREFIX + rLocDest.getValue().getId());
 		mAction.addParameter(rLocDest);
 		mrLocDest = rLocDest;
 	}

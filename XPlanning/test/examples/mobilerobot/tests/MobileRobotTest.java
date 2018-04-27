@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import dtmc.XDTMC;
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
@@ -39,6 +40,8 @@ import mdp.StateSpace;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
+import policy.Policy;
+import policy.Predicate;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
 import prismconnector.PrismMDPTranslator;
@@ -73,7 +76,7 @@ class MobileRobotTest {
 			XMDP xmdp = createXMDP();
 		} catch (AttributeNameNotFoundException | IncompatibleVarException | IncompatibleEffectClassException
 				| IncompatibleDiscriminantClassException | IncompatibleActionException e) {
-			fail("Exception thrown");
+			fail("Exception thrown while creating XMDP");
 			e.printStackTrace();
 		}
 	}
@@ -91,7 +94,19 @@ class MobileRobotTest {
 			System.out.println(goalProperty);
 		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
 				| IncompatibleVarException | DiscriminantNotFoundException e) {
-			fail("Exception thrown");
+			fail("Exception thrown while translating XMDP to PRISM MDP");
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testDTMCConstructor() throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+		try {
+			XDTMC xdtmc = createXDTMC();
+		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
+				| ActionNotFoundException | DiscriminantNotFoundException e) {
+			fail("Exception thrown while creating XDTMC");
 			e.printStackTrace();
 		}
 	}
@@ -239,6 +254,31 @@ class MobileRobotTest {
 		CostFunction costFunction = new CostFunction();
 		costFunction.put(timeQFunction, timeCostFunction, 1.0);
 		return costFunction;
+	}
+
+	private Policy createPolicy() {
+		Policy policy = new Policy();
+		Predicate iniPredicate = new Predicate();
+		Predicate finalPredicate = new Predicate();
+		StateVar<Location> rLocL1 = new StateVar<>(rLocDef, locL1);
+		StateVar<Location> rLocL2 = new StateVar<>(rLocDef, locL2);
+		StateVar<RobotSpeed> rSpeedHalf = new StateVar<>(rSpeedDef, halfSpeed);
+		iniPredicate.add(rLocL1);
+		iniPredicate.add(rSpeedHalf);
+		finalPredicate.add(rLocL2);
+		policy.put(iniPredicate, moveToL2);
+		policy.put(finalPredicate, moveToL1);
+		return policy;
+	}
+
+	private XDTMC createXDTMC()
+			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
+			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
+		XMDP xmdp = createXMDP();
+		Policy policy = createPolicy();
+		XDTMC xdtmc = new XDTMC(xmdp, policy);
+		return xdtmc;
 	}
 
 }

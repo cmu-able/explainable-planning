@@ -91,8 +91,12 @@ class MobileRobotTest {
 		try {
 			String mdpTranslation = mdpTranslator.getMDPTranslation();
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+			System.out.println("MDP Translation:");
 			System.out.println(mdpTranslation);
+			System.out.println();
+			System.out.println("Goal Property Translation:");
 			System.out.println(goalProperty);
+			System.out.println();
 		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
 				| IncompatibleVarException | DiscriminantNotFoundException e) {
 			fail("Exception thrown while translating XMDP to PRISM MDP");
@@ -120,7 +124,9 @@ class MobileRobotTest {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xmdp, policy, true);
 			String dtmcTranslation = dtmcTranslator.getDTMCTranslation();
+			System.out.println("DTMC Translation:");
 			System.out.println(dtmcTranslation);
+			System.out.println();
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
 			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");

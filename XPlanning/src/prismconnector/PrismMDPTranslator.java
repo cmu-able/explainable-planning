@@ -14,13 +14,10 @@ import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
 import mdp.Discriminant;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
-import mdp.State;
 import mdp.XMDP;
 import prismconnector.PrismTranslatorUtilities.BuildPartialModuleCommands;
 
@@ -28,6 +25,7 @@ public class PrismMDPTranslator {
 
 	private XMDP mXMDP;
 	private PrismTranslatorUtilities mUtilities;
+	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
@@ -38,6 +36,7 @@ public class PrismMDPTranslator {
 			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
 		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings);
 	}
 
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
@@ -56,7 +55,7 @@ public class PrismMDPTranslator {
 		String constsDecl = mUtilities.buildConstsDecl(mXMDP.getStateSpace());
 		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
-		String rewards = mUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
+		String rewards = mRewardUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
 				mXMDP.getCostFunction());
 		StringBuilder builder = new StringBuilder();
 		builder.append("mdp");
@@ -71,28 +70,11 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @return P>=1 [ F "{varName}={encoded int value} & ..." ]
+	 * @return R{"cost"}min=? [ F {varName}={encoded int value} & ... ]
 	 * @throws VarNotFoundException
 	 */
 	public String getGoalPropertyTranslation() throws VarNotFoundException {
-		State goal = mXMDP.getGoal();
-		StringBuilder builder = new StringBuilder();
-		builder.append("P>=1 [ F \"");
-		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goal) {
-			Integer encodedValue = mUtilities.getValueEncodingScheme().getEncodedIntValue(goalVar.getDefinition(),
-					goalVar.getValue());
-			if (!firstVar) {
-				builder.append(" & ");
-			} else {
-				firstVar = false;
-			}
-			builder.append(goalVar.getName());
-			builder.append("=");
-			builder.append(encodedValue);
-		}
-		builder.append("\" ]");
-		return builder.toString();
+		return mRewardUtilities.buildGoalProperty(mXMDP.getGoal());
 	}
 
 	/**

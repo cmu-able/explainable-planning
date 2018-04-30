@@ -37,6 +37,7 @@ public class PrismDTMCTranslator {
 
 	private XDTMC mXDTMC;
 	private PrismTranslatorUtilities mUtilities;
+	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismDTMCTranslator(XMDP xmdp, Policy policy, boolean threeParamRewards)
 			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
@@ -50,6 +51,7 @@ public class PrismDTMCTranslator {
 			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
 		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings);
 	}
 
 	public String getDTMCTranslation() throws VarNotFoundException, EffectClassNotFoundException,
@@ -80,7 +82,7 @@ public class PrismDTMCTranslator {
 		String constsDecl = mUtilities.buildConstsDecl(xmdp.getStateSpace());
 		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder);
-		String rewards = mUtilities.buildRewards(xmdp.getTransitionFunction(), xmdp.getQFunctions(),
+		String rewards = mRewardUtilities.buildRewards(xmdp.getTransitionFunction(), xmdp.getQFunctions(),
 				xmdp.getCostFunction());
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");

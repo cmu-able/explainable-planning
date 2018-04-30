@@ -99,7 +99,7 @@ public class PrismMDPTranslator {
 	 * Build partial module commands for MDP.
 	 * 
 	 * @param actionDescription
-	 *            Action description of an effect class (possibly merged)
+	 *            : Action description of an effect class (possibly merged)
 	 * @return commands for updating a particular effect class of actionDescription
 	 * @throws ActionNotFoundException
 	 * @throws VarNotFoundException

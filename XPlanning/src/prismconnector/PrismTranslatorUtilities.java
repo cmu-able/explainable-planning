@@ -224,7 +224,7 @@ public class PrismTranslatorUtilities {
 	/**
 	 * 
 	 * @param moduleVarSpace
-	 *            Variables of the module
+	 *            : Variables of the module
 	 * @param
 	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
@@ -236,11 +236,11 @@ public class PrismTranslatorUtilities {
 	/**
 	 * 
 	 * @param moduleVarSpace
-	 *            Variables of the module
+	 *            : Variables of the module
 	 * @param iniState
-	 *            Initial state
+	 *            : Initial state
 	 * @param nameSuffix
-	 *            Suffix for each variable's name
+	 *            : Suffix for each variable's name
 	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
@@ -362,11 +362,15 @@ public class PrismTranslatorUtilities {
 	/**
 	 * 
 	 * @param stateSpace
+	 *            : State space of the (corresponding) MDP
 	 * @param iniState
+	 *            : Initial state
 	 * @param actionDefs
+	 *            : Definitions of actions that are present in this model (either MDP or DTMC)
 	 * @param actionPSOs
-	 * @param chainsOfEffectClasses
+	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @param partialCommandsBuilder
+	 *            : A function that builds partial commands of the module
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
@@ -422,16 +426,16 @@ public class PrismTranslatorUtilities {
 	/**
 	 * 
 	 * @param moduleName
-	 *            A unique name of the module
+	 *            : A unique name of the module
 	 * @param moduleVarSpace
-	 *            Variables of the module
+	 *            : Variables of the module
 	 * @param iniState
-	 *            Initial state
+	 *            : Initial state
 	 * @param actionPSOs
-	 *            A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other effect
-	 *            classes of other action types
+	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
+	 *            effect classes of other action types
 	 * @param partialCommandsBuilder
-	 *            A function that builds partial commands of the module
+	 *            : A function that builds partial commands of the module
 	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNotFoundException
 	 * @throws IncompatibleDiscriminantClassException
@@ -489,7 +493,9 @@ public class PrismTranslatorUtilities {
 	 * @param actionPSOs
 	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
 	 *            effect classes of other action types
-	 * @return all commands of a module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
+	 * @param partialCommandsBuilder
+	 *            : A function that builds partial commands of the module
+	 * @return all commands of the module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
 	 *         {updates_p};
 	 * @throws EffectClassNotFoundException
 	 * @throws ActionNotFoundException

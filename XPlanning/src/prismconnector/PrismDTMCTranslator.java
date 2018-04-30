@@ -135,9 +135,7 @@ public class PrismDTMCTranslator {
 	 * Build partial module commands for DTMC.
 	 * 
 	 * @param actionDescription
-	 *            Action description of an effect class (possibly merged)
-	 * @param twoTBN
-	 *            2TBN of the same action type as that of actionDescription
+	 *            : Action description of an effect class (possibly merged)
 	 * @return commands for updating a particular effect class of actionDescription
 	 * @throws ActionNotFoundException
 	 * @throws VarNotFoundException

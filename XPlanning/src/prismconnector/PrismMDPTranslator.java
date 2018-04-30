@@ -19,7 +19,7 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
 import mdp.XMDP;
-import prismconnector.PrismTranslatorUtilities.BuildPartialModuleCommands;
+import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
 
@@ -36,14 +36,14 @@ public class PrismMDPTranslator {
 			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
 		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
 	}
 
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
-		BuildPartialModuleCommands partialCommandsBuilder = new BuildPartialModuleCommands() {
+		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {
 
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)

@@ -33,9 +33,11 @@ public class PrismRewardTranslatorUtilities {
 	static final String COST_STRUCTURE_NAME = "cost";
 
 	private ValueEncodingScheme mEncodings;
+	private boolean mThreeParamRewards;
 
-	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings) {
+	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards) {
 		mEncodings = encodings;
+		mThreeParamRewards = threeParamRewards;
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -43,11 +45,12 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
+	 * Build a reward structure for a given cost function of MDP.
 	 * 
 	 * @param transFunction
 	 * @param qFunctions
 	 * @param costFunction
-	 * @return formula computeCost = !readyToCopy; rewards "cost" ... endrewards
+	 * @return formula compute_cost = !readyToCopy; rewards "cost" ... endrewards
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
@@ -58,15 +61,31 @@ public class PrismRewardTranslatorUtilities {
 	String buildRewards(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+		String synchVarName = "compute_" + COST_STRUCTURE_NAME;
 		StringBuilder builder = new StringBuilder();
-		builder.append("formula computeCost = !readyToCopy;");
+		builder.append("formula ");
+		builder.append(synchVarName);
+		builder.append(" = !readyToCopy;");
 		builder.append("\n\n");
-		builder.append("rewards \"cost\"");
-		builder.append("\n");
+		builder.append("rewards \"");
+		builder.append(COST_STRUCTURE_NAME);
+		builder.append("\"\n");
+
 		for (IQFunction qFunction : qFunctions) {
 			AttributeCostFunction<IQFunction> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
 			double scalingConst = costFunction.getScalingConstant(qFunction);
-			String rewardItems = buildRewardItems(transFunction, qFunction, attrCostFunction, scalingConst);
+
+			TransitionEvaluator evaluator = new TransitionEvaluator() {
+
+				@Override
+				public double evaluate(Transition transition)
+						throws VarNotFoundException, AttributeNameNotFoundException {
+					double attrCost = attrCostFunction.getCost(transition);
+					return scalingConst * attrCost;
+				}
+			};
+
+			String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, synchVarName);
 			builder.append(rewardItems);
 		}
 		builder.append("endrewards");
@@ -74,25 +93,62 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
-	 * Build reward items for a given QA function.
+	 * Build a reward structure for a given QA function.
 	 * 
 	 * @param transFunction
 	 * @param qFunction
-	 * @param attrCostFunction
-	 * @param scalingConst
-	 * @return computeCost & {actionTypeName}={encoded action value} & {srcVarName}={value} ... & {destVarName}={value}
-	 *         ... : {scaled cost}; ...
+	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
 	 * @throws VarNotFoundException
-	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
+	 * @throws AttributeNameNotFoundException
 	 */
-	String buildRewardItems(TransitionFunction transFunction, IQFunction qFunction,
-			AttributeCostFunction<IQFunction> attrCostFunction, double scalingConst)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+	String buildRewards(TransitionFunction transFunction, IQFunction qFunction)
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		TransitionEvaluator evaluator = new TransitionEvaluator() {
+
+			@Override
+			public double evaluate(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
+				return qFunction.getValue(transition);
+			}
+		};
+
+		String synchVarName = "compute_" + qFunction.getName();
+		StringBuilder builder = new StringBuilder();
+		builder.append("formula ");
+		builder.append(synchVarName);
+		builder.append(" = !readyToCopy;");
+		builder.append("\n\n");
+		builder.append("rewards \"");
+		builder.append(qFunction.getName());
+		builder.append("\"\n");
+		String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, synchVarName);
+		builder.append(rewardItems);
+		builder.append("endrewards");
+		return builder.toString();
+	}
+
+	/**
+	 * Build reward items for a given QA function. The reward values may represent either: (1)~a scaled cost of the QA
+	 * of each transition, or (2)~an actual value of the QA of each transition, depending on the given evaluator.
+	 * 
+	 * @param transFunction
+	 * @param qFunction
+	 * @param evaluator
+	 * @param synchVarName
+	 * @return {synchVarName} & {actionTypeName}={encoded action value} & {srcVarName}={value} ... &
+	 *         {destVarName}={value} ... : {transition value}; ...
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
+	String buildRewardItems(TransitionFunction transFunction, IQFunction qFunction, TransitionEvaluator evaluator,
+			String synchVarName)
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
@@ -115,12 +171,12 @@ public class PrismRewardTranslatorUtilities {
 				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
 					String destPartialGuard = buildPartialRewardGuard(destVars);
 
-					Transition trans = new Transition(action, srcVars, destVars);
-					double attrCost = attrCostFunction.getCost(trans);
-					double scaledAttrCost = scalingConst * attrCost;
+					Transition transition = new Transition(action, srcVars, destVars);
+					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
-					builder.append("computeCost & ");
+					builder.append(synchVarName);
+					builder.append(" & ");
 					builder.append(actionTypeName);
 					builder.append("=");
 					builder.append(encodedActionValue);
@@ -129,7 +185,7 @@ public class PrismRewardTranslatorUtilities {
 					builder.append(" & ");
 					builder.append(destPartialGuard);
 					builder.append(" : ");
-					builder.append(scaledAttrCost);
+					builder.append(value);
 					builder.append(";");
 					builder.append("\n");
 				}
@@ -279,6 +335,10 @@ public class PrismRewardTranslatorUtilities {
 		}
 		builder.append(" ]");
 		return builder.toString();
+	}
+
+	interface TransitionEvaluator {
+		double evaluate(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
 	}
 
 }

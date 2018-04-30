@@ -31,7 +31,7 @@ import mdp.XMDP;
 import metrics.IQFunction;
 import policy.Policy;
 import policy.Predicate;
-import prismconnector.PrismTranslatorUtilities.BuildPartialModuleCommands;
+import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
 
@@ -51,7 +51,7 @@ public class PrismDTMCTranslator {
 			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
 		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
 	}
 
 	public String getDTMCTranslation() throws VarNotFoundException, EffectClassNotFoundException,
@@ -69,7 +69,7 @@ public class PrismDTMCTranslator {
 			actionPSOs.add(actionPSO);
 		}
 
-		BuildPartialModuleCommands partialCommandsBuilder = new BuildPartialModuleCommands() {
+		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {
 
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)

@@ -375,7 +375,7 @@ public class PrismTranslatorUtilities {
 	 * @throws DiscriminantNotFoundException
 	 */
 	String buildModules(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
-			Iterable<FactoredPSO<IAction>> actionPSOs, BuildPartialModuleCommands partialCommandsBuilder)
+			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
@@ -457,7 +457,7 @@ public class PrismTranslatorUtilities {
 	 * @throws DiscriminantNotFoundException
 	 */
 	String buildModule(String moduleName, StateSpace moduleVarSpace, State iniState,
-			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs, BuildPartialModuleCommands partialCommandsBuilder)
+			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
@@ -517,7 +517,7 @@ public class PrismTranslatorUtilities {
 	 * @throws DiscriminantNotFoundException
 	 */
 	String buildModuleCommands(Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs,
-			BuildPartialModuleCommands partialCommandsBuilder)
+			PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
 			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
 			VarNotFoundException, DiscriminantNotFoundException {
@@ -831,7 +831,7 @@ public class PrismTranslatorUtilities {
 		currModuleName = moduleName;
 	}
 
-	interface BuildPartialModuleCommands {
+	interface PartialModuleCommandsBuilder {
 		String buildPartialModuleCommands(IActionDescription<IAction> actionDescription) throws ActionNotFoundException,
 				VarNotFoundException, IncompatibleVarException, DiscriminantNotFoundException;
 	}

@@ -16,5 +16,5 @@ public interface IQFunction {
 
 	public TransitionDefinition getTransitionDefinition();
 
-	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;
+	public double getValue(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
 }

@@ -370,7 +370,7 @@ public class PrismTranslatorUtilities {
 	 * @param actionPSOs
 	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @param partialCommandsBuilder
-	 *            : A function that builds partial commands of the module
+	 *            : A function that builds partial commands of a module, given an action description
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
@@ -435,7 +435,7 @@ public class PrismTranslatorUtilities {
 	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
 	 *            effect classes of other action types
 	 * @param partialCommandsBuilder
-	 *            : A function that builds partial commands of the module
+	 *            : A function that builds partial commands of a module, given an action description
 	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws VarNotFoundException
 	 * @throws IncompatibleDiscriminantClassException
@@ -494,7 +494,7 @@ public class PrismTranslatorUtilities {
 	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
 	 *            effect classes of other action types
 	 * @param partialCommandsBuilder
-	 *            : A function that builds partial commands of the module
+	 *            : A function that builds partial commands of a module, given an action description
 	 * @return all commands of the module in the form [actionX] {guard_1} -> {updates_1}; ... [actionZ] {guard_p} ->
 	 *         {updates_p};
 	 * @throws EffectClassNotFoundException

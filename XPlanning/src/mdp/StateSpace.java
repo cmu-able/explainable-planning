@@ -36,6 +36,25 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 		}
 	}
 
+	/**
+	 * 
+	 * @param stateSpace
+	 * @return The difference of this state space from the given state space
+	 */
+	public StateSpace getDifference(StateSpace stateSpace) {
+		StateSpace diff = new StateSpace();
+		for (StateVarDefinition<? extends IStateVarValue> stateVarDef : mStateVarDefs) {
+			if (!stateSpace.mStateVarDefs.contains(stateVarDef)) {
+				diff.addStateVarDefinition(stateVarDef);
+			}
+		}
+		return diff;
+	}
+
+	public boolean isEmpty() {
+		return mStateVarDefs.isEmpty();
+	}
+
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
 		return new Iterator<StateVarDefinition<IStateVarValue>>() {

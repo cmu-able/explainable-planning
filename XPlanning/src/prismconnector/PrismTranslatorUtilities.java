@@ -387,7 +387,14 @@ public class PrismTranslatorUtilities {
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
+		// This determines a set of module variables. Each set of variables are updated independently.
+		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
+
+		// These variables are unmodified by the actions in the model.
+		// This is mostly for handling DTMC.
+		StateSpace unmodifiedVarSpace = stateSpace;
+
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
 
@@ -408,9 +415,20 @@ public class PrismTranslatorUtilities {
 				moduleActionPSOs.get(actionPSO).add(effectClass);
 			}
 
+			unmodifiedVarSpace = unmodifiedVarSpace.getDifference(moduleVarSpace);
+
 			String module = buildModule("module_" + moduleCount, moduleVarSpace, iniState, moduleActionPSOs,
 					partialCommandsBuilder);
 			builder.append(module);
+			builder.append("\n\n");
+		}
+
+		if (!unmodifiedVarSpace.isEmpty()) {
+			moduleCount++;
+			Map<FactoredPSO<IAction>, Set<EffectClass>> emptyActionPSOs = new HashMap<>();
+			String noCommandModule = buildModule("module_" + moduleCount, unmodifiedVarSpace, iniState, emptyActionPSOs,
+					partialCommandsBuilder);
+			builder.append(noCommandModule);
 			builder.append("\n\n");
 		}
 
@@ -888,6 +906,7 @@ public class PrismTranslatorUtilities {
 	/**
 	 * 
 	 * @param actionPSOs
+	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @return A set of "chains" of effect classes. Each effect class is mapped to its corresponding action PSO. Two
 	 *         effect classes are "chained" iff: (1)~they are associated with different action types, but they have
 	 *         overlapping state variables, or (2)~they are associated with the same action type (they do not overlap),

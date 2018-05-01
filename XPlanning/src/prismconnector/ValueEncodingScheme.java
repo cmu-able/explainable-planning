@@ -1,10 +1,11 @@
 package prismconnector;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
+import exceptions.ActionNotFoundException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -28,7 +29,7 @@ public class ValueEncodingScheme {
 	private volatile int hashCode;
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
-	private Map<ActionDefinition<IAction>, Map<IAction, Integer>> mActionEncodings = new HashMap<>();
+	private Map<IAction, Integer> mActionEncoding;
 
 	public ValueEncodingScheme(StateSpace stateSpace) {
 		encodeStates(stateSpace);
@@ -47,10 +48,11 @@ public class ValueEncodingScheme {
 	}
 
 	private void encodeActions(ActionSpace actionSpace) {
+		Set<IAction> allActions = new HashSet<>();
 		for (ActionDefinition<IAction> actionDef : actionSpace) {
-			Map<IAction, Integer> encoding = buildIntEncoding(actionDef.getActions());
-			mActionEncodings.put(actionDef, encoding);
+			allActions.addAll(actionDef.getActions());
 		}
+		mActionEncoding = buildIntEncoding(allActions);
 	}
 
 	private <E> Map<E, Integer> buildIntEncoding(Set<E> possibleValues) {
@@ -71,12 +73,11 @@ public class ValueEncodingScheme {
 		return mStateVarEncodings.get(stateVarDef).get(value);
 	}
 
-	public <E extends IAction> Integer getEncodedIntValue(ActionDefinition<E> actionDef, E action)
-			throws ActionDefinitionNotFoundException {
-		if (!mActionEncodings.containsKey(actionDef)) {
-			throw new ActionDefinitionNotFoundException(actionDef);
+	public Integer getEncodedIntValue(IAction action) throws ActionNotFoundException {
+		if (!mActionEncoding.containsKey(action)) {
+			throw new ActionNotFoundException(action);
 		}
-		return mActionEncodings.get(actionDef).get(action);
+		return mActionEncoding.get(action);
 	}
 
 	public Integer getMaximumEncodedIntValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
@@ -88,13 +89,8 @@ public class ValueEncodingScheme {
 		return encoding.size() - 1;
 	}
 
-	public Integer getMaximumEncodedIntValue(ActionDefinition<? extends IAction> actionDef)
-			throws ActionDefinitionNotFoundException {
-		if (!mActionEncodings.containsKey(actionDef)) {
-			throw new ActionDefinitionNotFoundException(actionDef);
-		}
-		Map<IAction, Integer> encoding = mActionEncodings.get(actionDef);
-		return encoding.size() - 1;
+	public Integer getMaximumEncodedIntAction() {
+		return mActionEncoding.size() - 1;
 	}
 
 	@Override
@@ -106,7 +102,7 @@ public class ValueEncodingScheme {
 			return false;
 		}
 		ValueEncodingScheme scheme = (ValueEncodingScheme) obj;
-		return scheme.mStateVarEncodings.equals(mStateVarEncodings) && scheme.mActionEncodings.equals(mActionEncodings);
+		return scheme.mStateVarEncodings.equals(mStateVarEncodings) && scheme.mActionEncoding.equals(mActionEncoding);
 	}
 
 	@Override
@@ -115,7 +111,7 @@ public class ValueEncodingScheme {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mStateVarEncodings.hashCode();
-			result = 31 * result + mActionEncodings.hashCode();
+			result = 31 * result + mActionEncoding.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

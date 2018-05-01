@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
@@ -24,6 +23,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionDescription;
+import mdp.ActionSpace;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
@@ -72,7 +72,7 @@ public class PrismTranslatorUtilities {
 			builder.append("\n");
 			for (IStateVarValue value : stateVarDef.getPossibleValues()) {
 				if (value instanceof IStateVarBoolean || value instanceof IStateVarInt) {
-					continue;
+					break;
 				}
 				Integer encodedValue = mEncodings.getEncodedIntValue(stateVarDef, value);
 				builder.append("const int ");
@@ -90,21 +90,41 @@ public class PrismTranslatorUtilities {
 		return builder.toString();
 	}
 
+	String buildConstsDecl(ActionSpace actionSpace) throws ActionNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		for (ActionDefinition<IAction> actionDef : actionSpace) {
+			String actionTypeName = actionDef.getName();
+			builder.append("// Possible instances of action ");
+			builder.append(actionTypeName);
+			builder.append("\n");
+			for (IAction action : actionDef.getActions()) {
+				Integer encodedValue = mEncodings.getEncodedIntValue(action);
+				builder.append("const int ");
+				builder.append(sanitizeNameString(action.getName()));
+				builder.append(" = ");
+				builder.append(encodedValue);
+				builder.append(";");
+				builder.append("\n");
+			}
+			builder.append("\n");
+		}
+		return builder.toString();
+	}
+
 	/**
 	 * 
 	 * @param stateSpace
 	 * @param iniState
-	 * @param actionDefs
 	 * @param actionPSOs
 	 * @return A helper module that copies values of the variables in the source state when an action is taken, and
 	 *         saves the value of that action
 	 * @throws VarNotFoundException
-	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
 	 */
-	String buildHelperModule(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
-			Iterable<FactoredPSO<IAction>> actionPSOs) throws VarNotFoundException, ActionDefinitionNotFoundException {
+	String buildHelperModule(StateSpace stateSpace, State iniState, Iterable<FactoredPSO<IAction>> actionPSOs)
+			throws VarNotFoundException, ActionNotFoundException {
 		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
-		String actionsDecl = buildHelperActionsDecl(actionDefs);
+		String actionsDecl = buildHelperActionsDecl();
 		String readyToCopyDecl = "readyToCopy : bool init true;";
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
 
@@ -128,22 +148,16 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param actionDefs
-	 * @return {actionTypeName} : [0..{maximum encoded int}] init 0; ...
-	 * @throws ActionDefinitionNotFoundException
+	 * @return action : [-1..{maximum encoded int}] init -1; ...
 	 */
-	String buildHelperActionsDecl(Iterable<ActionDefinition<IAction>> actionDefs)
-			throws ActionDefinitionNotFoundException {
+	String buildHelperActionsDecl() {
+		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntAction();
 		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionDefs) {
-			Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(actionDef);
-			builder.append(INDENT);
-			builder.append(actionDef.getName());
-			builder.append(" : [0..");
-			builder.append(maxEncodedValue);
-			builder.append("] init 0;");
-			builder.append("\n");
-		}
+		builder.append(INDENT);
+		builder.append("action : [-1..");
+		builder.append(maxEncodedValue);
+		builder.append("] init -1;");
+		builder.append("\n");
 		return builder.toString();
 	}
 
@@ -151,12 +165,12 @@ public class PrismTranslatorUtilities {
 	 * 
 	 * @param actionPSOs
 	 * @param nameSuffix
-	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & ({actionTypeName}'={encoded action
-	 *         value}) & (readyToCopy'=false); ...
-	 * @throws ActionDefinitionNotFoundException
+	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action value}) &
+	 *         (readyToCopy'=false); ...
+	 * @throws ActionNotFoundException
 	 */
 	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs, String nameSuffix)
-			throws ActionDefinitionNotFoundException {
+			throws ActionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
@@ -179,8 +193,7 @@ public class PrismTranslatorUtilities {
 					builder.append(effectCopyUpdate);
 				}
 				builder.append(" & ");
-				String actionCopyUpdate = "(" + actionDef.getName() + "'="
-						+ mEncodings.getEncodedIntValue(actionDef, action) + ")";
+				String actionCopyUpdate = "(action'=" + mEncodings.getEncodedIntValue(action) + ")";
 				builder.append(actionCopyUpdate);
 				builder.append(" & (readyToCopy'=false);");
 				builder.append("\n");
@@ -346,14 +359,13 @@ public class PrismTranslatorUtilities {
 	 * @throws IncompatibleVarException
 	 * @throws IncompatibleActionException
 	 * @throws ActionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
 	 * @throws DiscriminantNotFoundException
 	 */
 	String buildModules(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
 			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
+			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -400,7 +412,7 @@ public class PrismTranslatorUtilities {
 		}
 
 		if (mThreeParamRewards) {
-			String helperModule = buildHelperModule(stateSpace, iniState, actionDefs, actionPSOs);
+			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs);
 			builder.append(helperModule);
 			builder.append("\n\n");
 		}

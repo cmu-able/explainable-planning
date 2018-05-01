@@ -68,6 +68,7 @@ public class PrismMDPTranslator {
 		};
 
 		String constsDecl = mUtilities.buildConstsDecl(mXMDP.getStateSpace());
+		String actionsDecl = mUtilities.buildConstsDecl(mXMDP.getActionSpace());
 		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
 		String rewards = mRewardUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
@@ -76,6 +77,7 @@ public class PrismMDPTranslator {
 		builder.append("mdp");
 		builder.append("\n\n");
 		builder.append(constsDecl);
+		builder.append(actionsDecl);
 		builder.append("\n");
 		builder.append(modules);
 		builder.append("\n");

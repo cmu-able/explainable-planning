@@ -94,12 +94,14 @@ public class PrismDTMCTranslator {
 		};
 
 		String constsDecl = mUtilities.buildConstsDecl(xmdp.getStateSpace());
+		String actionsDecl = mUtilities.buildConstsDecl(xmdp.getActionSpace());
 		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder);
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");
 		builder.append("\n\n");
 		builder.append(constsDecl);
+		builder.append(actionsDecl);
 		builder.append("\n");
 		builder.append(modules);
 		return builder.toString();

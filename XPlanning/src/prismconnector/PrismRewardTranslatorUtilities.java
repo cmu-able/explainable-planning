@@ -64,10 +64,10 @@ public class PrismRewardTranslatorUtilities {
 	String buildRewards(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
-		String synchVarName = "compute_" + COST_STRUCTURE_NAME;
+		String rewardSynch = "compute_" + COST_STRUCTURE_NAME;
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula ");
-		builder.append(synchVarName);
+		builder.append(rewardSynch);
 		builder.append(" = !readyToCopy;");
 		builder.append("\n\n");
 		builder.append("rewards \"");
@@ -88,7 +88,7 @@ public class PrismRewardTranslatorUtilities {
 				}
 			};
 
-			String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, synchVarName);
+			String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, rewardSynch);
 			builder.append(rewardItems);
 		}
 		builder.append("endrewards");
@@ -121,16 +121,16 @@ public class PrismRewardTranslatorUtilities {
 			}
 		};
 
-		String synchVarName = "compute_" + qFunction.getName();
+		String rewardSynch = "compute_" + qFunction.getName();
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula ");
-		builder.append(synchVarName);
+		builder.append(rewardSynch);
 		builder.append(" = !readyToCopy;");
 		builder.append("\n\n");
 		builder.append("rewards \"");
 		builder.append(qFunction.getName());
 		builder.append("\"\n");
-		String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, synchVarName);
+		String rewardItems = buildRewardItems(transFunction, qFunction, evaluator, rewardSynch);
 		builder.append(rewardItems);
 		builder.append("endrewards");
 		return builder.toString();
@@ -146,17 +146,16 @@ public class PrismRewardTranslatorUtilities {
 	 *            : QA function
 	 * @param evaluator
 	 *            : A function that assigns a value to a transition
-	 * @param synchVarName
-	 *            : Name of the synchronization variable
-	 * @return {synchVarName} & {actionTypeName}={encoded action value} & {srcVarName}={value} ... &
-	 *         {destVarName}={value} ... : {transition value}; ...
+	 * @param rewardSynch
+	 *            : Reward-calculation synchronization
+	 * @return {rewardSynch} & action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ... :
+	 *         {transition value}; ...
 	 * @throws ActionDefinitionNotFoundException
 	 * @throws ActionNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
 	String buildRewardItems(TransitionFunction transFunction, IQFunction qFunction, TransitionEvaluator evaluator,
-			String synchVarName)
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			String rewardSynch) throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
@@ -165,10 +164,9 @@ public class PrismRewardTranslatorUtilities {
 		FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(actionDef);
 
 		StringBuilder builder = new StringBuilder();
-		String actionTypeName = actionDef.getName();
 
 		for (IAction action : actionDef.getActions()) {
-			Integer encodedActionValue = mEncodings.getEncodedIntValue(actionDef, action);
+			Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
 
 			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(actionPSO, action,
 					srcStateVarDefs);
@@ -184,10 +182,8 @@ public class PrismRewardTranslatorUtilities {
 					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
-					builder.append(synchVarName);
-					builder.append(" & ");
-					builder.append(actionTypeName);
-					builder.append("=");
+					builder.append(rewardSynch);
+					builder.append(" & action=");
 					builder.append(encodedActionValue);
 					builder.append(" & ");
 					builder.append(srcPartialGuard);

@@ -137,7 +137,7 @@ public class PrismDTMCTranslator {
 	}
 
 	/**
-	 * Build partial module commands for DTMC.
+	 * Build partial commands of a module -- for DTMC.
 	 * 
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)

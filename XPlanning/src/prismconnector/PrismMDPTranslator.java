@@ -110,7 +110,7 @@ public class PrismMDPTranslator {
 	}
 
 	/**
-	 * Build partial module commands for MDP.
+	 * Build partial commands of a module -- for MDP.
 	 * 
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)

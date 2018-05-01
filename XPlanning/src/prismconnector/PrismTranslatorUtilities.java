@@ -44,8 +44,6 @@ public class PrismTranslatorUtilities {
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
 
-	private String currModuleName; // Book-keeping
-
 	public PrismTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards) {
 		mEncodings = encodings;
 		mThreeParamRewards = threeParamRewards;
@@ -53,6 +51,10 @@ public class PrismTranslatorUtilities {
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
+	}
+
+	public boolean isThreeParamRewards() {
+		return mThreeParamRewards;
 	}
 
 	/**
@@ -284,33 +286,6 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @param moduleName
-	 * @return {moduleName}_go : bool init true;
-	 */
-	String buildModuleSyncVarDecl(String moduleName) {
-		return moduleName + "_go : bool init true;";
-	}
-
-	/**
-	 * 
-	 * @param moduleName
-	 * @return [next] !{moduleName}_go -> ({moduleName}_go'=true);
-	 */
-	String buildModuleSyncCommand(String moduleName) {
-		return "[next] !" + moduleName + "_go -> (" + moduleName + "_go'=true);";
-	}
-
-	/**
-	 * 
-	 * @param moduleName
-	 * @return [] {moduleName}_go -> ({moduleName}_go'=false);
-	 */
-	String buildModuleDoNothingCommand(String moduleName) {
-		return "[] " + moduleName + "_go -> (" + moduleName + "_go'=false);";
-	}
-
-	/**
-	 * 
 	 * @param boolVarDef
 	 * @param nameSuffix
 	 * @param iniValBoolean
@@ -461,44 +436,22 @@ public class PrismTranslatorUtilities {
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
-		setCurrentModuleName(moduleName);
+		String varsDecl = buildModuleVarsDecl(moduleVarSpace, iniState);
+		String commands = buildModuleCommands(actionPSOs, partialCommandsBuilder);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("module ");
 		builder.append(moduleName);
 		builder.append("\n");
-		String varsDecl = buildModuleVarsDecl(moduleVarSpace, iniState);
 		builder.append(varsDecl);
-
-		if (mThreeParamRewards) {
-			builder.append(INDENT);
-			String moduleSyncVarDecl = buildModuleSyncVarDecl(moduleName);
-			builder.append(moduleSyncVarDecl);
-			builder.append("\n");
-		}
 		builder.append("\n");
-
-		String commands = buildModuleCommands(actionPSOs, partialCommandsBuilder);
 		builder.append(commands);
-
-		if (mThreeParamRewards) {
-			builder.append(INDENT);
-			String doNothingCommand = buildModuleDoNothingCommand(moduleName);
-			builder.append(doNothingCommand);
-			builder.append("\n\n");
-
-			builder.append(INDENT);
-			String moduleSyncCommand = buildModuleSyncCommand(moduleName);
-			builder.append(moduleSyncCommand);
-			builder.append("\n");
-		}
-
 		builder.append("endmodule");
 		return builder.toString();
 	}
 
 	/**
-	 * Build all module commands for MDP or DTMC.
+	 * Build all commands of a module -- for MDP or DTMC.
 	 * 
 	 * @param actionPSOs
 	 *            : A mapping from each action PSO to (a subset of) its effect classes that are "chained" by other
@@ -554,20 +507,14 @@ public class PrismTranslatorUtilities {
 	 */
 	String buildModuleCommand(IAction action, IPredicate predicate, ProbabilisticEffect probEffect)
 			throws VarNotFoundException {
+		String guard = buildGuard(predicate);
+		String updates = buildUpdates(probEffect);
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
 		String sanitizedActionName = sanitizeNameString(action.getName());
 		builder.append(sanitizedActionName);
 		builder.append("] ");
-
-		if (mThreeParamRewards) {
-			builder.append(currModuleName);
-			builder.append("_go");
-			builder.append(" & ");
-		}
-
-		String guard = buildGuard(predicate);
-		String updates = buildUpdates(probEffect);
 		builder.append(guard);
 		builder.append(" -> ");
 		builder.append(updates);
@@ -619,13 +566,6 @@ public class PrismTranslatorUtilities {
 			builder.append(prob);
 			builder.append(":");
 			builder.append(buildUpdate(effect));
-
-			if (mThreeParamRewards) {
-				builder.append("&(");
-				builder.append(currModuleName);
-				builder.append("_go");
-				builder.append("'=false)");
-			}
 		}
 		return builder.toString();
 	}
@@ -825,10 +765,6 @@ public class PrismTranslatorUtilities {
 			}
 		}
 		return mergedProbTransitions;
-	}
-
-	private void setCurrentModuleName(String moduleName) {
-		currModuleName = moduleName;
 	}
 
 	interface PartialModuleCommandsBuilder {

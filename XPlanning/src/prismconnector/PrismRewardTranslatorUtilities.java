@@ -48,8 +48,11 @@ public class PrismRewardTranslatorUtilities {
 	 * Build a reward structure for a given cost function of MDP.
 	 * 
 	 * @param transFunction
+	 *            : Transition function of MDP
 	 * @param qFunctions
+	 *            : All QA functions
 	 * @param costFunction
+	 *            : Cost function of MDP
 	 * @return formula compute_cost = !readyToCopy; rewards "cost" ... endrewards
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
@@ -96,7 +99,9 @@ public class PrismRewardTranslatorUtilities {
 	 * Build a reward structure for a given QA function.
 	 * 
 	 * @param transFunction
+	 *            : Transition function of MDP
 	 * @param qFunction
+	 *            : QA function
 	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
 	 * @throws ActionDefinitionNotFoundException
 	 * @throws ActionNotFoundException
@@ -136,9 +141,13 @@ public class PrismRewardTranslatorUtilities {
 	 * of each transition, or (2)~an actual value of the QA of each transition, depending on the given evaluator.
 	 * 
 	 * @param transFunction
+	 *            : Transition function of MDP
 	 * @param qFunction
+	 *            : QA function
 	 * @param evaluator
+	 *            : A function that assigns a value to a transition
 	 * @param synchVarName
+	 *            : Name of the synchronization variable
 	 * @return {synchVarName} & {actionTypeName}={encoded action value} & {srcVarName}={value} ... &
 	 *         {destVarName}={value} ... : {transition value}; ...
 	 * @throws ActionDefinitionNotFoundException

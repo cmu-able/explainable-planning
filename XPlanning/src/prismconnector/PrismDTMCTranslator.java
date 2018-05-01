@@ -27,6 +27,7 @@ import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.State;
+import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import policy.Policy;
@@ -54,10 +55,10 @@ public class PrismDTMCTranslator {
 		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
 	}
 
-	public String getDTMCTranslation() throws VarNotFoundException, EffectClassNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
-			DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getDTMCTranslation()
+			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
 		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
@@ -82,25 +83,20 @@ public class PrismDTMCTranslator {
 		String constsDecl = mUtilities.buildConstsDecl(xmdp.getStateSpace());
 		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder);
-		String rewards = mRewardUtilities.buildRewards(xmdp.getTransitionFunction(), xmdp.getQFunctions(),
-				xmdp.getCostFunction());
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");
 		builder.append("\n\n");
 		builder.append(constsDecl);
 		builder.append("\n");
 		builder.append(modules);
-		builder.append("\n");
-		builder.append(rewards);
 		return builder.toString();
 	}
 
-	public String getRewardsTranslation() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("rewards");
-		// TODO
-		builder.append("endrewards");
-		return builder.toString();
+	public String getRewardStructureTranslation(IQFunction qFunction)
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		TransitionFunction transFunction = mXDTMC.getXMDP().getTransitionFunction();
+		return mRewardUtilities.buildRewards(transFunction, qFunction);
 	}
 
 	/**

@@ -55,6 +55,19 @@ public class PrismDTMCTranslator {
 		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
 	}
 
+	/**
+	 * 
+	 * @return Prism model of this DTMC, including constants' declarations and DTMC model.
+	 * @throws VarNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleVarException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 */
 	public String getDTMCTranslation()
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
@@ -92,7 +105,19 @@ public class PrismDTMCTranslator {
 		return builder.toString();
 	}
 
-	public String getRewardStructureTranslation(IQFunction qFunction)
+	/**
+	 * 
+	 * @param qFunction
+	 *            : QA function
+	 * @return Reward structure representing the QA function
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
+	public String getRewardsTranslation(IQFunction qFunction)
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		TransitionFunction transFunction = mXDTMC.getXMDP().getTransitionFunction();
@@ -102,31 +127,13 @@ public class PrismDTMCTranslator {
 	/**
 	 * 
 	 * @param qFunction
-	 * @return R{"{objectiveName}"}=? [ F "{varName}={encoded int value} & ..." ]
+	 *            : QA function
+	 * @return Numerical query property of the expected total QA value of this DTMC
 	 * @throws VarNotFoundException
 	 */
-	public String getObjectivePropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
+	public String getNumQueryPropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
 		State goal = mXDTMC.getXMDP().getGoal();
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(qFunction.getName());
-		builder.append("\"}=? ");
-		builder.append("[ F \"");
-		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goal) {
-			Integer encodedValue = mUtilities.getValueEncodingScheme().getEncodedIntValue(goalVar.getDefinition(),
-					goalVar.getValue());
-			if (!firstVar) {
-				builder.append(" & ");
-			} else {
-				firstVar = false;
-			}
-			builder.append(goalVar.getName());
-			builder.append("=");
-			builder.append(encodedValue);
-		}
-		builder.append("\" ]");
-		return builder.toString();
+		return mRewardUtilities.buildDTMCNumQueryProperty(goal, qFunction);
 	}
 
 	/**

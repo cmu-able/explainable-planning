@@ -39,6 +39,21 @@ public class PrismMDPTranslator {
 		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
 	}
 
+	/**
+	 * 
+	 * @return Prism model of this MDP, including constants' declarations, MDP model, and reward structure representing
+	 *         the cost function.
+	 * @throws VarNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws ActionDefinitionNotFoundException
+	 */
 	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
@@ -70,11 +85,28 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @return R{"cost"}min=? [ F {varName}={encoded int value} & ... ]
+	 * @return Reward structure representing the cost function of this MDP.
+	 * @throws VarNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 */
+	public String getRewardsTranslation()
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+		return mRewardUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
+				mXMDP.getCostFunction());
+	}
+
+	/**
+	 * 
+	 * @return Goal reachability property of this MDP with cost minimization
 	 * @throws VarNotFoundException
 	 */
 	public String getGoalPropertyTranslation() throws VarNotFoundException {
-		return mRewardUtilities.buildGoalProperty(mXMDP.getGoal());
+		return mRewardUtilities.buildMDPCostMinProperty(mXMDP.getGoal());
 	}
 
 	/**

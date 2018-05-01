@@ -322,14 +322,11 @@ public class PrismRewardTranslatorUtilities {
 	/**
 	 * 
 	 * @param goal
-	 * @return R{"cost"}min=? [ F {varName}={encoded int value} & ... ]
+	 * @return {varName}={encoded int value} & ...
 	 * @throws VarNotFoundException
 	 */
-	String buildGoalProperty(State goal) throws VarNotFoundException {
+	String buildGoalPredicate(State goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(COST_STRUCTURE_NAME);
-		builder.append("\"}min=? [ F ");
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> goalVar : goal) {
 			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
@@ -342,6 +339,40 @@ public class PrismRewardTranslatorUtilities {
 			builder.append("=");
 			builder.append(encodedValue);
 		}
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 * @return R{"cost"}min=? [ F {goal predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	String buildMDPCostMinProperty(State goal) throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("R{\"");
+		builder.append(COST_STRUCTURE_NAME);
+		builder.append("\"}min=? [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
+		builder.append(" ]");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 * @param qFunction
+	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	String buildDTMCNumQueryProperty(State goal, IQFunction qFunction) throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("R{\"");
+		builder.append(qFunction.getName());
+		builder.append("\"}=? [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}

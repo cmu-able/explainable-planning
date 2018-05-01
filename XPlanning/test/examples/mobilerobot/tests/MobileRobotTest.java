@@ -124,12 +124,16 @@ class MobileRobotTest {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xmdp, policy, true);
 			String dtmcTranslation = dtmcTranslator.getDTMCTranslation();
-			String timeTranslation = dtmcTranslator.getRewardStructureTranslation(timeQFunction);
+			String timeFunctionTranslation = dtmcTranslator.getRewardsTranslation(timeQFunction);
+			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("DTMC Translation:");
 			System.out.println(dtmcTranslation);
 			System.out.println();
 			System.out.println("Time Function Translation:");
-			System.out.println(timeTranslation);
+			System.out.println(timeFunctionTranslation);
+			System.out.println();
+			System.out.println("Time Query Property Translation:");
+			System.out.println(timeQueryTranslation);
 			System.out.println();
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {

@@ -339,6 +339,11 @@ public class PrismRewardTranslatorUtilities {
 			builder.append("=");
 			builder.append(encodedValue);
 		}
+
+		if (mThreeParamRewards) {
+			builder.append(" & readyToCopy");
+		}
+
 		return builder.toString();
 	}
 

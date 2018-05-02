@@ -1,7 +1,9 @@
 package mdp;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import factors.IStateVarValue;
@@ -22,18 +24,26 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 
 	private Set<StateVarDefinition<? extends IStateVarValue>> mStateVarDefs = new HashSet<>();
 
+	// For fast look-up
+	private Map<String, StateVarDefinition<? extends IStateVarValue>> mStateVarDefsLookup = new HashMap<>();
+
 	public StateSpace() {
 		// mStateVarDefs initially empty
 	}
 
 	public void addStateVarDefinition(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mStateVarDefs.add(stateVarDef);
+		mStateVarDefsLookup.put(stateVarDef.getName(), stateVarDef);
 	}
 
 	public void addStateVarDefinitions(Iterable<StateVarDefinition<IStateVarValue>> stateVarDefs) {
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarDefs) {
-			mStateVarDefs.add(stateVarDef);
+			addStateVarDefinition(stateVarDef);
 		}
+	}
+
+	public StateVarDefinition<IStateVarValue> getStateVarDefinition(String stateVarName) {
+		return (StateVarDefinition<IStateVarValue>) mStateVarDefsLookup.get(stateVarName);
 	}
 
 	/**

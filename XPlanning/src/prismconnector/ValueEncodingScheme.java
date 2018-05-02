@@ -3,6 +3,7 @@ package prismconnector;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
@@ -29,13 +30,18 @@ public class ValueEncodingScheme {
 	private volatile int hashCode;
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
-	private Map<IAction, Integer> mActionEncoding;
+	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
+	private StateSpace mStateSpace;
+	private ActionSpace mActionSpace;
 
 	public ValueEncodingScheme(StateSpace stateSpace) {
+		mStateSpace = stateSpace;
 		encodeStates(stateSpace);
 	}
 
 	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace) {
+		mStateSpace = stateSpace;
+		mActionSpace = actionSpace;
 		encodeStates(stateSpace);
 		encodeActions(actionSpace);
 	}
@@ -52,7 +58,7 @@ public class ValueEncodingScheme {
 		for (ActionDefinition<IAction> actionDef : actionSpace) {
 			allActions.addAll(actionDef.getActions());
 		}
-		mActionEncoding = buildIntEncoding(allActions);
+		mActionEncoding.putAll(buildIntEncoding(allActions));
 	}
 
 	private <E> Map<E, Integer> buildIntEncoding(Set<E> possibleValues) {
@@ -63,6 +69,14 @@ public class ValueEncodingScheme {
 			e++;
 		}
 		return encoding;
+	}
+
+	public StateSpace getStateSpace() {
+		return mStateSpace;
+	}
+
+	public ActionSpace getActionSpace() {
+		return mActionSpace;
 	}
 
 	public <E extends IStateVarValue> Integer getEncodedIntValue(StateVarDefinition<E> stateVarDef, E value)
@@ -91,6 +105,27 @@ public class ValueEncodingScheme {
 
 	public Integer getMaximumEncodedIntAction() {
 		return mActionEncoding.size() - 1;
+	}
+
+	public <E extends IStateVarValue> E decodeStateVarValue(Class<E> valueType, String stateVarName,
+			Integer encodedIntValue) throws VarNotFoundException {
+		for (Entry<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> entry : mStateVarEncodings
+				.entrySet()) {
+			StateVarDefinition<IStateVarValue> stateVarDef = entry.getKey();
+			Map<IStateVarValue, Integer> encoding = entry.getValue();
+
+			if (stateVarDef.getName().equals(stateVarName)) {
+				for (Entry<IStateVarValue, Integer> e : encoding.entrySet()) {
+					IStateVarValue value = e.getKey();
+					Integer encodedValue = e.getValue();
+
+					if (encodedValue.equals(encodedIntValue)) {
+						return valueType.cast(value);
+					}
+				}
+			}
+		}
+		throw new VarNotFoundException(stateVarName);
 	}
 
 	@Override

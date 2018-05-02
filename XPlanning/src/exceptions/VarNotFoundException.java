@@ -13,4 +13,8 @@ public class VarNotFoundException extends Exception {
 	public VarNotFoundException(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		super("State variable '" + stateVarDef.getName() + "' is not found.");
 	}
+
+	public VarNotFoundException(String stateVarName) {
+		super("State variable '" + stateVarName + "' is not found.");
+	}
 }

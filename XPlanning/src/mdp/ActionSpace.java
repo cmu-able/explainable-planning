@@ -23,7 +23,7 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 	private volatile int hashCode;
 
 	private Set<ActionDefinition<? extends IAction>> mActionDefs = new HashSet<>();
-	private Map<IAction, ActionDefinition<? extends IAction>> mActionDefsLookup = new HashMap<>();
+	private Map<String, ActionDefinition<? extends IAction>> mActionDefsLookup = new HashMap<>();
 
 	public ActionSpace() {
 		// mActionDefs and mActionDefsLookup are initially empty
@@ -33,12 +33,16 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 		mActionDefs.add(actionDef);
 
 		for (IAction action : actionDef.getActions()) {
-			mActionDefsLookup.put(action, actionDef);
+			mActionDefsLookup.put(action.getName(), actionDef);
 		}
 	}
 
 	public <E extends IAction> ActionDefinition<E> getActionDefinition(E action) {
-		return (ActionDefinition<E>) mActionDefsLookup.get(action);
+		return (ActionDefinition<E>) mActionDefsLookup.get(action.getName());
+	}
+
+	public ActionDefinition<IAction> getActionDefinition(String actionName) {
+		return (ActionDefinition<IAction>) mActionDefsLookup.get(actionName);
 	}
 
 	@Override

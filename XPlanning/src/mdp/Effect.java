@@ -16,7 +16,7 @@ import factors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class Effect implements IPredicate {
+public class Effect implements Iterable<StateVar<IStateVarValue>> {
 
 	/*
 	 * Cached hashCode -- Effective Java

@@ -123,20 +123,15 @@ public class PrismTranslatorUtilities {
 	 */
 	String buildHelperModule(StateSpace stateSpace, State iniState, Iterable<FactoredPSO<IAction>> actionPSOs)
 			throws VarNotFoundException, ActionNotFoundException {
-		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
-		String actionsDecl = buildHelperActionsDecl();
-		String readyToCopyDecl = "readyToCopy : bool init true;";
+		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
+		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
 		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
-		builder.append(srcVarsDecl);
-		builder.append(actionsDecl);
-		builder.append(INDENT);
-		builder.append(readyToCopyDecl);
-		builder.append("\n\n");
-		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
+		builder.append(helperVarsDecl);
+		builder.append("\n");
 		builder.append(copyCmds);
 		builder.append("\n");
 		builder.append(INDENT);
@@ -148,15 +143,23 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
-	 * @return action : [-1..{maximum encoded int}] init -1; ...
+	 * @param stateSpace
+	 * @param iniState
+	 * @return Declarations of all helper variables of the helper module
+	 * @throws VarNotFoundException
 	 */
-	String buildHelperActionsDecl() {
-		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntAction();
+	String buildHelperModuleVarsDecl(StateSpace stateSpace, State iniState) throws VarNotFoundException {
+		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
+		String actionDecl = "action : [-1.." + mEncodings.getMaximumEncodedIntAction() + "] init -1;";
+		String readyToCopyDecl = "readyToCopy : bool init true;";
+
 		StringBuilder builder = new StringBuilder();
+		builder.append(srcVarsDecl);
 		builder.append(INDENT);
-		builder.append("action : [-1..");
-		builder.append(maxEncodedValue);
-		builder.append("] init -1;");
+		builder.append(actionDecl);
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append(readyToCopyDecl);
 		builder.append("\n");
 		return builder.toString();
 	}
@@ -588,7 +591,7 @@ public class PrismTranslatorUtilities {
 	 * @return {var_1 update}&...&{var_n update}
 	 * @throws VarNotFoundException
 	 */
-	String buildUpdate(IPredicate update) throws VarNotFoundException {
+	String buildUpdate(Effect update) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> stateVar : update) {

@@ -2,6 +2,7 @@ package examples.mobilerobot.tests;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +44,8 @@ import metrics.IQFunction;
 import policy.Policy;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
+import prism.PrismException;
+import prismconnector.PrismConnector;
 import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismMDPTranslator;
 
@@ -137,6 +140,24 @@ class MobileRobotTest {
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
 			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void testPrismAdversaryGeneration() {
+		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
+		String mdpFilename = "test0.mdp";
+		String propFilename = "test0Cost.prop";
+		String staOutputFilename = "adv.sta";
+		String labOutputFilename = "adv.lab";
+		String traOutputFilename = "adv.tra";
+		PrismConnector connector = new PrismConnector(modelPath);
+		try {
+			String resultStr = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
+					labOutputFilename, traOutputFilename);
+		} catch (FileNotFoundException | PrismException e) {
+			fail("Exception thrown while PRISM generating MDP adversary");
 			e.printStackTrace();
 		}
 	}

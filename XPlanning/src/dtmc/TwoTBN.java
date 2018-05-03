@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import exceptions.EffectClassNotFoundException;
 import exceptions.IncompatibleActionException;
-import exceptions.PredicateNotFoundException;
+import exceptions.StateNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
 import mdp.EffectClass;
@@ -53,17 +53,17 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<State, E>> {
 		return mActionDef;
 	}
 
-	public E getAction(State state) throws PredicateNotFoundException {
+	public E getAction(State state) throws StateNotFoundException {
 		if (!mSubPolicy.containsKey(state)) {
-			throw new PredicateNotFoundException(state);
+			throw new StateNotFoundException(state);
 		}
 		return mSubPolicy.get(state);
 	}
 
 	public ProbabilisticEffect getProbabilisticEffect(State state, EffectClass effectClass)
-			throws PredicateNotFoundException, EffectClassNotFoundException {
+			throws StateNotFoundException, EffectClassNotFoundException {
 		if (!m2TBN.containsKey(state)) {
-			throw new PredicateNotFoundException(state);
+			throw new StateNotFoundException(state);
 		}
 		if (!m2TBN.get(state).containsKey(effectClass)) {
 			throw new EffectClassNotFoundException(effectClass);

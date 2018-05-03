@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.PredicateNotFoundException;
+import exceptions.StateNotFoundException;
 import factors.IAction;
 import mdp.State;
 
@@ -36,9 +36,9 @@ public class Policy implements Iterable<Decision> {
 		mPolicy.put(state, action);
 	}
 
-	public IAction getAction(State state) throws PredicateNotFoundException {
+	public IAction getAction(State state) throws StateNotFoundException {
 		if (!mPolicy.containsKey(state)) {
-			throw new PredicateNotFoundException(state);
+			throw new StateNotFoundException(state);
 		}
 		return mPolicy.get(state);
 	}

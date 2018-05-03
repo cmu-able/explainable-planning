@@ -1,7 +1,12 @@
 package prismconnector;
 
-import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import exceptions.VarNotFoundException;
@@ -16,27 +21,25 @@ import policy.Policy;
 
 public class PrismExplicitModelReader {
 
-	private static final String VAR_NAME_PATTERN = "[A-Za-z_][A-Za-z0-9_]*";
-
 	private ValueEncodingScheme mEncodings;
+	private String mModelPath;
 
-	public PrismExplicitModelReader(ValueEncodingScheme encodings) {
+	public PrismExplicitModelReader(ValueEncodingScheme encodings, String modelPath) {
 		mEncodings = encodings;
+		mModelPath = modelPath;
 	}
 
-	public Map<Integer, State> readStatesFile(String str) throws VarNotFoundException {
+	public Map<Integer, State> readStatesFile(String filename) throws IOException, VarNotFoundException {
 		Map<Integer, State> indices = new HashMap<>();
 
-		String[] allLines = str.split("\n");
+		List<String> allLines = readLinesFromFile(filename);
 
 		// Pattern: ({var1Name},{var2Name},...,{varNName})
-		String header = allLines[0];
-
+		String header = allLines.get(0);
 		String varNamesStr = header.substring(1, header.length() - 1);
-
 		String[] varNames = varNamesStr.split(",");
 
-		String[] body = Arrays.copyOfRange(allLines, 1, allLines.length);
+		List<String> body = allLines.subList(1, allLines.size());
 
 		// Pattern: {index}:({var1Value},{var2Value},...,{varNValue})
 		for (String line : body) {
@@ -73,13 +76,13 @@ public class PrismExplicitModelReader {
 				|| varName.equals("readyToCopy");
 	}
 
-	public Policy readTransitionsFile(String str, Map<Integer, State> stateIndices) {
+	public Policy readTransitionsFile(String filename, Map<Integer, State> stateIndices) throws IOException {
 		Policy policy = new Policy();
 
-		String[] allLines = str.split("\n");
-		String[] body = Arrays.copyOfRange(allLines, 1, allLines.length);
+		List<String> allLines = readLinesFromFile(filename);
+		List<String> body = allLines.subList(1, allLines.size());
 
-		// Pattern: {source} {destination} {index of action} {probability} {action name}
+		// Pattern: *source* {destination} {index of action} {probability} *action name*
 		for (String line : body) {
 			String[] tokens = line.split(" ");
 			String sourceStr = tokens[0];
@@ -91,7 +94,20 @@ public class PrismExplicitModelReader {
 			IAction action = actionSpace.getAction(actionName);
 			policy.put(sourceState, action);
 		}
-		// TODO
 		return policy;
+	}
+
+	public List<String> readLinesFromFile(String filename) throws IOException {
+		List<String> lines = new ArrayList<>();
+		File file = new File(mModelPath, filename);
+
+		try (FileReader fileReader = new FileReader(file);
+				BufferedReader buffReader = new BufferedReader(fileReader);) {
+			String line;
+			while ((line = buffReader.readLine()) != null) {
+				lines.add(line);
+			}
+		}
+		return lines;
 	}
 }

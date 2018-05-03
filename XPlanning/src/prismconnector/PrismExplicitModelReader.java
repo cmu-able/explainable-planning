@@ -5,9 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import exceptions.VarNotFoundException;
+import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import mdp.ActionSpace;
 import mdp.State;
 import mdp.StateSpace;
 import policy.Policy;
@@ -22,8 +24,8 @@ public class PrismExplicitModelReader {
 		mEncodings = encodings;
 	}
 
-	public Map<State, Integer> readStatesFile(String str) throws VarNotFoundException {
-		Map<State, Integer> indices = new HashMap<>();
+	public Map<Integer, State> readStatesFile(String str) throws VarNotFoundException {
+		Map<Integer, State> indices = new HashMap<>();
 
 		String[] allLines = str.split("\n");
 
@@ -61,7 +63,7 @@ public class PrismExplicitModelReader {
 				}
 			}
 
-			indices.put(state, index);
+			indices.put(index, state);
 		}
 		return indices;
 	}
@@ -71,8 +73,24 @@ public class PrismExplicitModelReader {
 				|| varName.equals("readyToCopy");
 	}
 
-	public Policy readTransitionsFile(String str, Map<State, Integer> stateIndices) {
+	public Policy readTransitionsFile(String str, Map<Integer, State> stateIndices) {
 		Policy policy = new Policy();
+
+		String[] allLines = str.split("\n");
+		String[] body = Arrays.copyOfRange(allLines, 1, allLines.length);
+
+		// Pattern: {source} {destination} {index of action} {probability} {action name}
+		for (String line : body) {
+			String[] tokens = line.split(" ");
+			String sourceStr = tokens[0];
+			String actionName = tokens[4];
+			Integer sourceIndex = Integer.parseInt(sourceStr);
+			ActionSpace actionSpace = mEncodings.getActionSpace();
+
+			State sourceState = stateIndices.get(sourceIndex);
+			IAction action = actionSpace.getAction(actionName);
+			policy.put(sourceState, action);
+		}
 		// TODO
 		return policy;
 	}

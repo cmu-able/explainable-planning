@@ -1,9 +1,10 @@
 package policy;
 
 import factors.IAction;
+import mdp.State;
 
 /**
- * {@link Decision} is a pair of a state {@link Predicate} and an action.
+ * {@link Decision} is a pair of a state and an action.
  * 
  * @author rsukkerd
  *
@@ -15,16 +16,16 @@ public class Decision {
 	 */
 	private volatile int hashCode;
 
-	private Predicate mPredicate;
+	private State mState;
 	private IAction mAction;
 
-	public Decision(Predicate state, IAction action) {
-		mPredicate = state;
+	public Decision(State state, IAction action) {
+		mState = state;
 		mAction = action;
 	}
 
-	public Predicate getPredicate() {
-		return mPredicate;
+	public State getState() {
+		return mState;
 	}
 
 	public IAction getAction() {
@@ -40,7 +41,7 @@ public class Decision {
 			return false;
 		}
 		Decision decision = (Decision) obj;
-		return decision.mPredicate.equals(mPredicate) && decision.mAction.equals(mAction);
+		return decision.mState.equals(mState) && decision.mAction.equals(mAction);
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class Decision {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mPredicate.hashCode();
+			result = 31 * result + mState.hashCode();
 			result = 31 * result + mAction.hashCode();
 			hashCode = result;
 		}

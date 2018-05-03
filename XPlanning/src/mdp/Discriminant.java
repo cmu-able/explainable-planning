@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -57,14 +56,6 @@ public class Discriminant implements IPredicate {
 
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mDiscrClass.contains(stateVar.getDefinition());
-	}
-
-	public <E extends IStateVarValue> E getDiscriminantValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
-			throws VarNotFoundException {
-		if (!mDiscrVarMap.containsKey(stateVarDef)) {
-			throw new VarNotFoundException(stateVarDef);
-		}
-		return valueType.cast(mDiscrVarMap.get(stateVarDef).getValue());
 	}
 
 	public DiscriminantClass getDiscriminantClass() {

@@ -543,7 +543,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildGuard(Iterable<StateVar<IStateVarValue>> predicate) throws VarNotFoundException {
+	String buildGuard(IPredicate predicate) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {

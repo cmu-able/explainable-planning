@@ -23,10 +23,10 @@ import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
+import mdp.State;
 import mdp.XMDP;
 import policy.Decision;
 import policy.Policy;
-import policy.Predicate;
 
 /**
  * {@link XDTMC} is a discrete-time Markov chain induced from a policy and a MDP. It is consists of a 2TBN for each
@@ -58,7 +58,7 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 			EffectClassNotFoundException, VarNotFoundException, IncompatibleVarException, ActionNotFoundException,
 			DiscriminantNotFoundException, IncompatibleActionException {
 		for (Decision decision : policy) {
-			Predicate predicate = decision.getPredicate();
+			State predicate = decision.getState();
 			IAction action = decision.getAction();
 			ActionDefinition<IAction> actionDef = xmdp.getActionSpace().getActionDefinition(action);
 

@@ -1,6 +1,6 @@
 package exceptions;
 
-import policy.Predicate;
+import mdp.IPredicate;
 
 public class PredicateNotFoundException extends Exception {
 
@@ -9,7 +9,7 @@ public class PredicateNotFoundException extends Exception {
 	 */
 	private static final long serialVersionUID = 2445394501462601722L;
 
-	public PredicateNotFoundException(Predicate predicate) {
+	public PredicateNotFoundException(IPredicate predicate) {
 		super("Predicate '" + predicate + "' is not found.");
 	}
 }

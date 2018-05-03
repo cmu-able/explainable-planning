@@ -41,7 +41,6 @@ import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import policy.Policy;
-import policy.Predicate;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
 import prismconnector.PrismDTMCTranslator;
@@ -289,16 +288,16 @@ class MobileRobotTest {
 
 	private Policy createPolicy() {
 		Policy policy = new Policy();
-		Predicate iniPredicate = new Predicate();
-		Predicate finalPredicate = new Predicate();
+		State iniState = new State();
+		State finalState = new State();
 		StateVar<Location> rLocL1 = new StateVar<>(rLocDef, locL1);
 		StateVar<Location> rLocL2 = new StateVar<>(rLocDef, locL2);
 		StateVar<RobotSpeed> rSpeedHalf = new StateVar<>(rSpeedDef, halfSpeed);
-		iniPredicate.add(rLocL1);
-		iniPredicate.add(rSpeedHalf);
-		finalPredicate.add(rLocL2);
-		policy.put(iniPredicate, moveToL2);
-		policy.put(finalPredicate, moveToL1);
+		iniState.addStateVar(rLocL1);
+		iniState.addStateVar(rSpeedHalf);
+		finalState.addStateVar(rLocL2);
+		policy.put(iniState, moveToL2);
+		policy.put(finalState, moveToL1);
 		return policy;
 	}
 

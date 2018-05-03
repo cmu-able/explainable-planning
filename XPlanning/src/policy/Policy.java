@@ -8,6 +8,7 @@ import java.util.Set;
 
 import exceptions.PredicateNotFoundException;
 import factors.IAction;
+import mdp.State;
 
 /**
  * {@link Policy} contains a set of {@link Decision}s.
@@ -23,23 +24,23 @@ public class Policy implements Iterable<Decision> {
 	private volatile int hashCode;
 
 	private Set<Decision> mDecisions = new HashSet<>();
-	private Map<Predicate, IAction> mPolicy = new HashMap<>(); // For fast look-up
+	private Map<State, IAction> mPolicy = new HashMap<>(); // For fast look-up
 
 	public Policy() {
 		// mDecisions and mPolicy are initially empty
 	}
 
-	public void put(Predicate predicate, IAction action) {
-		Decision decision = new Decision(predicate, action);
+	public void put(State state, IAction action) {
+		Decision decision = new Decision(state, action);
 		mDecisions.add(decision);
-		mPolicy.put(predicate, action);
+		mPolicy.put(state, action);
 	}
 
-	public IAction getAction(Predicate predicate) throws PredicateNotFoundException {
-		if (!mPolicy.containsKey(predicate)) {
-			throw new PredicateNotFoundException(predicate);
+	public IAction getAction(State state) throws PredicateNotFoundException {
+		if (!mPolicy.containsKey(state)) {
+			throw new PredicateNotFoundException(state);
 		}
-		return mPolicy.get(predicate);
+		return mPolicy.get(state);
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import policy.Policy;
-import policy.Predicate;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
@@ -156,18 +155,18 @@ public class PrismDTMCTranslator {
 
 		StringBuilder builder = new StringBuilder();
 		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
-		for (Entry<Predicate, IAction> entry : twoTBN) {
-			Predicate predicate = entry.getKey();
+		for (Entry<State, IAction> entry : twoTBN) {
+			State state = entry.getKey();
 			IAction action = entry.getValue();
 
 			Discriminant discriminant = new Discriminant(discrClass);
 			for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
-				IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
+				IStateVarValue value = state.getStateVarValue(IStateVarValue.class, stateVarDef);
 				StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef, value);
 				discriminant.add(stateVar);
 			}
 			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);
-			String command = mUtilities.buildModuleCommand(action, predicate, probEffect);
+			String command = mUtilities.buildModuleCommand(action, state, probEffect);
 			builder.append(PrismTranslatorUtilities.INDENT);
 			builder.append(command);
 			builder.append("\n");

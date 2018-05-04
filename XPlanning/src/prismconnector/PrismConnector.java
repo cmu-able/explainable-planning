@@ -2,6 +2,8 @@ package prismconnector;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
@@ -21,13 +23,26 @@ import prism.Result;
  */
 public class PrismConnector {
 
+	private static final String FLOATING_POINT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
+
 	private String mModelPath;
 
 	public PrismConnector(String modelPath) {
 		mModelPath = modelPath;
 	}
 
-	public String generateMDPAdversary(String mdpFilename, String propFilename, String staOutputFilename,
+	/**
+	 * 
+	 * @param mdpFilename
+	 * @param propFilename
+	 * @param staOutputFilename
+	 * @param labOutputFilename
+	 * @param traOutputFilename
+	 * @return Expected cumulative cost of the generated optimal policy
+	 * @throws PrismException
+	 * @throws FileNotFoundException
+	 */
+	public double generateMDPAdversary(String mdpFilename, String propFilename, String staOutputFilename,
 			String labOutputFilename, String traOutputFilename) throws PrismException, FileNotFoundException {
 		// Create a log for PRISM output (stdout)
 		PrismLog mainLog = new PrismFileLog("stdout");
@@ -60,10 +75,18 @@ public class PrismConnector {
 		Property property = propertiesFile.getPropertyObject(0);
 		Result result = prism.modelCheck(propertiesFile, property);
 
+		String resultStr = result.getResultString();
+		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
+		Matcher m = p.matcher(resultStr);
+
+		if (m.find()) {
+			return Double.parseDouble(m.group(0));
+		}
+
 		// Close down PRISM
 		// NoClassDefFoundError: edu/jas/kern/ComputerThreads
 		// prism.closeDown();
 
-		return result.getResultString();
+		return -1.0;
 	}
 }

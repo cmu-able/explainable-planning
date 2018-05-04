@@ -29,6 +29,14 @@ public class PrismExplicitModelReader {
 		mModelPath = modelPath;
 	}
 
+	/**
+	 * 
+	 * @param filename
+	 *            : Name of a states .sta file
+	 * @return Mapping from integer values indexing states to the corresponding states
+	 * @throws IOException
+	 * @throws VarNotFoundException
+	 */
 	public Map<Integer, State> readStatesFile(String filename) throws IOException, VarNotFoundException {
 		Map<Integer, State> indices = new HashMap<>();
 
@@ -76,6 +84,15 @@ public class PrismExplicitModelReader {
 				|| varName.equals("readyToCopy");
 	}
 
+	/**
+	 * 
+	 * @param filename
+	 *            : Name of an "adversary" .tra file
+	 * @param stateIndices
+	 *            : Mapping from integer values indexing states to the corresponding states
+	 * @return A policy extracted from the "adversary" file
+	 * @throws IOException
+	 */
 	public Policy readTransitionsFile(String filename, Map<Integer, State> stateIndices) throws IOException {
 		Policy policy = new Policy();
 

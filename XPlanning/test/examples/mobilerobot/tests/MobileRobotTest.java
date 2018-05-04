@@ -154,10 +154,10 @@ class MobileRobotTest {
 		String traOutputFilename = "adv.tra";
 		PrismConnector connector = new PrismConnector(modelPath);
 		try {
-			String resultStr = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
+			double totalCost = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
 					labOutputFilename, traOutputFilename);
-			System.out.println("Result:");
-			System.out.println(resultStr);
+			System.out.print("Result: ");
+			System.out.println(totalCost);
 			System.out.println();
 		} catch (FileNotFoundException | PrismException e) {
 			fail("Exception thrown while PRISM generating MDP adversary");

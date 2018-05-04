@@ -51,12 +51,18 @@ public class PrismConnector {
 		prism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
 		prism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, mModelPath + "/" + traOutputFilename);
 
+		// Select PRISM engine
+		// Engines by index: 0 -> MTBDD, 1 -> Sparse, 2 -> Hybrid, 3 -> Explicit
+		// According to: https://github.com/prismmodelchecker/prism/blob/master/prism/src/prism/PrismSettings.java
+		prism.getSettings().set(PrismSettings.PRISM_ENGINE, "Explicit");
+
 		// Model check the first property from the file
 		Property property = propertiesFile.getPropertyObject(0);
 		Result result = prism.modelCheck(propertiesFile, property);
 
 		// Close down PRISM
-		// prism.closeDown(); // This causes java.lang.NoClassDefFoundError: edu/jas/kern/ComputerThreads
+		// NoClassDefFoundError: edu/jas/kern/ComputerThreads
+		// prism.closeDown();
 
 		return result.getResultString();
 	}

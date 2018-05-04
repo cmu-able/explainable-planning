@@ -31,7 +31,8 @@ import preferences.CostFunction;
 
 public class PrismRewardTranslatorUtilities {
 
-	static final String COST_STRUCTURE_NAME = "cost";
+	private static final String COST_STRUCTURE_NAME = "cost";
+	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
 
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
@@ -87,6 +88,10 @@ public class PrismRewardTranslatorUtilities {
 			String rewardItems = buildRewardItems(transFunction, qFunction, evaluator);
 			builder.append(rewardItems);
 		}
+
+		String artificialReward = buildArtificialRewardItem(ARTIFICIAL_REWARD_VALUE);
+		builder.append(artificialReward);
+		builder.append("\n");
 		builder.append("endrewards");
 		return builder.toString();
 	}
@@ -195,6 +200,18 @@ public class PrismRewardTranslatorUtilities {
 			}
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * This is to ensure that there is no zero-reward cycle in the MDP. This is because the current version of PRISM 4.4
+	 * does not support "constructing a strategy for Rmin in the presence of zero-reward ECs".
+	 * 
+	 * @param value
+	 *            : Artificial reward value assigned to every "next" transition
+	 * @return [next] true : {value};
+	 */
+	String buildArtificialRewardItem(double value) {
+		return PrismTranslatorUtilities.INDENT + "[next] true : " + value + ";";
 	}
 
 	/**

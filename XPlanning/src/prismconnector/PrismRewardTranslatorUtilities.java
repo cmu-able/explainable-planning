@@ -18,6 +18,7 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
+import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.Precondition;
 import mdp.State;
@@ -159,7 +160,15 @@ public class PrismRewardTranslatorUtilities {
 			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(actionPSO, action,
 					srcStateVarDefs);
 			for (Set<StateVar<IStateVarValue>> srcVars : srcCombinations) {
-				String srcPartialGuard = buildPartialRewardGuard(srcVars, PrismTranslatorUtilities.SRC_SUFFIX);
+				// Separate variables of the source state into changed and unchanged variables
+				// This is to ease PRISM MDP model generation
+				Set<StateVar<IStateVarValue>> unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
+				Set<StateVar<IStateVarValue>> changedSrcVars = new HashSet<>(srcVars);
+				changedSrcVars.removeAll(unchangedSrcVars);
+
+				String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars,
+						PrismTranslatorUtilities.SRC_SUFFIX);
+				String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
 
 				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(actionPSO,
 						action, destStateVarDefs, srcVars);
@@ -173,7 +182,9 @@ public class PrismRewardTranslatorUtilities {
 					builder.append("[next] action=");
 					builder.append(encodedActionValue);
 					builder.append(" & ");
-					builder.append(srcPartialGuard);
+					builder.append(changedSrcPartialGuard);
+					builder.append(" & ");
+					builder.append(unchangedSrcPartialGuard);
 					builder.append(" & ");
 					builder.append(destPartialGuard);
 					builder.append(" : ");
@@ -221,6 +232,26 @@ public class PrismRewardTranslatorUtilities {
 			builder.append(encodedValue);
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param srcVars
+	 * @param actionPSO
+	 * @return State variables in srcVars that are not affected by the given action
+	 */
+	private Set<StateVar<IStateVarValue>> getUnchangedStateVars(Set<StateVar<IStateVarValue>> srcVars,
+			FactoredPSO<IAction> actionPSO) {
+		Set<StateVar<IStateVarValue>> unchangedVars = new HashSet<>();
+		for (StateVar<IStateVarValue> srcVar : srcVars) {
+			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+			for (EffectClass effectClass : effectClasses) {
+				if (!effectClass.contains(srcVar.getDefinition())) {
+					unchangedVars.add(srcVar);
+				}
+			}
+		}
+		return unchangedVars;
 	}
 
 	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(FactoredPSO<IAction> actionPSO,

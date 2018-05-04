@@ -8,13 +8,13 @@ const int rLoc_L1 = 1;
 const int rSpeed_0_35 = 0;
 const int rSpeed_0_7 = 1;
 
-// Possible instances of action setSpeed
-const int setSpeed0_35 = 1;
-const int setSpeed0_7 = 2;
-
 // Possible instances of action moveTo
 const int moveToL1 = 0;
-const int moveToL2 = 3;
+const int moveToL2 = 1;
+
+// Possible instances of action setSpeed
+const int setSpeed0_35 = 2;
+const int setSpeed0_7 = 3;
 
 
 module module_1
@@ -42,19 +42,18 @@ module helper
   readyToCopy : bool init true;
 
   [moveToL1] readyToCopy -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false);
-  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=3) & (readyToCopy'=false);
-  [setSpeed0_35] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=1) & (readyToCopy'=false);
-  [setSpeed0_7] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=2) & (readyToCopy'=false);
+  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false);
+  [setSpeed0_35] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=2) & (readyToCopy'=false);
+  [setSpeed0_7] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=3) & (readyToCopy'=false);
 
   [next] !readyToCopy -> (readyToCopy'=true);
 endmodule
 
 
-formula compute_cost = !readyToCopy;
-
 rewards "cost"
-  compute_cost & action=0 & rSpeedSrc=0 & rLocSrc=0 & rLoc=1 : 28.571428571428573;
-  compute_cost & action=0 & rSpeedSrc=1 & rLocSrc=0 & rLoc=1 : 14.285714285714286;
-  compute_cost & action=3 & rSpeedSrc=0 & rLocSrc=1 & rLoc=0 : 28.571428571428573;
-  compute_cost & action=3 & rSpeedSrc=1 & rLocSrc=1 & rLoc=0 : 14.285714285714286;
+  [next] action=0 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
+  [next] action=0 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
+  [next] action=1 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
+  [next] action=1 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
+  [next] true : 0.01;
 endrewards

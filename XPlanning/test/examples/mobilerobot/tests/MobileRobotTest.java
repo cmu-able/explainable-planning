@@ -29,6 +29,7 @@ import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.StateVar;
@@ -147,22 +148,30 @@ class MobileRobotTest {
 	@Test
 	public void testPrismAdversaryGeneration() {
 		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
-		String mdpFilename = "test0.mdp";
+		String outputDir = "output";
+		String mdpFilename = "test0Copy.mdp";
 		String propFilename = "test0Cost.prop";
 		String staOutputFilename = "adv.sta";
 		String labOutputFilename = "adv.lab";
 		String traOutputFilename = "adv.tra";
-		PrismConnector connector = new PrismConnector(modelPath);
+		String srewOutputFilename = "adv.srew";
+
 		try {
+			PrismConnector connector = new PrismConnector(modelPath, outputDir);
 			double totalCost = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
-					labOutputFilename, traOutputFilename);
+					labOutputFilename, traOutputFilename, srewOutputFilename);
 			System.out.print("Result: ");
 			System.out.println(totalCost);
 			System.out.println();
-		} catch (FileNotFoundException | PrismException e) {
+		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
 			fail("Exception thrown while PRISM generating MDP adversary");
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void testQueryPropertyFromDTMC() {
+		// TODO
 	}
 
 	private XMDP createXMDP() throws AttributeNameNotFoundException, IncompatibleVarException,

@@ -47,7 +47,7 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
-	 * Build a reward structure for a given cost function of MDP.
+	 * Build a state-based reward structure for a given cost function of MDP.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
@@ -55,7 +55,7 @@ public class PrismRewardTranslatorUtilities {
 	 *            : All QA functions
 	 * @param costFunction
 	 *            : Cost function of MDP
-	 * @return rewards "cost" ... endrewards
+	 * @return formula compute_cost = !readyToCopy; rewards "cost" ... endrewards
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
@@ -66,7 +66,11 @@ public class PrismRewardTranslatorUtilities {
 	String buildRewards(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+		String computeCostFormula = buildComputeRewardFormula(COST_STRUCTURE_NAME);
+
 		StringBuilder builder = new StringBuilder();
+		builder.append(computeCostFormula);
+		builder.append("\n\n");
 		builder.append("rewards \"");
 		builder.append(COST_STRUCTURE_NAME);
 		builder.append("\"\n");
@@ -75,6 +79,8 @@ public class PrismRewardTranslatorUtilities {
 			AttributeCostFunction<IQFunction> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
 			double scalingConst = costFunction.getScalingConstant(qFunction);
 
+			TransitionDefinition transDef = qFunction.getTransitionDefinition();
+			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
 			TransitionEvaluator evaluator = new TransitionEvaluator() {
 
 				@Override
@@ -85,7 +91,7 @@ public class PrismRewardTranslatorUtilities {
 				}
 			};
 
-			String rewardItems = buildRewardItems(transFunction, qFunction, evaluator);
+			String rewardItems = buildRewardItems(COST_STRUCTURE_NAME, transDef, actionPSO, evaluator);
 			builder.append(rewardItems);
 		}
 
@@ -97,13 +103,13 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
-	 * Build a reward structure for a given QA function.
+	 * Build a state-based reward structure for a given QA function.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
 	 * @param qFunction
 	 *            : QA function
-	 * @return rewards "{QA name}" ... endrewards
+	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
 	 * @throws ActionDefinitionNotFoundException
 	 * @throws ActionNotFoundException
 	 * @throws VarNotFoundException
@@ -114,6 +120,9 @@ public class PrismRewardTranslatorUtilities {
 	String buildRewards(TransitionFunction transFunction, IQFunction qFunction)
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		String rewardName = qFunction.getName();
+		TransitionDefinition transDef = qFunction.getTransitionDefinition();
+		FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
 		TransitionEvaluator evaluator = new TransitionEvaluator() {
 
 			@Override
@@ -122,40 +131,47 @@ public class PrismRewardTranslatorUtilities {
 			}
 		};
 
+		String computeQAFormula = buildComputeRewardFormula(rewardName);
+
 		StringBuilder builder = new StringBuilder();
+		builder.append(computeQAFormula);
+		builder.append("\n\n");
 		builder.append("rewards \"");
-		builder.append(qFunction.getName());
+		builder.append(rewardName);
 		builder.append("\"\n");
-		String rewardItems = buildRewardItems(transFunction, qFunction, evaluator);
+		String rewardItems = buildRewardItems(rewardName, transDef, actionPSO, evaluator);
 		builder.append(rewardItems);
 		builder.append("endrewards");
 		return builder.toString();
+	}
+
+	String buildComputeRewardFormula(String rewardName) {
+		return "formula compute_" + rewardName + " = !readyToCopy;";
 	}
 
 	/**
 	 * Build reward items for a given QA function. The reward values may represent either: (1)~a scaled cost of the QA
 	 * of each transition, or (2)~an actual value of the QA of each transition, depending on the given evaluator.
 	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
-	 * @param qFunction
-	 *            : QA function
+	 * @param rewardName
+	 *            : Name of the reward structure
+	 * @param transDef
+	 *            : Transition definition
+	 * @param actionPSO
+	 *            : PSO of the corresponding action type
 	 * @param evaluator
 	 *            : A function that assigns a value to a transition
-	 * @return [next] action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ... : {transition
-	 *         value}; ...
-	 * @throws ActionDefinitionNotFoundException
+	 * @return compute_{QA name} & action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ...
+	 *         : {transition value}; ...
 	 * @throws ActionNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
-	String buildRewardItems(TransitionFunction transFunction, IQFunction qFunction, TransitionEvaluator evaluator)
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+	String buildRewardItems(String rewardName, TransitionDefinition transDef, FactoredPSO<IAction> actionPSO,
+			TransitionEvaluator evaluator) throws ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
-		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
 		ActionDefinition<IAction> actionDef = transDef.getActionDef();
-		FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(actionDef);
 
 		StringBuilder builder = new StringBuilder();
 
@@ -184,7 +200,10 @@ public class PrismRewardTranslatorUtilities {
 					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
-					builder.append("[next] action=");
+					builder.append("compute_");
+					builder.append(rewardName);
+					builder.append(" & ");
+					builder.append("action=");
 					builder.append(encodedActionValue);
 					builder.append(" & ");
 					builder.append(changedSrcPartialGuard);
@@ -208,10 +227,10 @@ public class PrismRewardTranslatorUtilities {
 	 * 
 	 * @param value
 	 *            : Artificial reward value assigned to every "next" transition
-	 * @return [next] true : {value};
+	 * @return compute_cost : {value};
 	 */
 	String buildArtificialRewardItem(double value) {
-		return PrismTranslatorUtilities.INDENT + "[next] true : " + value + ";";
+		return PrismTranslatorUtilities.INDENT + "compute_cost : " + value + ";";
 	}
 
 	/**

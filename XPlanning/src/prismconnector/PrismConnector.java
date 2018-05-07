@@ -107,10 +107,8 @@ public class PrismConnector {
 		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
 	}
 
-	public double queryPropertyFromDTMC(String propFilename, String staOutputFilename, String labOutputFilename,
-			String traOutputFilename, String srewOutputFilename)
-			throws PrismException, FileNotFoundException, ResultParsingException {
-		File propFile = new File(mModelPath, propFilename);
+	public double queryPropertyFromExplicitDTMC(String propertyStr, String staOutputFilename, String labOutputFilename,
+			String traOutputFilename, String srewOutputFilename) throws PrismException, ResultParsingException {
 		File staFile = new File(mOutputPath, staOutputFilename);
 		File traFile = new File(mOutputPath, traOutputFilename);
 		File labFile = new File(mOutputPath, labOutputFilename);
@@ -119,7 +117,7 @@ public class PrismConnector {
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
-		PropertiesFile propertiesFile = mPrism.parsePropertiesFile(modulesFile, propFile);
+		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
 
 		Property property = propertiesFile.getPropertyObject(0);
 		Result result = mPrism.modelCheck(propertiesFile, property);

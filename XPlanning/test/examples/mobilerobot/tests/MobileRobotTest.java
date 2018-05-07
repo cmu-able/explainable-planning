@@ -80,8 +80,8 @@ class MobileRobotTest {
 			XMDP xmdp = createXMDP();
 		} catch (AttributeNameNotFoundException | IncompatibleVarException | IncompatibleEffectClassException
 				| IncompatibleDiscriminantClassException | IncompatibleActionException e) {
-			fail("Exception thrown while creating XMDP");
 			e.printStackTrace();
+			fail("Exception thrown while creating XMDP");
 		}
 	}
 
@@ -102,8 +102,8 @@ class MobileRobotTest {
 			System.out.println();
 		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
 				| IncompatibleVarException | DiscriminantNotFoundException e) {
-			fail("Exception thrown while translating XMDP to PRISM MDP");
 			e.printStackTrace();
+			fail("Exception thrown while translating XMDP to PRISM MDP");
 		}
 	}
 
@@ -114,8 +114,8 @@ class MobileRobotTest {
 			XDTMC xdtmc = createXDTMC();
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
-			fail("Exception thrown while creating XDTMC");
 			e.printStackTrace();
+			fail("Exception thrown while creating XDTMC");
 		}
 	}
 
@@ -140,8 +140,8 @@ class MobileRobotTest {
 			System.out.println();
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
-			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");
 			e.printStackTrace();
+			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");
 		}
 	}
 
@@ -149,7 +149,7 @@ class MobileRobotTest {
 	public void testPrismAdversaryGeneration() {
 		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
 		String outputDir = "output";
-		String mdpFilename = "test0Copy.mdp";
+		String mdpFilename = "test0.mdp";
 		String propFilename = "test0Cost.prop";
 		String staOutputFilename = "adv.sta";
 		String labOutputFilename = "adv.lab";
@@ -164,8 +164,8 @@ class MobileRobotTest {
 			System.out.println(totalCost);
 			System.out.println();
 		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
-			fail("Exception thrown while PRISM generating MDP adversary");
 			e.printStackTrace();
+			fail("Exception thrown while PRISM generating MDP adversary");
 		}
 	}
 

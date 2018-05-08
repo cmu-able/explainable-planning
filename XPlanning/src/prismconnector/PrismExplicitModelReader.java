@@ -31,16 +31,16 @@ public class PrismExplicitModelReader {
 
 	/**
 	 * 
-	 * @param filename
+	 * @param staFilename
 	 *            : Name of a states .sta file
 	 * @return Mapping from integer values indexing states to the corresponding states
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
-	public Map<Integer, State> readStatesFile(String filename) throws IOException, VarNotFoundException {
+	public Map<Integer, State> readStatesFromFile(String staFilename) throws IOException, VarNotFoundException {
 		Map<Integer, State> indices = new HashMap<>();
 
-		List<String> allLines = readLinesFromFile(filename);
+		List<String> allLines = readLinesFromFile(staFilename);
 
 		// Pattern: ({var1Name},{var2Name},...,{varNName})
 		String header = allLines.get(0);
@@ -86,17 +86,17 @@ public class PrismExplicitModelReader {
 
 	/**
 	 * 
-	 * @param filename
+	 * @param traFilename
 	 *            : Name of an "adversary" .tra file
 	 * @param stateIndices
 	 *            : Mapping from integer values indexing states to the corresponding states
 	 * @return A policy extracted from the "adversary" file
 	 * @throws IOException
 	 */
-	public Policy readTransitionsFile(String filename, Map<Integer, State> stateIndices) throws IOException {
+	public Policy readPolicyFromFile(String traFilename, Map<Integer, State> stateIndices) throws IOException {
 		Policy policy = new Policy();
 
-		List<String> allLines = readLinesFromFile(filename);
+		List<String> allLines = readLinesFromFile(traFilename);
 		List<String> body = allLines.subList(1, allLines.size());
 
 		// Pattern: *source* {destination} {index of action} {probability} *action name*

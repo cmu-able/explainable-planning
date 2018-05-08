@@ -18,7 +18,9 @@ import mdp.Discriminant;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
+import mdp.TransitionFunction;
 import mdp.XMDP;
+import metrics.IQFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
@@ -71,7 +73,7 @@ public class PrismMDPTranslator {
 		String actionsDecl = mUtilities.buildConstsDecl(mXMDP.getActionSpace());
 		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
-		String rewards = mRewardUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
+		String rewardStruc = mRewardUtilities.buildRewardStructure(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
 				mXMDP.getCostFunction());
 		StringBuilder builder = new StringBuilder();
 		builder.append("mdp");
@@ -80,26 +82,44 @@ public class PrismMDPTranslator {
 		builder.append(actionsDecl);
 		builder.append("\n");
 		builder.append(modules);
-		builder.append("\n");
-		builder.append(rewards);
+		builder.append("\n\n");
+		builder.append(rewardStruc);
 		return builder.toString();
 	}
 
-	/**
-	 * 
-	 * @return Reward structure representing the cost function of this MDP.
-	 * @throws VarNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
-	 */
-	public String getRewardsTranslation()
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
-		return mRewardUtilities.buildRewards(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
-				mXMDP.getCostFunction());
+	public String getMDPTranslationWithQAs() throws VarNotFoundException, EffectClassNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		String mdpTranslation = getMDPTranslation();
+		String qasRewards = getQAsRewardsTranslation();
+		builder.append(mdpTranslation);
+		builder.append("\n\n");
+		builder.append(qasRewards);
+		return builder.toString();
+	}
+
+	public String getQAsRewardsTranslation()
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		TransitionFunction transFunction = mXMDP.getTransitionFunction();
+		StringBuilder builder = new StringBuilder();
+		builder.append("// All Quality-Attribute Functions\n\n");
+		boolean first = true;
+		for (IQFunction qFunction : mXMDP.getQFunctions()) {
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
+			builder.append("// ");
+			builder.append(qFunction.getName());
+			builder.append("\n\n");
+			String rewards = mRewardUtilities.buildRewardStructure(transFunction, qFunction);
+			builder.append(rewards);
+		}
+		return builder.toString();
 	}
 
 	/**
@@ -122,8 +142,10 @@ public class PrismMDPTranslator {
 	 */
 	private String buildMDPPartialModuleCommands(IActionDescription<IAction> actionDescription)
 			throws ActionNotFoundException, VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
 		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
+
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
 		for (IAction action : actionDef.getActions()) {
 			Set<ProbabilisticTransition<IAction>> probTransitions = actionDescription
 					.getProbabilisticTransitions(action);
@@ -131,9 +153,13 @@ public class PrismMDPTranslator {
 				Discriminant discriminant = probTrans.getDiscriminant();
 				ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
 				String command = mUtilities.buildModuleCommand(action, discriminant, probEffect);
+				if (!first) {
+					builder.append("\n");
+				} else {
+					first = false;
+				}
 				builder.append(PrismTranslatorUtilities.INDENT);
 				builder.append(command);
-				builder.append("\n");
 			}
 		}
 		return builder.toString();

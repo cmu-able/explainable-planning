@@ -92,10 +92,10 @@ class MobileRobotTest {
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
 		try {
-			String mdpTranslation = mdpTranslator.getMDPTranslation();
+			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			System.out.println("MDP Translation:");
-			System.out.println(mdpTranslation);
+			System.out.println("MDP Translation (with QAs):");
+			System.out.println(mdpWithQAs);
 			System.out.println();
 			System.out.println("Goal Property Translation:");
 			System.out.println(goalProperty);

@@ -9,8 +9,8 @@ const int rSpeed_0_35 = 0;
 const int rSpeed_0_7 = 1;
 
 // Possible instances of action moveTo
-const int moveToL2 = 0;
-const int moveToL1 = 1;
+const int moveToL1 = 0;
+const int moveToL2 = 1;
 
 // Possible instances of action setSpeed
 const int setSpeed0_35 = 2;
@@ -23,16 +23,14 @@ module module_1
   // setSpeed
   [setSpeed0_35] rSpeed=1 -> 1.0:(rSpeed'=0);
   [setSpeed0_7] rSpeed=0 -> 1.0:(rSpeed'=1);
-
 endmodule
 
 module module_2
   rLoc : [0..1] init 1;
 
   // moveTo
-  [moveToL2] rLoc=1 -> 1.0:(rLoc'=0);
   [moveToL1] rLoc=0 -> 1.0:(rLoc'=1);
-
+  [moveToL2] rLoc=1 -> 1.0:(rLoc'=0);
 endmodule
 
 module helper
@@ -41,21 +39,33 @@ module helper
   action : [-1..3] init -1;
   readyToCopy : bool init true;
 
-  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false);
-  [moveToL1] readyToCopy -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false);
+  [moveToL1] readyToCopy -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false);
+  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false);
   [setSpeed0_35] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=2) & (readyToCopy'=false);
   [setSpeed0_7] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=3) & (readyToCopy'=false);
 
   [next] !readyToCopy -> (readyToCopy'=true);
 endmodule
 
-
 formula compute_cost = !readyToCopy;
 
 rewards "cost"
-  compute_cost & action=0 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
-  compute_cost & action=0 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
-  compute_cost & action=1 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
-  compute_cost & action=1 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
+  compute_cost & action=0 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
+  compute_cost & action=0 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
+  compute_cost & action=1 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
+  compute_cost & action=1 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
   compute_cost : 0.01;
+endrewards
+
+// All Quality-Attribute Functions
+
+// travelTime
+
+formula compute_travelTime = !readyToCopy;
+
+rewards "travelTime"
+  compute_travelTime & action=0 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
+  compute_travelTime & action=0 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
+  compute_travelTime & action=1 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
+  compute_travelTime & action=1 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
 endrewards

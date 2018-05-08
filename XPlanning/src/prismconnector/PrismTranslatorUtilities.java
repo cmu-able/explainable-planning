@@ -117,17 +117,13 @@ public class PrismTranslatorUtilities {
 			throws VarNotFoundException, ActionNotFoundException {
 		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
 		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
-		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
 		builder.append(helperVarsDecl);
-		builder.append("\n");
+		builder.append("\n\n");
 		builder.append(copyCmds);
-		builder.append("\n");
-		builder.append(INDENT);
-		builder.append(nextCmd);
 		builder.append("\n");
 		builder.append("endmodule");
 		return builder.toString();
@@ -147,12 +143,12 @@ public class PrismTranslatorUtilities {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(srcVarsDecl);
+		builder.append("\n");
 		builder.append(INDENT);
 		builder.append(actionDecl);
 		builder.append("\n");
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
-		builder.append("\n");
 		return builder.toString();
 	}
 
@@ -161,7 +157,7 @@ public class PrismTranslatorUtilities {
 	 * @param actionPSOs
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action value}) &
-	 *         (readyToCopy'=false); ...
+	 *         (readyToCopy'=false); ... [next] !readyToCopy -> (readyToCopy'=true);
 	 * @throws ActionNotFoundException
 	 */
 	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs, String nameSuffix)
@@ -194,6 +190,10 @@ public class PrismTranslatorUtilities {
 				builder.append("\n");
 			}
 		}
+		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append(nextCmd);
 		return builder.toString();
 	}
 
@@ -249,6 +249,7 @@ public class PrismTranslatorUtilities {
 	String buildModuleVarsDecl(StateSpace moduleVarSpace, State iniState, String nameSuffix)
 			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
+		boolean first = true;
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarSpace) {
 			IStateVarValue iniValue = iniState.getStateVarValue(IStateVarValue.class, stateVarDef);
 			String varDecl;
@@ -262,9 +263,14 @@ public class PrismTranslatorUtilities {
 			} else {
 				varDecl = buildModuleVarDecl(stateVarDef, nameSuffix, iniValue);
 			}
+
+			if (!first) {
+				builder.append("\n");
+			} else {
+				first = false;
+			}
 			builder.append(INDENT);
 			builder.append(varDecl);
-			builder.append("\n");
 		}
 		return builder.toString();
 	}
@@ -371,6 +377,7 @@ public class PrismTranslatorUtilities {
 
 		StringBuilder builder = new StringBuilder();
 		int moduleCount = 0;
+		boolean first = true;
 
 		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
 			moduleCount++;
@@ -393,8 +400,13 @@ public class PrismTranslatorUtilities {
 
 			String module = buildModule("module_" + moduleCount, moduleVarSpace, iniState, moduleActionPSOs,
 					partialCommandsBuilder);
+
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
 			builder.append(module);
-			builder.append("\n\n");
 		}
 
 		if (!unmodifiedVarSpace.isEmpty()) {
@@ -402,14 +414,14 @@ public class PrismTranslatorUtilities {
 			Map<FactoredPSO<IAction>, Set<EffectClass>> emptyActionPSOs = new HashMap<>();
 			String noCommandModule = buildModule("module_" + moduleCount, unmodifiedVarSpace, iniState, emptyActionPSOs,
 					partialCommandsBuilder);
-			builder.append(noCommandModule);
 			builder.append("\n\n");
+			builder.append(noCommandModule);
 		}
 
 		if (mThreeParamRewards) {
 			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs);
-			builder.append(helperModule);
 			builder.append("\n\n");
+			builder.append(helperModule);
 		}
 
 		return builder.toString();
@@ -451,8 +463,9 @@ public class PrismTranslatorUtilities {
 		builder.append(moduleName);
 		builder.append("\n");
 		builder.append(varsDecl);
-		builder.append("\n");
+		builder.append("\n\n");
 		builder.append(commands);
+		builder.append("\n");
 		builder.append("endmodule");
 		return builder.toString();
 	}
@@ -482,6 +495,7 @@ public class PrismTranslatorUtilities {
 			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
 			VarNotFoundException, DiscriminantNotFoundException {
 		StringBuilder builder = new StringBuilder();
+		boolean first = true;
 		for (Entry<FactoredPSO<IAction>, Set<EffectClass>> entry : actionPSOs.entrySet()) {
 			FactoredPSO<IAction> actionPSO = entry.getKey();
 			Set<EffectClass> chainedEffectClasses = entry.getValue();
@@ -494,12 +508,16 @@ public class PrismTranslatorUtilities {
 			}
 			String actionDefName = actionPSO.getActionDefinition().getName();
 			String commands = partialCommandsBuilder.buildPartialModuleCommands(actionDesc);
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
 			builder.append(INDENT);
 			builder.append("// ");
 			builder.append(actionDefName);
 			builder.append("\n");
 			builder.append(commands);
-			builder.append("\n");
 		}
 		return builder.toString();
 	}

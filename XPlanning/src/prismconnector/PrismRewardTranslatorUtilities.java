@@ -59,7 +59,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws ActionNotFoundException
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	String buildRewards(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
+	String buildRewardStructure(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
 		String computeCostFormula = buildComputeRewardFormula(COST_STRUCTURE_NAME);
@@ -113,7 +113,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
-	String buildRewards(TransitionFunction transFunction, IQFunction qFunction)
+	String buildRewardStructure(TransitionFunction transFunction, IQFunction qFunction)
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		String rewardName = qFunction.getName();

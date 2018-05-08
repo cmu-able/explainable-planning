@@ -122,7 +122,7 @@ public class PrismDTMCTranslator {
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		TransitionFunction transFunction = mXDTMC.getXMDP().getTransitionFunction();
-		return mRewardUtilities.buildRewards(transFunction, qFunction);
+		return mRewardUtilities.buildRewardStructure(transFunction, qFunction);
 	}
 
 	/**
@@ -152,9 +152,10 @@ public class PrismDTMCTranslator {
 			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException {
 		TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(actionDescription.getActionDefinition());
+		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
 
 		StringBuilder builder = new StringBuilder();
-		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
+		boolean first = true;
 		for (Entry<State, IAction> entry : twoTBN) {
 			State state = entry.getKey();
 			IAction action = entry.getValue();
@@ -167,9 +168,13 @@ public class PrismDTMCTranslator {
 			}
 			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);
 			String command = mUtilities.buildModuleCommand(action, state, probEffect);
+			if (!first) {
+				builder.append("\n");
+			} else {
+				first = false;
+			}
 			builder.append(PrismTranslatorUtilities.INDENT);
 			builder.append(command);
-			builder.append("\n");
 		}
 		return builder.toString();
 	}

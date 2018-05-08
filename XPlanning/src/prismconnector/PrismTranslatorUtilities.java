@@ -49,14 +49,6 @@ public class PrismTranslatorUtilities {
 		mThreeParamRewards = threeParamRewards;
 	}
 
-	public ValueEncodingScheme getValueEncodingScheme() {
-		return mEncodings;
-	}
-
-	public boolean isThreeParamRewards() {
-		return mThreeParamRewards;
-	}
-
 	/**
 	 * 
 	 * @param stateSpace

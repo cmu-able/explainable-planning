@@ -42,10 +42,6 @@ public class PrismRewardTranslatorUtilities {
 		mThreeParamRewards = threeParamRewards;
 	}
 
-	public ValueEncodingScheme getValueEncodingScheme() {
-		return mEncodings;
-	}
-
 	/**
 	 * Build a state-based reward structure for a given cost function of MDP.
 	 * 
@@ -403,7 +399,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @return R{"cost"}min=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	String buildMDPCostMinProperty(State goal) throws VarNotFoundException {
+	public String buildMDPCostMinProperty(State goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(COST_STRUCTURE_NAME);
@@ -421,11 +417,26 @@ public class PrismRewardTranslatorUtilities {
 	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	String buildDTMCNumQueryProperty(State goal, IQFunction qFunction) throws VarNotFoundException {
+	public String buildDTMCNumQueryProperty(State goal, IQFunction qFunction) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}=? [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
+		builder.append(" ]");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 * @return R=? [ F {goal predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	public String buildDTMCRawRewardQueryProperty(State goal) throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("R=? [ F ");
 		String goalPredicate = buildGoalPredicate(goal);
 		builder.append(goalPredicate);
 		builder.append(" ]");

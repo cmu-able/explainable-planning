@@ -152,15 +152,15 @@ class MobileRobotTest {
 		String mdpFilename = "test0.mdp";
 		String propFilename = "test0Cost.prop";
 		String staOutputFilename = "adv.sta";
-		String labOutputFilename = "adv.lab";
 		String traOutputFilename = "adv.tra";
+		String labOutputFilename = "adv.lab";
 		String srewOutputFilename = "adv.srew";
 
 		try {
 			PrismConnector connector = new PrismConnector(modelPath, outputDir);
 			double totalCost = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
-					labOutputFilename, traOutputFilename, srewOutputFilename);
-			System.out.print("Result: ");
+					traOutputFilename, labOutputFilename, srewOutputFilename);
+			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
 			System.out.println();
 		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
@@ -170,8 +170,29 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testQueryPropertyFromDTMC() {
-		// TODO
+	public void testQueryPropertyFromExplicitDTMC() throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
+		String outputDir = "test_output";
+		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
+		String staOutputFilename = "adv.sta";
+		String traOutputFilename = "adv.tra";
+		String labOutputFilename = "adv.lab";
+		String srewOutputFilename = "adv.srew";
+
+		try {
+			PrismConnector connector = new PrismConnector(modelPath, outputDir);
+			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, staOutputFilename, traOutputFilename,
+					labOutputFilename, srewOutputFilename);
+			System.out.print("Query property: ");
+			System.out.println(propertyStr);
+			System.out.print("Expected total value of adversary: ");
+			System.out.println(result);
+			System.out.println();
+		} catch (PrismException | ResultParsingException e) {
+			e.printStackTrace();
+			fail("Exception thrown while PRISM model checking DTCM property");
+		}
 	}
 
 	private XMDP createXMDP() throws AttributeNameNotFoundException, IncompatibleVarException,

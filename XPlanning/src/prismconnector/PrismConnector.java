@@ -53,19 +53,22 @@ public class PrismConnector {
 	}
 
 	/**
+	 * Generate an optimal adversary of MDP in the form of an explicit model of DTMC. The output explicit model files
+	 * include: states file (.sta), transitions file (.tra), labels file (.lab), and state rewards file (.srew).
 	 * 
 	 * @param mdpFilename
 	 * @param propFilename
 	 * @param staOutputFilename
-	 * @param labOutputFilename
 	 * @param traOutputFilename
+	 * @param labOutputFilename
+	 * @param srewOutputFilename
 	 * @return Expected cumulative cost of the generated optimal policy
 	 * @throws PrismException
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
 	 */
 	public double generateMDPAdversary(String mdpFilename, String propFilename, String staOutputFilename,
-			String labOutputFilename, String traOutputFilename, String srewOutputFilename)
+			String traOutputFilename, String labOutputFilename, String srewOutputFilename)
 			throws PrismException, FileNotFoundException, ResultParsingException {
 		// Parse and load a PRISM model (an MDP) from a file
 		ModulesFile modulesFile = mPrism.parseModelFile(new File(mModelPath, mdpFilename));
@@ -73,6 +76,8 @@ public class PrismConnector {
 
 		// Export the states of the model to a file
 		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, new File(mOutputPath, staOutputFilename));
+
+		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
 		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, new File(mOutputPath, labOutputFilename));
 
 		// Export the reward structure to a file
@@ -107,16 +112,30 @@ public class PrismConnector {
 		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
 	}
 
-	public double queryPropertyFromExplicitDTMC(String propertyStr, String staOutputFilename, String labOutputFilename,
-			String traOutputFilename, String srewOutputFilename) throws PrismException, ResultParsingException {
+	/**
+	 * 
+	 * @param propertyStr
+	 * @param staOutputFilename
+	 * @param traOutputFilename
+	 * @param labOutputFilename
+	 * @param srewOutputFilename
+	 * @return Quantitative result of the given query property of the DTMC
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
+	public double queryPropertyFromExplicitDTMC(String propertyStr, String staOutputFilename, String traOutputFilename,
+			String labOutputFilename, String srewOutputFilename) throws PrismException, ResultParsingException {
 		File staFile = new File(mOutputPath, staOutputFilename);
 		File traFile = new File(mOutputPath, traOutputFilename);
 		File labFile = new File(mOutputPath, labOutputFilename);
 		File srewFile = new File(mOutputPath, srewOutputFilename);
 
+		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
+		// -- important!)
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
+		// Parse property from a given property string
 		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
 
 		Property property = propertiesFile.getPropertyObject(0);

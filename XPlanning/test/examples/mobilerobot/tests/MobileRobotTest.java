@@ -162,8 +162,8 @@ class MobileRobotTest {
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
 		try {
-			PrismConnector connector = new PrismConnector(outputPath);
-			double totalCost = connector.generateMDPAdversary(mdpWithQAs, goalProperty, staOutputFilename,
+			PrismConnector connector = new PrismConnector();
+			double totalCost = connector.generateMDPAdversary(mdpWithQAs, goalProperty, outputPath, staOutputFilename,
 					traOutputFilename, labOutputFilename, srewOutputFilename);
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
@@ -176,7 +176,7 @@ class MobileRobotTest {
 
 	@Test
 	public void testPrismExplicitDTMCPropertyQuery() {
-		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
+		String inputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 		String staInputFilename = "adv.sta";
 		String traInputFilename = "adv.tra";
@@ -184,9 +184,9 @@ class MobileRobotTest {
 		String srewInputFilename = "adv1.srew";
 
 		try {
-			PrismConnector connector = new PrismConnector(outputPath);
-			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, staInputFilename, traInputFilename,
-					labInputFilename, srewInputFilename);
+			PrismConnector connector = new PrismConnector();
+			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, inputPath, staInputFilename,
+					traInputFilename, labInputFilename, srewInputFilename);
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
 			System.out.print("Expected total value of adversary: ");
@@ -203,15 +203,13 @@ class MobileRobotTest {
 			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
 			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
-		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
-
 		XDTMC xdtmc = createXDTMC();
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
 		try {
-			PrismConnector connector = new PrismConnector(outputPath);
+			PrismConnector connector = new PrismConnector();
 			double result = connector.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);

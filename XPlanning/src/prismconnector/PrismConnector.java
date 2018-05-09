@@ -28,11 +28,9 @@ public class PrismConnector {
 
 	private static final String FLOATING_POINT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
 
-	private String mOutputPath;
 	private Prism mPrism;
 
-	public PrismConnector(String outputPath) throws PrismException {
-		mOutputPath = outputPath;
+	public PrismConnector() throws PrismException {
 		initializePrism();
 	}
 
@@ -52,11 +50,12 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Generate an optimal adversary of MDP in the form of an explicit model of DTMC. The output explicit model files
+	 * Generate an optimal adversary of a MDP in the form of an explicit model of DTMC. The output explicit model files
 	 * include: states file (.sta), transitions file (.tra), labels file (.lab), and state rewards file (.srew).
 	 * 
 	 * @param mdpStr
-	 * @param propFilename
+	 * @param propertyStr
+	 * @param outputPath
 	 * @param staOutputFilename
 	 * @param traOutputFilename
 	 * @param labOutputFilename
@@ -66,7 +65,7 @@ public class PrismConnector {
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
 	 */
-	public double generateMDPAdversary(String mdpStr, String propertyStr, String staOutputFilename,
+	public double generateMDPAdversary(String mdpStr, String propertyStr, String outputPath, String staOutputFilename,
 			String traOutputFilename, String labOutputFilename, String srewOutputFilename)
 			throws PrismException, FileNotFoundException, ResultParsingException {
 		// Parse and load a PRISM MDP model from a model string
@@ -74,20 +73,20 @@ public class PrismConnector {
 		mPrism.loadPRISMModel(modulesFile);
 
 		// Export the states of the model to a file
-		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, new File(mOutputPath, staOutputFilename));
+		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, new File(outputPath, staOutputFilename));
 
 		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
-		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, new File(mOutputPath, labOutputFilename));
+		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, new File(outputPath, labOutputFilename));
 
 		// Export the reward structure to a file
-		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, new File(mOutputPath, srewOutputFilename));
+		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, new File(outputPath, srewOutputFilename));
 
 		// Parse and load property from a property string
 		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
-		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, mOutputPath + "/" + traOutputFilename);
+		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, outputPath + "/" + traOutputFilename);
 
 		// Select PRISM engine
 		// Engines by index: 0 -> MTBDD, 1 -> Sparse, 2 -> Hybrid, 3 -> Explicit
@@ -112,8 +111,10 @@ public class PrismConnector {
 	}
 
 	/**
+	 * Query quantitative property of a DTMC -- from the explicit model files.
 	 * 
 	 * @param propertyStr
+	 * @param inputPath
 	 * @param staInputFilename
 	 * @param traInputFilename
 	 * @param labInputFilename
@@ -122,12 +123,13 @@ public class PrismConnector {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromExplicitDTMC(String propertyStr, String staInputFilename, String traInputFilename,
-			String labInputFilename, String srewInputFilename) throws PrismException, ResultParsingException {
-		File staFile = new File(mOutputPath, staInputFilename);
-		File traFile = new File(mOutputPath, traInputFilename);
-		File labFile = new File(mOutputPath, labInputFilename);
-		File srewFile = new File(mOutputPath, srewInputFilename);
+	public double queryPropertyFromExplicitDTMC(String propertyStr, String inputPath, String staInputFilename,
+			String traInputFilename, String labInputFilename, String srewInputFilename)
+			throws PrismException, ResultParsingException {
+		File staFile = new File(inputPath, staInputFilename);
+		File traFile = new File(inputPath, traInputFilename);
+		File labFile = new File(inputPath, labInputFilename);
+		File srewFile = new File(inputPath, srewInputFilename);
 
 		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
 		// -- important!)
@@ -154,6 +156,15 @@ public class PrismConnector {
 		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
 	}
 
+	/**
+	 * Query quantitative property of a DTMC -- from the model and property strings.
+	 * 
+	 * @param dtmcModelStr
+	 * @param propertyStr
+	 * @return Quantitative result of the given query property of the DTMC
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
 	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr)
 			throws PrismException, ResultParsingException {
 		// Parse and load a PRISM DTMC model from a model string

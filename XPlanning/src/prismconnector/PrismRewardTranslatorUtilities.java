@@ -21,7 +21,6 @@ import mdp.DiscriminantClass;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.Precondition;
-import mdp.State;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
 import metrics.Transition;
@@ -31,7 +30,7 @@ import preferences.CostFunction;
 
 public class PrismRewardTranslatorUtilities {
 
-	private static final String COST_STRUCTURE_NAME = "cost";
+	static final String COST_STRUCTURE_NAME = "cost";
 	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
 
 	private ValueEncodingScheme mEncodings;
@@ -163,11 +162,14 @@ public class PrismRewardTranslatorUtilities {
 			}
 		};
 
-		String computeQAFormula = buildComputeRewardFormula(rewardName);
-
 		StringBuilder builder = new StringBuilder();
-		builder.append(computeQAFormula);
-		builder.append("\n\n");
+
+		if (mThreeParamRewards) {
+			String computeQAFormula = buildComputeRewardFormula(rewardName);
+			builder.append(computeQAFormula);
+			builder.append("\n\n");
+		}
+
 		builder.append("rewards \"");
 		builder.append(rewardName);
 		builder.append("\"\n");
@@ -399,84 +401,6 @@ public class PrismRewardTranslatorUtilities {
 			}
 		}
 		return newCombinations;
-	}
-
-	/**
-	 * 
-	 * @param goal
-	 * @return {varName}={encoded int value} & ...
-	 * @throws VarNotFoundException
-	 */
-	String buildGoalPredicate(State goal) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goal) {
-			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
-			if (!firstVar) {
-				builder.append(" & ");
-			} else {
-				firstVar = false;
-			}
-			builder.append(goalVar.getName());
-			builder.append("=");
-			builder.append(encodedValue);
-		}
-
-		if (mThreeParamRewards) {
-			builder.append(" & readyToCopy");
-		}
-
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param goal
-	 * @return R{"cost"}min=? [ F {goal predicate} ]
-	 * @throws VarNotFoundException
-	 */
-	public String buildMDPCostMinProperty(State goal) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(COST_STRUCTURE_NAME);
-		builder.append("\"}min=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
-		builder.append(" ]");
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param goal
-	 * @param qFunction
-	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
-	 * @throws VarNotFoundException
-	 */
-	public String buildDTMCNumQueryProperty(State goal, IQFunction qFunction) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(qFunction.getName());
-		builder.append("\"}=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
-		builder.append(" ]");
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param goal
-	 * @return R=? [ F {goal predicate} ]
-	 * @throws VarNotFoundException
-	 */
-	public String buildDTMCRawRewardQueryProperty(State goal) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
-		builder.append(" ]");
-		return builder.toString();
 	}
 
 	interface TransitionEvaluator {

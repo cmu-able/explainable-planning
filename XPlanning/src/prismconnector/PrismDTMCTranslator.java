@@ -35,19 +35,25 @@ import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 public class PrismDTMCTranslator {
 
 	private XDTMC mXDTMC;
+	private ValueEncodingScheme mEncodings;
+	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorUtilities mUtilities;
 	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards) {
 		mXDTMC = xdtmc;
-		ValueEncodingScheme encodings;
 		if (threeParamRewards) {
-			encodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace(), xdtmc.getXMDP().getActionSpace());
+			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace(), xdtmc.getXMDP().getActionSpace());
 		} else {
-			encodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
+			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
 		}
-		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
+		mPropertyTranslator = new PrismPropertyTranslator(mEncodings, threeParamRewards);
+		mUtilities = new PrismTranslatorUtilities(mEncodings, threeParamRewards);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards);
+	}
+
+	public ValueEncodingScheme getValueEncodingScheme() {
+		return mEncodings;
 	}
 
 	/**
@@ -141,7 +147,7 @@ public class PrismDTMCTranslator {
 	 */
 	public String getNumQueryPropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
 		State goal = mXDTMC.getXMDP().getGoal();
-		return mRewardUtilities.buildDTMCNumQueryProperty(goal, qFunction);
+		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction);
 	}
 
 	/**

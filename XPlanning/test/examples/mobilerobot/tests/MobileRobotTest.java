@@ -142,19 +142,24 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testPrismAdversaryGeneration() {
-		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
-		String outputDir = "output";
-		String mdpFilename = "test0.mdp";
-		String propFilename = "test0Cost.prop";
+	public void testPrismMDPAdversaryGeneration() throws AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException,
+			VarNotFoundException, EffectClassNotFoundException, DiscriminantNotFoundException, ActionNotFoundException,
+			ActionDefinitionNotFoundException {
+		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/output";
 		String staOutputFilename = "adv.sta";
 		String traOutputFilename = "adv.tra";
 		String labOutputFilename = "adv.lab";
 		String srewOutputFilename = "adv.srew";
 
+		XMDP xmdp = createXMDP();
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
+		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+
 		try {
-			PrismConnector connector = new PrismConnector(modelPath, outputDir);
-			double totalCost = connector.generateMDPAdversary(mdpFilename, propFilename, staOutputFilename,
+			PrismConnector connector = new PrismConnector(outputPath);
+			double totalCost = connector.generateMDPAdversary(mdpWithQAs, goalProperty, staOutputFilename,
 					traOutputFilename, labOutputFilename, srewOutputFilename);
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
@@ -166,20 +171,19 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testQueryPropertyFromExplicitDTMC() throws AttributeNameNotFoundException, IncompatibleVarException,
+	public void testPrismExplicitDTMCPropertyQuery() throws AttributeNameNotFoundException, IncompatibleVarException,
 			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
-		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0";
-		String outputDir = "test_output";
+		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
-		String staOutputFilename = "adv.sta";
-		String traOutputFilename = "adv.tra";
-		String labOutputFilename = "adv.lab";
-		String srewOutputFilename = "adv.srew";
+		String staInputFilename = "adv.sta";
+		String traInputFilename = "adv.tra";
+		String labInputFilename = "adv.lab";
+		String srewInputFilename = "adv2.srew";
 
 		try {
-			PrismConnector connector = new PrismConnector(modelPath, outputDir);
-			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, staOutputFilename, traOutputFilename,
-					labOutputFilename, srewOutputFilename);
+			PrismConnector connector = new PrismConnector(outputPath);
+			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, staInputFilename, traInputFilename,
+					labInputFilename, srewInputFilename);
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
 			System.out.print("Expected total value of adversary: ");

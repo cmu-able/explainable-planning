@@ -18,7 +18,8 @@ import prism.PrismSettings;
 import prism.Result;
 
 /**
- * Reference: https://github.com/prismmodelchecker/prism-api/blob/master/src/demos/MDPAdversaryGeneration.java
+ * References: https://github.com/prismmodelchecker/prism-api/blob/master/src/demos/MDPAdversaryGeneration.java,
+ * https://github.com/prismmodelchecker/prism/blob/master/prism/src/prism/Prism.java
  * 
  * @author rsukkerd
  *
@@ -27,13 +28,11 @@ public class PrismConnector {
 
 	private static final String FLOATING_POINT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
 
-	private String mModelPath;
 	private String mOutputPath;
 	private Prism mPrism;
 
-	public PrismConnector(String modelPath, String outputDir) throws PrismException {
-		mModelPath = modelPath;
-		mOutputPath = modelPath + "/" + outputDir;
+	public PrismConnector(String outputPath) throws PrismException {
+		mOutputPath = outputPath;
 		initializePrism();
 	}
 
@@ -56,7 +55,7 @@ public class PrismConnector {
 	 * Generate an optimal adversary of MDP in the form of an explicit model of DTMC. The output explicit model files
 	 * include: states file (.sta), transitions file (.tra), labels file (.lab), and state rewards file (.srew).
 	 * 
-	 * @param mdpFilename
+	 * @param mdpStr
 	 * @param propFilename
 	 * @param staOutputFilename
 	 * @param traOutputFilename
@@ -67,11 +66,11 @@ public class PrismConnector {
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
 	 */
-	public double generateMDPAdversary(String mdpFilename, String propFilename, String staOutputFilename,
+	public double generateMDPAdversary(String mdpStr, String propertyStr, String staOutputFilename,
 			String traOutputFilename, String labOutputFilename, String srewOutputFilename)
 			throws PrismException, FileNotFoundException, ResultParsingException {
-		// Parse and load a PRISM model (an MDP) from a file
-		ModulesFile modulesFile = mPrism.parseModelFile(new File(mModelPath, mdpFilename));
+		// Parse and load a PRISM MDP model from a model string
+		ModulesFile modulesFile = mPrism.parseModelString(mdpStr, ModelType.MDP);
 		mPrism.loadPRISMModel(modulesFile);
 
 		// Export the states of the model to a file
@@ -83,8 +82,8 @@ public class PrismConnector {
 		// Export the reward structure to a file
 		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, new File(mOutputPath, srewOutputFilename));
 
-		// Parse and load a properties model for the model
-		PropertiesFile propertiesFile = mPrism.parsePropertiesFile(modulesFile, new File(mModelPath, propFilename));
+		// Parse and load property from a property string
+		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
@@ -95,7 +94,7 @@ public class PrismConnector {
 		// According to: https://github.com/prismmodelchecker/prism/blob/master/prism/src/prism/PrismSettings.java
 		mPrism.getSettings().set(PrismSettings.PRISM_ENGINE, "Explicit");
 
-		// Model check the first property from the file
+		// Model check the first property
 		Property property = propertiesFile.getPropertyObject(0);
 		Result result = mPrism.modelCheck(propertiesFile, property);
 
@@ -115,29 +114,56 @@ public class PrismConnector {
 	/**
 	 * 
 	 * @param propertyStr
-	 * @param staOutputFilename
-	 * @param traOutputFilename
-	 * @param labOutputFilename
-	 * @param srewOutputFilename
+	 * @param staInputFilename
+	 * @param traInputFilename
+	 * @param labInputFilename
+	 * @param srewInputFilename
 	 * @return Quantitative result of the given query property of the DTMC
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromExplicitDTMC(String propertyStr, String staOutputFilename, String traOutputFilename,
-			String labOutputFilename, String srewOutputFilename) throws PrismException, ResultParsingException {
-		File staFile = new File(mOutputPath, staOutputFilename);
-		File traFile = new File(mOutputPath, traOutputFilename);
-		File labFile = new File(mOutputPath, labOutputFilename);
-		File srewFile = new File(mOutputPath, srewOutputFilename);
+	public double queryPropertyFromExplicitDTMC(String propertyStr, String staInputFilename, String traInputFilename,
+			String labInputFilename, String srewInputFilename) throws PrismException, ResultParsingException {
+		File staFile = new File(mOutputPath, staInputFilename);
+		File traFile = new File(mOutputPath, traInputFilename);
+		File labFile = new File(mOutputPath, labInputFilename);
+		File srewFile = new File(mOutputPath, srewInputFilename);
 
 		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
 		// -- important!)
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
-		// Parse property from a given property string
+		// Parse and load property from a property string
 		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
 
+		// Model check the first property
+		Property property = propertiesFile.getPropertyObject(0);
+		Result result = mPrism.modelCheck(propertiesFile, property);
+
+		String resultStr = result.getResultString();
+		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
+		Matcher m = p.matcher(resultStr);
+
+		if (m.find()) {
+			return Double.parseDouble(m.group(0));
+		}
+
+		// terminatePrism();
+
+		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
+	}
+
+	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr)
+			throws PrismException, ResultParsingException {
+		// Parse and load a PRISM DTMC model from a model string
+		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
+		mPrism.loadPRISMModel(modulesFile);
+
+		// Parse and load property from a property string
+		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
+
+		// Model check the first property
 		Property property = propertiesFile.getPropertyObject(0);
 		Result result = mPrism.modelCheck(propertiesFile, property);
 

@@ -87,10 +87,10 @@ class MobileRobotTest {
 
 	@Test
 	public void testPrismMDPTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException,
-			ActionNotFoundException, ActionDefinitionNotFoundException {
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
+
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
@@ -101,18 +101,20 @@ class MobileRobotTest {
 			System.out.println(goalProperty);
 			System.out.println();
 		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
-				| IncompatibleVarException | DiscriminantNotFoundException e) {
+				| IncompatibleVarException | DiscriminantNotFoundException | ActionNotFoundException
+				| ActionDefinitionNotFoundException e) {
 			e.printStackTrace();
 			fail("Exception thrown while translating XMDP to PRISM MDP");
 		}
 	}
 
 	@Test
-	public void testDTMCConstructor() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+	public void testDTMCConstructor() {
 		try {
 			XDTMC xdtmc = createXDTMC();
-		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
+		} catch (AttributeNameNotFoundException | IncompatibleVarException | IncompatibleEffectClassException
+				| IncompatibleDiscriminantClassException | IncompatibleActionException
+				| ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
 			e.printStackTrace();
 			fail("Exception thrown while creating XDTMC");
@@ -120,12 +122,14 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testPrismDTMCTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
-		XMDP xmdp = createXMDP();
-		Policy policy = createPolicy();
+	public void testPrismDTMCTranslator()
+			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
+			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
+		XDTMC xdtmc = createXDTMC();
+
 		try {
-			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xmdp, policy, true);
+			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("DTMC Translation (with QAs):");
@@ -137,7 +141,7 @@ class MobileRobotTest {
 		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
 				| ActionNotFoundException | DiscriminantNotFoundException e) {
 			e.printStackTrace();
-			fail("Excpetion thrown while translating XDTMC to PRISM DTMC");
+			fail("Exception thrown while translating XDTMC to PRISM DTMC");
 		}
 	}
 
@@ -171,14 +175,13 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testPrismExplicitDTMCPropertyQuery() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+	public void testPrismExplicitDTMCPropertyQuery() {
 		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 		String staInputFilename = "adv.sta";
 		String traInputFilename = "adv.tra";
 		String labInputFilename = "adv.lab";
-		String srewInputFilename = "adv2.srew";
+		String srewInputFilename = "adv1.srew";
 
 		try {
 			PrismConnector connector = new PrismConnector(outputPath);
@@ -187,6 +190,32 @@ class MobileRobotTest {
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
 			System.out.print("Expected total value of adversary: ");
+			System.out.println(result);
+			System.out.println();
+		} catch (PrismException | ResultParsingException e) {
+			e.printStackTrace();
+			fail("Exception thrown while PRISM model checking DTCM property");
+		}
+	}
+
+	@Test
+	public void testPrismDTMCPropertyQuery()
+			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
+			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
+		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
+
+		XDTMC xdtmc = createXDTMC();
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
+
+		try {
+			PrismConnector connector = new PrismConnector(outputPath);
+			double result = connector.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
+			System.out.print("Query property: ");
+			System.out.println(timeQuery);
+			System.out.print("Expected total time: ");
 			System.out.println(result);
 			System.out.println();
 		} catch (PrismException | ResultParsingException e) {

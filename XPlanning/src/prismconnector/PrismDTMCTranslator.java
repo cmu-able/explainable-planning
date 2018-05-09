@@ -30,7 +30,6 @@ import mdp.State;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
-import policy.Policy;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
@@ -39,16 +38,13 @@ public class PrismDTMCTranslator {
 	private PrismTranslatorUtilities mUtilities;
 	private PrismRewardTranslatorUtilities mRewardUtilities;
 
-	public PrismDTMCTranslator(XMDP xmdp, Policy policy, boolean threeParamRewards)
-			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException {
-		mXDTMC = new XDTMC(xmdp, policy);
+	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards) {
+		mXDTMC = xdtmc;
 		ValueEncodingScheme encodings;
 		if (threeParamRewards) {
-			encodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
+			encodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace(), xdtmc.getXMDP().getActionSpace());
 		} else {
-			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
+			encodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
 		}
 		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
 		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);

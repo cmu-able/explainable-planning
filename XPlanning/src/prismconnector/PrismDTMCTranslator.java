@@ -108,21 +108,32 @@ public class PrismDTMCTranslator {
 
 	/**
 	 * 
-	 * @param qFunction
-	 *            : QA function
-	 * @return Reward structure representing the QA function
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws ActionNotFoundException
+	 * @return Prism model of this DTMC, including constants' declarations, DTMC model, and reward structure(s)
+	 *         representing the QA function(s).
 	 * @throws VarNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
 	 * @throws IncompatibleVarException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws ActionDefinitionNotFoundException
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
-	public String getRewardsTranslation(IQFunction qFunction)
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getDTMCTranslationWithQAs() throws VarNotFoundException, EffectClassNotFoundException,
+			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
+			DiscriminantNotFoundException, AttributeNameNotFoundException {
 		TransitionFunction transFunction = mXDTMC.getXMDP().getTransitionFunction();
-		return mRewardUtilities.buildRewardStructure(transFunction, qFunction);
+		Set<IQFunction> qFunctions = mXDTMC.getXMDP().getQFunctions();
+		String dtmcTranslation = getDTMCTranslation();
+		String qasRewards = mRewardUtilities.buildRewardStructures(transFunction, qFunctions);
+		StringBuilder builder = new StringBuilder();
+		builder.append(dtmcTranslation);
+		builder.append("\n\n");
+		builder.append(qasRewards);
+		return builder.toString();
 	}
 
 	/**

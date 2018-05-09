@@ -87,38 +87,33 @@ public class PrismMDPTranslator {
 		return builder.toString();
 	}
 
+	/**
+	 * 
+	 * @return Prism model of this MDP, including constants' declarations, MDP model, reward structure representing the
+	 *         cost function, and reward structure(s) representing the QA function(s).
+	 * @throws VarNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws ActionDefinitionNotFoundException
+	 */
 	public String getMDPTranslationWithQAs() throws VarNotFoundException, EffectClassNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
-		StringBuilder builder = new StringBuilder();
+		TransitionFunction transFunction = mXMDP.getTransitionFunction();
+		Set<IQFunction> qFunctions = mXMDP.getQFunctions();
 		String mdpTranslation = getMDPTranslation();
-		String qasRewards = getQAsRewardsTranslation();
+		String qasRewards = mRewardUtilities.buildRewardStructures(transFunction, qFunctions);
+		StringBuilder builder = new StringBuilder();
 		builder.append(mdpTranslation);
 		builder.append("\n\n");
 		builder.append(qasRewards);
-		return builder.toString();
-	}
-
-	public String getQAsRewardsTranslation()
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
-		TransitionFunction transFunction = mXMDP.getTransitionFunction();
-		StringBuilder builder = new StringBuilder();
-		builder.append("// All Quality-Attribute Functions\n\n");
-		boolean first = true;
-		for (IQFunction qFunction : mXMDP.getQFunctions()) {
-			if (!first) {
-				builder.append("\n\n");
-			} else {
-				first = false;
-			}
-			builder.append("// ");
-			builder.append(qFunction.getName());
-			builder.append("\n\n");
-			String rewards = mRewardUtilities.buildRewardStructure(transFunction, qFunction);
-			builder.append(rewards);
-		}
 		return builder.toString();
 	}
 

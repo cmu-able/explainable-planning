@@ -43,6 +43,42 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
+	 * Build a list of state-based reward structures for a given set of QA functions.
+	 * 
+	 * @param transFunction
+	 *            : Transition function of MDP
+	 * @param qFunctions
+	 *            : QA functions
+	 * @return Reward structures for the QA functions
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
+	String buildRewardStructures(TransitionFunction transFunction, Set<IQFunction> qFunctions)
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("// Quality-Attribute Functions\n\n");
+		boolean first = true;
+		for (IQFunction qFunction : qFunctions) {
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
+			builder.append("// ");
+			builder.append(qFunction.getName());
+			builder.append("\n\n");
+			String rewards = buildRewardStructure(transFunction, qFunction);
+			builder.append(rewards);
+		}
+		return builder.toString();
+	}
+
+	/**
 	 * Build a state-based reward structure for a given cost function of MDP.
 	 * 
 	 * @param transFunction

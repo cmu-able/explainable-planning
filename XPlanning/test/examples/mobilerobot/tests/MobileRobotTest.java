@@ -126,14 +126,10 @@ class MobileRobotTest {
 		Policy policy = createPolicy();
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xmdp, policy, true);
-			String dtmcTranslation = dtmcTranslator.getDTMCTranslation();
-			String timeFunctionTranslation = dtmcTranslator.getRewardsTranslation(timeQFunction);
+			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
-			System.out.println("DTMC Translation:");
-			System.out.println(dtmcTranslation);
-			System.out.println();
-			System.out.println("Time Function Translation:");
-			System.out.println(timeFunctionTranslation);
+			System.out.println("DTMC Translation (with QAs):");
+			System.out.println(dtmcWithQAs);
 			System.out.println();
 			System.out.println("Time Query Property Translation:");
 			System.out.println(timeQueryTranslation);

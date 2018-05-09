@@ -57,7 +57,7 @@ rewards "cost"
   compute_cost : 0.01;
 endrewards
 
-// All Quality-Attribute Functions
+// Quality-Attribute Functions
 
 // travelTime
 

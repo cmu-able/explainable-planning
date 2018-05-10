@@ -156,6 +156,8 @@ class MobileRobotTest {
 		String traOutputFilename = "adv.tra";
 		String labOutputFilename = "adv.lab";
 		String srewOutputFilename = "adv.srew";
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
+				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename, 2);
 
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
@@ -163,9 +165,8 @@ class MobileRobotTest {
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
 		try {
-			PrismAPIWrapper connector = new PrismAPIWrapper();
-			double totalCost = connector.generateMDPAdversary(mdpWithQAs, goalProperty, outputPath, staOutputFilename,
-					traOutputFilename, labOutputFilename, srewOutputFilename);
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
 			System.out.println();
@@ -187,9 +188,9 @@ class MobileRobotTest {
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
 		try {
-			PrismAPIWrapper connector = new PrismAPIWrapper();
-			double totalCost = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
-			double totalTime = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			double totalCost = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
+			double totalTime = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
 			System.out.print("Expected total cost of adversary: ");
@@ -214,8 +215,8 @@ class MobileRobotTest {
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
 		try {
-			PrismAPIWrapper connector = new PrismAPIWrapper();
-			double result = connector.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);
 			System.out.print("Expected total time: ");

@@ -69,25 +69,30 @@ public class PrismAPIWrapper {
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
 	 */
-	public double generateMDPAdversary(String mdpStr, String propertyStr, String outputPath, String staOutputFilename,
-			String traOutputFilename, String labOutputFilename, String srewOutputFilename)
+	public double generateMDPAdversary(String mdpStr, String propertyStr,
+			PrismExplicitModelPointer outputExplicitModelPointer)
 			throws PrismException, FileNotFoundException, ResultParsingException {
+		File staOutputFile = outputExplicitModelPointer.getStatesFile();
+		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
+		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
+		File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
+
 		// Parse and load a PRISM MDP model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(mdpStr, ModelType.MDP);
 		mPrism.loadPRISMModel(modulesFile);
 
 		// Export the states of the model to a file
-		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, new File(outputPath, staOutputFilename));
+		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, staOutputFile);
 
 		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
-		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, new File(outputPath, labOutputFilename));
+		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, labOutputFile);
 
 		// Export the reward structure to a file
-		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, new File(outputPath, srewOutputFilename));
+		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
-		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, outputPath + "/" + traOutputFilename);
+		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, traOutputFile.getPath());
 
 		// Select PRISM engine
 		// Engines by index: 0 -> MTBDD, 1 -> Sparse, 2 -> Hybrid, 3 -> Explicit
@@ -114,7 +119,7 @@ public class PrismAPIWrapper {
 		File staFile = explicitModelPointer.getStatesFile();
 		File traFile = explicitModelPointer.getTransitionsFile();
 		File labFile = explicitModelPointer.getLabelsFile();
-		File srewFile = explicitModelPointer.getStateRewardsFile(rewardStructIndex);
+		File srewFile = explicitModelPointer.getIndexedStateRewardsFile(rewardStructIndex);
 
 		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
 		// -- important!)

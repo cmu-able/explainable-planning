@@ -2,6 +2,10 @@ package prismconnector;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +50,7 @@ public class PrismConnector {
 	private void terminatePrism() {
 		// Close down PRISM
 		// NoClassDefFoundError: edu/jas/kern/ComputerThreads
-		mPrism.closeDown();
+		// mPrism.closeDown();
 	}
 
 	/**
@@ -81,9 +85,6 @@ public class PrismConnector {
 		// Export the reward structure to a file
 		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, new File(outputPath, srewOutputFilename));
 
-		// Parse and load property from a property string
-		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
-
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, outputPath + "/" + traOutputFilename);
@@ -93,21 +94,9 @@ public class PrismConnector {
 		// According to: https://github.com/prismmodelchecker/prism/blob/master/prism/src/prism/PrismSettings.java
 		mPrism.getSettings().set(PrismSettings.PRISM_ENGINE, "Explicit");
 
-		// Model check the first property
-		Property property = propertiesFile.getPropertyObject(0);
-		Result result = mPrism.modelCheck(propertiesFile, property);
-
-		String resultStr = result.getResultString();
-		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
-		Matcher m = p.matcher(resultStr);
-
-		if (m.find()) {
-			return Double.parseDouble(m.group(0));
-		}
-
-		// terminatePrism();
-
-		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
+		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
+		terminatePrism();
+		return result;
 	}
 
 	/**
@@ -136,24 +125,34 @@ public class PrismConnector {
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
-		// Parse and load property from a property string
-		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
+		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
+		terminatePrism();
+		return result;
+	}
 
-		// Model check the first property
-		Property property = propertiesFile.getPropertyObject(0);
-		Result result = mPrism.modelCheck(propertiesFile, property);
-
-		String resultStr = result.getResultString();
-		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
-		Matcher m = p.matcher(resultStr);
-
-		if (m.find()) {
-			return Double.parseDouble(m.group(0));
+	/**
+	 * Query multiple quantitative properties of a DTMC -- from the explicit model files.
+	 * 
+	 * @param rawRewardPropertyStr
+	 * @param inputPath
+	 * @param staInputFilename
+	 * @param traInputFilename
+	 * @param labInputFilename
+	 * @param srewInputFilenames
+	 * @return List of the results in the order of the .srew input filenames
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
+	public List<Double> queryPropertiesFromExplicitDTMC(String rawRewardPropertyStr, String inputPath,
+			String staInputFilename, String traInputFilename, String labInputFilename, List<String> srewInputFilenames)
+			throws PrismException, ResultParsingException {
+		List<Double> results = new ArrayList<>();
+		for (String srewInputFilename : srewInputFilenames) {
+			double result = queryPropertyFromExplicitDTMC(rawRewardPropertyStr, inputPath, staInputFilename,
+					traInputFilename, labInputFilename, srewInputFilename);
+			results.add(result);
 		}
-
-		// terminatePrism();
-
-		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
+		return results;
 	}
 
 	/**
@@ -171,13 +170,65 @@ public class PrismConnector {
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
 
-		// Parse and load property from a property string
-		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertyStr);
+		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
+		terminatePrism();
+		return result;
+	}
 
-		// Model check the first property
-		Property property = propertiesFile.getPropertyObject(0);
+	/**
+	 * Query multiple quantitative properties of a DTMC -- from the model and properties strings.
+	 * 
+	 * @param dtmcModelStr
+	 * @param propertiesStr
+	 * @return Mapping from each property to the result
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
+	public Map<String, Double> queryPropertiesFromDTMC(String dtmcModelStr, String propertiesStr)
+			throws PrismException, ResultParsingException {
+		// Parse and load a PRISM DTMC model from a model string
+		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
+		mPrism.loadPRISMModel(modulesFile);
+
+		Map<String, Double> results = queryPropertiesHelper(modulesFile, propertiesStr);
+		terminatePrism();
+		return results;
+	}
+
+	private Map<String, Double> queryPropertiesHelper(ModulesFile modulesFile, String propertiesStr)
+			throws PrismException, ResultParsingException {
+		// Parse and load property from a property string
+		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertiesStr);
+
+		// Get number of properties
+		int numProperties = propertiesFile.getNumProperties();
+
+		Map<String, Double> results = new HashMap<>();
+
+		// Query result of each property
+		for (int i = 0; i < numProperties; i++) {
+			String propertyStr = propertiesFile.getPropertyObject(i).toString();
+			double result = queryPropertyHelper(propertiesFile, i);
+			results.put(propertyStr, result);
+		}
+
+		return results;
+	}
+
+	private double queryPropertyHelper(ModulesFile modulesFile, String propertiesStr, int propertyIndex)
+			throws PrismException, ResultParsingException {
+		// Parse and load property from a property string
+		PropertiesFile propertiesFile = mPrism.parsePropertiesString(modulesFile, propertiesStr);
+		return queryPropertyHelper(propertiesFile, propertyIndex);
+	}
+
+	private double queryPropertyHelper(PropertiesFile propertiesFile, int propertyIndex)
+			throws PrismException, ResultParsingException {
+		// Model check the property at the given index
+		Property property = propertiesFile.getPropertyObject(propertyIndex);
 		Result result = mPrism.modelCheck(propertiesFile, property);
 
+		// Parse result double from result string
 		String resultStr = result.getResultString();
 		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
 		Matcher m = p.matcher(resultStr);
@@ -185,9 +236,6 @@ public class PrismConnector {
 		if (m.find()) {
 			return Double.parseDouble(m.group(0));
 		}
-
-		// terminatePrism();
-
 		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
 	}
 }

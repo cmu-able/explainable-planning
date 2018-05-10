@@ -48,6 +48,7 @@ import preferences.CostFunction;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismDTMCTranslator;
+import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismMDPTranslator;
 
 class MobileRobotTest {
@@ -176,21 +177,25 @@ class MobileRobotTest {
 
 	@Test
 	public void testPrismExplicitDTMCPropertyQuery() {
-		String inputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
+		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
+		String staFilename = "adv.sta";
+		String traFilename = "adv.tra";
+		String labFilename = "adv.lab";
+		String srewFilename = "adv.srew";
+		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath, staFilename,
+				traFilename, labFilename, srewFilename, 2);
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
-		String staInputFilename = "adv.sta";
-		String traInputFilename = "adv.tra";
-		String labInputFilename = "adv.lab";
-		String srewInputFilename = "adv1.srew";
 
 		try {
 			PrismConnector connector = new PrismConnector();
-			double result = connector.queryPropertyFromExplicitDTMC(propertyStr, inputPath, staInputFilename,
-					traInputFilename, labInputFilename, srewInputFilename);
+			double totalCost = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
+			double totalTime = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
-			System.out.print("Expected total value of adversary: ");
-			System.out.println(result);
+			System.out.print("Expected total cost of adversary: ");
+			System.out.println(totalCost);
+			System.out.print("Expected total time of adversary: ");
+			System.out.println(totalTime);
 			System.out.println();
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();

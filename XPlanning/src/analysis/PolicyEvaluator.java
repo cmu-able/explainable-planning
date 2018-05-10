@@ -19,6 +19,7 @@ import policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismDTMCTranslator;
+import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismPropertyTranslator;
 import prismconnector.ValueEncodingScheme;
 
@@ -44,17 +45,12 @@ public class PolicyEvaluator {
 		return mConnector.queryPropertyFromDTMC(dtmcWithQAs, queryProperty);
 	}
 
-	public double evaluatePolicyFromExplicitDTMC(String inputPath, String staInputFilename, String traInputFilename,
-			String labInputFilename, String srewFilename, IQFunction qFunction, ValueEncodingScheme encodings,
-			boolean threeParamRewards)
+	public double evaluatePolicyFromExplicitDTMC(PrismExplicitModelPointer explicitModelPointer, IQFunction qFunction,
+			ValueEncodingScheme encodings, boolean threeParamRewards)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
 		PrismPropertyTranslator propertyTranslator = new PrismPropertyTranslator(encodings, threeParamRewards);
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
-		Integer rewardIndex = encodings.getRewardStructureIndex(qFunction);
-		int extensionIndex = srewFilename.indexOf(".srew");
-		String srewName = srewFilename.substring(0, extensionIndex);
-		String srewInputFilename = srewName + rewardIndex + ".srew";
-		return mConnector.queryPropertyFromExplicitDTMC(rawRewardQuery, inputPath, staInputFilename, traInputFilename,
-				labInputFilename, srewInputFilename);
+		Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
+		return mConnector.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitModelPointer, rewardStructIndex);
 	}
 }

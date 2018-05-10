@@ -103,22 +103,18 @@ public class PrismConnector {
 	 * Query quantitative property of a DTMC -- from the explicit model files.
 	 * 
 	 * @param propertyStr
-	 * @param inputPath
-	 * @param staInputFilename
-	 * @param traInputFilename
-	 * @param labInputFilename
-	 * @param srewInputFilename
+	 * @param explicitModelPointer
+	 * @param rewardStructIndex
 	 * @return Quantitative result of the given query property of the DTMC
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromExplicitDTMC(String propertyStr, String inputPath, String staInputFilename,
-			String traInputFilename, String labInputFilename, String srewInputFilename)
-			throws PrismException, ResultParsingException {
-		File staFile = new File(inputPath, staInputFilename);
-		File traFile = new File(inputPath, traInputFilename);
-		File labFile = new File(inputPath, labInputFilename);
-		File srewFile = new File(inputPath, srewInputFilename);
+	public double queryPropertyFromExplicitDTMC(String propertyStr, PrismExplicitModelPointer explicitModelPointer,
+			int rewardStructIndex) throws PrismException, ResultParsingException {
+		File staFile = explicitModelPointer.getStatesFile();
+		File traFile = explicitModelPointer.getTransitionsFile();
+		File labFile = explicitModelPointer.getLabelsFile();
+		File srewFile = explicitModelPointer.getStateRewardsFile(rewardStructIndex);
 
 		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
 		// -- important!)
@@ -134,22 +130,16 @@ public class PrismConnector {
 	 * Query multiple quantitative properties of a DTMC -- from the explicit model files.
 	 * 
 	 * @param rawRewardPropertyStr
-	 * @param inputPath
-	 * @param staInputFilename
-	 * @param traInputFilename
-	 * @param labInputFilename
-	 * @param srewInputFilenames
+	 * @param explicitModelPointer
 	 * @return List of the results in the order of the .srew input filenames
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public List<Double> queryPropertiesFromExplicitDTMC(String rawRewardPropertyStr, String inputPath,
-			String staInputFilename, String traInputFilename, String labInputFilename, List<String> srewInputFilenames)
-			throws PrismException, ResultParsingException {
+	public List<Double> queryPropertiesFromExplicitDTMC(String rawRewardPropertyStr,
+			PrismExplicitModelPointer explicitModelPointer) throws PrismException, ResultParsingException {
 		List<Double> results = new ArrayList<>();
-		for (String srewInputFilename : srewInputFilenames) {
-			double result = queryPropertyFromExplicitDTMC(rawRewardPropertyStr, inputPath, staInputFilename,
-					traInputFilename, labInputFilename, srewInputFilename);
+		for (int i = 1; i <= explicitModelPointer.getNumRewardStructs(); i++) {
+			double result = queryPropertyFromExplicitDTMC(rawRewardPropertyStr, explicitModelPointer, i);
 			results.add(result);
 		}
 		return results;

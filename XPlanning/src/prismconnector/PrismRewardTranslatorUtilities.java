@@ -73,6 +73,9 @@ public class PrismRewardTranslatorUtilities {
 			builder.append("\n\n");
 			String rewards = buildRewardStructure(transFunction, qFunction);
 			builder.append(rewards);
+
+			// Record the index of each reward structure built to represent each QA function
+			mEncodings.appendQFunction(qFunction);
 		}
 		return builder.toString();
 	}

@@ -10,6 +10,7 @@ import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import mdp.XMDP;
@@ -44,11 +45,15 @@ public class PolicyEvaluator {
 	}
 
 	public double evaluatePolicyFromExplicitDTMC(String inputPath, String staInputFilename, String traInputFilename,
-			String labInputFilename, String srewInputFilename, IQFunction qFunction, ValueEncodingScheme encodings,
-			boolean threeParamRewards) throws VarNotFoundException, PrismException, ResultParsingException {
+			String labInputFilename, String srewFilename, IQFunction qFunction, ValueEncodingScheme encodings,
+			boolean threeParamRewards)
+			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
 		PrismPropertyTranslator propertyTranslator = new PrismPropertyTranslator(encodings, threeParamRewards);
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
-		// TODO
+		Integer rewardIndex = encodings.getRewardStructureIndex(qFunction);
+		int extensionIndex = srewFilename.indexOf(".srew");
+		String srewName = srewFilename.substring(0, extensionIndex);
+		String srewInputFilename = srewName + rewardIndex + ".srew";
 		return mConnector.queryPropertyFromExplicitDTMC(rawRewardQuery, inputPath, staInputFilename, traInputFilename,
 				labInputFilename, srewInputFilename);
 	}

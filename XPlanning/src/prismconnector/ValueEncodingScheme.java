@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
+import exceptions.QFunctionNotFoundException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -14,6 +15,7 @@ import factors.IStateVarValue;
 import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.StateSpace;
+import metrics.IQFunction;
 
 /**
  * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's
@@ -31,6 +33,7 @@ public class ValueEncodingScheme {
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
+	private Map<IQFunction, Integer> mQFunctionIndexing = new HashMap<>();
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
 
@@ -69,6 +72,10 @@ public class ValueEncodingScheme {
 			e++;
 		}
 		return encoding;
+	}
+
+	public void appendQFunction(IQFunction qFunction) {
+		mQFunctionIndexing.put(qFunction, mQFunctionIndexing.size() + 1);
 	}
 
 	public StateSpace getStateSpace() {
@@ -126,6 +133,13 @@ public class ValueEncodingScheme {
 			}
 		}
 		throw new VarNotFoundException(stateVarName);
+	}
+
+	public Integer getRewardStructureIndex(IQFunction qFunction) throws QFunctionNotFoundException {
+		if (!mQFunctionIndexing.containsKey(qFunction)) {
+			throw new QFunctionNotFoundException(qFunction);
+		}
+		return mQFunctionIndexing.get(qFunction);
 	}
 
 	@Override

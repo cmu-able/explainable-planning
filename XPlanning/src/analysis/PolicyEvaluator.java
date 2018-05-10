@@ -17,7 +17,7 @@ import mdp.XMDP;
 import metrics.IQFunction;
 import policy.Policy;
 import prism.PrismException;
-import prismconnector.PrismConnector;
+import prismconnector.PrismAPIWrapper;
 import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismPropertyTranslator;
@@ -26,11 +26,11 @@ import prismconnector.ValueEncodingScheme;
 public class PolicyEvaluator {
 
 	private XMDP mXMDP;
-	private PrismConnector mConnector;
+	private PrismAPIWrapper mConnector;
 
 	public PolicyEvaluator(XMDP xmdp) throws PrismException {
 		mXMDP = xmdp;
-		mConnector = new PrismConnector();
+		mConnector = new PrismAPIWrapper();
 	}
 
 	public double evaluatePolicy(Policy policy, IQFunction qFunction)

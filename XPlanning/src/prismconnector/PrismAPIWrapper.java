@@ -28,13 +28,13 @@ import prism.Result;
  * @author rsukkerd
  *
  */
-public class PrismConnector {
+public class PrismAPIWrapper {
 
 	private static final String FLOATING_POINT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
 
 	private Prism mPrism;
 
-	public PrismConnector() throws PrismException {
+	public PrismAPIWrapper() throws PrismException {
 		initializePrism();
 	}
 

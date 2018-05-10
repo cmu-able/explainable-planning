@@ -46,7 +46,7 @@ import policy.Policy;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
 import prism.PrismException;
-import prismconnector.PrismConnector;
+import prismconnector.PrismAPIWrapper;
 import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismMDPTranslator;
@@ -163,7 +163,7 @@ class MobileRobotTest {
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
 		try {
-			PrismConnector connector = new PrismConnector();
+			PrismAPIWrapper connector = new PrismAPIWrapper();
 			double totalCost = connector.generateMDPAdversary(mdpWithQAs, goalProperty, outputPath, staOutputFilename,
 					traOutputFilename, labOutputFilename, srewOutputFilename);
 			System.out.print("Expected total cost of adversary: ");
@@ -187,7 +187,7 @@ class MobileRobotTest {
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
 		try {
-			PrismConnector connector = new PrismConnector();
+			PrismAPIWrapper connector = new PrismAPIWrapper();
 			double totalCost = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
 			double totalTime = connector.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
 			System.out.print("Query property: ");
@@ -214,7 +214,7 @@ class MobileRobotTest {
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
 		try {
-			PrismConnector connector = new PrismConnector();
+			PrismAPIWrapper connector = new PrismAPIWrapper();
 			double result = connector.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);

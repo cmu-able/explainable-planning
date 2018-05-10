@@ -79,11 +79,6 @@ public class PrismExplicitModelReader {
 		return indices;
 	}
 
-	private boolean isSpecialVariable(String varName) {
-		return varName.endsWith(PrismTranslatorUtilities.SRC_SUFFIX) || varName.equals("action")
-				|| varName.equals("readyToCopy");
-	}
-
 	/**
 	 * 
 	 * @param traFilename
@@ -114,7 +109,7 @@ public class PrismExplicitModelReader {
 		return policy;
 	}
 
-	public List<String> readLinesFromFile(String filename) throws IOException {
+	private List<String> readLinesFromFile(String filename) throws IOException {
 		List<String> lines = new ArrayList<>();
 		File file = new File(mModelPath, filename);
 
@@ -126,5 +121,10 @@ public class PrismExplicitModelReader {
 			}
 		}
 		return lines;
+	}
+
+	private boolean isSpecialVariable(String varName) {
+		return varName.endsWith(PrismTranslatorUtilities.SRC_SUFFIX) || varName.equals("action")
+				|| varName.equals("readyToCopy");
 	}
 }

@@ -26,21 +26,25 @@ import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 public class PrismMDPTranslator {
 
 	private XMDP mXMDP;
+	private ValueEncodingScheme mEncodings;
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorUtilities mUtilities;
 	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
 		mXMDP = xmdp;
-		ValueEncodingScheme encodings;
 		if (threeParamRewards) {
-			encodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
 		} else {
-			encodings = new ValueEncodingScheme(xmdp.getStateSpace());
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
-		mPropertyTranslator = new PrismPropertyTranslator(encodings, threeParamRewards);
-		mUtilities = new PrismTranslatorUtilities(encodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards);
+		mPropertyTranslator = new PrismPropertyTranslator(mEncodings, threeParamRewards);
+		mUtilities = new PrismTranslatorUtilities(mEncodings, threeParamRewards);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards);
+	}
+
+	public ValueEncodingScheme getValueEncodingScheme() {
+		return mEncodings;
 	}
 
 	/**

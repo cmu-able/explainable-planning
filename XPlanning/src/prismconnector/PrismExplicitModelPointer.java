@@ -15,7 +15,8 @@ public class PrismExplicitModelPointer {
 	private File mStaFile;
 	private File mTraFile;
 	private File mLabFile;
-	private List<File> mSrewFiles = new ArrayList<>();
+	private File mSrewFile;
+	private List<File> mIndexedSrewFiles = new ArrayList<>();
 
 	public PrismExplicitModelPointer(String modelPath, String staFilename, String traFilename, String labFilename,
 			String srewFilename, int numRewardStructs) {
@@ -23,14 +24,17 @@ public class PrismExplicitModelPointer {
 		mStaFile = new File(modelPath, staFilename);
 		mTraFile = new File(modelPath, traFilename);
 		mLabFile = new File(modelPath, labFilename);
-		for (int i = 1; i <= numRewardStructs; i++) {
-			int extensionIndex = srewFilename.indexOf(".srew");
-			String srewName = srewFilename.substring(0, extensionIndex);
-			String indexedSrewFilename = srewName + i + ".srew";
-			File srewFile = new File(modelPath, indexedSrewFilename);
-			mSrewFiles.add(srewFile);
-		}
+		mSrewFile = new File(modelPath, srewFilename);
 
+		if (numRewardStructs > 1) {
+			for (int i = 1; i <= numRewardStructs; i++) {
+				int extensionIndex = srewFilename.indexOf(".srew");
+				String srewName = srewFilename.substring(0, extensionIndex);
+				String indexedSrewFilename = srewName + i + ".srew";
+				File srewFile = new File(modelPath, indexedSrewFilename);
+				mIndexedSrewFiles.add(srewFile);
+			}
+		}
 	}
 
 	public String getExplicitModelPath() {
@@ -49,16 +53,20 @@ public class PrismExplicitModelPointer {
 		return mLabFile;
 	}
 
-	public List<File> getStateRewardsFiles() {
-		return mSrewFiles;
+	public File getStateRewardsFile() {
+		return mSrewFile;
 	}
 
-	public File getStateRewardsFile(int rewardStructIndex) {
-		return mSrewFiles.get(rewardStructIndex - 1);
+	public List<File> getIndexedStateRewardsFiles() {
+		return mIndexedSrewFiles;
+	}
+
+	public File getIndexedStateRewardsFile(int rewardStructIndex) {
+		return mIndexedSrewFiles.get(rewardStructIndex - 1);
 	}
 
 	public int getNumRewardStructs() {
-		return mSrewFiles.size();
+		return mIndexedSrewFiles.size();
 	}
 
 	@Override
@@ -72,7 +80,7 @@ public class PrismExplicitModelPointer {
 		PrismExplicitModelPointer pointer = (PrismExplicitModelPointer) obj;
 		return pointer.mModelPath.equals(mModelPath) && pointer.mStaFile.equals(mStaFile)
 				&& pointer.mTraFile.equals(mTraFile) && pointer.mLabFile.equals(mLabFile)
-				&& pointer.mSrewFiles.equals(mSrewFiles);
+				&& pointer.mSrewFile.equals(mSrewFile) && pointer.mIndexedSrewFiles.equals(mIndexedSrewFiles);
 	}
 
 	@Override
@@ -84,7 +92,8 @@ public class PrismExplicitModelPointer {
 			result = 31 * result + mStaFile.hashCode();
 			result = 31 * result + mTraFile.hashCode();
 			result = 31 * result + mLabFile.hashCode();
-			result = 31 * result + mSrewFiles.hashCode();
+			result = 31 * result + mSrewFile.hashCode();
+			result = 31 * result + mIndexedSrewFiles.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

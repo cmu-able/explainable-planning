@@ -1,7 +1,9 @@
 package prismconnector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,6 +28,9 @@ import metrics.IQFunction;
  */
 public class ValueEncodingScheme {
 
+	// Reward structure "cost" always has index 1 (if there are multiple reward structures)
+	private static final int START_REW_STRUCT_QA_INDEX = 2;
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -33,7 +38,7 @@ public class ValueEncodingScheme {
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
-	private Map<IQFunction, Integer> mQFunctionIndexing = new HashMap<>();
+	private List<IQFunction> mIndexedQFunctions = new ArrayList<>();
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
 
@@ -74,8 +79,8 @@ public class ValueEncodingScheme {
 		return encoding;
 	}
 
-	public void appendQFunction(IQFunction qFunction) {
-		mQFunctionIndexing.put(qFunction, mQFunctionIndexing.size() + 1);
+	void appendQFunction(IQFunction qFunction) {
+		mIndexedQFunctions.add(qFunction);
 	}
 
 	public StateSpace getStateSpace() {
@@ -136,10 +141,10 @@ public class ValueEncodingScheme {
 	}
 
 	public Integer getRewardStructureIndex(IQFunction qFunction) throws QFunctionNotFoundException {
-		if (!mQFunctionIndexing.containsKey(qFunction)) {
+		if (!mIndexedQFunctions.contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}
-		return mQFunctionIndexing.get(qFunction);
+		return mIndexedQFunctions.indexOf(qFunction) + START_REW_STRUCT_QA_INDEX;
 	}
 
 	@Override

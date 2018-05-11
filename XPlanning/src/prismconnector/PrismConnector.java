@@ -26,6 +26,11 @@ import prism.PrismException;
 
 public class PrismConnector {
 
+	private static final String STA_OUTPUT_FILENAME = "adv.sta";
+	private static final String TRA_OUTPUT_FILENAME = "adv.tra";
+	private static final String LAB_OUTPUT_FILENAME = "adv.lab";
+	private static final String SREW_OUTPUT_FILENAME = "adv.srew";
+
 	private XMDP mXMDP;
 	private PrismAPIWrapper mPrismAPI;
 	private Map<Policy, Double> mCachedTotalCosts = new HashMap<>();
@@ -36,7 +41,7 @@ public class PrismConnector {
 		mPrismAPI = new PrismAPIWrapper();
 	}
 
-	public Policy generateOptimalPolicy(XMDP xmdp)
+	public Policy generateOptimalPolicy(XMDP xmdp, String outputPath)
 			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException,
 			IncompatibleVarException, DiscriminantNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
@@ -45,23 +50,18 @@ public class PrismConnector {
 		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
-		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/output";
-		String staOutputFilename = "adv.sta";
-		String traOutputFilename = "adv.tra";
-		String labOutputFilename = "adv.lab";
-		String srewOutputFilename = "adv.srew";
 		// Reward structures include 1 for the cost function and 1 for each of the QA functions
 		// Because mdpTranslator.getMDPTranslationWithQAs() is used
 		int numRewardStructs = xmdp.getQFunctions().size() + 1;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename, numRewardStructs);
+				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME, numRewardStructs);
 
 		double totalCost = mPrismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
 				mdpTranslator.getValueEncodingScheme(), outputPath);
-		Map<Integer, State> stateIndices = explicitModelReader.readStatesFromFile(staOutputFilename);
-		Policy policy = explicitModelReader.readPolicyFromFile(traOutputFilename, stateIndices);
+		Map<Integer, State> stateIndices = explicitModelReader.readStatesFromFile(STA_OUTPUT_FILENAME);
+		Policy policy = explicitModelReader.readPolicyFromFile(TRA_OUTPUT_FILENAME, stateIndices);
 
 		// Cache the expected total cost of the policy
 		mCachedTotalCosts.put(policy, totalCost);

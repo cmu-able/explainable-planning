@@ -1,0 +1,2 @@
+multi(R{"cost"}min=? [ C ], R{"travelTime"}<=14.30 [ C ], P>=1 [ F "goal" ])
+

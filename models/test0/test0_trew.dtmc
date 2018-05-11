@@ -1,0 +1,55 @@
+dtmc
+
+// Possible values of rLoc
+const int rLoc_L2 = 0;
+const int rLoc_L1 = 1;
+
+// Possible values of rSpeed
+const int rSpeed_0_35 = 0;
+const int rSpeed_0_7 = 1;
+
+// Possible instances of action moveTo
+const int moveToL1 = 0;
+const int moveToL2 = 1;
+
+// Possible instances of action setSpeed
+const int setSpeed0_35 = 2;
+const int setSpeed0_7 = 3;
+
+
+module module_1
+  rLoc : [0..1] init 1;
+
+  // moveTo
+  [moveToL1] rLoc=0 -> 1.0:(rLoc'=1);
+  [moveToL2] rLoc=1 & rSpeed=0 -> 1.0:(rLoc'=0);
+endmodule
+
+module module_2
+  rSpeed : [0..1] init 0;
+
+
+endmodule
+
+module helper
+  rLocSrc : [0..1] init 1;
+  rSpeedSrc : [0..1] init 0;
+  action : [-1..3] init -1;
+  readyToCopy : bool init true;
+
+  [moveToL1] readyToCopy -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false);
+  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false);
+
+  [compute] !readyToCopy -> (readyToCopy'=true);
+endmodule
+
+// Quality-Attribute Functions
+
+// travelTime
+
+rewards "travelTime"
+  [compute] action=0 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
+  [compute] action=0 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
+  [compute] action=1 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
+  [compute] action=1 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
+endrewards

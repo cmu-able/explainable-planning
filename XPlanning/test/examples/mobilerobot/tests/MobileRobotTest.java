@@ -50,6 +50,7 @@ import prismconnector.PrismAPIWrapper;
 import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismMDPTranslator;
+import prismconnector.PrismRewardType;
 
 class MobileRobotTest {
 
@@ -87,10 +88,34 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testPrismMDPTranslator() throws AttributeNameNotFoundException, IncompatibleVarException,
+	public void testPrismMDPTranslatorStateReward() throws AttributeNameNotFoundException, IncompatibleVarException,
 			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
 		XMDP xmdp = createXMDP();
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+
+		try {
+			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+			System.out.println("MDP Translation (with QAs):");
+			System.out.println(mdpWithQAs);
+			System.out.println();
+			System.out.println("Goal Property Translation:");
+			System.out.println(goalProperty);
+			System.out.println();
+		} catch (VarNotFoundException | EffectClassNotFoundException | AttributeNameNotFoundException
+				| IncompatibleVarException | DiscriminantNotFoundException | ActionNotFoundException
+				| ActionDefinitionNotFoundException e) {
+			e.printStackTrace();
+			fail("Exception thrown while translating XMDP to PRISM MDP");
+		}
+	}
+
+	@Test
+	public void testPrismMDPTranslatorTransitionReward()
+			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException {
+		XMDP xmdp = createXMDP();
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.TRANSITION_REWARD);
 
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
@@ -123,14 +148,39 @@ class MobileRobotTest {
 	}
 
 	@Test
-	public void testPrismDTMCTranslator()
+	public void testPrismDTMCTranslatorStateReward()
 			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
 			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
 		XDTMC xdtmc = createXDTMC();
 
 		try {
-			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
+			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
+			System.out.println("DTMC Translation (with QAs):");
+			System.out.println(dtmcWithQAs);
+			System.out.println();
+			System.out.println("Time Query Property Translation:");
+			System.out.println(timeQueryTranslation);
+			System.out.println();
+		} catch (ActionDefinitionNotFoundException | EffectClassNotFoundException | VarNotFoundException
+				| ActionNotFoundException | DiscriminantNotFoundException e) {
+			e.printStackTrace();
+			fail("Exception thrown while translating XDTMC to PRISM DTMC");
+		}
+	}
+
+	@Test
+	public void testPrismDTMCTranslatorTransitionReward()
+			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
+			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
+		XDTMC xdtmc = createXDTMC();
+
+		try {
+			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
+					PrismRewardType.TRANSITION_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("DTMC Translation (with QAs):");
@@ -160,7 +210,7 @@ class MobileRobotTest {
 				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename, 2);
 
 		XMDP xmdp = createXMDP();
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
@@ -210,7 +260,7 @@ class MobileRobotTest {
 			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
 			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
 		XDTMC xdtmc = createXDTMC();
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 

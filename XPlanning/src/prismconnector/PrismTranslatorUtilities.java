@@ -190,7 +190,7 @@ public class PrismTranslatorUtilities {
 				builder.append("\n");
 			}
 		}
-		String nextCmd = "[next] !readyToCopy -> (readyToCopy'=true);";
+		String nextCmd = "[compute] !readyToCopy -> (readyToCopy'=true);";
 		builder.append("\n");
 		builder.append(INDENT);
 		builder.append(nextCmd);

@@ -47,7 +47,7 @@ public class PrismConnector {
 			IncompatibleVarException, DiscriminantNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
 			ActionDefinitionNotFoundException, PrismException, ResultParsingException, IOException {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
@@ -87,7 +87,7 @@ public class PrismConnector {
 			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
 			AttributeNameNotFoundException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
 
 		Map<IQFunction, String> queryProperties = new HashMap<>();

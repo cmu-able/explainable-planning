@@ -31,7 +31,7 @@ public class PrismMDPTranslator {
 	private PrismTranslatorUtilities mUtilities;
 	private PrismRewardTranslatorUtilities mRewardUtilities;
 
-	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards) {
+	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXMDP = xmdp;
 		if (threeParamRewards) {
 			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace());
@@ -40,7 +40,7 @@ public class PrismMDPTranslator {
 		}
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings, threeParamRewards);
 		mUtilities = new PrismTranslatorUtilities(mEncodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards, prismRewardType);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {

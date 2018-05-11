@@ -35,10 +35,13 @@ public class PrismRewardTranslatorUtilities {
 
 	private ValueEncodingScheme mEncodings;
 	private boolean mThreeParamRewards;
+	private PrismRewardType mPrismRewardType;
 
-	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards) {
+	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards,
+			PrismRewardType prismRewardType) {
 		mEncodings = encodings;
 		mThreeParamRewards = threeParamRewards;
+		mPrismRewardType = prismRewardType;
 	}
 
 	/**
@@ -101,11 +104,14 @@ public class PrismRewardTranslatorUtilities {
 	String buildRewardStructure(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
-		String computeCostFormula = buildComputeRewardFormula(COST_STRUCTURE_NAME);
-
 		StringBuilder builder = new StringBuilder();
-		builder.append(computeCostFormula);
-		builder.append("\n\n");
+
+		if (mThreeParamRewards && mPrismRewardType == PrismRewardType.STATE_REWARD) {
+			String computeCostFormula = buildComputeRewardFormula(COST_STRUCTURE_NAME);
+			builder.append(computeCostFormula);
+			builder.append("\n\n");
+		}
+
 		builder.append("rewards \"");
 		builder.append(COST_STRUCTURE_NAME);
 		builder.append("\"\n");
@@ -168,7 +174,7 @@ public class PrismRewardTranslatorUtilities {
 
 		StringBuilder builder = new StringBuilder();
 
-		if (mThreeParamRewards) {
+		if (mThreeParamRewards && mPrismRewardType == PrismRewardType.STATE_REWARD) {
 			String computeQAFormula = buildComputeRewardFormula(rewardName);
 			builder.append(computeQAFormula);
 			builder.append("\n\n");
@@ -238,9 +244,15 @@ public class PrismRewardTranslatorUtilities {
 					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
-					builder.append("compute_");
-					builder.append(rewardName);
-					builder.append(" & ");
+
+					if (mPrismRewardType == PrismRewardType.STATE_REWARD) {
+						builder.append("compute_");
+						builder.append(rewardName);
+						builder.append(" & ");
+					} else if (mPrismRewardType == PrismRewardType.TRANSITION_REWARD) {
+						builder.append("[compute] ");
+					}
+
 					builder.append("action=");
 					builder.append(encodedActionValue);
 					builder.append(" & ");
@@ -264,11 +276,12 @@ public class PrismRewardTranslatorUtilities {
 	 * does not support "constructing a strategy for Rmin in the presence of zero-reward ECs".
 	 * 
 	 * @param value
-	 *            : Artificial reward value assigned to every "next" transition
+	 *            : Artificial reward value assigned to every "compute" transition
 	 * @return compute_cost : {value};
 	 */
 	String buildArtificialRewardItem(double value) {
-		return PrismTranslatorUtilities.INDENT + "compute_cost : " + value + ";";
+		String synchStr = mPrismRewardType == PrismRewardType.STATE_REWARD ? "compute_cost" : "[compute] true";
+		return PrismTranslatorUtilities.INDENT + synchStr + " : " + value + ";";
 	}
 
 	/**

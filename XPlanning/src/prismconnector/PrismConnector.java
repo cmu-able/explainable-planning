@@ -16,6 +16,7 @@ import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import mdp.State;
@@ -109,5 +110,15 @@ public class PrismConnector {
 			qaValues.put(qFunction, results.get(queryProperty));
 		}
 		mCachedQAValues.put(policy, qaValues);
+	}
+
+	public double computeQAValueFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer, IQFunction qFunction,
+			PrismDTMCTranslator dtmcTranslator)
+			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
+		PrismPropertyTranslator propertyTranslator = dtmcTranslator.getPrismProperyTranslator();
+		ValueEncodingScheme encodings = dtmcTranslator.getValueEncodingScheme();
+		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
+		Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
+		return mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer, rewardStructIndex);
 	}
 }

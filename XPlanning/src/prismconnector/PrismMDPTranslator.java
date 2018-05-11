@@ -47,6 +47,10 @@ public class PrismMDPTranslator {
 		return mEncodings;
 	}
 
+	public PrismPropertyTranslator getPrismProperyTranslator() {
+		return mPropertyTranslator;
+	}
+
 	/**
 	 * 
 	 * @return Prism model of this MDP, including constants' declarations, MDP model, and reward structure representing

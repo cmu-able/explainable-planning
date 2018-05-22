@@ -69,7 +69,7 @@ public class PrismPropertyTranslator {
 	/**
 	 * 
 	 * @param goal
-	 * @return {varName}={encoded int value} & ...
+	 * @return {varName}={encoded int value} & ... & readyToCopy & barrier
 	 * @throws VarNotFoundException
 	 */
 	private String buildGoalPredicate(State goal) throws VarNotFoundException {
@@ -86,11 +86,12 @@ public class PrismPropertyTranslator {
 			builder.append("=");
 			builder.append(encodedValue);
 		}
-	
+
 		if (mThreeParamRewards) {
 			builder.append(" & readyToCopy");
 		}
-	
+
+		builder.append(" & barrier");
 		return builder.toString();
 	}
 }

@@ -81,19 +81,23 @@ public class PrismMDPTranslator {
 
 		String constsDecl = mUtilities.buildConstsDecl(mXMDP.getStateSpace());
 		String actionsDecl = mUtilities.buildConstsDecl(mXMDP.getActionSpace());
+		String goalDecl = mUtilities.buildGoalDecl(mXMDP.getGoal());
 		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
-		String rewardStruc = mRewardUtilities.buildRewardStructure(mXMDP.getTransitionFunction(), mXMDP.getQFunctions(),
-				mXMDP.getCostFunction());
+		String rewardStruct = mRewardUtilities.buildRewardStructure(mXMDP.getTransitionFunction(),
+				mXMDP.getQFunctions(), mXMDP.getCostFunction());
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("mdp");
 		builder.append("\n\n");
 		builder.append(constsDecl);
 		builder.append(actionsDecl);
 		builder.append("\n");
+		builder.append(goalDecl);
+		builder.append("\n\n");
 		builder.append(modules);
 		builder.append("\n\n");
-		builder.append(rewardStruc);
+		builder.append(rewardStruct);
 		return builder.toString();
 	}
 

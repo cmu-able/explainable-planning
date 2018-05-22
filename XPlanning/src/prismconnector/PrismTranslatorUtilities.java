@@ -105,6 +105,21 @@ public class PrismTranslatorUtilities {
 
 	/**
 	 * 
+	 * @param goal
+	 * @return formula goal = {goal expression};
+	 * @throws VarNotFoundException
+	 */
+	String buildGoalDecl(State goal) throws VarNotFoundException {
+		String goalExpr = buildExpression(goal);
+		StringBuilder builder = new StringBuilder();
+		builder.append("formula goal = ");
+		builder.append(goalExpr);
+		builder.append(";");
+		return builder.toString();
+	}
+
+	/**
+	 * 
 	 * @param stateSpace
 	 * @param iniState
 	 * @param actionPSOs
@@ -117,6 +132,7 @@ public class PrismTranslatorUtilities {
 			throws VarNotFoundException, ActionNotFoundException {
 		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
 		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
+		String synchCmds = buildHelperSynchCommands();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
@@ -124,6 +140,8 @@ public class PrismTranslatorUtilities {
 		builder.append(helperVarsDecl);
 		builder.append("\n\n");
 		builder.append(copyCmds);
+		builder.append("\n\n");
+		builder.append(synchCmds);
 		builder.append("\n");
 		builder.append("endmodule");
 		return builder.toString();
@@ -140,6 +158,7 @@ public class PrismTranslatorUtilities {
 		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
 		String actionDecl = "action : [-1.." + mEncodings.getMaximumEncodedIntAction() + "] init -1;";
 		String readyToCopyDecl = "readyToCopy : bool init true;";
+		String barrierDecl = "barrier : bool init false;";
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(srcVarsDecl);
@@ -149,6 +168,9 @@ public class PrismTranslatorUtilities {
 		builder.append("\n");
 		builder.append(INDENT);
 		builder.append(readyToCopyDecl);
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append(barrierDecl);
 		return builder.toString();
 	}
 
@@ -156,8 +178,8 @@ public class PrismTranslatorUtilities {
 	 * 
 	 * @param actionPSOs
 	 * @param nameSuffix
-	 * @return [{actionName}] readyToCopy -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action value}) &
-	 *         (readyToCopy'=false); ... [next] !readyToCopy -> (readyToCopy'=true);
+	 * @return [{actionName}] readyToCopy & !barrier -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action
+	 *         value}) & (readyToCopy'=false) & (barrier'=true); ...
 	 * @throws ActionNotFoundException
 	 */
 	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs, String nameSuffix)
@@ -170,7 +192,7 @@ public class PrismTranslatorUtilities {
 				builder.append("[");
 				builder.append(sanitizeNameString(action.getName()));
 				builder.append("]");
-				builder.append(" readyToCopy -> ");
+				builder.append(" readyToCopy & !barrier -> ");
 
 				Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 				boolean firstClass = true;
@@ -186,14 +208,26 @@ public class PrismTranslatorUtilities {
 				builder.append(" & ");
 				String actionCopyUpdate = "(action'=" + mEncodings.getEncodedIntValue(action) + ")";
 				builder.append(actionCopyUpdate);
-				builder.append(" & (readyToCopy'=false);");
+				builder.append(" & (readyToCopy'=false) & (barrier'=true);");
 				builder.append("\n");
 			}
 		}
-		String nextCmd = "[compute] !readyToCopy -> (readyToCopy'=true);";
+		String computeCmd = "[compute] !readyToCopy & barrier -> (readyToCopy'=true);";
 		builder.append("\n");
 		builder.append(INDENT);
+		builder.append(computeCmd);
+		return builder.toString();
+	}
+
+	String buildHelperSynchCommands() {
+		StringBuilder builder = new StringBuilder();
+		String nextCmd = "[next] readyToCopy & barrier & !goal -> (barrier'=false);";
+		String endCmd = "[end] readyToCopy & barrier & goal -> true;";
+		builder.append(INDENT);
 		builder.append(nextCmd);
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append(endCmd);
 		return builder.toString();
 	}
 
@@ -532,7 +566,7 @@ public class PrismTranslatorUtilities {
 	 */
 	String buildModuleCommand(IAction action, IPredicate predicate, ProbabilisticEffect probEffect)
 			throws VarNotFoundException {
-		String guard = buildGuard(predicate);
+		String guard = buildExpression(predicate);
 		String updates = buildUpdates(probEffect);
 
 		StringBuilder builder = new StringBuilder();
@@ -553,7 +587,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildGuard(IPredicate predicate) throws VarNotFoundException {
+	String buildExpression(IPredicate predicate) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {

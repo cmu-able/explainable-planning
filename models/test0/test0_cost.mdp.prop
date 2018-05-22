@@ -1,0 +1,2 @@
+R{"cost"}min=? [ F rLoc=0 & readyToCopy & barrier ]
+

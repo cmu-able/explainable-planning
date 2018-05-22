@@ -17,6 +17,8 @@ const int setSpeed0_35 = 2;
 const int setSpeed0_7 = 3;
 
 
+formula goal = rLoc=0;
+
 module module_1
   rSpeed : [0..1] init 0;
 
@@ -38,13 +40,17 @@ module helper
   rSpeedSrc : [0..1] init 0;
   action : [-1..3] init -1;
   readyToCopy : bool init true;
+  barrier : bool init false;
 
-  [moveToL1] readyToCopy -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false);
-  [moveToL2] readyToCopy -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false);
-  [setSpeed0_35] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=2) & (readyToCopy'=false);
-  [setSpeed0_7] readyToCopy -> (rSpeedSrc'=rSpeed) & (action'=3) & (readyToCopy'=false);
+  [moveToL1] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false) & (barrier'=true);
+  [moveToL2] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false) & (barrier'=true);
+  [setSpeed0_35] readyToCopy & !barrier -> (rSpeedSrc'=rSpeed) & (action'=2) & (readyToCopy'=false) & (barrier'=true);
+  [setSpeed0_7] readyToCopy & !barrier -> (rSpeedSrc'=rSpeed) & (action'=3) & (readyToCopy'=false) & (barrier'=true);
 
-  [compute] !readyToCopy -> (readyToCopy'=true);
+  [compute] !readyToCopy & barrier -> (readyToCopy'=true);
+
+  [next] readyToCopy & barrier & !goal -> (barrier'=false);
+  [end] readyToCopy & barrier & goal -> true;
 endmodule
 
 formula compute_cost = !readyToCopy;

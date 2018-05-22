@@ -37,6 +37,35 @@ public class PrismPropertyTranslator {
 	 * 
 	 * @param goal
 	 * @param qFunction
+	 * @param maxQValue
+	 * @return multi(R{"cost_no_{QA name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
+	 * @throws VarNotFoundException
+	 */
+	public String buildMDPConstrainedCostMinProperty(State goal, IQFunction qFunction, double maxQValue)
+			throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("multi(R{\"");
+		builder.append(PrismRewardTranslatorUtilities.COST_STRUCTURE_NAME);
+		builder.append("_no_");
+		builder.append(qFunction.getName());
+		builder.append("\"}min=? [ C ], ");
+		builder.append("R{\"");
+		builder.append(qFunction.getName());
+		builder.append("\"}<=");
+		builder.append(maxQValue);
+		builder.append(" [ C ], ");
+		builder.append("P>=1 [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
+		builder.append(" ]");
+		builder.append(")");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 * @param qFunction
 	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */

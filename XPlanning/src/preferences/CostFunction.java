@@ -1,5 +1,7 @@
 package preferences;
 
+import java.util.Iterator;
+
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
 import metrics.IQFunction;
@@ -12,7 +14,7 @@ import metrics.Transition;
  * @author rsukkerd
  *
  */
-public class CostFunction implements IMACostFunction {
+public class CostFunction implements IAdditiveCostFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -35,13 +37,18 @@ public class CostFunction implements IMACostFunction {
 	}
 
 	@Override
-	public double getScalingConstant(IQFunction qFunction) {
-		return mCostFunc.getScalingConstant(qFunction);
+	public double getScalingConstant(AttributeCostFunction<? extends IQFunction> attrCostFunc) {
+		return mCostFunc.getScalingConstant(attrCostFunc);
 	}
 
 	@Override
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
 		return mCostFunc.getCost(transition);
+	}
+
+	@Override
+	public Iterator<AttributeCostFunction<IQFunction>> iterator() {
+		return mCostFunc.iterator();
 	}
 
 	@Override

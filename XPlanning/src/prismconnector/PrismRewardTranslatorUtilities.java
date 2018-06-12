@@ -118,7 +118,7 @@ public class PrismRewardTranslatorUtilities {
 
 		for (IQFunction qFunction : qFunctions) {
 			AttributeCostFunction<IQFunction> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
-			double scalingConst = costFunction.getScalingConstant(qFunction);
+			double scalingConst = costFunction.getScalingConstant(attrCostFunction);
 
 			TransitionDefinition transDef = qFunction.getTransitionDefinition();
 			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());

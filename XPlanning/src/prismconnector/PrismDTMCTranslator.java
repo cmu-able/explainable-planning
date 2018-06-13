@@ -27,7 +27,6 @@ import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.State;
-import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
@@ -37,8 +36,8 @@ public class PrismDTMCTranslator {
 	private XDTMC mXDTMC;
 	private ValueEncodingScheme mEncodings;
 	private PrismPropertyTranslator mPropertyTranslator;
+	private PrismRewardTranslator mRewardTranslator;
 	private PrismTranslatorUtilities mUtilities;
-	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXDTMC = xdtmc;
@@ -48,8 +47,9 @@ public class PrismDTMCTranslator {
 			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
 		}
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings, threeParamRewards);
+		mRewardTranslator = new PrismRewardTranslator(xdtmc.getXMDP().getTransitionFunction(), mEncodings,
+				threeParamRewards, prismRewardType);
 		mUtilities = new PrismTranslatorUtilities(mEncodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards, prismRewardType);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -135,10 +135,9 @@ public class PrismDTMCTranslator {
 			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
 			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
 			DiscriminantNotFoundException, AttributeNameNotFoundException {
-		TransitionFunction transFunction = mXDTMC.getXMDP().getTransitionFunction();
 		Set<IQFunction> qFunctions = mXDTMC.getXMDP().getQFunctions();
 		String dtmcTranslation = getDTMCTranslation();
-		String qasRewards = mRewardUtilities.buildRewardStructures(transFunction, qFunctions);
+		String qasRewards = mRewardTranslator.getQAFunctionsTranslation(qFunctions);
 		StringBuilder builder = new StringBuilder();
 		builder.append(dtmcTranslation);
 		builder.append("\n\n");

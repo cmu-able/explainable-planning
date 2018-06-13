@@ -32,6 +32,7 @@ import preferences.IAdditiveCostFunction;
 public class PrismRewardTranslatorUtilities {
 
 	static final String COST_STRUCTURE_NAME = "cost";
+	static final String OBJECTIVE_STRUCTURE_NAME = "objective";
 	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
 
 	private ValueEncodingScheme mEncodings;

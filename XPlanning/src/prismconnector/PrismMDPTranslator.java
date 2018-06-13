@@ -18,7 +18,6 @@ import mdp.Discriminant;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
-import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
@@ -28,8 +27,8 @@ public class PrismMDPTranslator {
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
 	private PrismPropertyTranslator mPropertyTranslator;
+	private PrismRewardTranslator mRewardTranslator;
 	private PrismTranslatorUtilities mUtilities;
-	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXMDP = xmdp;
@@ -39,8 +38,9 @@ public class PrismMDPTranslator {
 			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings, threeParamRewards);
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, threeParamRewards,
+				prismRewardType);
 		mUtilities = new PrismTranslatorUtilities(mEncodings, threeParamRewards);
-		mRewardUtilities = new PrismRewardTranslatorUtilities(mEncodings, threeParamRewards, prismRewardType);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -84,8 +84,7 @@ public class PrismMDPTranslator {
 		String goalDecl = mUtilities.buildGoalDecl(mXMDP.getGoal());
 		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
-		String rewardStruct = mRewardUtilities.buildRewardStructure(mXMDP.getTransitionFunction(),
-				mXMDP.getCostFunction());
+		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("mdp");
@@ -97,7 +96,7 @@ public class PrismMDPTranslator {
 		builder.append("\n\n");
 		builder.append(modules);
 		builder.append("\n\n");
-		builder.append(rewardStruct);
+		builder.append(costStruct);
 		return builder.toString();
 	}
 
@@ -120,10 +119,9 @@ public class PrismMDPTranslator {
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
-		TransitionFunction transFunction = mXMDP.getTransitionFunction();
 		Set<IQFunction> qFunctions = mXMDP.getQFunctions();
 		String mdpTranslation = getMDPTranslation();
-		String qasRewards = mRewardUtilities.buildRewardStructures(transFunction, qFunctions);
+		String qasRewards = mRewardTranslator.getQAFunctionsTranslation(qFunctions);
 		StringBuilder builder = new StringBuilder();
 		builder.append(mdpTranslation);
 		builder.append("\n\n");

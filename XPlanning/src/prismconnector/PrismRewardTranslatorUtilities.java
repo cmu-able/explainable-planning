@@ -27,6 +27,7 @@ import metrics.Transition;
 import metrics.TransitionDefinition;
 import preferences.AttributeCostFunction;
 import preferences.CostFunction;
+import preferences.IAdditiveCostFunction;
 
 public class PrismRewardTranslatorUtilities {
 
@@ -89,8 +90,6 @@ public class PrismRewardTranslatorUtilities {
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
-	 * @param qFunctions
-	 *            : All QA functions
 	 * @param costFunction
 	 *            : Cost function of MDP
 	 * @return formula compute_cost = !readyToCopy; rewards "cost" ... endrewards
@@ -101,24 +100,47 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws ActionNotFoundException
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	String buildRewardStructure(TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction)
+	String buildRewardStructure(TransitionFunction transFunction, CostFunction costFunction)
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+		return buildRewardStructure(transFunction, costFunction, COST_STRUCTURE_NAME);
+	}
+
+	/**
+	 * Build a state-based reward structure for a given objective function.
+	 * 
+	 * @param transFunction
+	 *            : Transition function of MDP
+	 * @param objectiveFunction
+	 *            : Objective function that this reward structure represents
+	 * @param name
+	 *            : Name of this reward structure
+	 * @return formula compute_{name} = !readyToCopy; rewards "{name}" ... endrewards
+	 * @throws VarNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 */
+	String buildRewardStructure(TransitionFunction transFunction, IAdditiveCostFunction objectiveFunction, String name)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 
 		if (mThreeParamRewards && mPrismRewardType == PrismRewardType.STATE_REWARD) {
-			String computeCostFormula = buildComputeRewardFormula(COST_STRUCTURE_NAME);
+			String computeCostFormula = buildComputeRewardFormula(name);
 			builder.append(computeCostFormula);
 			builder.append("\n\n");
 		}
 
 		builder.append("rewards \"");
-		builder.append(COST_STRUCTURE_NAME);
+		builder.append(name);
 		builder.append("\"\n");
 
-		for (IQFunction qFunction : qFunctions) {
-			AttributeCostFunction<IQFunction> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
-			double scalingConst = costFunction.getScalingConstant(attrCostFunction);
+		for (AttributeCostFunction<IQFunction> attrCostFunction : objectiveFunction) {
+			IQFunction qFunction = attrCostFunction.getQFunction();
+			double scalingConst = objectiveFunction.getScalingConstant(attrCostFunction);
 
 			TransitionDefinition transDef = qFunction.getTransitionDefinition();
 			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
@@ -132,7 +154,7 @@ public class PrismRewardTranslatorUtilities {
 				}
 			};
 
-			String rewardItems = buildRewardItems(COST_STRUCTURE_NAME, transDef, actionPSO, evaluator);
+			String rewardItems = buildRewardItems(name, transDef, actionPSO, evaluator);
 			builder.append(rewardItems);
 		}
 

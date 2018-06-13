@@ -31,6 +31,10 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 		mbConst = bConst;
 	}
 
+	public IQFunction getQFunction() {
+		return mQFunction;
+	}
+
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
 		double transQValue = mQFunction.getValue(transition);
 		return maConst * transQValue + mbConst;

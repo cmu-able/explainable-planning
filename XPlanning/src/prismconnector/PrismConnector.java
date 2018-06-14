@@ -22,6 +22,8 @@ import exceptions.VarNotFoundException;
 import mdp.State;
 import mdp.XMDP;
 import metrics.IQFunction;
+import objectives.AttributeConstraint;
+import objectives.IAdditiveCostFunction;
 import policy.Policy;
 import prism.PrismException;
 
@@ -33,44 +35,67 @@ public class PrismConnector {
 	private static final String SREW_OUTPUT_FILENAME = "adv.srew";
 
 	private XMDP mXMDP;
+	private String mOutputPath;
 	private PrismAPIWrapper mPrismAPI;
 	private Map<Policy, Double> mCachedTotalCosts = new HashMap<>();
 	private Map<Policy, Map<IQFunction, Double>> mCachedQAValues = new HashMap<>();
+	private Map<PrismExplicitModelPointer, Policy> mExplicitModelPtrToPolicy = new HashMap<>();
 
-	public PrismConnector(XMDP xmdp) throws PrismException {
+	public PrismConnector(XMDP xmdp, String outputPath) throws PrismException {
 		mXMDP = xmdp;
+		mOutputPath = outputPath;
 		mPrismAPI = new PrismAPIWrapper();
 	}
 
-	public Policy generateOptimalPolicy(XMDP xmdp, String outputPath)
-			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, ActionNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			ActionDefinitionNotFoundException, PrismException, ResultParsingException, IOException {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
-		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+	public Policy generateOptimalPolicy(boolean useExplicitModel) throws VarNotFoundException,
+			EffectClassNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException, ActionNotFoundException, IncompatibleActionException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
+			PrismException, ResultParsingException, IOException, QFunctionNotFoundException {
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.STATE_REWARD);
+
+		// If we want to use the PRISM output explicit DTMC model to calculate QA values of the policy, then we need to
+		// include QA functions in the MDP translation.
+		String mdp = useExplicitModel ? mdpTranslator.getMDPTranslationWithQAs() : mdpTranslator.getMDPTranslation();
+
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
-		// Reward structures include 1 for the cost function and 1 for each of the QA functions
-		// Because mdpTranslator.getMDPTranslationWithQAs() is used
-		int numRewardStructs = xmdp.getQFunctions().size() + 1;
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
+		// If mdpTranslator.getMDPTranslationWithQAs() is used, then reward structures include 1 for the cost function
+		// and 1 for each of the QA functions.
+		// Otherwise, mdpTranslator.getMDPTranslation() is used; there is only 1 reward structure for the cost function.
+		int numRewardStructs = useExplicitModel ? mXMDP.getQFunctions().size() + 1 : 1;
+
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mOutputPath,
 				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME, numRewardStructs);
 
-		double totalCost = mPrismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
+		double totalCost = mPrismAPI.generateMDPAdversary(mdp, goalProperty, outputExplicitModelPointer);
 
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
-				mdpTranslator.getValueEncodingScheme(), outputPath);
+				mdpTranslator.getValueEncodingScheme(), mOutputPath);
 		Map<Integer, State> stateIndices = explicitModelReader.readStatesFromFile(STA_OUTPUT_FILENAME);
 		Policy policy = explicitModelReader.readPolicyFromFile(TRA_OUTPUT_FILENAME, stateIndices);
+
+		// Map the explicit model pointer to the corresponding policy object
+		mExplicitModelPtrToPolicy.put(outputExplicitModelPointer, policy);
 
 		// Cache the expected total cost of the policy
 		mCachedTotalCosts.put(policy, totalCost);
 
-		// Compute and cache the QA values of the policy
-		computeQAValues(policy, mXMDP.getQFunctions());
+		if (useExplicitModel) {
+			// Compute and cache the QA values of the policy, using explicit DTMC model
+			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQFunctions(),
+					mdpTranslator.getValueEncodingScheme());
+		} else {
+			// Compute and cache the QA values of the policy
+			computeQAValues(policy, mXMDP.getQFunctions());
+		}
 
 		return policy;
+	}
+
+	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+			AttributeConstraint<IQFunction> constraint) {
+		return null;
 	}
 
 	public double getExpectedTotalCost(Policy policy) {
@@ -112,13 +137,21 @@ public class PrismConnector {
 		mCachedQAValues.put(policy, qaValues);
 	}
 
-	public double computeQAValueFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer, IQFunction qFunction,
-			PrismDTMCTranslator dtmcTranslator)
+	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
+			Set<IQFunction> qFunctions, ValueEncodingScheme encodings)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
-		ValueEncodingScheme encodings = dtmcTranslator.getValueEncodingScheme();
 		PrismPropertyTranslator propertyTranslator = new PrismPropertyTranslator(encodings);
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
-		Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
-		return mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer, rewardStructIndex);
+
+		// Cache the QA values of the policy
+		Map<IQFunction, Double> qaValues = new HashMap<>();
+		for (IQFunction qFunction : qFunctions) {
+			Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
+			double qaValue = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer,
+					rewardStructIndex);
+			qaValues.put(qFunction, qaValue);
+		}
+		Policy policy = mExplicitModelPtrToPolicy.get(explicitDTMCPointer);
+		mCachedQAValues.put(policy, qaValues);
 	}
 }

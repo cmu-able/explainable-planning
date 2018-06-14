@@ -31,7 +31,7 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 		mbConst = bConst;
 	}
 
-	public IQFunction getQFunction() {
+	public E getQFunction() {
 		return mQFunction;
 	}
 

@@ -41,15 +41,18 @@ public class ValueEncodingScheme {
 	private List<IQFunction> mIndexedQFunctions = new ArrayList<>();
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
+	private boolean mThreeParamRewards;
 
 	public ValueEncodingScheme(StateSpace stateSpace) {
 		mStateSpace = stateSpace;
+		mThreeParamRewards = false;
 		encodeStates(stateSpace);
 	}
 
 	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace) {
 		mStateSpace = stateSpace;
 		mActionSpace = actionSpace;
+		mThreeParamRewards = true;
 		encodeStates(stateSpace);
 		encodeActions(actionSpace);
 	}
@@ -81,6 +84,10 @@ public class ValueEncodingScheme {
 
 	void appendQFunction(IQFunction qFunction) {
 		mIndexedQFunctions.add(qFunction);
+	}
+
+	public boolean isThreeParamRewards() {
+		return mThreeParamRewards;
 	}
 
 	public StateSpace getStateSpace() {

@@ -115,8 +115,8 @@ public class PrismConnector {
 	public double computeQAValueFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer, IQFunction qFunction,
 			PrismDTMCTranslator dtmcTranslator)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
-		PrismPropertyTranslator propertyTranslator = dtmcTranslator.getPrismProperyTranslator();
 		ValueEncodingScheme encodings = dtmcTranslator.getValueEncodingScheme();
+		PrismPropertyTranslator propertyTranslator = new PrismPropertyTranslator(encodings);
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
 		Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
 		return mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer, rewardStructIndex);

@@ -19,9 +19,9 @@ public class PrismRewardTranslator {
 	private PrismRewardTranslatorUtilities mRewardUtilities;
 
 	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings,
-			boolean threeParamRewards, PrismRewardType prismRewardType) {
+			PrismRewardType prismRewardType) {
 		mTransFunction = transFunction;
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, threeParamRewards, prismRewardType);
+		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, prismRewardType);
 	}
 
 	/**

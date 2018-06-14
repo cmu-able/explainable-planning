@@ -42,11 +42,9 @@ public class PrismTranslatorUtilities {
 	static final String SRC_SUFFIX = "Src";
 
 	private ValueEncodingScheme mEncodings;
-	private boolean mThreeParamRewards;
 
-	public PrismTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards) {
+	public PrismTranslatorUtilities(ValueEncodingScheme encodings) {
 		mEncodings = encodings;
-		mThreeParamRewards = threeParamRewards;
 	}
 
 	/**
@@ -452,7 +450,7 @@ public class PrismTranslatorUtilities {
 			builder.append(noCommandModule);
 		}
 
-		if (mThreeParamRewards) {
+		if (mEncodings.isThreeParamRewards()) {
 			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs);
 			builder.append("\n\n");
 			builder.append(helperModule);

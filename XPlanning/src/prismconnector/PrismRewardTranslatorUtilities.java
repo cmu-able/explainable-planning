@@ -34,13 +34,10 @@ public class PrismRewardTranslatorUtilities {
 	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
 
 	private ValueEncodingScheme mEncodings;
-	private boolean mThreeParamRewards;
 	private PrismRewardType mPrismRewardType;
 
-	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, boolean threeParamRewards,
-			PrismRewardType prismRewardType) {
+	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, PrismRewardType prismRewardType) {
 		mEncodings = encodings;
-		mThreeParamRewards = threeParamRewards;
 		mPrismRewardType = prismRewardType;
 	}
 
@@ -125,7 +122,7 @@ public class PrismRewardTranslatorUtilities {
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 
-		if (mThreeParamRewards && mPrismRewardType == PrismRewardType.STATE_REWARD) {
+		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
 			String computeCostFormula = buildComputeRewardFormula(objectiveFunction.getName());
 			builder.append(computeCostFormula);
 			builder.append("\n\n");
@@ -193,7 +190,7 @@ public class PrismRewardTranslatorUtilities {
 
 		StringBuilder builder = new StringBuilder();
 
-		if (mThreeParamRewards && mPrismRewardType == PrismRewardType.STATE_REWARD) {
+		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
 			String computeQAFormula = buildComputeRewardFormula(rewardName);
 			builder.append(computeQAFormula);
 			builder.append("\n\n");

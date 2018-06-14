@@ -11,11 +11,9 @@ import preferences.IAdditiveCostFunction;
 public class PrismPropertyTranslator {
 
 	private ValueEncodingScheme mEncodings;
-	private boolean mThreeParamRewards;
 
-	public PrismPropertyTranslator(ValueEncodingScheme encodings, boolean threeParamRewards) {
+	public PrismPropertyTranslator(ValueEncodingScheme encodings) {
 		mEncodings = encodings;
-		mThreeParamRewards = threeParamRewards;
 	}
 
 	/**
@@ -128,7 +126,7 @@ public class PrismPropertyTranslator {
 			builder.append(encodedValue);
 		}
 
-		if (mThreeParamRewards) {
+		if (mEncodings.isThreeParamRewards()) {
 			builder.append(" & readyToCopy");
 		}
 

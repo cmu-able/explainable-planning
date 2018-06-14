@@ -25,11 +25,12 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	private volatile int hashCode;
 
 	private Map<AttributeCostFunction<? extends IQFunction>, Double> mScalingConsts = new HashMap<>();
+	private String mName;
 	// For fast look-up
 	private Map<IQFunction, AttributeCostFunction<? extends IQFunction>> mAttrCostFuncs = new HashMap<>();
 
-	public AdditiveCostFunction() {
-		// mAttrCostFuncs and mScalingConsts initially empty
+	public AdditiveCostFunction(String name) {
+		mName = name;
 	}
 
 	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {
@@ -60,6 +61,10 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		return cost;
 	}
 
+	public String getName() {
+		return mName;
+	}
+
 	@Override
 	public Iterator<AttributeCostFunction<IQFunction>> iterator() {
 		return new Iterator<AttributeCostFunction<IQFunction>>() {
@@ -86,8 +91,9 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		if (!(obj instanceof AdditiveCostFunction)) {
 			return false;
 		}
-		AdditiveCostFunction costFun = (AdditiveCostFunction) obj;
-		return costFun.mAttrCostFuncs.equals(mAttrCostFuncs) && costFun.mScalingConsts.equals(mScalingConsts);
+		AdditiveCostFunction costFunc = (AdditiveCostFunction) obj;
+		return costFunc.mAttrCostFuncs.equals(mAttrCostFuncs) && costFunc.mScalingConsts.equals(mScalingConsts)
+				&& costFunc.mName.equals(mName);
 	}
 
 	@Override
@@ -97,6 +103,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			result = 17;
 			result = 31 * result + mAttrCostFuncs.hashCode();
 			result = 31 * result + mScalingConsts.hashCode();
+			result = 31 * result + mName.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -46,7 +46,7 @@ public class PrismRewardTranslator {
 	 * 
 	 * @param objectiveFunction
 	 *            : Objective function -- this can be n-1-attribute cost function
-	 * @return Reward structure representing the objective function, with the name "objective"
+	 * @return Reward structure representing the objective function
 	 * @throws VarNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
@@ -57,8 +57,7 @@ public class PrismRewardTranslator {
 	public String getObjectiveFunctionTranslation(IAdditiveCostFunction objectiveFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
 			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
-		return mRewardUtilities.buildRewardStructure(mTransFunction, objectiveFunction,
-				PrismRewardTranslatorUtilities.OBJECTIVE_STRUCTURE_NAME);
+		return mRewardUtilities.buildRewardStructure(mTransFunction, objectiveFunction);
 	}
 
 	/**

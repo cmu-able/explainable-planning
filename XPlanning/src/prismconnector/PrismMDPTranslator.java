@@ -135,7 +135,7 @@ public class PrismMDPTranslator {
 	 * @throws VarNotFoundException
 	 */
 	public String getGoalPropertyTranslation() throws VarNotFoundException {
-		return mPropertyTranslator.buildMDPCostMinProperty(mXMDP.getGoal());
+		return mPropertyTranslator.buildMDPCostMinProperty(mXMDP.getGoal(), mXMDP.getCostFunction());
 	}
 
 	/**

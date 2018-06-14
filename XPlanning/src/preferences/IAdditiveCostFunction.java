@@ -19,4 +19,6 @@ public interface IAdditiveCostFunction extends Iterable<AttributeCostFunction<IQ
 	public double getScalingConstant(AttributeCostFunction<? extends IQFunction> attrCostFunc);
 
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
+
+	public String getName();
 }

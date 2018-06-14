@@ -19,7 +19,6 @@ import exceptions.IncompatibleVarException;
 import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
-import mdp.State;
 import mdp.XMDP;
 import metrics.IQFunction;
 import objectives.AttributeConstraint;
@@ -68,12 +67,13 @@ public class PrismConnector {
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mOutputPath,
 				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME, numRewardStructs);
 
+		// Expected total cost of the policy
 		double totalCost = mPrismAPI.generateMDPAdversary(mdp, goalProperty, outputExplicitModelPointer);
 
+		// Read policy from the PRISM output explicit model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
 				mdpTranslator.getValueEncodingScheme(), mOutputPath);
-		Map<Integer, State> stateIndices = explicitModelReader.readStatesFromFile(STA_OUTPUT_FILENAME);
-		Policy policy = explicitModelReader.readPolicyFromFile(TRA_OUTPUT_FILENAME, stateIndices);
+		Policy policy = explicitModelReader.readPolicyFromFiles(STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME);
 
 		// Map the explicit model pointer to the corresponding policy object
 		mExplicitModelPtrToPolicy.put(outputExplicitModelPointer, policy);

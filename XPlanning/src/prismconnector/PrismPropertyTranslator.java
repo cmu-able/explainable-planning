@@ -5,6 +5,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import mdp.State;
 import metrics.IQFunction;
+import objectives.AttributeConstraint;
 import objectives.CostFunction;
 import objectives.IAdditiveCostFunction;
 
@@ -42,15 +43,15 @@ public class PrismPropertyTranslator {
 	 *            : Goal of MDP
 	 * @param objectiveFunction
 	 *            : Objective function to be minimized, which does not contain the constrained QA function
-	 * @param qFunction
-	 *            : QA function of the value to be constrained
-	 * @param maxQValue
-	 *            : Maximum value of the constrained QA
+	 * @param constraint
+	 *            : Constraint on the expected total QA value
 	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPConstrainedCostMinProperty(State goal, IAdditiveCostFunction objectiveFunction,
-			IQFunction qFunction, double maxQValue) throws VarNotFoundException {
+			AttributeConstraint<? extends IQFunction> constraint) throws VarNotFoundException {
+		IQFunction qFunction = constraint.getQFunction();
+		double uppberBound = constraint.getExpectedTotalUpperBound();
 		StringBuilder builder = new StringBuilder();
 		builder.append("multi(R{\"");
 		builder.append(objectiveFunction.getName());
@@ -58,7 +59,7 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}<=");
-		builder.append(maxQValue);
+		builder.append(uppberBound);
 		builder.append(" [ C ], ");
 		builder.append("P>=1 [ F ");
 		String goalPredicate = buildGoalPredicate(goal);

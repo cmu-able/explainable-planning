@@ -109,6 +109,21 @@ public class PrismExplicitModelReader {
 		return policy;
 	}
 
+	/**
+	 * 
+	 * @param staFilename
+	 *            : Name of a states .sta file
+	 * @param traFilename
+	 *            : Name of an "adversary" .tra file
+	 * @return A policy extracted from the "adversary" file
+	 * @throws IOException
+	 * @throws VarNotFoundException
+	 */
+	public Policy readPolicyFromFiles(String staFilename, String traFilename) throws IOException, VarNotFoundException {
+		Map<Integer, State> stateIndices = readStatesFromFile(staFilename);
+		return readPolicyFromFile(traFilename, stateIndices);
+	}
+
 	private List<String> readLinesFromFile(String filename) throws IOException {
 		List<String> lines = new ArrayList<>();
 		File file = new File(mModelPath, filename);

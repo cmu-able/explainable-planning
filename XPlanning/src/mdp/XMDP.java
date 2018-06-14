@@ -3,7 +3,7 @@ package mdp;
 import java.util.Set;
 
 import metrics.IQFunction;
-import preferences.CostFunction;
+import objectives.CostFunction;
 
 /**
  * {@link XMDP} is an Explainable MDP.

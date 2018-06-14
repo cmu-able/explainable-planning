@@ -1,4 +1,4 @@
-package preferences;
+package objectives;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;

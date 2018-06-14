@@ -25,9 +25,9 @@ import mdp.TransitionFunction;
 import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
-import preferences.AttributeCostFunction;
-import preferences.CostFunction;
-import preferences.IAdditiveCostFunction;
+import objectives.AttributeCostFunction;
+import objectives.CostFunction;
+import objectives.IAdditiveCostFunction;
 
 public class PrismRewardTranslatorUtilities {
 

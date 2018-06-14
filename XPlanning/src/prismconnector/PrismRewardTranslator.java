@@ -10,8 +10,8 @@ import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
-import preferences.CostFunction;
-import preferences.IAdditiveCostFunction;
+import objectives.CostFunction;
+import objectives.IAdditiveCostFunction;
 
 public class PrismRewardTranslator {
 

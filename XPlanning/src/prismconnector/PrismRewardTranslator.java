@@ -77,4 +77,22 @@ public class PrismRewardTranslator {
 			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
 	}
+
+	/**
+	 * 
+	 * @param qFunction
+	 *            : QA function
+	 * @return Reward structure representing the QA function
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws ActionNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
+	public String getQAFunctionTranslation(IQFunction qFunction)
+			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+		return mRewardUtilities.buildRewardStructure(mTransFunction, qFunction);
+	}
 }

@@ -26,8 +26,8 @@ public class PrismMDPTranslator {
 
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
-	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismRewardTranslator mRewardTranslator;
+	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorUtilities mUtilities;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards, PrismRewardType prismRewardType) {
@@ -37,13 +37,21 @@ public class PrismMDPTranslator {
 		} else {
 			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace());
 		}
-		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, prismRewardType);
+		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mUtilities = new PrismTranslatorUtilities(mEncodings);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
+	}
+
+	public PrismRewardTranslator getPrismRewardTranslator() {
+		return mRewardTranslator;
+	}
+
+	public PrismPropertyTranslator getPrismPropertyTransltor() {
+		return mPropertyTranslator;
 	}
 
 	/**

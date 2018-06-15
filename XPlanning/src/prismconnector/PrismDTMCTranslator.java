@@ -35,8 +35,8 @@ public class PrismDTMCTranslator {
 
 	private XDTMC mXDTMC;
 	private ValueEncodingScheme mEncodings;
-	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismRewardTranslator mRewardTranslator;
+	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorUtilities mUtilities;
 
 	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards, PrismRewardType prismRewardType) {
@@ -46,9 +46,9 @@ public class PrismDTMCTranslator {
 		} else {
 			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
 		}
-		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mRewardTranslator = new PrismRewardTranslator(xdtmc.getXMDP().getTransitionFunction(), mEncodings,
 				prismRewardType);
+		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mUtilities = new PrismTranslatorUtilities(mEncodings);
 	}
 

@@ -58,13 +58,13 @@ public class PrismAPIWrapper {
 	 * include: states file (.sta), transitions file (.tra), labels file (.lab), and state rewards file (.srew).
 	 * 
 	 * @param mdpStr
+	 *            : MDP translation
 	 * @param propertyStr
+	 *            : Property containing a function minimization (which can be the cost function or other objective
+	 *            function), and optionally a constraint
 	 * @param outputPath
-	 * @param staOutputFilename
-	 * @param traOutputFilename
-	 * @param labOutputFilename
-	 * @param srewOutputFilename
-	 * @return Expected cumulative cost of the generated optimal policy
+	 *            : Output directory for the explicit model files
+	 * @return Expected total objective value of the generated optimal policy
 	 * @throws PrismException
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
@@ -107,15 +107,19 @@ public class PrismAPIWrapper {
 	/**
 	 * Query quantitative property of a DTMC -- from the explicit model files.
 	 * 
-	 * @param propertyStr
+	 * @param rawRewardPropertyStr
+	 *            : Raw reward query property
 	 * @param explicitModelPointer
+	 *            : Pointer to the explicit model
 	 * @param rewardStructIndex
+	 *            : Index of the reward structure representing the quantity to be queried
 	 * @return Quantitative result of the given query property of the DTMC
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromExplicitDTMC(String propertyStr, PrismExplicitModelPointer explicitModelPointer,
-			int rewardStructIndex) throws PrismException, ResultParsingException {
+	public double queryPropertyFromExplicitDTMC(String rawRewardPropertyStr,
+			PrismExplicitModelPointer explicitModelPointer, int rewardStructIndex)
+			throws PrismException, ResultParsingException {
 		File staFile = explicitModelPointer.getStatesFile();
 		File traFile = explicitModelPointer.getTransitionsFile();
 		File labFile = explicitModelPointer.getLabelsFile();
@@ -126,7 +130,7 @@ public class PrismAPIWrapper {
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
-		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
+		double result = queryPropertyHelper(modulesFile, rawRewardPropertyStr, 0);
 		terminatePrism();
 		return result;
 	}
@@ -135,7 +139,9 @@ public class PrismAPIWrapper {
 	 * Query multiple quantitative properties of a DTMC -- from the explicit model files.
 	 * 
 	 * @param rawRewardPropertyStr
+	 *            : Raw reward query property
 	 * @param explicitModelPointer
+	 *            : Pointer to the explicit model
 	 * @return List of the results in the order of the .srew input filenames
 	 * @throws PrismException
 	 * @throws ResultParsingException

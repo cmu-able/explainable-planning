@@ -28,7 +28,10 @@ import metrics.IQFunction;
  */
 public class ValueEncodingScheme {
 
-	// Reward structure "cost" always has index 1 (if there are multiple reward structures)
+	// Reward structure "cost" always has index 1
+	private static final int REW_STRUCT_COST_INDEX = 1;
+
+	// Starting index of reward structures representing QA functions (if any)
 	private static final int START_REW_STRUCT_QA_INDEX = 2;
 
 	/*
@@ -147,11 +150,15 @@ public class ValueEncodingScheme {
 		throw new VarNotFoundException(stateVarName);
 	}
 
-	public Integer getRewardStructureIndex(IQFunction qFunction) throws QFunctionNotFoundException {
+	public int getRewardStructureIndex(IQFunction qFunction) throws QFunctionNotFoundException {
 		if (!mIndexedQFunctions.contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}
 		return mIndexedQFunctions.indexOf(qFunction) + START_REW_STRUCT_QA_INDEX;
+	}
+
+	public int getCostStructureIndex() {
+		return REW_STRUCT_COST_INDEX;
 	}
 
 	@Override

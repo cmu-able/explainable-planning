@@ -87,8 +87,8 @@ public class PrismConnector {
 		// Otherwise, mdpTranslator.getMDPTranslation() is used; there is only 1 reward structure for the cost function.
 		int numRewardStructs = mUseExplicitModel ? mXMDP.getQFunctions().size() + 1 : 1;
 
-		// Compute an optimal policy, and cache its total cost and its QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, numRewardStructs, true);
+		// Compute an optimal policy, and cache its total cost and QA values
+		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, true, numRewardStructs);
 	}
 
 	/**
@@ -98,7 +98,7 @@ public class PrismConnector {
 	 * @param objectiveFunction
 	 *            : Objective function
 	 * @param constraint
-	 *            : Constraint on the expected total value of some QA
+	 *            : Constraint on the expected total value of a particular QA
 	 * @return An optimal, constraint-satisfying policy
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
@@ -152,35 +152,75 @@ public class PrismConnector {
 		String property = propTranslator.buildMDPConstrainedCostMinProperty(mXMDP.getGoal(), objectiveFunction,
 				constraint);
 
-		// Compute an optimal policy that satisfies the constraint, and cache its QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, property, numRewardStructs, false);
+		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
+		return computeOptimalPolicy(mdpTranslator, mdp, property, false, numRewardStructs);
 	}
 
-	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdp, String property,
-			int numRewardStructs, boolean cacheTotalCost) throws PrismException, ResultParsingException, IOException,
+	/**
+	 * Helper method to compute an optimal policy. Cache the policy's expected total cost and QA values.
+	 * 
+	 * @param mdpTranslator
+	 * @param mdpStr
+	 *            : MDP string with reward structure(s)
+	 * @param propertyString
+	 *            : Property string for either minimizing the cost function or other objective function
+	 * @param isCostMinProperty
+	 *            : Whether the property is minimizing the cost function
+	 * @param numRewardStructs
+	 *            : Number of reward structures in the MDP
+	 * @return An optimal policy
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 * @throws IOException
+	 * @throws VarNotFoundException
+	 * @throws QFunctionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws AttributeNameNotFoundException
+	 */
+	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyString,
+			boolean isCostMinProperty, int numRewardStructs) throws PrismException, ResultParsingException, IOException,
 			VarNotFoundException, QFunctionNotFoundException, ActionDefinitionNotFoundException,
 			EffectClassNotFoundException, IncompatibleVarException, ActionNotFoundException,
 			DiscriminantNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, AttributeNameNotFoundException {
+		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mOutputPath,
 				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME, numRewardStructs);
 
-		// Expected total objective value of the policy -- the objective function is specified in the property
-		// The objective function can be the cost function
-		double totalObjectiveValue = mPrismAPI.generateMDPAdversary(mdp, property, outputExplicitModelPointer);
-
-		// Read policy from the PRISM output explicit model
+		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
 				mdpTranslator.getValueEncodingScheme(), mOutputPath);
+
+		// Expected total objective value of the policy -- the objective function is specified in the property
+		// The objective function can be the cost function
+		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyString, outputExplicitModelPointer);
+
+		// Read policy from the PRISM output explicit model
 		Policy policy = explicitModelReader.readPolicyFromFiles(STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME);
 
 		// Map the explicit model pointer to the corresponding policy object
 		mExplicitModelPtrToPolicy.put(outputExplicitModelPointer, policy);
 
-		if (cacheTotalCost) {
+		if (isCostMinProperty) {
 			// The objective function in the property is the cost function
 			// Cache the expected total cost of the policy
-			mCachedTotalCosts.put(policy, totalObjectiveValue);
+			mCachedTotalCosts.put(policy, result);
+		} else {
+			// The objective function in the property is not the cost function
+			// Calculate the expected total cost of the policy from the explicit model, and cache it
+			int costStructIndex = mdpTranslator.getValueEncodingScheme().getCostStructureIndex();
+			String rawRewardQueryStr = mdpTranslator.getPrismPropertyTransltor()
+					.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
+			double totalCost = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQueryStr, outputExplicitModelPointer,
+					costStructIndex);
+			mCachedTotalCosts.put(policy, totalCost);
 		}
 
 		if (mUseExplicitModel) {

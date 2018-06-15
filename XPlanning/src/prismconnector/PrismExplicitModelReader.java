@@ -22,25 +22,24 @@ import policy.Policy;
 public class PrismExplicitModelReader {
 
 	private ValueEncodingScheme mEncodings;
-	private String mModelPath;
+	private PrismExplicitModelPointer mExplicitModelPtr;
 
-	public PrismExplicitModelReader(ValueEncodingScheme encodings, String modelPath) {
+	public PrismExplicitModelReader(ValueEncodingScheme encodings, PrismExplicitModelPointer explicitModelPtr) {
 		mEncodings = encodings;
-		mModelPath = modelPath;
+		mExplicitModelPtr = explicitModelPtr;
 	}
 
 	/**
 	 * 
-	 * @param staFilename
-	 *            : Name of a states .sta file
 	 * @return Mapping from integer values indexing states to the corresponding states
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
-	public Map<Integer, State> readStatesFromFile(String staFilename) throws IOException, VarNotFoundException {
+	public Map<Integer, State> readStatesFromFile() throws IOException, VarNotFoundException {
+		File staFile = mExplicitModelPtr.getStatesFile();
 		Map<Integer, State> indices = new HashMap<>();
 
-		List<String> allLines = readLinesFromFile(staFilename);
+		List<String> allLines = readLinesFromFile(staFile);
 
 		// Pattern: ({var1Name},{var2Name},...,{varNName})
 		String header = allLines.get(0);
@@ -81,17 +80,16 @@ public class PrismExplicitModelReader {
 
 	/**
 	 * 
-	 * @param traFilename
-	 *            : Name of an "adversary" .tra file
 	 * @param stateIndices
 	 *            : Mapping from integer values indexing states to the corresponding states
 	 * @return A policy extracted from the "adversary" file
 	 * @throws IOException
 	 */
-	public Policy readPolicyFromFile(String traFilename, Map<Integer, State> stateIndices) throws IOException {
+	public Policy readPolicyFromFile(Map<Integer, State> stateIndices) throws IOException {
+		File traFile = mExplicitModelPtr.getTransitionsFile();
 		Policy policy = new Policy();
 
-		List<String> allLines = readLinesFromFile(traFilename);
+		List<String> allLines = readLinesFromFile(traFile);
 		List<String> body = allLines.subList(1, allLines.size());
 
 		// Pattern: *source* {destination} {index of action} {probability} *action name*
@@ -111,22 +109,17 @@ public class PrismExplicitModelReader {
 
 	/**
 	 * 
-	 * @param staFilename
-	 *            : Name of a states .sta file
-	 * @param traFilename
-	 *            : Name of an "adversary" .tra file
 	 * @return A policy extracted from the "adversary" file
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
-	public Policy readPolicyFromFiles(String staFilename, String traFilename) throws IOException, VarNotFoundException {
-		Map<Integer, State> stateIndices = readStatesFromFile(staFilename);
-		return readPolicyFromFile(traFilename, stateIndices);
+	public Policy readPolicyFromFiles() throws IOException, VarNotFoundException {
+		Map<Integer, State> stateIndices = readStatesFromFile();
+		return readPolicyFromFile(stateIndices);
 	}
 
-	private List<String> readLinesFromFile(String filename) throws IOException {
+	private List<String> readLinesFromFile(File file) throws IOException {
 		List<String> lines = new ArrayList<>();
-		File file = new File(mModelPath, filename);
 
 		try (FileReader fileReader = new FileReader(file);
 				BufferedReader buffReader = new BufferedReader(fileReader);) {

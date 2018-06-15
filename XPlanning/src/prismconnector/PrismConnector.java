@@ -196,14 +196,14 @@ public class PrismConnector {
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
-				mdpTranslator.getValueEncodingScheme(), mOutputPath);
+				mdpTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function
 		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyString, outputExplicitModelPointer);
 
 		// Read policy from the PRISM output explicit model
-		Policy policy = explicitModelReader.readPolicyFromFiles(STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME);
+		Policy policy = explicitModelReader.readPolicyFromFiles();
 
 		// Map the explicit model pointer to the corresponding policy object
 		mExplicitModelPtrToPolicy.put(outputExplicitModelPointer, policy);

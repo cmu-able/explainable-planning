@@ -48,7 +48,7 @@ public class PrismPropertyTranslator {
 	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
 	 * @throws VarNotFoundException
 	 */
-	public String buildMDPConstrainedCostMinProperty(State goal, IAdditiveCostFunction objectiveFunction,
+	public String buildMDPConstrainedMinProperty(State goal, IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<? extends IQFunction> constraint) throws VarNotFoundException {
 		IQFunction qFunction = constraint.getQFunction();
 		double uppberBound = constraint.getExpectedTotalUpperBound();

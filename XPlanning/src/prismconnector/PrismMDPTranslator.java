@@ -56,8 +56,8 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @return Prism model of this MDP, including constants' declarations, MDP model, and reward structure representing
-	 *         the cost function.
+	 * @return Prism model of this MDP, including constants' declarations, MDP model, and a reward structure
+	 *         representing the cost function.
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws AttributeNameNotFoundException
@@ -105,8 +105,8 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @return Prism model of this MDP, including constants' declarations, MDP model, reward structure representing the
-	 *         cost function, and reward structure(s) representing the QA function(s).
+	 * @return Prism model of this MDP, including constants' declarations, MDP model, a reward structure representing
+	 *         the cost function, and reward structure(s) representing all of the QA function(s).
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws AttributeNameNotFoundException

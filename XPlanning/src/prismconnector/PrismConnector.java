@@ -128,17 +128,19 @@ public class PrismConnector {
 		int numRewardStructs = 0;
 
 		if (mUseExplicitModel) {
+			// MDP translation includes all QA functions
 			mdpBuilder.append(mdpTranslator.getMDPTranslationWithQAs());
 
 			// 1 reward structure for each of the QA functions, 1 for the cost function
 			numRewardStructs += mXMDP.getQFunctions().size() + 1;
 		} else {
+			// MDP translation includes only the QA function of the value to be constrained
 			mdpBuilder.append(mdpTranslator.getMDPTranslation());
 			mdpBuilder.append("\n\n");
 			mdpBuilder.append(rewardTranslator.getQAFunctionTranslation(constraint.getQFunction()));
 
-			// 1 reward structure for the cost function
-			numRewardStructs += 1;
+			// 1 reward structure for the cost function, 1 for the QA function
+			numRewardStructs += 2;
 		}
 
 		String objectiveReward = rewardTranslator.getObjectiveFunctionTranslation(objectiveFunction);
@@ -149,7 +151,7 @@ public class PrismConnector {
 		numRewardStructs += 1;
 
 		String mdp = mdpBuilder.toString();
-		String property = propTranslator.buildMDPConstrainedCostMinProperty(mXMDP.getGoal(), objectiveFunction,
+		String property = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
 				constraint);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values

@@ -48,6 +48,10 @@ public class PrismConnector {
 		mPrismAPI = new PrismAPIWrapper();
 	}
 
+	public XMDP getXMDP() {
+		return mXMDP;
+	}
+
 	/**
 	 * Generate an optimal policy (the objective is the cost function only). Compute its QA values. Cache its expected
 	 * total cost and QA values.
@@ -82,9 +86,9 @@ public class PrismConnector {
 		// Goal with cost-minimizing objective
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
-		// If mdpTranslator.getMDPTranslationWithQAs() is used, then reward structures include 1 for the cost function
+		// If MDP translation has QAs, then reward structures include 1 for the cost function
 		// and 1 for each of the QA functions.
-		// Otherwise, mdpTranslator.getMDPTranslation() is used; there is only 1 reward structure for the cost function.
+		// Otherwise, there is only 1 reward structure for the cost function.
 		int numRewardStructs = mUseExplicitModel ? mXMDP.getQFunctions().size() + 1 : 1;
 
 		// Compute an optimal policy, and cache its total cost and QA values

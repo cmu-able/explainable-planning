@@ -49,8 +49,8 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Generate an optimal policy (the objective is the cost function only). Cache its expected total cost and its QA
-	 * values.
+	 * Generate an optimal policy (the objective is the cost function only). Compute its QA values. Cache its expected
+	 * total cost and QA values.
 	 * 
 	 * @return An optimal policy.
 	 * @throws VarNotFoundException
@@ -77,7 +77,7 @@ public class PrismConnector {
 
 		// If we want to use the PRISM output explicit DTMC model to calculate QA values of the policy, then we need to
 		// include QA functions in the MDP translation.
-		String mdp = mUseExplicitModel ? mdpTranslator.getMDPTranslationWithQAs() : mdpTranslator.getMDPTranslation();
+		String mdp = mdpTranslator.getMDPTranslation(mUseExplicitModel);
 
 		// Goal with cost-minimizing objective
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
@@ -92,8 +92,8 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Generate an optimal policy w.r.t. a given objective function, that satisfies a given constraint. Cache its QA
-	 * values.
+	 * Generate an optimal policy w.r.t. a given objective function, that satisfies a given constraint. Compute its QA
+	 * values and its expected total cost (not the objective value). Cache its expected total cost and QA values.
 	 * 
 	 * @param objectiveFunction
 	 *            : Objective function
@@ -125,17 +125,15 @@ public class PrismConnector {
 		PrismRewardTranslator rewardTranslator = mdpTranslator.getPrismRewardTranslator();
 		PrismPropertyTranslator propTranslator = mdpTranslator.getPrismPropertyTransltor();
 		StringBuilder mdpBuilder = new StringBuilder();
+		mdpBuilder.append(mdpTranslator.getMDPTranslation(mUseExplicitModel));
 		int numRewardStructs = 0;
 
 		if (mUseExplicitModel) {
 			// MDP translation includes all QA functions
-			mdpBuilder.append(mdpTranslator.getMDPTranslationWithQAs());
-
 			// 1 reward structure for each of the QA functions, 1 for the cost function
 			numRewardStructs += mXMDP.getQFunctions().size() + 1;
 		} else {
 			// MDP translation includes only the QA function of the value to be constrained
-			mdpBuilder.append(mdpTranslator.getMDPTranslation());
 			mdpBuilder.append("\n\n");
 			mdpBuilder.append(rewardTranslator.getQAFunctionTranslation(constraint.getQFunction()));
 
@@ -151,8 +149,7 @@ public class PrismConnector {
 		numRewardStructs += 1;
 
 		String mdp = mdpBuilder.toString();
-		String property = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
-				constraint);
+		String property = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction, constraint);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
 		return computeOptimalPolicy(mdpTranslator, mdp, property, false, numRewardStructs);
@@ -236,12 +233,83 @@ public class PrismConnector {
 		return policy;
 	}
 
-	public double getExpectedTotalCost(Policy policy) {
+	/**
+	 * Retrieve the expected total cost of a given policy from the cache. If the policy is not already in the cache,
+	 * then compute and cache its expected total cost.
+	 * 
+	 * @param policy
+	 * @return Expected total cost of the policy
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws AttributeNameNotFoundException
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
+	public double getExpectedTotalCost(Policy policy)
+			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
+			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			AttributeNameNotFoundException, PrismException, ResultParsingException {
+		if (!mCachedTotalCosts.containsKey(policy)) {
+			computeExpectedTotalCost(policy);
+		}
 		return mCachedTotalCosts.get(policy);
 	}
 
-	public double getQAValue(Policy policy, IQFunction qFunction) {
+	/**
+	 * Retrieve the QA value of a given policy from the cache. If the policy is not already in the cache, then compute
+	 * and cache all of its QA values.
+	 * 
+	 * @param policy
+	 * @param qFunction
+	 *            : QA function
+	 * @return QA value of the policy
+	 * @throws QFunctionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws AttributeNameNotFoundException
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 */
+	public double getQAValue(Policy policy, IQFunction qFunction)
+			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
+			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			AttributeNameNotFoundException, PrismException, ResultParsingException {
+		if (!mXMDP.getQFunctions().contains(qFunction)) {
+			throw new QFunctionNotFoundException(qFunction);
+		}
+		if (!mCachedQAValues.containsKey(policy)) {
+			computeQAValues(policy, mXMDP.getQFunctions());
+		}
 		return mCachedQAValues.get(policy).get(qFunction);
+	}
+
+	private void computeExpectedTotalCost(Policy policy)
+			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
+			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			AttributeNameNotFoundException, PrismException, ResultParsingException {
+		XDTMC xdtmc = new XDTMC(mXMDP, policy);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false);
+		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
+		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
+		mCachedTotalCosts.put(policy, totalCost);
 	}
 
 	private void computeQAValues(Policy policy, Set<IQFunction> qFunctions)
@@ -251,7 +319,7 @@ public class PrismConnector {
 			AttributeNameNotFoundException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
-		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		Map<IQFunction, String> queryProperties = new HashMap<>();
 		StringBuilder builder = new StringBuilder();

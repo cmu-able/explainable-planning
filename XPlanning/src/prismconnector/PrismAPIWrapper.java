@@ -160,7 +160,9 @@ public class PrismAPIWrapper {
 	 * Query quantitative property of a DTMC -- from the model and property strings.
 	 * 
 	 * @param dtmcModelStr
+	 *            : DTMC translation
 	 * @param propertyStr
+	 *            : Single property to be queried
 	 * @return Quantitative result of the given query property of the DTMC
 	 * @throws PrismException
 	 * @throws ResultParsingException
@@ -180,7 +182,9 @@ public class PrismAPIWrapper {
 	 * Query multiple quantitative properties of a DTMC -- from the model and properties strings.
 	 * 
 	 * @param dtmcModelStr
+	 *            : DTMC translation
 	 * @param propertiesStr
+	 *            : Multiple properties to be queried
 	 * @return Mapping from each property to the result
 	 * @throws PrismException
 	 * @throws ResultParsingException

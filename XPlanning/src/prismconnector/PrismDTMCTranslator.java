@@ -29,6 +29,7 @@ import mdp.ProbabilisticEffect;
 import mdp.State;
 import mdp.XMDP;
 import metrics.IQFunction;
+import objectives.CostFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
@@ -58,7 +59,11 @@ public class PrismDTMCTranslator {
 
 	/**
 	 * 
-	 * @return Prism model of this DTMC, including constants' declarations and DTMC model.
+	 * @param withQAFunctions
+	 *            : Whether or not to include QA functions in the DTMC translation
+	 * @return Prism model of this DTMC, including constants' declarations, DTMC model, and a reward structure
+	 *         representing the cost function of the corresponding MDP, and optionally reward structure(s) representing
+	 *         the QA function(s).
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws ActionNotFoundException
@@ -68,11 +73,12 @@ public class PrismDTMCTranslator {
 	 * @throws IncompatibleDiscriminantClassException
 	 * @throws ActionDefinitionNotFoundException
 	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
 	 */
-	public String getDTMCTranslation()
-			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
-			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, DiscriminantNotFoundException {
+	public String getDTMCTranslation(boolean withQAFunctions) throws VarNotFoundException, EffectClassNotFoundException,
+			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
+			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
+			DiscriminantNotFoundException, AttributeNameNotFoundException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
 		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
@@ -99,6 +105,7 @@ public class PrismDTMCTranslator {
 		String goalDecl = mUtilities.buildGoalDecl(xmdp.getGoal());
 		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder);
+		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("dtmc");
@@ -109,36 +116,27 @@ public class PrismDTMCTranslator {
 		builder.append(goalDecl);
 		builder.append("\n\n");
 		builder.append(modules);
+		builder.append("\n\n");
+		builder.append(costStruct);
+
+		if (withQAFunctions) {
+			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(xmdp.getQFunctions());
+			builder.append("\n\n");
+			builder.append(qasRewards);
+		}
+
 		return builder.toString();
 	}
 
 	/**
 	 * 
-	 * @return Prism model of this DTMC, including constants' declarations, DTMC model, and reward structure(s)
-	 *         representing the QA function(s).
+	 * @return Numerical query property of the expected total cost of this DTMC
 	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleVarException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws AttributeNameNotFoundException
 	 */
-	public String getDTMCTranslationWithQAs() throws VarNotFoundException, EffectClassNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
-			DiscriminantNotFoundException, AttributeNameNotFoundException {
-		Set<IQFunction> qFunctions = mXDTMC.getXMDP().getQFunctions();
-		String dtmcTranslation = getDTMCTranslation();
-		String qasRewards = mRewardTranslator.getQAFunctionsTranslation(qFunctions);
-		StringBuilder builder = new StringBuilder();
-		builder.append(dtmcTranslation);
-		builder.append("\n\n");
-		builder.append(qasRewards);
-		return builder.toString();
+	public String getCostQueryPropertyTranslation() throws VarNotFoundException {
+		State goal = mXDTMC.getXMDP().getGoal();
+		CostFunction costFunction = mXDTMC.getXMDP().getCostFunction();
+		return mPropertyTranslator.buildDTMCCostQueryProperty(goal, costFunction);
 	}
 
 	/**

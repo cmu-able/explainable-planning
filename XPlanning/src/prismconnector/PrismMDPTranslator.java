@@ -19,7 +19,6 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
 import mdp.XMDP;
-import metrics.IQFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
@@ -56,8 +55,10 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
-	 * @return Prism model of this MDP, including constants' declarations, MDP model, and a reward structure
-	 *         representing the cost function.
+	 * @param withQAFunctions
+	 *            : Whether or not to include QA functions in the MDP translation
+	 * @return Prism model of this MDP, including constants' declarations, MDP model, a reward structure representing
+	 *         the cost function, and optionally reward structure(s) representing the QA function(s).
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws AttributeNameNotFoundException
@@ -69,7 +70,7 @@ public class PrismMDPTranslator {
 	 * @throws IncompatibleDiscriminantClassException
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	public String getMDPTranslation() throws VarNotFoundException, EffectClassNotFoundException,
+	public String getMDPTranslation(boolean withQAFunctions) throws VarNotFoundException, EffectClassNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
@@ -100,35 +101,13 @@ public class PrismMDPTranslator {
 		builder.append(modules);
 		builder.append("\n\n");
 		builder.append(costStruct);
-		return builder.toString();
-	}
 
-	/**
-	 * 
-	 * @return Prism model of this MDP, including constants' declarations, MDP model, a reward structure representing
-	 *         the cost function, and reward structure(s) representing all of the QA function(s).
-	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
-	 */
-	public String getMDPTranslationWithQAs() throws VarNotFoundException, EffectClassNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
-		Set<IQFunction> qFunctions = mXMDP.getQFunctions();
-		String mdpTranslation = getMDPTranslation();
-		String qasRewards = mRewardTranslator.getQAFunctionsTranslation(qFunctions);
-		StringBuilder builder = new StringBuilder();
-		builder.append(mdpTranslation);
-		builder.append("\n\n");
-		builder.append(qasRewards);
+		if (withQAFunctions) {
+			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(mXMDP.getQFunctions());
+			builder.append("\n\n");
+			builder.append(qasRewards);
+		}
+
 		return builder.toString();
 	}
 

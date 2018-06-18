@@ -94,7 +94,7 @@ class MobileRobotTest {
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 
 		try {
-			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 			System.out.println("MDP Translation (with QAs):");
 			System.out.println(mdpWithQAs);
@@ -118,7 +118,7 @@ class MobileRobotTest {
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.TRANSITION_REWARD);
 
 		try {
-			String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 			System.out.println("MDP Translation (with QAs):");
 			System.out.println(mdpWithQAs);
@@ -156,7 +156,7 @@ class MobileRobotTest {
 
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
-			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
@@ -181,7 +181,7 @@ class MobileRobotTest {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
 					PrismRewardType.TRANSITION_REWARD);
-			String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
@@ -211,7 +211,7 @@ class MobileRobotTest {
 
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
-		String mdpWithQAs = mdpTranslator.getMDPTranslationWithQAs();
+		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
 		try {
@@ -261,7 +261,7 @@ class MobileRobotTest {
 			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
 		XDTMC xdtmc = createXDTMC();
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
-		String dtmcWithQAs = dtmcTranslator.getDTMCTranslationWithQAs();
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
 		try {

@@ -72,7 +72,27 @@ public class PrismPropertyTranslator {
 	/**
 	 * 
 	 * @param goal
-	 *            : Goal of MDP
+	 *            : Goal of the corresponding MDP
+	 * @param costFunction
+	 *            : Cost function of the corresponding MDP
+	 * @return R{"cost"}=? [ F {goal predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	public String buildDTMCCostQueryProperty(State goal, CostFunction costFunction) throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("R{\"");
+		builder.append(costFunction.getName());
+		builder.append("\"}=? [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
+		builder.append(" ]");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 *            : Goal of the corresponding MDP
 	 * @param qFunction
 	 *            : QA function of the value to be queried
 	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
@@ -92,7 +112,7 @@ public class PrismPropertyTranslator {
 	/**
 	 * 
 	 * @param goal
-	 *            : Goal of MDP
+	 *            : Goal of the corresponding MDP
 	 * @return R=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */

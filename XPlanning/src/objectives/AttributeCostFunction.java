@@ -6,9 +6,9 @@ import metrics.IQFunction;
 import metrics.Transition;
 
 /**
- * {@link AttributeCostFunction} represents a linear (i.e., risk-neutral) single-attribute cost function. Since this
- * cost function is linear, its input value can be either a total value characterizing a QA of an entire policy
- * execution, or a value of a single transition.
+ * {@link AttributeCostFunction} represents a linear (i.e., risk-neutral) single-attribute cost function of the form
+ * C(x) = a + b*x, where b > 0. Since this cost function is linear, its input value can be either a total value
+ * characterizing a QA of an entire policy execution, or a value of a single transition.
  * 
  * @author rsukkerd
  *
@@ -35,9 +35,15 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 		return mQFunction;
 	}
 
+	@Override
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
 		double transQValue = mQFunction.getValue(transition);
-		return maConst * transQValue + mbConst;
+		return maConst + mbConst * transQValue;
+	}
+
+	@Override
+	public double inverse(double cost) {
+		return (cost - maConst) / mbConst;
 	}
 
 	@Override

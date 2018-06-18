@@ -15,4 +15,6 @@ import metrics.Transition;
 public interface ILinearCostFunction {
 
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
+
+	public double inverse(double cost);
 }

@@ -14,7 +14,30 @@ import metrics.Transition;
  */
 public interface ILinearCostFunction {
 
+	/**
+	 * 
+	 * @param transition
+	 *            : Transition (s, a, s')
+	 * @return Single-attribute cost of the transition
+	 * @throws VarNotFoundException
+	 * @throws AttributeNameNotFoundException
+	 */
 	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
 
+	/**
+	 * 
+	 * @param value
+	 *            : Either a total value characterizing a QA of an entire policy execution, or a value of a single
+	 *            transition
+	 * @return Single-attribute cost of the value
+	 */
+	public double getCost(double value);
+
+	/**
+	 * 
+	 * @param cost
+	 *            : Single-attribute cost of either a transition or an entire policy execution
+	 * @return Value x = (C(x) - a) / b
+	 */
 	public double inverse(double cost);
 }

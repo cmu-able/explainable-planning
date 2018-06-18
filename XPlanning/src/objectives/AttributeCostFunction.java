@@ -42,6 +42,11 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 	}
 
 	@Override
+	public double getCost(double value) {
+		return maConst + mbConst * value;
+	}
+
+	@Override
 	public double inverse(double cost) {
 		return (cost - maConst) / mbConst;
 	}

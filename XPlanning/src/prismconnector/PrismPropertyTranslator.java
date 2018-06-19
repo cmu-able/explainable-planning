@@ -45,7 +45,8 @@ public class PrismPropertyTranslator {
 	 *            : Objective function to be minimized, which does not contain the constrained QA function
 	 * @param constraint
 	 *            : Constraint on the expected total QA value
-	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
+	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}{<= or <}{QA bound} [ C ], P>=1 [ F {goal
+	 *         predicate} ])
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPConstrainedMinProperty(State goal, IAdditiveCostFunction objectiveFunction,
@@ -58,7 +59,12 @@ public class PrismPropertyTranslator {
 		builder.append("\"}min=? [ C ], ");
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
-		builder.append("\"}<=");
+		builder.append("\"}");
+		if (constraint.isStrictBound()) {
+			builder.append("<");
+		} else {
+			builder.append("<=");
+		}
 		builder.append(uppberBound);
 		builder.append(" [ C ], ");
 		builder.append("P>=1 [ F ");

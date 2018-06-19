@@ -18,10 +18,12 @@ public class AttributeConstraint<E extends IQFunction> {
 
 	private E mQFunction;
 	private double mExpTotalUpperBound;
+	private boolean mIsStrictBound;
 
-	public AttributeConstraint(E qFunction, double expTotalUpperBound) {
+	public AttributeConstraint(E qFunction, double expTotalUpperBound, boolean isStrictBound) {
 		mQFunction = qFunction;
 		mExpTotalUpperBound = expTotalUpperBound;
+		mIsStrictBound = isStrictBound;
 	}
 
 	public E getQFunction() {
@@ -30,6 +32,10 @@ public class AttributeConstraint<E extends IQFunction> {
 
 	public double getExpectedTotalUpperBound() {
 		return mExpTotalUpperBound;
+	}
+
+	public boolean isStrictBound() {
+		return mIsStrictBound;
 	}
 
 	@Override
@@ -42,7 +48,8 @@ public class AttributeConstraint<E extends IQFunction> {
 		}
 		AttributeConstraint<?> constraint = (AttributeConstraint<?>) obj;
 		return constraint.mQFunction.equals(mQFunction)
-				&& Double.compare(constraint.mExpTotalUpperBound, mExpTotalUpperBound) == 0;
+				&& Double.compare(constraint.mExpTotalUpperBound, mExpTotalUpperBound) == 0
+				&& constraint.mIsStrictBound == mIsStrictBound;
 	}
 
 	@Override
@@ -52,6 +59,7 @@ public class AttributeConstraint<E extends IQFunction> {
 			result = 17;
 			result = 31 * result + mQFunction.hashCode();
 			result = 31 * result + Double.hashCode(mExpTotalUpperBound);
+			result = 31 * result + Boolean.hashCode(mIsStrictBound);
 			hashCode = result;
 		}
 		return result;

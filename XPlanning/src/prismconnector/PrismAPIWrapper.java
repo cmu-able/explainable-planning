@@ -31,6 +31,7 @@ import prism.Result;
 public class PrismAPIWrapper {
 
 	private static final String FLOATING_POINT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
+	private static final String INFINITY_PATERN = "[iI]nfinity";
 
 	private Prism mPrism;
 
@@ -64,7 +65,8 @@ public class PrismAPIWrapper {
 	 *            function), and optionally a constraint
 	 * @param outputPath
 	 *            : Output directory for the explicit model files
-	 * @return Expected total objective value of the generated optimal policy
+	 * @return Expected total objective value of the generated optimal policy. If the value is infinity, it means that
+	 *         the probability of the policy reaching the goal is < 1.
 	 * @throws PrismException
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException
@@ -234,12 +236,18 @@ public class PrismAPIWrapper {
 		Result result = mPrism.modelCheck(propertiesFile, property);
 
 		// Parse result double from result string
+		// The result string may be a floating-point value or "Infinity"
 		String resultStr = result.getResultString();
-		Pattern p = Pattern.compile(FLOATING_POINT_PATTERN);
-		Matcher m = p.matcher(resultStr);
+		Pattern valuePattern = Pattern.compile(FLOATING_POINT_PATTERN);
+		Pattern infinityPattern = Pattern.compile(INFINITY_PATERN);
+		Matcher valueMatcher = valuePattern.matcher(resultStr);
+		Matcher infinityMatcher = infinityPattern.matcher(resultStr);
 
-		if (m.find()) {
-			return Double.parseDouble(m.group(0));
+		if (valueMatcher.find()) {
+			return Double.parseDouble(valueMatcher.group(0));
+		}
+		if (infinityMatcher.find()) {
+			return Double.POSITIVE_INFINITY;
 		}
 		throw new ResultParsingException(resultStr, FLOATING_POINT_PATTERN);
 	}

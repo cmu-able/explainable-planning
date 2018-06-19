@@ -28,8 +28,6 @@ import prismconnector.PrismConnector;
 
 public class AlternativeExplorer {
 
-	private static final double COST_IMPROVE_STEP = 0.2;
-
 	private PrismConnector mPrismConnector;
 	private Policy mPolicy;
 
@@ -47,21 +45,28 @@ public class AlternativeExplorer {
 		XMDP xmdp = mPrismConnector.getXMDP();
 		CostFunction costFunction = xmdp.getCostFunction();
 		Set<IQFunction> qFunctions = xmdp.getQFunctions();
+
+		// Generate alternatives by improving each QA (one at a time) by some amount
 		for (IQFunction qFunction : qFunctions) {
-			AttributeCostFunction<IQFunction> attrCostFunc = costFunction.getAttributeCostFunction(qFunction);
+			// QA value of the solution policy
 			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
-			double currAttrCost = attrCostFunc.getCost(currQAValue);
-			double improvedQAValue = attrCostFunc.inverse(currAttrCost - COST_IMPROVE_STEP);
-			AttributeConstraint<IQFunction> attrConstraint = new AttributeConstraint<>(qFunction, improvedQAValue);
+
+			// Set a new aspirational level of the QA; use this as a constraint for an alternative
+			AttributeConstraint<IQFunction> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue, true);
+
+			// Create a new objective function of n-1 attributes that excludes this QA
 			AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
 			for (AttributeCostFunction<IQFunction> otherAttrCostFunc : costFunction) {
-				IQFunction otherQFunc = otherAttrCostFunc.getQFunction();
-				if (!otherQFunc.equals(qFunction)) {
+				if (!otherAttrCostFunc.getQFunction().equals(qFunction)) {
 					double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
 					objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
 				}
 			}
+
+			// Find an alternative policy, if exists
 			Policy alternative = mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+
+			// TODO: Check if an alternative policy exists
 			alternatives.add(alternative);
 		}
 		return alternatives;

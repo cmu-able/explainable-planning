@@ -1,7 +1,7 @@
 package prismconnector;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PrismExplicitModelPointer {
@@ -16,25 +16,30 @@ public class PrismExplicitModelPointer {
 	private File mTraFile;
 	private File mLabFile;
 	private File mSrewFile;
-	private List<File> mIndexedSrewFiles = new ArrayList<>();
+	private List<File> mIndexedSrewFiles;
 
 	public PrismExplicitModelPointer(String modelPath, String staFilename, String traFilename, String labFilename,
-			String srewFilename, int numRewardStructs) {
+			String srewFilename) {
 		mModelPath = modelPath;
 		mStaFile = new File(modelPath, staFilename);
 		mTraFile = new File(modelPath, traFilename);
 		mLabFile = new File(modelPath, labFilename);
 		mSrewFile = new File(modelPath, srewFilename);
+		mIndexedSrewFiles = getSortedStateRewardsFiles(srewFilename);
+	}
 
-		if (numRewardStructs > 1) {
-			for (int i = 1; i <= numRewardStructs; i++) {
-				int extensionIndex = srewFilename.indexOf(".srew");
-				String srewName = srewFilename.substring(0, extensionIndex);
-				String indexedSrewFilename = srewName + i + ".srew";
-				File srewFile = new File(modelPath, indexedSrewFilename);
-				mIndexedSrewFiles.add(srewFile);
-			}
-		}
+	private List<File> getSortedStateRewardsFiles(String srewFilename) {
+		int extensionIndex = srewFilename.indexOf(".srew");
+		String srewName = srewFilename.substring(0, extensionIndex);
+
+		File modelDir = new File(mModelPath);
+		File[] srewFiles = modelDir.listFiles(
+				(dir, name) -> name.toLowerCase().startsWith(srewName) && name.toLowerCase().endsWith(".srew"));
+
+		// Sort .srew files lexicographically based on their abstract pathnames
+		// {name}1.srew, {name}2.srew, {name}3.srew, ...
+		Arrays.sort(srewFiles);
+		return Arrays.asList(srewFiles);
 	}
 
 	public String getExplicitModelPath() {

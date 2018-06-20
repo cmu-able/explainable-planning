@@ -87,13 +87,8 @@ public class PrismConnector {
 		// Goal with cost-minimizing objective
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
-		// If MDP translation has QAs, then reward structures include 1 for the cost function
-		// and 1 for each of the QA functions.
-		// Otherwise, there is only 1 reward structure for the cost function.
-		int numRewardStructs = mUseExplicitModel ? mXMDP.getQFunctions().size() + 1 : 1;
-
 		// Compute an optimal policy, and cache its total cost and QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, true, numRewardStructs);
+		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, true);
 	}
 
 	/**
@@ -131,33 +126,25 @@ public class PrismConnector {
 		PrismPropertyTranslator propTranslator = mdpTranslator.getPrismPropertyTransltor();
 		StringBuilder mdpBuilder = new StringBuilder();
 		mdpBuilder.append(mdpTranslator.getMDPTranslation(mUseExplicitModel));
-		int numRewardStructs = 0;
 
 		if (mUseExplicitModel) {
-			// MDP translation includes all QA functions
-			// 1 reward structure for each of the QA functions, 1 for the cost function
-			numRewardStructs += mXMDP.getQFunctions().size() + 1;
+			// MDP translation already includes all QA functions
 		} else {
 			// MDP translation includes only the QA function of the value to be constrained
 			mdpBuilder.append("\n\n");
 			mdpBuilder.append(rewardTranslator.getQAFunctionTranslation(constraint.getQFunction()));
-
-			// 1 reward structure for the cost function, 1 for the QA function
-			numRewardStructs += 2;
 		}
 
 		String objectiveReward = rewardTranslator.getObjectiveFunctionTranslation(objectiveFunction);
 		mdpBuilder.append("\n\n");
 		mdpBuilder.append(objectiveReward);
 
-		// 1 reward structure for the objective function
-		numRewardStructs += 1;
-
-		String mdp = mdpBuilder.toString();
-		String property = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction, constraint);
+		String mdpStr = mdpBuilder.toString();
+		String propertyStr = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
+				constraint);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, property, false, numRewardStructs);
+		return computeOptimalPolicy(mdpTranslator, mdpStr, propertyStr, false);
 	}
 
 	/**
@@ -170,8 +157,6 @@ public class PrismConnector {
 	 *            : Property string for either minimizing the cost function or other objective function
 	 * @param isCostMinProperty
 	 *            : Whether the property is minimizing the cost function
-	 * @param numRewardStructs
-	 *            : Number of reward structures in the MDP
 	 * @return An optimal policy
 	 * @throws PrismException
 	 * @throws ResultParsingException
@@ -189,14 +174,14 @@ public class PrismConnector {
 	 * @throws AttributeNameNotFoundException
 	 */
 	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyString,
-			boolean isCostMinProperty, int numRewardStructs) throws PrismException, ResultParsingException, IOException,
-			VarNotFoundException, QFunctionNotFoundException, ActionDefinitionNotFoundException,
-			EffectClassNotFoundException, IncompatibleVarException, ActionNotFoundException,
-			DiscriminantNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, AttributeNameNotFoundException {
+			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, VarNotFoundException,
+			QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
+			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			AttributeNameNotFoundException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mOutputPath,
-				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME, numRewardStructs);
+				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME);
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(

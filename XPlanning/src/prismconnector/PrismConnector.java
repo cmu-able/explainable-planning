@@ -41,11 +41,12 @@ public class PrismConnector {
 	private Map<Policy, Map<IQFunction, Double>> mCachedQAValues = new HashMap<>();
 	private Map<PrismExplicitModelPointer, Policy> mExplicitModelPtrToPolicy = new HashMap<>();
 
-	public PrismConnector(XMDP xmdp, String outputPath, boolean useExplicitModel) throws PrismException {
+	public PrismConnector(XMDP xmdp, String outputPath, boolean useExplicitModel, PrismConfiguration prismConfig)
+			throws PrismException {
 		mXMDP = xmdp;
 		mOutputPath = outputPath;
 		mUseExplicitModel = useExplicitModel;
-		mPrismAPI = new PrismAPIWrapper();
+		mPrismAPI = new PrismAPIWrapper(prismConfig);
 	}
 
 	public XMDP getXMDP() {
@@ -204,6 +205,8 @@ public class PrismConnector {
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function
 		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyString, outputExplicitModelPointer);
+
+		// TODO
 
 		// Read policy from the PRISM output explicit model
 		Policy policy = explicitModelReader.readPolicyFromFiles();

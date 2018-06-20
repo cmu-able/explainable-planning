@@ -58,6 +58,11 @@ public class PrismConfiguration {
 	private PrismMDPSolutionMethod mMDPSolutionMethod;
 	private PrismMDPMultiSolutionMethod mMDPMultiSolutionMethod;
 
+	public PrismConfiguration() {
+		this(PrismEngine.EXPLICIT, PrismMDPSolutionMethod.VALUE_ITERATION,
+				PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
+	}
+
 	public PrismConfiguration(PrismEngine engine, PrismMDPSolutionMethod mdpSolutionMethod,
 			PrismMDPMultiSolutionMethod mdpMultiSolutionMethod) {
 		mEngine = engine;

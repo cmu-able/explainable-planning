@@ -47,6 +47,7 @@ import objectives.CostFunction;
 import policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismAPIWrapper;
+import prismconnector.PrismConfiguration;
 import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismMDPTranslator;
@@ -207,15 +208,18 @@ class MobileRobotTest {
 		String labOutputFilename = "adv.lab";
 		String srewOutputFilename = "adv.srew";
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename, 2);
+				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename);
 
 		XMDP xmdp = createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
+		// Default PRISM configuration
+		PrismConfiguration prismConfig = new PrismConfiguration();
+
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
@@ -234,11 +238,14 @@ class MobileRobotTest {
 		String labFilename = "adv.lab";
 		String srewFilename = "adv.srew";
 		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath, staFilename,
-				traFilename, labFilename, srewFilename, 2);
+				traFilename, labFilename, srewFilename);
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
+		// Default PRISM configuration
+		PrismConfiguration prismConfig = new PrismConfiguration();
+
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double totalCost = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
 			double totalTime = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
 			System.out.print("Query property: ");
@@ -264,8 +271,11 @@ class MobileRobotTest {
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
+		// Default PRISM configuration
+		PrismConfiguration prismConfig = new PrismConfiguration();
+
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);

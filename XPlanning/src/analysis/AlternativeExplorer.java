@@ -37,7 +37,27 @@ public class AlternativeExplorer {
 		mPolicy = policy;
 	}
 
-	public Set<Policy> getParetoOptimalAlternatives()
+	/**
+	 * Generate alternative policies that are Pareto-optimal and are immediate neighbors of the original solution
+	 * policy. This kind of alternatives indicates the "inflection points" of the decision.
+	 * 
+	 * @return Pareto-optimal alternative policies that are immediately next to the original solution policy.
+	 * @throws QFunctionNotFoundException
+	 * @throws ActionDefinitionNotFoundException
+	 * @throws EffectClassNotFoundException
+	 * @throws VarNotFoundException
+	 * @throws IncompatibleVarException
+	 * @throws ActionNotFoundException
+	 * @throws DiscriminantNotFoundException
+	 * @throws IncompatibleActionException
+	 * @throws IncompatibleEffectClassException
+	 * @throws IncompatibleDiscriminantClassException
+	 * @throws AttributeNameNotFoundException
+	 * @throws PrismException
+	 * @throws ResultParsingException
+	 * @throws IOException
+	 */
+	public Set<Policy> getParetoOptimalImmediateNeighbors()
 			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
 			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
 			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
@@ -45,11 +65,14 @@ public class AlternativeExplorer {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
 		CostFunction costFunction = xmdp.getCostFunction();
+
+		// QAs to be explored
 		Iterator<IQFunction> frontierIter = xmdp.getQFunctions().iterator();
 
-		// Generate alternatives by improving each QA (one at a time) by some amount
+		// Generate alternatives by improving each QA (one at a time) to the next best value, if exists
 		while (frontierIter.hasNext()) {
 			IQFunction qFunction = frontierIter.next();
+			frontierIter.remove();
 
 			// QA value of the solution policy
 			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
@@ -68,12 +91,14 @@ public class AlternativeExplorer {
 
 			// Find an alternative policy, if exists
 			Policy alternative = mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+
 			if (alternative != null) {
 				alternatives.add(alternative);
-			}
 
-			// For other QAs that have been improved as a side effect, remove them from the set of QAs to be explored
-			update(frontierIter, alternative);
+				// For other QAs that have been improved as a side effect, remove them from the set of QAs to be
+				// explored
+				update(frontierIter, alternative);
+			}
 		}
 		return alternatives;
 	}
@@ -87,6 +112,8 @@ public class AlternativeExplorer {
 			IQFunction qFunction = frontierIter.next();
 			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
+
+			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
 			if (altQAValue < solnQAValue) {
 				frontierIter.remove();
 			}

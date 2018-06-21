@@ -25,6 +25,8 @@ import objectives.AttributeConstraint;
 import objectives.IAdditiveCostFunction;
 import policy.Policy;
 import prism.PrismException;
+import prismconnector.PrismConfiguration.PrismEngine;
+import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 
 public class PrismConnector {
 
@@ -121,7 +123,8 @@ public class PrismConnector {
 			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
 			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, PrismException,
 			ResultParsingException, IOException, QFunctionNotFoundException {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.STATE_REWARD);
+		// Use transition rewards for multi-objective adversary synthesis
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);
 		PrismRewardTranslator rewardTranslator = mdpTranslator.getPrismRewardTranslator();
 		PrismPropertyTranslator propTranslator = mdpTranslator.getPrismPropertyTransltor();
 		StringBuilder mdpBuilder = new StringBuilder();
@@ -142,6 +145,10 @@ public class PrismConnector {
 		String mdpStr = mdpBuilder.toString();
 		String propertyStr = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
 				constraint);
+
+		// Use Sparse engine and linear-programming solution method for multi-objective adversary synthesis
+		mPrismAPI.reconfigurePrism(PrismEngine.SPARSE);
+		mPrismAPI.reconfigurePrism(PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
 		return computeOptimalPolicy(mdpTranslator, mdpStr, propertyStr, false);

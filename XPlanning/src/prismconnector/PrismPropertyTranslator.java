@@ -45,14 +45,13 @@ public class PrismPropertyTranslator {
 	 *            : Objective function to be minimized, which does not contain the constrained QA function
 	 * @param constraint
 	 *            : Constraint on the expected total QA value
-	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}{<= or <}{QA bound} [ C ], P>=1 [ F {goal
-	 *         predicate} ])
+	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPConstrainedMinProperty(State goal, IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<? extends IQFunction> constraint) throws VarNotFoundException {
 		IQFunction qFunction = constraint.getQFunction();
-		double uppberBound = constraint.getExpectedTotalUpperBound();
+		double upperBound = constraint.getExpectedTotalUpperBound();
 		StringBuilder builder = new StringBuilder();
 		builder.append("multi(R{\"");
 		builder.append(objectiveFunction.getName());
@@ -61,11 +60,15 @@ public class PrismPropertyTranslator {
 		builder.append(qFunction.getName());
 		builder.append("\"}");
 		if (constraint.isStrictBound()) {
-			builder.append("<");
+			// Multi-objective properties cannot use strict inequalities on P/R operators
+			// Hack: Decrease the upper bound by 1% and use non-strict inequality
+			double adjustedUpperBound = 0.99 * upperBound;
+			builder.append("<=");
+			builder.append(adjustedUpperBound);
 		} else {
 			builder.append("<=");
+			builder.append(upperBound);
 		}
-		builder.append(uppberBound);
 		builder.append(" [ C ], ");
 		builder.append("P>=1 [ F ");
 		String goalPredicate = buildGoalPredicate(goal);

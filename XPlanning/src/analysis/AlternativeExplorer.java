@@ -2,6 +2,7 @@ package analysis;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import exceptions.ActionDefinitionNotFoundException;
@@ -44,10 +45,12 @@ public class AlternativeExplorer {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
 		CostFunction costFunction = xmdp.getCostFunction();
-		Set<IQFunction> qFunctions = xmdp.getQFunctions();
+		Iterator<IQFunction> frontierIter = xmdp.getQFunctions().iterator();
 
 		// Generate alternatives by improving each QA (one at a time) by some amount
-		for (IQFunction qFunction : qFunctions) {
+		while (frontierIter.hasNext()) {
+			IQFunction qFunction = frontierIter.next();
+
 			// QA value of the solution policy
 			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 
@@ -65,10 +68,28 @@ public class AlternativeExplorer {
 
 			// Find an alternative policy, if exists
 			Policy alternative = mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+			if (alternative != null) {
+				alternatives.add(alternative);
+			}
 
-			// TODO: Check if an alternative policy exists
-			alternatives.add(alternative);
+			// For other QAs that have been improved as a side effect, remove them from the set of QAs to be explored
+			update(frontierIter, alternative);
 		}
 		return alternatives;
+	}
+
+	private void update(Iterator<IQFunction> frontierIter, Policy alternative)
+			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
+			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
+			AttributeNameNotFoundException, PrismException, ResultParsingException {
+		while (frontierIter.hasNext()) {
+			IQFunction qFunction = frontierIter.next();
+			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
+			if (altQAValue < solnQAValue) {
+				frontierIter.remove();
+			}
+		}
 	}
 }

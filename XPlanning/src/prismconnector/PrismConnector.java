@@ -59,7 +59,7 @@ public class PrismConnector {
 	 * Generate an optimal policy (the objective is the cost function only). Compute its QA values. Cache its expected
 	 * total cost and QA values.
 	 * 
-	 * @return An optimal policy.
+	 * @return An optimal policy, if exists.
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws AttributeNameNotFoundException
@@ -101,7 +101,7 @@ public class PrismConnector {
 	 *            : Objective function
 	 * @param constraint
 	 *            : Constraint on the expected total value of a particular QA
-	 * @return An optimal, constraint-satisfying policy
+	 * @return An optimal, constraint-satisfying policy, if exists.
 	 * @throws VarNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws AttributeNameNotFoundException
@@ -164,7 +164,7 @@ public class PrismConnector {
 	 *            : Property string for either minimizing the cost function or other objective function
 	 * @param isCostMinProperty
 	 *            : Whether the property is minimizing the cost function
-	 * @return An optimal policy
+	 * @return An optimal policy, if exists.
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
@@ -198,7 +198,10 @@ public class PrismConnector {
 		// The objective function can be the cost function
 		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyString, outputExplicitModelPointer);
 
-		// TODO
+		if (result == Double.NaN || result == Double.POSITIVE_INFINITY) {
+			// No solution policy found
+			return null;
+		}
 
 		// Read policy from the PRISM output explicit model
 		Policy policy = explicitModelReader.readPolicyFromFiles();

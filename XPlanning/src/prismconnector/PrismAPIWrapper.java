@@ -85,7 +85,8 @@ public class PrismAPIWrapper {
 	 * @param outputPath
 	 *            : Output directory for the explicit model files
 	 * @return Expected total objective value of the generated optimal policy. If the value is infinity, it means that
-	 *         the probability of reaching the goal is < 1.
+	 *         the probability of reaching the goal is < 1. If the value is NaN, it means that there is no solution
+	 *         found.
 	 * @throws PrismException
 	 * @throws FileNotFoundException
 	 * @throws ResultParsingException

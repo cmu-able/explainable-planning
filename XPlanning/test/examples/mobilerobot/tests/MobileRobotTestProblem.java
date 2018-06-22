@@ -66,8 +66,8 @@ public class MobileRobotTestProblem {
 	private StateVarDefinition<RobotBumped> rBumpedDef = new StateVarDefinition<>("rBumped", bumped, notBumped);
 
 	// MoveTo actions
-	private MoveToAction moveToL1 = new MoveToAction(rLocDef.getStateVar(locL1));
-	private MoveToAction moveToL2 = new MoveToAction(rLocDef.getStateVar(locL2));
+	private MoveToAction moveToL1;
+	private MoveToAction moveToL2;
 
 	// MoveTo action definition
 	private ActionDefinition<MoveToAction> moveToDef;
@@ -81,11 +81,10 @@ public class MobileRobotTestProblem {
 			setSpeedFull);
 
 	// QA functions
-	TravelTimeQFunction timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
+	TravelTimeQFunction timeQFunction;
 
 	// Single-attribute cost functions
-	private AttributeCostFunction<TravelTimeQFunction> timeCostFunction = new AttributeCostFunction<TravelTimeQFunction>(
-			timeQFunction, 0, 1 / MAX_TOTAL_TIME);
+	private AttributeCostFunction<TravelTimeQFunction> timeCostFunction;
 
 	public MobileRobotTestProblem() {
 
@@ -196,12 +195,14 @@ public class MobileRobotTestProblem {
 	}
 
 	private Set<IQFunction> createQFunctions() {
+		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
 		Set<IQFunction> qFunctions = new HashSet<>();
 		qFunctions.add(timeQFunction);
 		return qFunctions;
 	}
 
 	private CostFunction createCostFunction() {
+		timeCostFunction = new AttributeCostFunction<TravelTimeQFunction>(timeQFunction, 0, 1 / MAX_TOTAL_TIME);
 		CostFunction costFunction = new CostFunction();
 		costFunction.put(timeQFunction, timeCostFunction, 1.0);
 		return costFunction;

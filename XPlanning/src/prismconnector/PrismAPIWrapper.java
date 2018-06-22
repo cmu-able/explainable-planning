@@ -34,9 +34,9 @@ import prismconnector.PrismConfiguration.PrismMDPSolutionMethod;
  */
 public class PrismAPIWrapper {
 
-	private static final String FLOATING_POINT_RESULT_PATTERN = "Result: [-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
-	private static final String INFINITY_RESULT_PATTERN = "Result: Infinity";
-	private static final String NAN_RESULT_PATTERN = "Result: NaN";
+	private static final String FLOATING_POINT_RESULT_PATTERN = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
+	private static final String INFINITY_RESULT_PATTERN = "Infinity";
+	private static final String NAN_RESULT_PATTERN = "NaN";
 
 	private PrismConfiguration mPrismConfig;
 	private Prism mPrism;

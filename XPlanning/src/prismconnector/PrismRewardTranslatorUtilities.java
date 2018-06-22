@@ -26,7 +26,6 @@ import metrics.IQFunction;
 import metrics.Transition;
 import metrics.TransitionDefinition;
 import objectives.AttributeCostFunction;
-import objectives.CostFunction;
 import objectives.IAdditiveCostFunction;
 
 public class PrismRewardTranslatorUtilities {
@@ -82,28 +81,8 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
-	 * Build a state-based reward structure for a given cost function of MDP.
-	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
-	 * @param costFunction
-	 *            : Cost function of MDP
-	 * @return formula compute_cost = !readyToCopy; rewards "cost" ... endrewards
-	 * @throws VarNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
-	 */
-	String buildRewardStructure(TransitionFunction transFunction, CostFunction costFunction)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
-		return buildRewardStructure(transFunction, costFunction);
-	}
-
-	/**
-	 * Build a state-based reward structure for a given objective function.
+	 * Build a state-based reward structure for a given objective function. This can be the cost function of MDP or an
+	 * arbitrary objective function.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP

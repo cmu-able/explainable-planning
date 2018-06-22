@@ -25,6 +25,16 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 	private double maConst;
 	private double mbConst;
 
+	/**
+	 * C(x) = a + b*x, where b > 0, and x is a QA value.
+	 * 
+	 * @param qFunction
+	 *            : QA function
+	 * @param aConst
+	 *            : Constant a
+	 * @param bConst
+	 *            : Constant b > 0
+	 */
 	public AttributeCostFunction(E qFunction, double aConst, double bConst) {
 		mQFunction = qFunction;
 		maConst = aConst;

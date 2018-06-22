@@ -20,6 +20,14 @@ public class ActionDefinition<E extends IAction> {
 	private String mName;
 	private Set<E> mActions;
 
+	public ActionDefinition(String name, E... actions) {
+		mName = name;
+		mActions = new HashSet<>();
+		for (E action : actions) {
+			mActions.add(action);
+		}
+	}
+
 	public ActionDefinition(String name, Set<? extends E> actions) {
 		mName = name;
 		mActions = new HashSet<>(actions);

@@ -58,6 +58,10 @@ public class PrismConfiguration {
 	private PrismMDPSolutionMethod mMDPSolutionMethod;
 	private PrismMDPMultiSolutionMethod mMDPMultiSolutionMethod;
 
+	/**
+	 * Default PRISM configuration: Engine: Explicit, MDP Solution Method: Value iteration, Multi-Objective MDP Solution
+	 * Method: Linear programming.
+	 */
 	public PrismConfiguration() {
 		this(PrismEngine.EXPLICIT, PrismMDPSolutionMethod.VALUE_ITERATION,
 				PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);

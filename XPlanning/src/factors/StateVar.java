@@ -16,7 +16,15 @@ public class StateVar<E extends IStateVarValue> {
 	private StateVarDefinition<E> mDefinition;
 	private E mValue;
 
-	public StateVar(StateVarDefinition<E> definition, E value) {
+	/**
+	 * This constructor is only called by {@link StateVarDefinition}.
+	 * 
+	 * @param definition
+	 *            : State variable definition
+	 * @param value
+	 *            : State variable value
+	 */
+	StateVar(StateVarDefinition<E> definition, E value) {
 		mDefinition = definition;
 		mValue = value;
 	}

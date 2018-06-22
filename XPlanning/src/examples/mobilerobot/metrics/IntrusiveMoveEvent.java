@@ -49,7 +49,7 @@ public class IntrusiveMoveEvent implements IEvent {
 		if (trans.getAction() instanceof MoveToAction && trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
 			Location locDest = (Location) trans.getDestStateVarValue(mrLocDestDef);
-			StateVar<Location> rLocDest = new StateVar<>(mrLocDestDef, locDest);
+			StateVar<Location> rLocDest = mrLocDestDef.getStateVar(locDest);
 			return isIntrusive(moveTo, rLocDest);
 		}
 		return false;

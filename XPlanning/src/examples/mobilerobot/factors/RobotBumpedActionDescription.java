@@ -61,15 +61,15 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 		EffectClass rBumpedEffectClass = mrBumpedActionDesc.getEffectClass();
 		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocSrcDef);
 		for (Location rLocSrcValue : applicableLocs) {
-			StateVar<Location> rLocSrc = new StateVar<>(mrLocSrcDef, rLocSrcValue);
+			StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(rLocSrcValue);
 			Discriminant rLocDiscriminant = new Discriminant(rBumpedDiscrClass);
 			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(rBumpedEffectClass);
 			Effect bumpedEffect = new Effect(rBumpedEffectClass);
 			Effect notBumpedEffect = new Effect(rBumpedEffectClass);
-			StateVar<RobotBumped> bumped = new StateVar<>(mrBumpedDestDef, new RobotBumped(true));
-			StateVar<RobotBumped> notBumped = new StateVar<>(mrBumpedDestDef, new RobotBumped(false));
+			StateVar<RobotBumped> bumped = mrBumpedDestDef.getStateVar(new RobotBumped(true));
+			StateVar<RobotBumped> notBumped = mrBumpedDestDef.getStateVar(new RobotBumped(false));
 			bumpedEffect.add(bumped);
 			notBumpedEffect.add(notBumped);
 

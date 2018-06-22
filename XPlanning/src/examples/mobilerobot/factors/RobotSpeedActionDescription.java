@@ -55,13 +55,13 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 		EffectClass rSpeedEffectClass = mrSpeedActionDesc.getEffectClass();
 		Set<RobotSpeed> applicableSpeeds = precondition.getApplicableValues(mrSpeedDef);
 		for (RobotSpeed rSpeedSrcValue : applicableSpeeds) {
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedDef, rSpeedSrcValue);
+			StateVar<RobotSpeed> rSpeedSrc = mrSpeedDef.getStateVar(rSpeedSrcValue);
 			Discriminant rSpeedDiscriminant = new Discriminant(rSpeedDiscrClass);
 			rSpeedDiscriminant.add(rSpeedSrc);
 
 			ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(rSpeedEffectClass);
 			Effect newSpeedEffect = new Effect(rSpeedEffectClass);
-			StateVar<RobotSpeed> newSpeed = new StateVar<>(mrSpeedDef, setSpeed.getTargetSpeed());
+			StateVar<RobotSpeed> newSpeed = mrSpeedDef.getStateVar(setSpeed.getTargetSpeed());
 			newSpeedEffect.add(newSpeed);
 			rSpeedProbEffect.put(newSpeedEffect, SET_SPEED_PROB);
 			mrSpeedActionDesc.put(rSpeedProbEffect, rSpeedDiscriminant, setSpeed);

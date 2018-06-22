@@ -68,7 +68,7 @@ public class PrismExplicitModelReader {
 					StateVarDefinition<IStateVarValue> definition = stateSpace.getStateVarDefinition(varName);
 					IStateVarValue value = mEncodings.decodeStateVarValue(IStateVarValue.class, varName,
 							encodedIntValue);
-					StateVar<IStateVarValue> stateVar = new StateVar<>(definition, value);
+					StateVar<IStateVarValue> stateVar = definition.getStateVar(value);
 					state.addStateVar(stateVar);
 				}
 			}

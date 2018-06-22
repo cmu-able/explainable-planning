@@ -177,7 +177,7 @@ public class PrismDTMCTranslator {
 			Discriminant discriminant = new Discriminant(discrClass);
 			for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
 				IStateVarValue value = state.getStateVarValue(IStateVarValue.class, stateVarDef);
-				StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef, value);
+				StateVar<IStateVarValue> stateVar = stateVarDef.getStateVar(value);
 				discriminant.add(stateVar);
 			}
 			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);

@@ -79,7 +79,7 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 				Discriminant discriminant = new Discriminant(discrClass);
 				for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
 					IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
-					StateVar<IStateVarValue> stateVar = new StateVar<>(stateVarDef, value);
+					StateVar<IStateVarValue> stateVar = stateVarDef.getStateVar(value);
 					discriminant.add(stateVar);
 				}
 

@@ -59,9 +59,9 @@ public class CollisionEvent implements IEvent {
 				&& trans.getDestStateVarValue(mrBumpedDestDef) instanceof RobotBumped) {
 			RobotSpeed speedSrc = (RobotSpeed) trans.getSrcStateVarValue(mrSpeedSrcDef);
 			RobotBumped bumpedDest = (RobotBumped) trans.getDestStateVarValue(mrBumpedDestDef);
-			StateVar<RobotSpeed> rSpeedSrc = new StateVar<>(mrSpeedSrcDef, speedSrc);
+			StateVar<RobotSpeed> rSpeedSrc = mrSpeedSrcDef.getStateVar(speedSrc);
 			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<RobotBumped> rBumpedDest = new StateVar<>(mrBumpedDestDef, bumpedDest);
+			StateVar<RobotBumped> rBumpedDest = mrBumpedDestDef.getStateVar(bumpedDest);
 			return hasCollided(rSpeedSrc, moveTo, rBumpedDest);
 		}
 		return false;

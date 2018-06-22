@@ -1,6 +1,8 @@
 package factors;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,9 +22,29 @@ public class StateVarDefinition<E extends IStateVarValue> {
 	private String mName;
 	private Set<E> mPossibleValues;
 
+	// For retrieving a state variable of a particular value
+	private Map<E, StateVar<E>> mStateVars = new HashMap<>();
+
+	public StateVarDefinition(String name, E... possibleValues) {
+		mName = name;
+		mPossibleValues = new HashSet<>();
+		for (E value : possibleValues) {
+			mPossibleValues.add(value);
+		}
+		buildStateVariables();
+	}
+
 	public StateVarDefinition(String name, Set<? extends E> possibleValues) {
 		mName = name;
 		mPossibleValues = new HashSet<>(possibleValues);
+		buildStateVariables();
+	}
+
+	private void buildStateVariables() {
+		for (E value : mPossibleValues) {
+			StateVar<E> stateVar = new StateVar<>(this, value);
+			mStateVars.put(value, stateVar);
+		}
 	}
 
 	public String getName() {
@@ -31,6 +53,10 @@ public class StateVarDefinition<E extends IStateVarValue> {
 
 	public Set<E> getPossibleValues() {
 		return mPossibleValues;
+	}
+
+	public StateVar<E> getStateVar(E value) {
+		return mStateVars.get(value);
 	}
 
 	@Override

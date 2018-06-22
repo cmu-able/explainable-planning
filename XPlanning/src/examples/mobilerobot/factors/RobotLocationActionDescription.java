@@ -58,15 +58,15 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 		EffectClass rLocEffectClass = mrLocActionDesc.getEffectClass();
 		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocDef);
 		for (Location rLocSrcValue : applicableLocs) {
-			StateVar<Location> rLocSrc = new StateVar<>(mrLocDef, rLocSrcValue);
+			StateVar<Location> rLocSrc = mrLocDef.getStateVar(rLocSrcValue);
 			Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
 			rLocDiscriminant.add(rLocSrc);
 
 			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect(rLocEffectClass);
 			Effect newLocEffect = new Effect(rLocEffectClass);
 			Effect oldLocEffect = new Effect(rLocEffectClass);
-			StateVar<Location> newLoc = new StateVar<>(mrLocDef, moveTo.getDestination());
-			StateVar<Location> oldLoc = new StateVar<>(mrLocDef, rLocSrc.getValue());
+			StateVar<Location> newLoc = mrLocDef.getStateVar(moveTo.getDestination());
+			StateVar<Location> oldLoc = mrLocDef.getStateVar(rLocSrcValue);
 			newLocEffect.add(newLoc);
 			oldLocEffect.add(oldLoc);
 

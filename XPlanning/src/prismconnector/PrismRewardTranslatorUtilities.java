@@ -388,8 +388,7 @@ public class PrismRewardTranslatorUtilities {
 		Discriminant discriminant = new Discriminant(discrClass);
 		for (StateVar<IStateVarValue> var : srcVars) {
 			if (discrClass.contains(var.getDefinition())) {
-				StateVar<IStateVarValue> discrVar = new StateVar<>(var.getDefinition(), var.getValue());
-				discriminant.add(discrVar);
+				discriminant.add(var);
 			}
 		}
 		return discriminant;
@@ -425,7 +424,7 @@ public class PrismRewardTranslatorUtilities {
 			Set<IStateVarValue> values, Set<Set<StateVar<IStateVarValue>>> partialCombinations) {
 		Set<Set<StateVar<IStateVarValue>>> newCombinations = new HashSet<>();
 		for (IStateVarValue value : values) {
-			StateVar<IStateVarValue> newVar = new StateVar<>(varDef, value);
+			StateVar<IStateVarValue> newVar = varDef.getStateVar(value);
 			for (Set<StateVar<IStateVarValue>> prevCombination : partialCombinations) {
 				Set<StateVar<IStateVarValue>> newCombination = new HashSet<>();
 				newCombination.addAll(prevCombination);

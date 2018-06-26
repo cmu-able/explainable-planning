@@ -5,6 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import exceptions.ActionNotFoundException;
+import exceptions.IncompatibleActionException;
+import factors.ActionDefinition;
+import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
@@ -13,35 +17,47 @@ import factors.StateVarDefinition;
  * 
  * @author rsukkerd
  *
+ * @param <E>
  */
-public class Precondition {
+public class Precondition<E extends IAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> mApplicableValues = new HashMap<>();
+	private ActionDefinition<E> mActionDef;
+	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>>> mActionPreconds = new HashMap<>();
 
-	public Precondition() {
-		// mApplicableValues initially empty
+	public Precondition(ActionDefinition<E> actionDef) {
+		mActionDef = actionDef;
 	}
 
-	public <E extends IStateVarValue> void add(StateVarDefinition<E> stateVarDef, E value) {
-		if (!mApplicableValues.containsKey(stateVarDef)) {
+	public <T extends IStateVarValue> void add(E action, StateVarDefinition<T> stateVarDef, T value)
+			throws IncompatibleActionException {
+		if (!mActionDef.getActions().contains(action)) {
+			throw new IncompatibleActionException(action);
+		}
+		if (!mActionPreconds.containsKey(action)) {
+			Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> preCond = new HashMap<>();
 			Set<IStateVarValue> applicableValues = new HashSet<>();
 			applicableValues.add(value);
-			mApplicableValues.put(stateVarDef, applicableValues);
+			preCond.put(stateVarDef, applicableValues);
+			mActionPreconds.put(action, preCond);
 		} else {
-			mApplicableValues.get(stateVarDef).add(value);
+			mActionPreconds.get(action).get(stateVarDef).add(value);
 		}
 	}
 
-	public <E extends IStateVarValue> Set<E> getApplicableValues(StateVarDefinition<E> stateVarDef) {
-		if (mApplicableValues.containsKey(stateVarDef)) {
-			return (Set<E>) mApplicableValues.get(stateVarDef);
+	public <T extends IStateVarValue> Set<T> getApplicableValues(E action, StateVarDefinition<T> stateVarDef)
+			throws ActionNotFoundException {
+		if (!mActionDef.getActions().contains(action)) {
+			throw new ActionNotFoundException(action);
 		}
-		return stateVarDef.getPossibleValues();
+		if (!mActionPreconds.containsKey(action) || !mActionPreconds.get(action).containsKey(stateVarDef)) {
+			stateVarDef.getPossibleValues();
+		}
+		return (Set<T>) mActionPreconds.get(action).get(stateVarDef);
 	}
 
 	@Override
@@ -49,11 +65,11 @@ public class Precondition {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof Precondition)) {
+		if (!(obj instanceof Precondition<?>)) {
 			return false;
 		}
-		Precondition precond = (Precondition) obj;
-		return precond.mApplicableValues.equals(mApplicableValues);
+		Precondition<?> precond = (Precondition<?>) obj;
+		return precond.mActionDef.equals(mActionDef) && precond.mActionPreconds.equals(mActionPreconds);
 	}
 
 	@Override
@@ -61,7 +77,8 @@ public class Precondition {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mApplicableValues.hashCode();
+			result = 31 * result + mActionDef.hashCode();
+			result = 31 * result + mActionPreconds.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

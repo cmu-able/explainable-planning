@@ -46,43 +46,49 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 	private ActionDescription<MoveToAction> mrBumpedActionDesc;
 
 	public RobotBumpedActionDescription(ActionDefinition<MoveToAction> moveToDef,
-			StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef) {
+			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocSrcDef,
+			StateVarDefinition<RobotBumped> rBumpedDestDef) {
 		mrLocSrcDef = rLocSrcDef;
 		mrBumpedDestDef = rBumpedDestDef;
-		mrBumpedActionDesc = new ActionDescription<>(moveToDef);
+		mrBumpedActionDesc = new ActionDescription<>(moveToDef, precondition);
 		mrBumpedActionDesc.addDiscriminantVarDef(rLocSrcDef);
 		mrBumpedActionDesc.addEffectVarDef(rBumpedDestDef);
+		initialize(moveToDef, precondition);
 	}
 
-	public void put(MoveToAction moveTo, Precondition precondition)
-			throws IncompatibleVarException, AttributeNameNotFoundException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, IncompatibleActionException {
+	private void initialize(ActionDefinition<MoveToAction> moveToDef, Precondition<MoveToAction> precondition)
+			throws ActionNotFoundException, IncompatibleVarException, AttributeNameNotFoundException,
+			IncompatibleEffectClassException, IncompatibleActionException, IncompatibleDiscriminantClassException {
 		DiscriminantClass rBumpedDiscrClass = mrBumpedActionDesc.getDiscriminantClass();
 		EffectClass rBumpedEffectClass = mrBumpedActionDesc.getEffectClass();
-		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocSrcDef);
-		for (Location rLocSrcValue : applicableLocs) {
-			StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(rLocSrcValue);
-			Discriminant rLocDiscriminant = new Discriminant(rBumpedDiscrClass);
-			rLocDiscriminant.add(rLocSrc);
 
-			ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(rBumpedEffectClass);
-			Effect bumpedEffect = new Effect(rBumpedEffectClass);
-			Effect notBumpedEffect = new Effect(rBumpedEffectClass);
-			StateVar<RobotBumped> bumped = mrBumpedDestDef.getStateVar(new RobotBumped(true));
-			StateVar<RobotBumped> notBumped = mrBumpedDestDef.getStateVar(new RobotBumped(false));
-			bumpedEffect.add(bumped);
-			notBumpedEffect.add(notBumped);
+		for (MoveToAction moveTo : moveToDef.getActions()) {
+			Set<Location> applicableLocs = precondition.getApplicableValues(moveTo, mrLocSrcDef);
 
-			Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
-			if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
-				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
-			} else if (occlusion == Occlusion.BLOCKED) {
-				rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
-			} else {
-				rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
+			for (Location rLocSrcValue : applicableLocs) {
+				StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(rLocSrcValue);
+				Discriminant rLocDiscriminant = new Discriminant(rBumpedDiscrClass);
+				rLocDiscriminant.add(rLocSrc);
+
+				ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(rBumpedEffectClass);
+				Effect bumpedEffect = new Effect(rBumpedEffectClass);
+				Effect notBumpedEffect = new Effect(rBumpedEffectClass);
+				StateVar<RobotBumped> bumped = mrBumpedDestDef.getStateVar(new RobotBumped(true));
+				StateVar<RobotBumped> notBumped = mrBumpedDestDef.getStateVar(new RobotBumped(false));
+				bumpedEffect.add(bumped);
+				notBumpedEffect.add(notBumped);
+
+				Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
+				if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+					rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
+					rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
+				} else if (occlusion == Occlusion.BLOCKED) {
+					rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
+				} else {
+					rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
+				}
+				mrBumpedActionDesc.put(rBumpedProbEffect, rLocDiscriminant, moveTo);
 			}
-			mrBumpedActionDesc.put(rBumpedProbEffect, rLocDiscriminant, moveTo);
 		}
 	}
 

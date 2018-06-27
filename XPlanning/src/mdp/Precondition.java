@@ -13,7 +13,7 @@ import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
 /**
- * {@link Precondition} is a precondition of an action.
+ * {@link Precondition} defines a precondition for each action in a particular {@link ActionDefinition}.
  * 
  * @author rsukkerd
  *
@@ -35,7 +35,7 @@ public class Precondition<E extends IAction> {
 
 	public <T extends IStateVarValue> void add(E action, StateVarDefinition<T> stateVarDef, T value)
 			throws IncompatibleActionException {
-		if (!mActionDef.getActions().contains(action)) {
+		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);
 		}
 		if (!mActionPreconds.containsKey(action)) {
@@ -51,13 +51,17 @@ public class Precondition<E extends IAction> {
 
 	public <T extends IStateVarValue> Set<T> getApplicableValues(E action, StateVarDefinition<T> stateVarDef)
 			throws ActionNotFoundException {
-		if (!mActionDef.getActions().contains(action)) {
+		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}
 		if (!mActionPreconds.containsKey(action) || !mActionPreconds.get(action).containsKey(stateVarDef)) {
 			stateVarDef.getPossibleValues();
 		}
 		return (Set<T>) mActionPreconds.get(action).get(stateVarDef);
+	}
+
+	private boolean sanityCheck(E action) {
+		return mActionDef.getActions().contains(action);
 	}
 
 	@Override

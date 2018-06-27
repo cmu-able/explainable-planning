@@ -2,6 +2,7 @@ package mdp;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,8 +12,10 @@ import exceptions.EffectNotFoundException;
 import exceptions.IncompatibleActionException;
 import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
+import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
 import factors.IAction;
+import factors.IProbabilisticTransitionFormula;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
@@ -33,15 +36,19 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDefinition;
+	private Precondition<E> mPrecondition;
 	private DiscriminantClass mDiscriminantClass = new DiscriminantClass();
 	private EffectClass mEffectClass = new EffectClass();
 
 	private Map<E, Set<ProbabilisticTransition<E>>> mActionDescriptions = new HashMap<>();
 	private Map<E, Map<Discriminant, ProbabilisticEffect>> mLookupTable = new HashMap<>(); // For fast look-up
 
-	public ActionDescription(ActionDefinition<E> actionDefinition) {
-		mActionDefinition = actionDefinition;
+	// TODO
+	private IProbabilisticTransitionFormula<E> mTransitionFormula;
 
+	public ActionDescription(ActionDefinition<E> actionDefinition, Precondition<E> precondition) {
+		mActionDefinition = actionDefinition;
+		mPrecondition = precondition;
 	}
 
 	public void addDiscriminantVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
@@ -50,6 +57,10 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 
 	public void addEffectVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mEffectClass.add(stateVarDef);
+	}
+
+	public void addProbabilisticTransitionFormula(IProbabilisticTransitionFormula<E> formula) {
+		mTransitionFormula = formula;
 	}
 
 	public void put(ProbabilisticEffect probEffect, Discriminant discriminant, E action)
@@ -110,12 +121,55 @@ public class ActionDescription<E extends IAction> implements IActionDescription<
 		return probEffect.getEffectClass().equals(mEffectClass);
 	}
 
+	public Precondition<E> getPrecondition() {
+		return mPrecondition;
+	}
+
 	@Override
-	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws ActionNotFoundException {
-		if (!mActionDescriptions.containsKey(action)) {
-			throw new ActionNotFoundException(action);
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
+			throws ActionNotFoundException, IncompatibleVarException {
+		Set<ProbabilisticTransition<E>> probTransitions = new HashSet<>();
+		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action);
+		for (Discriminant discriminant : allDiscriminants) {
+			ProbabilisticEffect probEffect = mTransitionFormula.formula(discriminant, action);
+			ProbabilisticTransition<E> probTrans = new ProbabilisticTransition<>(probEffect, discriminant, action);
+			probTransitions.add(probTrans);
 		}
-		return mActionDescriptions.get(action);
+		return probTransitions;
+
+		// if (!mActionDescriptions.containsKey(action)) {
+		// throw new ActionNotFoundException(action);
+		// }
+		// return mActionDescriptions.get(action);
+	}
+
+	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action)
+			throws ActionNotFoundException, IncompatibleVarException {
+		Set<Discriminant> allDiscriminants = new HashSet<>();
+
+		DiscriminantClass copyDiscrClass = new DiscriminantClass();
+		copyDiscrClass.addAll(discrClass);
+
+		Iterator<StateVarDefinition<IStateVarValue>> iter = copyDiscrClass.iterator();
+		if (!iter.hasNext()) {
+			return allDiscriminants;
+		}
+
+		StateVarDefinition<IStateVarValue> srcVarDef = iter.next();
+		iter.remove();
+		Set<Discriminant> subDiscriminants = getAllDiscriminants(copyDiscrClass, action);
+		Set<IStateVarValue> applicableValues = mPrecondition.getApplicableValues(action, srcVarDef);
+
+		for (IStateVarValue value : applicableValues) {
+			for (Discriminant subDiscriminant : subDiscriminants) {
+				Discriminant discriminant = new Discriminant(discrClass);
+				discriminant.addAll(subDiscriminant);
+				discriminant.add(srcVarDef.getStateVar(value));
+				allDiscriminants.add(discriminant);
+			}
+		}
+
+		return allDiscriminants;
 	}
 
 	@Override

@@ -5,8 +5,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
+import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
+import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IProbabilisticTransitionFormula;
@@ -45,7 +48,8 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 
 	@Override
 	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
-			throws ActionNotFoundException, IncompatibleVarException {
+			throws ActionNotFoundException, IncompatibleVarException, VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException {
 		Set<ProbabilisticTransition<E>> probTransitions = new HashSet<>();
 		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action,
 				mProbTransFormula.getPrecondition());
@@ -98,7 +102,8 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 
 	@Override
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
-			throws ActionNotFoundException, DiscriminantNotFoundException {
+			throws ActionNotFoundException, DiscriminantNotFoundException, VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
 		return mProbTransFormula.formula(discriminant, action);
 	}
 

@@ -1,0 +1,105 @@
+package examples.mobilerobot.factors;
+
+import exceptions.AttributeNameNotFoundException;
+import exceptions.IncompatibleEffectClassException;
+import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
+import factors.IProbabilisticTransitionFormula;
+import factors.StateVar;
+import factors.StateVarDefinition;
+import mdp.Discriminant;
+import mdp.Effect;
+import mdp.EffectClass;
+import mdp.Precondition;
+import mdp.ProbabilisticEffect;
+
+/**
+ * {@link RobotBumpedFormula} is a formula of the probability of the robot bumping when it moves.
+ * 
+ * @author rsukkerd
+ *
+ */
+public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveToAction> {
+
+	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
+	private static final double BUMP_PROB_BLOCKED = 1.0;
+	private static final double BUMP_PROB_CLEAR = 0.0;
+
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
+
+	private StateVarDefinition<Location> mrLocSrcDef;
+	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
+	private Precondition<MoveToAction> mPrecondition;
+	private EffectClass mEffectClass; // of rBumped
+
+	public RobotBumpedFormula(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef,
+			Precondition<MoveToAction> precondition) {
+		mrLocSrcDef = rLocSrcDef;
+		mrBumpedDestDef = rBumpedDestDef;
+		mPrecondition = precondition;
+		mEffectClass = new EffectClass();
+		mEffectClass.add(rBumpedDestDef);
+	}
+
+	@Override
+	public ProbabilisticEffect formula(Discriminant discriminant, MoveToAction moveTo) throws VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
+		Location srcLoc = discriminant.getDiscriminantValue(Location.class, mrLocSrcDef);
+		StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(srcLoc);
+		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
+
+		ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(mEffectClass);
+		Effect bumpedEffect = new Effect(mEffectClass);
+		Effect notBumpedEffect = new Effect(mEffectClass);
+		RobotBumped bumped = new RobotBumped(true);
+		RobotBumped notBumped = new RobotBumped(false);
+		bumpedEffect.add(mrBumpedDestDef.getStateVar(bumped));
+		notBumpedEffect.add(mrBumpedDestDef.getStateVar(notBumped));
+
+		if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
+			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
+		} else if (occlusion == Occlusion.BLOCKED) {
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
+		} else {
+			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
+		}
+
+		return rBumpedProbEffect;
+	}
+
+	@Override
+	public Precondition<MoveToAction> getPrecondition() {
+		return mPrecondition;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof RobotBumpedFormula)) {
+			return false;
+		}
+		RobotBumpedFormula formula = (RobotBumpedFormula) obj;
+		return formula.mrLocSrcDef.equals(mrLocSrcDef) && formula.mrBumpedDestDef.equals(mrBumpedDestDef)
+				&& formula.mPrecondition.equals(mPrecondition);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mrLocSrcDef.hashCode();
+			result = 31 * result + mrBumpedDestDef.hashCode();
+			result = 31 * result + mPrecondition.hashCode();
+			hashCode = result;
+		}
+		return hashCode;
+	}
+
+}

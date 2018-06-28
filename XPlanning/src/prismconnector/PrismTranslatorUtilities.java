@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
+import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.IncompatibleActionException;
@@ -22,7 +23,6 @@ import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.ActionDescription;
 import mdp.ActionSpace;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
@@ -35,6 +35,7 @@ import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
 import mdp.State;
 import mdp.StateSpace;
+import mdp.TabularActionDescription;
 
 public class PrismTranslatorUtilities {
 
@@ -393,12 +394,13 @@ public class PrismTranslatorUtilities {
 	 * @throws IncompatibleActionException
 	 * @throws ActionNotFoundException
 	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
 	 */
 	String buildModules(StateSpace stateSpace, State iniState, Iterable<ActionDefinition<IAction>> actionDefs,
 			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
+			DiscriminantNotFoundException, AttributeNameNotFoundException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -481,12 +483,13 @@ public class PrismTranslatorUtilities {
 	 * @throws ActionNotFoundException
 	 * @throws EffectClassNotFoundException
 	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
 	 */
 	String buildModule(String moduleName, StateSpace moduleVarSpace, State iniState,
 			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
 			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, DiscriminantNotFoundException {
+			DiscriminantNotFoundException, AttributeNameNotFoundException {
 		String varsDecl = buildModuleVarsDecl(moduleVarSpace, iniState);
 		String commands = buildModuleCommands(actionPSOs, partialCommandsBuilder);
 
@@ -520,12 +523,13 @@ public class PrismTranslatorUtilities {
 	 * @throws IncompatibleDiscriminantClassException
 	 * @throws VarNotFoundException
 	 * @throws DiscriminantNotFoundException
+	 * @throws AttributeNameNotFoundException
 	 */
 	String buildModuleCommands(Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs,
 			PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
-			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			VarNotFoundException, DiscriminantNotFoundException {
+			IncompatibleVarException, IncompatibleEffectClassException, VarNotFoundException,
+			DiscriminantNotFoundException, AttributeNameNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (Entry<FactoredPSO<IAction>, Set<EffectClass>> entry : actionPSOs.entrySet()) {
@@ -746,15 +750,16 @@ public class PrismTranslatorUtilities {
 	 * @throws IncompatibleActionException
 	 * @throws IncompatibleVarException
 	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
+	 * @throws AttributeNameNotFoundException
+	 * @throws VarNotFoundException
 	 */
 	private IActionDescription<IAction> mergeActionDescriptions(FactoredPSO<IAction> actionPSO,
-			Set<EffectClass> chainedEffectClasses)
-			throws EffectClassNotFoundException, ActionNotFoundException, IncompatibleActionException,
-			IncompatibleVarException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException {
+			Set<EffectClass> chainedEffectClasses) throws EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			VarNotFoundException, AttributeNameNotFoundException {
 		ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
 
-		ActionDescription<IAction> mergedActionDesc = new ActionDescription<>(actionDef);
+		TabularActionDescription<IAction> mergedActionDesc = new TabularActionDescription<>(actionDef);
 		Set<ProbabilisticTransition<IAction>> mergedProbTransitions = new HashSet<>();
 
 		for (IAction action : actionDef.getActions()) {

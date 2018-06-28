@@ -1,10 +1,9 @@
 package mdp;
 
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -26,26 +25,29 @@ public class Discriminant implements IPredicate {
 	 */
 	private volatile int hashCode;
 
-	private DiscriminantClass mDiscrClass;
-	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mDiscrVarMap = new HashMap<>();
+	private DiscriminantClass mDiscriminantClass;
+	private State mState = new State();
 
 	public Discriminant(DiscriminantClass discriminantClass) {
-		mDiscrClass = discriminantClass;
+		mDiscriminantClass = discriminantClass;
 	}
 
 	public Discriminant(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mDiscrClass = new DiscriminantClass();
+		mDiscriminantClass = new DiscriminantClass();
 		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
-			mDiscrClass.add(varDef);
+			mDiscriminantClass.add(varDef);
 		}
-		mDiscrVarMap = new HashMap<>();
 	}
 
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
 		if (!sanityCheck(stateVar)) {
 			throw new IncompatibleVarException(stateVar.getDefinition());
 		}
-		mDiscrVarMap.put(stateVar.getDefinition(), stateVar);
+		mState.addStateVar(stateVar);
+	}
+
+	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
+		return mDiscriminantClass.contains(stateVar.getDefinition());
 	}
 
 	public void addAll(Discriminant discriminant) throws IncompatibleVarException {
@@ -54,30 +56,18 @@ public class Discriminant implements IPredicate {
 		}
 	}
 
-	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
-		return mDiscrClass.contains(stateVar.getDefinition());
+	public <E extends IStateVarValue> E getDiscriminantValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
+			throws VarNotFoundException {
+		return mState.getStateVarValue(valueType, stateVarDef);
 	}
 
 	public DiscriminantClass getDiscriminantClass() {
-		return mDiscrClass;
+		return mDiscriminantClass;
 	}
 
 	@Override
 	public Iterator<StateVar<IStateVarValue>> iterator() {
-		return new Iterator<StateVar<IStateVarValue>>() {
-
-			private Iterator<StateVar<? extends IStateVarValue>> iter = mDiscrVarMap.values().iterator();
-
-			@Override
-			public boolean hasNext() {
-				return iter.hasNext();
-			}
-
-			@Override
-			public StateVar<IStateVarValue> next() {
-				return (StateVar<IStateVarValue>) iter.next();
-			}
-		};
+		return mState.iterator();
 	}
 
 	@Override
@@ -88,8 +78,8 @@ public class Discriminant implements IPredicate {
 		if (!(obj instanceof Discriminant)) {
 			return false;
 		}
-		Discriminant discr = (Discriminant) obj;
-		return discr.mDiscrClass.equals(mDiscrClass) && discr.mDiscrVarMap.equals(mDiscrVarMap);
+		Discriminant discriminant = (Discriminant) obj;
+		return discriminant.mDiscriminantClass.equals(mDiscriminantClass) && discriminant.mState.equals(mState);
 	}
 
 	@Override
@@ -97,8 +87,8 @@ public class Discriminant implements IPredicate {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDiscrClass.hashCode();
-			result = 31 * result + mDiscrVarMap.hashCode();
+			result = 31 * result + mDiscriminantClass.hashCode();
+			result = 31 * result + mState.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

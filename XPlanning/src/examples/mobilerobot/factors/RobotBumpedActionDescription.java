@@ -11,13 +11,14 @@ import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
+import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.ActionDescription;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
 import mdp.EffectClass;
+import mdp.FormulaActionDescription;
 import mdp.IActionDescription;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
@@ -43,17 +44,24 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 
 	private StateVarDefinition<Location> mrLocSrcDef;
 	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
-	private ActionDescription<MoveToAction> mrBumpedActionDesc;
+	private FormulaActionDescription<MoveToAction> mrBumpedActionDesc;
 
 	public RobotBumpedActionDescription(ActionDefinition<MoveToAction> moveToDef,
 			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocSrcDef,
 			StateVarDefinition<RobotBumped> rBumpedDestDef) {
 		mrLocSrcDef = rLocSrcDef;
 		mrBumpedDestDef = rBumpedDestDef;
-		mrBumpedActionDesc = new ActionDescription<>(moveToDef, precondition);
-		mrBumpedActionDesc.addDiscriminantVarDef(rLocSrcDef);
-		mrBumpedActionDesc.addEffectVarDef(rBumpedDestDef);
+		DiscriminantClass discrClass = new DiscriminantClass();
+		discrClass.add(rLocSrcDef);
+		EffectClass effectClass = new EffectClass();
+		effectClass.add(rBumpedDestDef);
+		IProbabilisticTransitionFormula<MoveToAction> probTransFormula = getRobotBumpedFormula();
+		mrBumpedActionDesc = new FormulaActionDescription<>(moveToDef, discrClass, effectClass, probTransFormula);
 		initialize(moveToDef, precondition);
+	}
+
+	private IProbabilisticTransitionFormula<MoveToAction> getRobotBumpedFormula() {
+		return null;
 	}
 
 	private void initialize(ActionDefinition<MoveToAction> moveToDef, Precondition<MoveToAction> precondition)

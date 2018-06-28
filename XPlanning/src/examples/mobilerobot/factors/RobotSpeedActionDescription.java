@@ -12,7 +12,7 @@ import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.ActionDescription;
+import mdp.FormulaActionDescription;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
@@ -39,12 +39,12 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	private volatile int hashCode;
 
 	private StateVarDefinition<RobotSpeed> mrSpeedDef;
-	private ActionDescription<SetSpeedAction> mrSpeedActionDesc;
+	private FormulaActionDescription<SetSpeedAction> mrSpeedActionDesc;
 
 	public RobotSpeedActionDescription(ActionDefinition<SetSpeedAction> setSpeedDef,
 			StateVarDefinition<RobotSpeed> rSpeedDef) {
 		mrSpeedDef = rSpeedDef;
-		mrSpeedActionDesc = new ActionDescription<>(setSpeedDef);
+		mrSpeedActionDesc = new FormulaActionDescription<>(setSpeedDef);
 		mrSpeedActionDesc.addDiscriminantVarDef(rSpeedDef);
 		mrSpeedActionDesc.addEffectVarDef(rSpeedDef);
 	}

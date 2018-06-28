@@ -13,7 +13,7 @@ import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.ActionDescription;
+import mdp.FormulaActionDescription;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.Effect;
@@ -41,12 +41,12 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	private volatile int hashCode;
 
 	private StateVarDefinition<Location> mrLocDef;
-	private ActionDescription<MoveToAction> mrLocActionDesc;
+	private FormulaActionDescription<MoveToAction> mrLocActionDesc;
 
 	public RobotLocationActionDescription(ActionDefinition<MoveToAction> moveToDef,
 			StateVarDefinition<Location> rLocDef) {
 		mrLocDef = rLocDef;
-		mrLocActionDesc = new ActionDescription<>(moveToDef);
+		mrLocActionDesc = new FormulaActionDescription<>(moveToDef);
 		mrLocActionDesc.addDiscriminantVarDef(rLocDef);
 		mrLocActionDesc.addEffectVarDef(rLocDef);
 	}

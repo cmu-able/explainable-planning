@@ -6,7 +6,6 @@ import java.util.Set;
 
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
@@ -101,8 +100,7 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	}
 
 	@Override
-	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
-			throws ActionNotFoundException, DiscriminantNotFoundException, VarNotFoundException,
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action) throws VarNotFoundException,
 			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
 		return mProbTransFormula.formula(discriminant, action);
 	}

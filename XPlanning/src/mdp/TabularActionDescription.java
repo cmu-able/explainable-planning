@@ -8,9 +8,6 @@ import java.util.Set;
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
 import factors.IAction;
 
@@ -31,48 +28,43 @@ public class TabularActionDescription<E extends IAction> implements IActionDescr
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDefinition;
-	private DiscriminantClass mDiscriminantClass;
-	private EffectClass mEffectClass;
+
+	// DiscriminantClass and EffectClass will be determined as transitions are added.
+	// This allows the flexibility of creating an action description by merging multiple action descriptions together.
+	private DiscriminantClass mDiscriminantClass = new DiscriminantClass();
+	private EffectClass mEffectClass = new EffectClass();
 
 	private Map<E, Set<ProbabilisticTransition<E>>> mProbTransitions = new HashMap<>();
 	private Map<E, Map<Discriminant, ProbabilisticEffect>> mLookupTable = new HashMap<>(); // For fast look-up
 
-	public TabularActionDescription(ActionDefinition<E> actionDefinition, DiscriminantClass discriminantClass,
-			EffectClass effectClass) {
+	public TabularActionDescription(ActionDefinition<E> actionDefinition) {
 		mActionDefinition = actionDefinition;
-		mDiscriminantClass = discriminantClass;
-		mEffectClass = effectClass;
 	}
 
 	public void put(ProbabilisticEffect probEffect, Discriminant discriminant, E action)
-			throws IncompatibleActionException, IncompatibleDiscriminantClassException,
-			IncompatibleEffectClassException {
+			throws IncompatibleActionException {
 		ProbabilisticTransition<E> probTrans = new ProbabilisticTransition<>(probEffect, discriminant, action);
 		put(probTrans);
 	}
 
-	public void putAll(Set<ProbabilisticTransition<E>> probTransitions) throws IncompatibleActionException,
-			IncompatibleDiscriminantClassException, IncompatibleEffectClassException {
+	public void putAll(Set<ProbabilisticTransition<E>> probTransitions) throws IncompatibleActionException {
 		for (ProbabilisticTransition<E> probTrans : probTransitions) {
 			put(probTrans);
 		}
 	}
 
-	private void put(ProbabilisticTransition<E> probTrans) throws IncompatibleActionException,
-			IncompatibleDiscriminantClassException, IncompatibleEffectClassException {
+	private void put(ProbabilisticTransition<E> probTrans) throws IncompatibleActionException {
 		E action = probTrans.getAction();
 		Discriminant discriminant = probTrans.getDiscriminant();
 		ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
 
+		mDiscriminantClass.addAll(discriminant.getDiscriminantClass());
+		mEffectClass.addAll(probEffect.getEffectClass());
+
 		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);
 		}
-		if (!sanityCheck(discriminant)) {
-			throw new IncompatibleDiscriminantClassException(discriminant.getDiscriminantClass());
-		}
-		if (!sanityCheck(probEffect)) {
-			throw new IncompatibleEffectClassException(probEffect.getEffectClass());
-		}
+
 		if (!mProbTransitions.containsKey(action)) {
 			Set<ProbabilisticTransition<E>> actionDesc = new HashSet<>();
 			actionDesc.add(probTrans);
@@ -94,17 +86,8 @@ public class TabularActionDescription<E extends IAction> implements IActionDescr
 		return mActionDefinition.getActions().contains(action);
 	}
 
-	private boolean sanityCheck(Discriminant discriminant) {
-		return discriminant.getDiscriminantClass().equals(mDiscriminantClass);
-	}
-
-	private boolean sanityCheck(ProbabilisticEffect probEffect) {
-		return probEffect.getEffectClass().equals(mEffectClass);
-	}
-
 	@Override
-	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
-			throws ActionNotFoundException, IncompatibleVarException {
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws ActionNotFoundException {
 		if (!mProbTransitions.containsKey(action)) {
 			throw new ActionNotFoundException(action);
 		}

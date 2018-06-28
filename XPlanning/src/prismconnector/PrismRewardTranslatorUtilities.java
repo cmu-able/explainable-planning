@@ -9,6 +9,7 @@ import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
+import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
@@ -54,10 +55,12 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
 	String buildRewardStructures(TransitionFunction transFunction, Set<IQFunction> qFunctions)
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException,
+			IncompatibleEffectClassException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Quality-Attribute Functions\n\n");
 		boolean first = true;
@@ -95,10 +98,12 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws DiscriminantNotFoundException
 	 * @throws ActionNotFoundException
 	 * @throws ActionDefinitionNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
 	String buildRewardStructure(TransitionFunction transFunction, IAdditiveCostFunction objectiveFunction)
 			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException,
+			IncompatibleEffectClassException {
 		StringBuilder builder = new StringBuilder();
 
 		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
@@ -152,10 +157,12 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
 	String buildRewardStructure(TransitionFunction transFunction, IQFunction qFunction)
 			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException,
+			IncompatibleEffectClassException {
 		String rewardName = qFunction.getName();
 		TransitionDefinition transDef = qFunction.getTransitionDefinition();
 		FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
@@ -204,10 +211,12 @@ public class PrismRewardTranslatorUtilities {
 	 *         : {transition value}; ...
 	 * @throws ActionNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
 	String buildRewardItems(String rewardName, TransitionDefinition transDef, FactoredPSO<IAction> actionPSO,
-			TransitionEvaluator evaluator) throws ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+			TransitionEvaluator evaluator)
+			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
+			DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
 		ActionDefinition<IAction> actionDef = transDef.getActionDef();
@@ -338,10 +347,10 @@ public class PrismRewardTranslatorUtilities {
 
 	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(FactoredPSO<IAction> actionPSO,
 			IAction action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) throws ActionNotFoundException {
-		Precondition precond = actionPSO.getPrecondition(action);
+		Precondition<IAction> precondition = actionPSO.getPrecondition(action);
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
-			Set<IStateVarValue> applicableVals = precond.getApplicableValues(srcVarDef);
+			Set<IStateVarValue> applicableVals = precondition.getApplicableValues(action, srcVarDef);
 			srcVarValues.put(srcVarDef, applicableVals);
 		}
 		return getCombinations(srcVarValues);
@@ -349,8 +358,9 @@ public class PrismRewardTranslatorUtilities {
 
 	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(FactoredPSO<IAction> actionPSO,
 			IAction action, Set<StateVarDefinition<IStateVarValue>> destStateVarDefs,
-			Set<StateVar<IStateVarValue>> srcVars) throws IncompatibleVarException, VarNotFoundException,
-			DiscriminantNotFoundException, ActionNotFoundException {
+			Set<StateVar<IStateVarValue>> srcVars)
+			throws IncompatibleVarException, VarNotFoundException, DiscriminantNotFoundException,
+			ActionNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
 			Discriminant discriminant = getDiscriminant(destVarDef, srcVars, actionPSO);

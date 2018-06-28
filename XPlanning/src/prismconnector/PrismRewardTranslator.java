@@ -6,6 +6,7 @@ import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
+import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import mdp.TransitionFunction;
@@ -35,10 +36,11 @@ public class PrismRewardTranslator {
 	 * @throws DiscriminantNotFoundException
 	 * @throws ActionNotFoundException
 	 * @throws ActionDefinitionNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
-	public String getCostFunctionTranslation(CostFunction costFunction)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+	public String getCostFunctionTranslation(CostFunction costFunction) throws VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			ActionNotFoundException, ActionDefinitionNotFoundException, IncompatibleEffectClassException {
 		return mRewardUtilities.buildRewardStructure(mTransFunction, costFunction);
 	}
 
@@ -53,10 +55,11 @@ public class PrismRewardTranslator {
 	 * @throws DiscriminantNotFoundException
 	 * @throws ActionNotFoundException
 	 * @throws ActionDefinitionNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
-	public String getObjectiveFunctionTranslation(IAdditiveCostFunction objectiveFunction)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, ActionNotFoundException, ActionDefinitionNotFoundException {
+	public String getObjectiveFunctionTranslation(IAdditiveCostFunction objectiveFunction) throws VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			ActionNotFoundException, ActionDefinitionNotFoundException, IncompatibleEffectClassException {
 		return mRewardUtilities.buildRewardStructure(mTransFunction, objectiveFunction);
 	}
 
@@ -71,10 +74,11 @@ public class PrismRewardTranslator {
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
-	public String getQAFunctionsTranslation(Set<IQFunction> qFunctions)
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getQAFunctionsTranslation(Set<IQFunction> qFunctions) throws ActionDefinitionNotFoundException,
+			ActionNotFoundException, VarNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException {
 		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
 	}
 
@@ -89,10 +93,11 @@ public class PrismRewardTranslator {
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleEffectClassException
 	 */
-	public String getQAFunctionTranslation(IQFunction qFunction)
-			throws ActionDefinitionNotFoundException, ActionNotFoundException, VarNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getQAFunctionTranslation(IQFunction qFunction) throws ActionDefinitionNotFoundException,
+			ActionNotFoundException, VarNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException {
 		return mRewardUtilities.buildRewardStructure(mTransFunction, qFunction);
 	}
 }

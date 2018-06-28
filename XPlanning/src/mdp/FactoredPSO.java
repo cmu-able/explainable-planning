@@ -7,8 +7,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import exceptions.ActionNotFoundException;
+import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
+import exceptions.IncompatibleEffectClassException;
+import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
@@ -39,7 +42,7 @@ public class FactoredPSO<E extends IAction> {
 	/**
 	 * Preconditions of actions of this type
 	 */
-	private Map<E, Precondition> mPreconditions = new HashMap<>();
+	private Map<E, Precondition<E>> mPreconditions = new HashMap<>();
 
 	/**
 	 * Full action descriptions for all independent effect classes of this type of action
@@ -50,7 +53,7 @@ public class FactoredPSO<E extends IAction> {
 		mActionDef = actionDef;
 	}
 
-	public void putPrecondition(E action, Precondition precondition) {
+	public void putPrecondition(E action, Precondition<E> precondition) {
 		mPreconditions.put(action, precondition);
 	}
 
@@ -62,7 +65,7 @@ public class FactoredPSO<E extends IAction> {
 		return mActionDef;
 	}
 
-	public Precondition getPrecondition(E action) throws ActionNotFoundException {
+	public Precondition<E> getPrecondition(E action) throws ActionNotFoundException {
 		if (!mPreconditions.containsKey(action)) {
 			throw new ActionNotFoundException(action);
 		}
@@ -94,7 +97,8 @@ public class FactoredPSO<E extends IAction> {
 
 	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
 			Discriminant discriminant, E action)
-			throws ActionNotFoundException, VarNotFoundException, DiscriminantNotFoundException {
+			throws ActionNotFoundException, VarNotFoundException, DiscriminantNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
 		for (Entry<EffectClass, IActionDescription<E>> e : mActionDescriptions.entrySet()) {
 			EffectClass effectClass = e.getKey();
 			IActionDescription<E> actionDesc = e.getValue();

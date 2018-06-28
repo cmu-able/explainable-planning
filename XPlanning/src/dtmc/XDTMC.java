@@ -7,9 +7,11 @@ import java.util.Set;
 
 import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
+import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.IncompatibleActionException;
+import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
@@ -48,15 +50,16 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 
 	public XDTMC(XMDP xmdp, Policy policy) throws ActionDefinitionNotFoundException, EffectClassNotFoundException,
 			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException {
+			IncompatibleActionException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 		mXMDP = xmdp;
 		mPolicy = policy;
 		induceDTMC(xmdp, policy);
 	}
 
-	private void induceDTMC(XMDP xmdp, Policy policy) throws ActionDefinitionNotFoundException,
-			EffectClassNotFoundException, VarNotFoundException, IncompatibleVarException, ActionNotFoundException,
-			DiscriminantNotFoundException, IncompatibleActionException {
+	private void induceDTMC(XMDP xmdp, Policy policy)
+			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
+			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
+			IncompatibleActionException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 		for (Decision decision : policy) {
 			State predicate = decision.getState();
 			IAction action = decision.getAction();

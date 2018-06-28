@@ -75,10 +75,10 @@ public class PrismDTMCTranslator {
 	 * @throws DiscriminantNotFoundException
 	 * @throws AttributeNameNotFoundException
 	 */
-	public String getDTMCTranslation(boolean withQAFunctions) throws VarNotFoundException, EffectClassNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException,
-			DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getDTMCTranslation(boolean withQAFunctions)
+			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
+			ActionDefinitionNotFoundException, DiscriminantNotFoundException, AttributeNameNotFoundException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
 		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
@@ -95,7 +95,7 @@ public class PrismDTMCTranslator {
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
 					throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-					DiscriminantNotFoundException {
+					DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 				return buildDTMCPartialModuleCommands(actionDescription);
 			}
 		};
@@ -161,10 +161,12 @@ public class PrismDTMCTranslator {
 	 * @throws VarNotFoundException
 	 * @throws IncompatibleVarException
 	 * @throws DiscriminantNotFoundException
+	 * @throws IncompatibleEffectClassException
+	 * @throws AttributeNameNotFoundException
 	 */
 	private String buildDTMCPartialModuleCommands(IActionDescription<IAction> actionDescription)
 			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException {
+			DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
 		TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(actionDescription.getActionDefinition());
 		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
 

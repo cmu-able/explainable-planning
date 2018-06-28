@@ -70,15 +70,16 @@ public class PrismMDPTranslator {
 	 * @throws IncompatibleDiscriminantClassException
 	 * @throws ActionDefinitionNotFoundException
 	 */
-	public String getMDPTranslation(boolean withQAFunctions) throws VarNotFoundException, EffectClassNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException {
+	public String getMDPTranslation(boolean withQAFunctions)
+			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException,
+			IncompatibleVarException, DiscriminantNotFoundException, ActionNotFoundException,
+			IncompatibleActionException, IncompatibleEffectClassException, ActionDefinitionNotFoundException {
 		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {
 
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
-					throws ActionNotFoundException, VarNotFoundException {
+					throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
+					AttributeNameNotFoundException, IncompatibleEffectClassException {
 				return buildMDPPartialModuleCommands(actionDescription);
 			}
 		};
@@ -128,9 +129,13 @@ public class PrismMDPTranslator {
 	 * @return commands for updating a particular effect class of actionDescription
 	 * @throws ActionNotFoundException
 	 * @throws VarNotFoundException
+	 * @throws IncompatibleEffectClassException
+	 * @throws AttributeNameNotFoundException
+	 * @throws IncompatibleVarException
 	 */
 	private String buildMDPPartialModuleCommands(IActionDescription<IAction> actionDescription)
-			throws ActionNotFoundException, VarNotFoundException {
+			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException {
 		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
 
 		StringBuilder builder = new StringBuilder();

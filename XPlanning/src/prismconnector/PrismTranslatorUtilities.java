@@ -830,8 +830,9 @@ public class PrismTranslatorUtilities {
 	}
 
 	interface PartialModuleCommandsBuilder {
-		String buildPartialModuleCommands(IActionDescription<IAction> actionDescription) throws ActionNotFoundException,
-				VarNotFoundException, IncompatibleVarException, DiscriminantNotFoundException;
+		String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
+				throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
+				DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException;
 	}
 
 }

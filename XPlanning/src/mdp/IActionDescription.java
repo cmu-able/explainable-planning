@@ -4,7 +4,7 @@ import java.util.Set;
 
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectNotFoundException;
+import exceptions.IncompatibleVarException;
 import factors.ActionDefinition;
 import factors.IAction;
 
@@ -19,10 +19,8 @@ import factors.IAction;
  */
 public interface IActionDescription<E extends IAction> {
 
-	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws ActionNotFoundException;
-
-	public double getProbability(Effect effect, Discriminant discriminant, E action)
-			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException;
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
+			throws ActionNotFoundException, IncompatibleVarException;
 
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
 			throws ActionNotFoundException, DiscriminantNotFoundException;

@@ -15,16 +15,7 @@ import examples.mobilerobot.factors.RobotSpeed;
 import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
@@ -90,8 +81,7 @@ public class MobileRobotTestProblem {
 
 	}
 
-	public XMDP createXMDP() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+	public XMDP createXMDP() throws XMDPException {
 		StateSpace stateSpace = createStateSpace();
 		ActionSpace actionSpace = createActionSpace();
 		State initialState = createInitialState();
@@ -150,8 +140,7 @@ public class MobileRobotTestProblem {
 		return goal;
 	}
 
-	private TransitionFunction createTransitions() throws AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, IncompatibleDiscriminantClassException, IncompatibleActionException {
+	private TransitionFunction createTransitions() throws XMDPException {
 		// MoveTo:
 		// Precondition
 		Precondition preMoveToL1 = new Precondition();
@@ -208,10 +197,7 @@ public class MobileRobotTestProblem {
 		return costFunction;
 	}
 
-	public XDTMC createXDTMC()
-			throws AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, IncompatibleActionException, ActionDefinitionNotFoundException,
-			EffectClassNotFoundException, VarNotFoundException, ActionNotFoundException, DiscriminantNotFoundException {
+	public XDTMC createXDTMC() throws XMDPException {
 		XMDP xmdp = createXMDP();
 		Policy policy = createPolicy();
 		XDTMC xdtmc = new XDTMC(xmdp, policy);

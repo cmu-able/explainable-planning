@@ -1,5 +1,7 @@
 package examples.mobilerobot.factors;
 
+import exceptions.ActionNotApplicableException;
+import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
@@ -42,8 +44,13 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 	}
 
 	@Override
-	public ProbabilisticEffect formula(Discriminant discriminant, MoveToAction moveTo) throws VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
+	public ProbabilisticEffect formula(Discriminant discriminant, MoveToAction moveTo)
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, ActionNotFoundException, ActionNotApplicableException {
+		if (!mPrecondition.isActionApplicable(moveTo, discriminant)) {
+			throw new ActionNotApplicableException(moveTo, discriminant);
+		}
+
 		Location srcLoc = discriminant.getDiscriminantValue(Location.class, mrLocDef);
 		StateVar<Location> rLocSrc = mrLocDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);

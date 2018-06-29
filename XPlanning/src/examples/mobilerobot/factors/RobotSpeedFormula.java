@@ -1,5 +1,7 @@
 package examples.mobilerobot.factors;
 
+import exceptions.ActionNotApplicableException;
+import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
@@ -33,8 +35,13 @@ public class RobotSpeedFormula implements IProbabilisticTransitionFormula<SetSpe
 	}
 
 	@Override
-	public ProbabilisticEffect formula(Discriminant discriminant, SetSpeedAction setSpeed) throws VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
+	public ProbabilisticEffect formula(Discriminant discriminant, SetSpeedAction setSpeed)
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, ActionNotFoundException, ActionNotApplicableException {
+		if (!mPrecondition.isActionApplicable(setSpeed, discriminant)) {
+			throw new ActionNotApplicableException(setSpeed, discriminant);
+		}
+
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(mEffectClass);
 		Effect newSpeedEffect = new Effect(mEffectClass);
 		StateVar<RobotSpeed> newSpeed = mrSpeedDef.getStateVar(setSpeed.getTargetSpeed());

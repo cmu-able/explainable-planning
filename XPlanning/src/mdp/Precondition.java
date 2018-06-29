@@ -10,10 +10,13 @@ import exceptions.IncompatibleActionException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
+import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**
- * {@link Precondition} defines a precondition for each action in a particular {@link ActionDefinition}.
+ * {@link Precondition} defines a precondition for each action in a particular {@link ActionDefinition}. If a state
+ * variable is not present in the precondition, it means that there is no restriction on the applicable values of that
+ * variable.
  * 
  * @author rsukkerd
  *
@@ -58,6 +61,22 @@ public class Precondition<E extends IAction> {
 			stateVarDef.getPossibleValues();
 		}
 		return (Set<T>) mActionPreconds.get(action).get(stateVarDef);
+	}
+
+	public boolean isActionApplicable(E action, IPredicate predicate) throws ActionNotFoundException {
+		if (!sanityCheck(action)) {
+			throw new ActionNotFoundException(action);
+		}
+		Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> actionPrecond = mActionPreconds
+				.get(action);
+		for (StateVar<IStateVarValue> stateVar : predicate) {
+			StateVarDefinition<IStateVarValue> varDef = stateVar.getDefinition();
+			IStateVarValue value = stateVar.getValue();
+			if (actionPrecond.containsKey(varDef) && !actionPrecond.get(varDef).contains(value)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private boolean sanityCheck(E action) {

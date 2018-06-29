@@ -84,4 +84,10 @@ public class State implements IPredicate {
 		}
 		return hashCode;
 	}
+
+	@Override
+	public String toString() {
+		return mStateVarMap.toString();
+	}
+
 }

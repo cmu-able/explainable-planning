@@ -93,4 +93,10 @@ public class Discriminant implements IPredicate {
 		}
 		return hashCode;
 	}
+
+	@Override
+	public String toString() {
+		return mState.toString();
+	}
+
 }

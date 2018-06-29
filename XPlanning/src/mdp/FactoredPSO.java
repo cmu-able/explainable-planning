@@ -6,14 +6,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import exceptions.ActionNotApplicableException;
 import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
@@ -97,9 +93,7 @@ public class FactoredPSO<E extends IAction> {
 	}
 
 	public Set<IStateVarValue> getPossibleImpact(StateVarDefinition<IStateVarValue> stateVarDef,
-			Discriminant discriminant, E action) throws ActionNotFoundException, VarNotFoundException,
-			DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, ActionNotApplicableException {
+			Discriminant discriminant, E action) throws XMDPException {
 		for (Entry<EffectClass, IActionDescription<E>> e : mActionDescriptions.entrySet()) {
 			EffectClass effectClass = e.getKey();
 			IActionDescription<E> actionDesc = e.getValue();

@@ -7,18 +7,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import dtmc.XDTMC;
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
 import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import mdp.XMDP;
 import metrics.IQFunction;
 import objectives.AttributeConstraint;
@@ -60,26 +52,12 @@ public class PrismConnector {
 	 * total cost and QA values.
 	 * 
 	 * @return An optimal policy, if exists.
-	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
-	 * @throws QFunctionNotFoundException
 	 */
-	public Policy generateOptimalPolicy() throws VarNotFoundException, EffectClassNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, PrismException,
-			ResultParsingException, IOException, QFunctionNotFoundException {
+	public Policy generateOptimalPolicy() throws XMDPException, PrismException, ResultParsingException, IOException {
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.STATE_REWARD);
 
 		// If we want to use the PRISM output explicit DTMC model to calculate QA values of the policy, then we need to
@@ -102,27 +80,14 @@ public class PrismConnector {
 	 * @param constraint
 	 *            : Constraint on the expected total value of a particular QA
 	 * @return An optimal, constraint-satisfying policy, if exists.
-	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
-	 * @throws QFunctionNotFoundException
 	 */
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
-			AttributeConstraint<IQFunction> constraint) throws VarNotFoundException, EffectClassNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, DiscriminantNotFoundException,
-			ActionNotFoundException, IncompatibleActionException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, ActionDefinitionNotFoundException, PrismException,
-			ResultParsingException, IOException, QFunctionNotFoundException {
+			AttributeConstraint<IQFunction> constraint)
+			throws XMDPException, PrismException, ResultParsingException, IOException {
 		// Use transition rewards for multi-objective adversary synthesis
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);
 		PrismRewardTranslator rewardTranslator = mdpTranslator.getPrismRewardTranslator();
@@ -168,24 +133,10 @@ public class PrismConnector {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
-	 * @throws VarNotFoundException
-	 * @throws QFunctionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws ActionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 */
 	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyString,
-			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, VarNotFoundException,
-			QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException {
+			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mOutputPath,
 				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME);
@@ -241,24 +192,11 @@ public class PrismConnector {
 	 * 
 	 * @param policy
 	 * @return Expected total cost of the policy
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws VarNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws ActionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double getExpectedTotalCost(Policy policy)
-			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException {
+	public double getExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		if (!mCachedTotalCosts.containsKey(policy)) {
 			computeExpectedTotalCost(policy);
 		}
@@ -273,25 +211,12 @@ public class PrismConnector {
 	 * @param qFunction
 	 *            : QA function
 	 * @return QA value of the policy
-	 * @throws QFunctionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws VarNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws ActionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
 	public double getQAValue(Policy policy, IQFunction qFunction)
-			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
-			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException {
+			throws XMDPException, PrismException, ResultParsingException {
 		if (!mXMDP.getQFunctions().contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}
@@ -301,11 +226,7 @@ public class PrismConnector {
 		return mCachedQAValues.get(policy).get(qFunction);
 	}
 
-	private void computeExpectedTotalCost(Policy policy)
-			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException {
+	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
@@ -315,10 +236,7 @@ public class PrismConnector {
 	}
 
 	private void computeQAValues(Policy policy, Set<IQFunction> qFunctions)
-			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException {
+			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);

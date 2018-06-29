@@ -1,11 +1,6 @@
 package factors;
 
-import exceptions.ActionNotApplicableException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
@@ -27,16 +22,9 @@ public interface IProbabilisticTransitionFormula<E extends IAction> {
 	 * @param discriminant
 	 * @param action
 	 * @return Probabilistic effect of the action
-	 * @throws VarNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws IncompatibleEffectClassException
-	 * @throws ActionNotFoundException
-	 * @throws ActionNotApplicableException
+	 * @throws XMDPException
 	 */
-	public ProbabilisticEffect formula(Discriminant discriminant, E action)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, ActionNotFoundException, ActionNotApplicableException;
+	public ProbabilisticEffect formula(Discriminant discriminant, E action) throws XMDPException;
 
 	/**
 	 * Precondition defining the domains of the discriminant variables.

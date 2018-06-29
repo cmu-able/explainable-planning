@@ -4,12 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import exceptions.ActionNotApplicableException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IProbabilisticTransitionFormula;
@@ -47,9 +42,7 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	}
 
 	@Override
-	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
-			throws ActionNotFoundException, IncompatibleVarException, VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleEffectClassException, ActionNotApplicableException {
+	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws XMDPException {
 		Set<ProbabilisticTransition<E>> probTransitions = new HashSet<>();
 		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action,
 				mProbTransFormula.getPrecondition());
@@ -68,11 +61,10 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	 * @param action
 	 * @param precondition
 	 * @return All possible combinations of values of a given discriminant class -- as a set of discriminants.
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleVarException
+	 * @throws XMDPException
 	 */
 	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action, Precondition<E> precondition)
-			throws ActionNotFoundException, IncompatibleVarException {
+			throws XMDPException {
 		Set<Discriminant> allDiscriminants = new HashSet<>();
 
 		DiscriminantClass copyDiscrClass = new DiscriminantClass();
@@ -101,9 +93,7 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	}
 
 	@Override
-	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
-			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
-			IncompatibleEffectClassException, ActionNotFoundException, ActionNotApplicableException {
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action) throws XMDPException {
 		return mProbTransFormula.formula(discriminant, action);
 	}
 

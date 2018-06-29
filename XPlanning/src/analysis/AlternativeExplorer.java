@@ -11,12 +11,12 @@ import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
 import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import mdp.XMDP;
 import metrics.IQFunction;
 import objectives.AdditiveCostFunction;
@@ -58,10 +58,7 @@ public class AlternativeExplorer {
 	 * @throws IOException
 	 */
 	public Set<Policy> getParetoOptimalImmediateNeighbors()
-			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
-			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException, IOException {
+			throws XMDPException, PrismException, ResultParsingException, IOException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
 		CostFunction costFunction = xmdp.getCostFunction();
@@ -104,10 +101,7 @@ public class AlternativeExplorer {
 	}
 
 	private void update(Iterator<IQFunction> frontierIter, Policy alternative)
-			throws QFunctionNotFoundException, ActionDefinitionNotFoundException, EffectClassNotFoundException,
-			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, IncompatibleDiscriminantClassException,
-			AttributeNameNotFoundException, PrismException, ResultParsingException {
+			throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
 			IQFunction qFunction = frontierIter.next();
 			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);

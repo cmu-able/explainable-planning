@@ -2,16 +2,8 @@ package prismconnector;
 
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import mdp.Discriminant;
@@ -59,27 +51,14 @@ public class PrismMDPTranslator {
 	 *            : Whether or not to include QA functions in the MDP translation
 	 * @return Prism model of this MDP, including constants' declarations, MDP model, a reward structure representing
 	 *         the cost function, and optionally reward structure(s) representing the QA function(s).
-	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
+	 * @throws XMDPException
 	 */
-	public String getMDPTranslation(boolean withQAFunctions)
-			throws VarNotFoundException, EffectClassNotFoundException, AttributeNameNotFoundException,
-			IncompatibleVarException, DiscriminantNotFoundException, ActionNotFoundException,
-			IncompatibleActionException, IncompatibleEffectClassException, ActionDefinitionNotFoundException {
+	public String getMDPTranslation(boolean withQAFunctions) throws XMDPException {
 		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {
 
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
-					throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-					AttributeNameNotFoundException, IncompatibleEffectClassException {
+					throws XMDPException {
 				return buildMDPPartialModuleCommands(actionDescription);
 			}
 		};
@@ -127,15 +106,9 @@ public class PrismMDPTranslator {
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)
 	 * @return commands for updating a particular effect class of actionDescription
-	 * @throws ActionNotFoundException
-	 * @throws VarNotFoundException
-	 * @throws IncompatibleEffectClassException
-	 * @throws AttributeNameNotFoundException
-	 * @throws IncompatibleVarException
+	 * @throws XMDPException
 	 */
-	private String buildMDPPartialModuleCommands(IActionDescription<IAction> actionDescription)
-			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-			AttributeNameNotFoundException, IncompatibleEffectClassException {
+	private String buildMDPPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException {
 		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
 
 		StringBuilder builder = new StringBuilder();

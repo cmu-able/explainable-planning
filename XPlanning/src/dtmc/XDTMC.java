@@ -5,15 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
@@ -48,18 +40,13 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 	private Policy mPolicy;
 	private Map<ActionDefinition<IAction>, TwoTBN<IAction>> mDTMC = new HashMap<>();
 
-	public XDTMC(XMDP xmdp, Policy policy) throws ActionDefinitionNotFoundException, EffectClassNotFoundException,
-			VarNotFoundException, IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, AttributeNameNotFoundException, IncompatibleEffectClassException {
+	public XDTMC(XMDP xmdp, Policy policy) throws XMDPException {
 		mXMDP = xmdp;
 		mPolicy = policy;
 		induceDTMC(xmdp, policy);
 	}
 
-	private void induceDTMC(XMDP xmdp, Policy policy)
-			throws ActionDefinitionNotFoundException, EffectClassNotFoundException, VarNotFoundException,
-			IncompatibleVarException, ActionNotFoundException, DiscriminantNotFoundException,
-			IncompatibleActionException, AttributeNameNotFoundException, IncompatibleEffectClassException {
+	private void induceDTMC(XMDP xmdp, Policy policy) throws XMDPException {
 		for (Decision decision : policy) {
 			State predicate = decision.getState();
 			IAction action = decision.getAction();

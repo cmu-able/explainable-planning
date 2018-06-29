@@ -6,16 +6,8 @@ import java.util.Set;
 
 import dtmc.TwoTBN;
 import dtmc.XDTMC;
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
 import exceptions.VarNotFoundException;
+import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
@@ -64,21 +56,9 @@ public class PrismDTMCTranslator {
 	 * @return Prism model of this DTMC, including constants' declarations, DTMC model, and a reward structure
 	 *         representing the cost function of the corresponding MDP, and optionally reward structure(s) representing
 	 *         the QA function(s).
-	 * @throws VarNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws ActionNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleVarException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 */
-	public String getDTMCTranslation(boolean withQAFunctions)
-			throws VarNotFoundException, EffectClassNotFoundException, ActionNotFoundException,
-			IncompatibleActionException, IncompatibleVarException, IncompatibleEffectClassException,
-			ActionDefinitionNotFoundException, DiscriminantNotFoundException, AttributeNameNotFoundException {
+	public String getDTMCTranslation(boolean withQAFunctions) throws XMDPException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
 		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
@@ -94,8 +74,7 @@ public class PrismDTMCTranslator {
 
 			@Override
 			public String buildPartialModuleCommands(IActionDescription<IAction> actionDescription)
-					throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-					DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
+					throws XMDPException {
 				return buildDTMCPartialModuleCommands(actionDescription);
 			}
 		};
@@ -157,16 +136,9 @@ public class PrismDTMCTranslator {
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)
 	 * @return commands for updating a particular effect class of actionDescription
-	 * @throws ActionNotFoundException
-	 * @throws VarNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws DiscriminantNotFoundException
-	 * @throws IncompatibleEffectClassException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 */
-	private String buildDTMCPartialModuleCommands(IActionDescription<IAction> actionDescription)
-			throws ActionNotFoundException, VarNotFoundException, IncompatibleVarException,
-			DiscriminantNotFoundException, AttributeNameNotFoundException, IncompatibleEffectClassException {
+	private String buildDTMCPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException {
 		TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(actionDescription.getActionDefinition());
 		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
 

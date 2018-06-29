@@ -33,15 +33,26 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 	private StateVarDefinition<Location> mrLocSrcDef;
 	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
 	private Precondition<MoveToAction> mPrecondition;
+
 	private EffectClass mEffectClass; // of rBumped
+	private Effect mBumpedEffect;
+	private Effect mNotBumpedEffect;
 
 	public RobotBumpedFormula(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef,
-			Precondition<MoveToAction> precondition) {
+			Precondition<MoveToAction> precondition) throws IncompatibleVarException {
 		mrLocSrcDef = rLocSrcDef;
 		mrBumpedDestDef = rBumpedDestDef;
 		mPrecondition = precondition;
+
 		mEffectClass = new EffectClass();
 		mEffectClass.add(rBumpedDestDef);
+		// Possible effects on rBumped
+		mBumpedEffect = new Effect(mEffectClass);
+		mNotBumpedEffect = new Effect(mEffectClass);
+		RobotBumped bumped = new RobotBumped(true);
+		RobotBumped notBumped = new RobotBumped(false);
+		mBumpedEffect.add(mrBumpedDestDef.getStateVar(bumped));
+		mNotBumpedEffect.add(mrBumpedDestDef.getStateVar(notBumped));
 	}
 
 	@Override
@@ -50,22 +61,15 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 		Location srcLoc = discriminant.getDiscriminantValue(Location.class, mrLocSrcDef);
 		StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
-
 		ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(mEffectClass);
-		Effect bumpedEffect = new Effect(mEffectClass);
-		Effect notBumpedEffect = new Effect(mEffectClass);
-		RobotBumped bumped = new RobotBumped(true);
-		RobotBumped notBumped = new RobotBumped(false);
-		bumpedEffect.add(mrBumpedDestDef.getStateVar(bumped));
-		notBumpedEffect.add(mrBumpedDestDef.getStateVar(notBumped));
 
 		if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
-			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
+			rBumpedProbEffect.put(mBumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
+			rBumpedProbEffect.put(mNotBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
 		} else if (occlusion == Occlusion.BLOCKED) {
-			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
+			rBumpedProbEffect.put(mBumpedEffect, BUMP_PROB_BLOCKED);
 		} else {
-			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
+			rBumpedProbEffect.put(mNotBumpedEffect, 1 - BUMP_PROB_CLEAR);
 		}
 
 		return rBumpedProbEffect;

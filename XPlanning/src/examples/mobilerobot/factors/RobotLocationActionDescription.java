@@ -5,19 +5,15 @@ import java.util.Set;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleDiscriminantClassException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
+import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
-import factors.StateVar;
 import factors.StateVarDefinition;
-import mdp.FormulaActionDescription;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
-import mdp.Effect;
 import mdp.EffectClass;
+import mdp.FormulaActionDescription;
 import mdp.IActionDescription;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;
@@ -25,97 +21,44 @@ import mdp.ProbabilisticTransition;
 
 /**
  * {@link RobotLocationActionDescription} is an action description for the "rLoc" effect class of an instance of
- * {@link MoveToAction}.
+ * {@link MoveToAction}. It uses a {@link FormulaActionDescription}.
+ * 
+ * In the future, the constructor of this type may read an input formula for the "rLoc" effect and create a
+ * {@link RobotLocationFormula} accordingly.
  * 
  * @author rsukkerd
  *
  */
 public class RobotLocationActionDescription implements IActionDescription<MoveToAction> {
 
-	private static final double MOVE_PROB_NONBLOCKED = 1.0;
-	private static final double MOVE_PROB_BLOCKED = 0.0;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private StateVarDefinition<Location> mrLocDef;
 	private FormulaActionDescription<MoveToAction> mrLocActionDesc;
 
 	public RobotLocationActionDescription(ActionDefinition<MoveToAction> moveToDef,
-			StateVarDefinition<Location> rLocDef) {
-		mrLocDef = rLocDef;
-		mrLocActionDesc = new FormulaActionDescription<>(moveToDef);
-		mrLocActionDesc.addDiscriminantVarDef(rLocDef);
-		mrLocActionDesc.addEffectVarDef(rLocDef);
-	}
-
-	public void put(MoveToAction moveTo, Precondition precondition)
-			throws IncompatibleVarException, AttributeNameNotFoundException, IncompatibleEffectClassException,
-			IncompatibleDiscriminantClassException, IncompatibleActionException {
-		DiscriminantClass rLocDiscrClass = mrLocActionDesc.getDiscriminantClass();
-		EffectClass rLocEffectClass = mrLocActionDesc.getEffectClass();
-		Set<Location> applicableLocs = precondition.getApplicableValues(mrLocDef);
-		for (Location rLocSrcValue : applicableLocs) {
-			StateVar<Location> rLocSrc = mrLocDef.getStateVar(rLocSrcValue);
-			Discriminant rLocDiscriminant = new Discriminant(rLocDiscrClass);
-			rLocDiscriminant.add(rLocSrc);
-
-			ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect(rLocEffectClass);
-			Effect newLocEffect = new Effect(rLocEffectClass);
-			Effect oldLocEffect = new Effect(rLocEffectClass);
-			StateVar<Location> newLoc = mrLocDef.getStateVar(moveTo.getDestination());
-			StateVar<Location> oldLoc = mrLocDef.getStateVar(rLocSrcValue);
-			newLocEffect.add(newLoc);
-			oldLocEffect.add(oldLoc);
-
-			Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
-			if (occlusion == Occlusion.BLOCKED) {
-				rLocProbEffect.put(oldLocEffect, 1 - MOVE_PROB_BLOCKED);
-			} else {
-				rLocProbEffect.put(newLocEffect, MOVE_PROB_NONBLOCKED);
-			}
-			mrLocActionDesc.put(rLocProbEffect, rLocDiscriminant, moveTo);
-		}
-	}
-
-	/**
-	 * 
-	 * @param rLocDest
-	 * @param rLocSrc
-	 * @param moveTo
-	 * @return Pr(rLoc' | rLoc, moveTo(L))
-	 * @throws ActionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws EffectNotFoundException
-	 * @throws IncompatibleVarException
-	 */
-	public double getProbability(StateVar<Location> rLocDest, StateVar<Location> rLocSrc, MoveToAction moveTo)
-			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException,
-			IncompatibleVarException {
-		Effect rLocEffect = new Effect(getEffectClass());
-		rLocEffect.add(rLocDest);
-		Discriminant rLocDiscriminant = new Discriminant(getDiscriminantClass());
-		rLocDiscriminant.add(rLocSrc);
-		return mrLocActionDesc.getProbability(rLocEffect, rLocDiscriminant, moveTo);
+			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocDef) {
+		DiscriminantClass discrClass = new DiscriminantClass();
+		discrClass.add(rLocDef);
+		EffectClass effectClass = new EffectClass();
+		effectClass.add(rLocDef);
+		RobotLocationFormula rLocFormula = new RobotLocationFormula(rLocDef, precondition);
+		mrLocActionDesc = new FormulaActionDescription<>(moveToDef, discrClass, effectClass, rLocFormula);
 	}
 
 	@Override
 	public Set<ProbabilisticTransition<MoveToAction>> getProbabilisticTransitions(MoveToAction action)
-			throws ActionNotFoundException {
+			throws ActionNotFoundException, IncompatibleVarException, VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleEffectClassException {
 		return mrLocActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
-	public double getProbability(Effect effect, Discriminant discriminant, MoveToAction moveTo)
-			throws ActionNotFoundException, DiscriminantNotFoundException, EffectNotFoundException {
-		return mrLocActionDesc.getProbability(effect, discriminant, moveTo);
-	}
-
-	@Override
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, MoveToAction moveTo)
-			throws ActionNotFoundException, DiscriminantNotFoundException {
+			throws ActionNotFoundException, DiscriminantNotFoundException, VarNotFoundException,
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
 		return mrLocActionDesc.getProbabilisticEffect(discriminant, moveTo);
 	}
 

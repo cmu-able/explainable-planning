@@ -2,7 +2,7 @@ package exceptions;
 
 import factors.IAction;
 
-public class IncompatibleActionException extends Exception {
+public class IncompatibleActionException extends XMDPException {
 
 	/**
 	 * Auto-generated

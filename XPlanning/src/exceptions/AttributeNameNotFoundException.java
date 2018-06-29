@@ -1,6 +1,6 @@
 package exceptions;
 
-public class AttributeNameNotFoundException extends Exception {
+public class AttributeNameNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

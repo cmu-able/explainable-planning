@@ -3,7 +3,7 @@ package exceptions;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
-public class VarNotFoundException extends Exception {
+public class VarNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

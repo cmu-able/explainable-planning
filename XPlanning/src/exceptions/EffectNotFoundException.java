@@ -2,7 +2,7 @@ package exceptions;
 
 import mdp.Effect;
 
-public class EffectNotFoundException extends Exception {
+public class EffectNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

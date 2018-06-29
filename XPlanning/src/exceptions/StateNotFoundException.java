@@ -2,7 +2,7 @@ package exceptions;
 
 import mdp.State;
 
-public class StateNotFoundException extends Exception {
+public class StateNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

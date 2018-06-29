@@ -3,7 +3,7 @@ package exceptions;
 import factors.ActionDefinition;
 import factors.IAction;
 
-public class ActionDefinitionNotFoundException extends Exception {
+public class ActionDefinitionNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

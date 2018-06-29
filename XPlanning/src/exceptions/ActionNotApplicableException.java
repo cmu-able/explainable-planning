@@ -3,7 +3,7 @@ package exceptions;
 import factors.IAction;
 import mdp.IPredicate;
 
-public class ActionNotApplicableException extends Exception {
+public class ActionNotApplicableException extends XMDPException {
 
 	/**
 	 * Auto-generated

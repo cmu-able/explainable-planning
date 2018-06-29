@@ -2,7 +2,7 @@ package exceptions;
 
 import metrics.IQFunction;
 
-public class QFunctionNotFoundException extends Exception {
+public class QFunctionNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

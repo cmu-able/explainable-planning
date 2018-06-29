@@ -3,7 +3,7 @@ package exceptions;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
-public class IncompatibleVarException extends Exception {
+public class IncompatibleVarException extends XMDPException {
 
 	/**
 	 * Auto-generated

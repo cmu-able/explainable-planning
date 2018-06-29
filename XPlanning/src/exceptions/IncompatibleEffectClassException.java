@@ -2,7 +2,7 @@ package exceptions;
 
 import mdp.EffectClass;
 
-public class IncompatibleEffectClassException extends Exception {
+public class IncompatibleEffectClassException extends XMDPException {
 
 	/**
 	 * Auto-generated

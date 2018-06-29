@@ -2,7 +2,7 @@ package exceptions;
 
 import mdp.Discriminant;
 
-public class DiscriminantNotFoundException extends Exception {
+public class DiscriminantNotFoundException extends XMDPException {
 
 	/**
 	 * Auto-generated

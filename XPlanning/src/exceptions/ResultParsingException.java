@@ -2,7 +2,7 @@ package exceptions;
 
 import java.util.Arrays;
 
-public class ResultParsingException extends Exception {
+public class ResultParsingException extends PrismConnectorException {
 
 	/**
 	 * Auto-generated

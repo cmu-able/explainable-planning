@@ -1,5 +1,7 @@
 package factors;
 
+import exceptions.ActionNotApplicableException;
+import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.IncompatibleEffectClassException;
 import exceptions.IncompatibleVarException;
@@ -29,9 +31,12 @@ public interface IProbabilisticTransitionFormula<E extends IAction> {
 	 * @throws AttributeNameNotFoundException
 	 * @throws IncompatibleVarException
 	 * @throws IncompatibleEffectClassException
+	 * @throws ActionNotFoundException
+	 * @throws ActionNotApplicableException
 	 */
-	public ProbabilisticEffect formula(Discriminant discriminant, E action) throws VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException;
+	public ProbabilisticEffect formula(Discriminant discriminant, E action)
+			throws VarNotFoundException, AttributeNameNotFoundException, IncompatibleVarException,
+			IncompatibleEffectClassException, ActionNotFoundException, ActionNotApplicableException;
 
 	/**
 	 * Precondition defining the domains of the discriminant variables.

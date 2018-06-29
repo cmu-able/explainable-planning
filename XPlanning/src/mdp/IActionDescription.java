@@ -2,6 +2,7 @@ package mdp;
 
 import java.util.Set;
 
+import exceptions.ActionNotApplicableException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
@@ -24,11 +25,12 @@ public interface IActionDescription<E extends IAction> {
 
 	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action)
 			throws ActionNotFoundException, IncompatibleVarException, VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleEffectClassException;
+			AttributeNameNotFoundException, IncompatibleEffectClassException, ActionNotApplicableException;
 
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, E action)
 			throws ActionNotFoundException, DiscriminantNotFoundException, VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException;
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			ActionNotApplicableException;
 
 	public ActionDefinition<E> getActionDefinition();
 

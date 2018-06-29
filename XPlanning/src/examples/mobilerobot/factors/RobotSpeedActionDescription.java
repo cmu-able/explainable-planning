@@ -2,6 +2,7 @@ package examples.mobilerobot.factors;
 
 import java.util.Set;
 
+import exceptions.ActionNotApplicableException;
 import exceptions.ActionNotFoundException;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.DiscriminantNotFoundException;
@@ -48,14 +49,15 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 	@Override
 	public Set<ProbabilisticTransition<SetSpeedAction>> getProbabilisticTransitions(SetSpeedAction action)
 			throws ActionNotFoundException, IncompatibleVarException, VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleEffectClassException {
+			AttributeNameNotFoundException, IncompatibleEffectClassException, ActionNotApplicableException {
 		return mrSpeedActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, SetSpeedAction setSpeed)
 			throws ActionNotFoundException, DiscriminantNotFoundException, VarNotFoundException,
-			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException {
+			AttributeNameNotFoundException, IncompatibleVarException, IncompatibleEffectClassException,
+			ActionNotApplicableException {
 		return mrSpeedActionDesc.getProbabilisticEffect(discriminant, setSpeed);
 	}
 

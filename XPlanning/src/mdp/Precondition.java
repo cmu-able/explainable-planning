@@ -58,7 +58,7 @@ public class Precondition<E extends IAction> {
 			throw new ActionNotFoundException(action);
 		}
 		if (!mActionPreconds.containsKey(action) || !mActionPreconds.get(action).containsKey(stateVarDef)) {
-			stateVarDef.getPossibleValues();
+			return stateVarDef.getPossibleValues();
 		}
 		return (Set<T>) mActionPreconds.get(action).get(stateVarDef);
 	}

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import exceptions.ActionNotFoundException;
 import exceptions.EffectClassNotFoundException;
 import exceptions.VarNotFoundException;
 import exceptions.XMDPException;
@@ -39,19 +38,16 @@ public class FactoredPSO<E extends IAction> {
 	/**
 	 * Preconditions of actions of this type
 	 */
-	private Map<E, Precondition<E>> mPreconditions = new HashMap<>();
+	private Precondition<E> mPrecondition;
 
 	/**
 	 * Full action descriptions for all independent effect classes of this type of action
 	 */
 	private Map<EffectClass, IActionDescription<E>> mActionDescriptions = new HashMap<>();
 
-	public FactoredPSO(ActionDefinition<E> actionDef) {
+	public FactoredPSO(ActionDefinition<E> actionDef, Precondition<E> precondition) {
 		mActionDef = actionDef;
-	}
-
-	public void putPrecondition(E action, Precondition<E> precondition) {
-		mPreconditions.put(action, precondition);
+		mPrecondition = precondition;
 	}
 
 	public void addActionDescription(IActionDescription<E> actionDesc) {
@@ -62,11 +58,8 @@ public class FactoredPSO<E extends IAction> {
 		return mActionDef;
 	}
 
-	public Precondition<E> getPrecondition(E action) throws ActionNotFoundException {
-		if (!mPreconditions.containsKey(action)) {
-			throw new ActionNotFoundException(action);
-		}
-		return mPreconditions.get(action);
+	public Precondition<E> getPrecondition() {
+		return mPrecondition;
 	}
 
 	public Set<EffectClass> getIndependentEffectClasses() {
@@ -120,7 +113,7 @@ public class FactoredPSO<E extends IAction> {
 			return false;
 		}
 		FactoredPSO<?> pso = (FactoredPSO<?>) obj;
-		return pso.mActionDef.equals(mActionDef) && pso.mPreconditions.equals(mPreconditions)
+		return pso.mActionDef.equals(mActionDef) && pso.mPrecondition.equals(mPrecondition)
 				&& pso.mActionDescriptions.equals(mActionDescriptions);
 	}
 
@@ -130,7 +123,7 @@ public class FactoredPSO<E extends IAction> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mActionDef.hashCode();
-			result = 31 * result + mPreconditions.hashCode();
+			result = 31 * result + mPrecondition.hashCode();
 			result = 31 * result + mActionDescriptions.hashCode();
 			hashCode = result;
 		}

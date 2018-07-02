@@ -143,38 +143,30 @@ public class MobileRobotTestProblem {
 	private TransitionFunction createTransitions() throws XMDPException {
 		// MoveTo:
 		// Precondition
-		Precondition preMoveToL1 = new Precondition();
-		preMoveToL1.add(rLocDef, locL2);
-		Precondition preMoveToL2 = new Precondition();
-		preMoveToL2.add(rLocDef, locL1);
+		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
+		preMoveTo.add(moveToL1, rLocDef, locL2);
+		preMoveTo.add(moveToL2, rLocDef, locL1);
 
 		// Action description
-		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, rLocDef);
-		rLocActionDesc.put(moveToL1, preMoveToL1);
-		rLocActionDesc.put(moveToL2, preMoveToL2);
+		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
+				rLocDef);
 
 		// PSO
-		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef);
-		moveToPSO.putPrecondition(moveToL1, preMoveToL1);
-		moveToPSO.putPrecondition(moveToL2, preMoveToL2);
+		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
 		moveToPSO.addActionDescription(rLocActionDesc);
 
 		// SetSpeed:
 		// Precondition
-		Precondition preSetSpeedHalf = new Precondition();
-		preSetSpeedHalf.add(rSpeedDef, fullSpeed);
-		Precondition preSetSpeedFull = new Precondition();
-		preSetSpeedFull.add(rSpeedDef, halfSpeed);
+		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
+		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
+		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
 
 		// Action description
-		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, rSpeedDef);
-		rSpeedActionDesc.put(setSpeedHalf, preSetSpeedHalf);
-		rSpeedActionDesc.put(setSpeedFull, preSetSpeedFull);
+		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,
+				rSpeedDef);
 
 		// PSO
-		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef);
-		setSpeedPSO.putPrecondition(setSpeedHalf, preSetSpeedHalf);
-		setSpeedPSO.putPrecondition(setSpeedFull, preSetSpeedFull);
+		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef, preSetSpeed);
 		setSpeedPSO.addActionDescription(rSpeedActionDesc);
 
 		TransitionFunction transFunction = new TransitionFunction();

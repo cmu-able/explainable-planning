@@ -315,7 +315,7 @@ public class PrismRewardTranslatorUtilities {
 
 	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(FactoredPSO<IAction> actionPSO,
 			IAction action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) throws ActionNotFoundException {
-		Precondition<IAction> precondition = actionPSO.getPrecondition(action);
+		Precondition<IAction> precondition = actionPSO.getPrecondition();
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
 			Set<IStateVarValue> applicableVals = precondition.getApplicableValues(action, srcVarDef);

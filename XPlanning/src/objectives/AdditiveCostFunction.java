@@ -80,6 +80,11 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			public AttributeCostFunction<IQFunction> next() {
 				return (AttributeCostFunction<IQFunction>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

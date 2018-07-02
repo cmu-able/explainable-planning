@@ -60,6 +60,11 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 			public FactoredPSO<IAction> next() {
 				return (FactoredPSO<IAction>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

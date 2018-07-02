@@ -55,6 +55,11 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 			public StateVarDefinition<IStateVarValue> next() {
 				return (StateVarDefinition<IStateVarValue>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

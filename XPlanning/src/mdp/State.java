@@ -59,6 +59,11 @@ public class State implements IPredicate {
 			public StateVar<IStateVarValue> next() {
 				return (StateVar<IStateVarValue>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

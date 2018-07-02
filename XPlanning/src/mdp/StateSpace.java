@@ -80,6 +80,11 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 			public StateVarDefinition<IStateVarValue> next() {
 				return (StateVarDefinition<IStateVarValue>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

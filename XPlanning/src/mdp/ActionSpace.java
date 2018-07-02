@@ -62,6 +62,11 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 			public ActionDefinition<IAction> next() {
 				return (ActionDefinition<IAction>) iter.next();
 			}
+
+			@Override
+			public void remove() {
+				iter.remove();
+			}
 		};
 	}
 

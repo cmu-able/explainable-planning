@@ -15,15 +15,18 @@ public class MapTopology implements Iterable<LocationNode> {
 
 	private Set<LocationNode> mNodes = new HashSet<>();
 	private Set<Connection> mEdges = new HashSet<>();
+
 	// For fast look-up
+	private Map<String, LocationNode> mNodeIDs = new HashMap<>();
 	private Map<LocationNode, Set<Connection>> mConnections = new HashMap<>();
 
 	public MapTopology() {
-
+		// Constructor may take as input JSON file representing a map
 	}
 
 	public void addLocationNode(LocationNode node) {
 		mNodes.add(node);
+		mNodeIDs.put(node.getNodeID(), node);
 		mConnections.put(node, new HashSet<>());
 	}
 
@@ -32,6 +35,10 @@ public class MapTopology implements Iterable<LocationNode> {
 		mEdges.add(connection);
 		mConnections.get(nodeA).add(connection);
 		mConnections.get(nodeB).add(connection);
+	}
+
+	public LocationNode lookUpLocationNode(String nodeID) {
+		return mNodeIDs.get(nodeID);
 	}
 
 	public Set<Connection> getConnections(LocationNode node) {

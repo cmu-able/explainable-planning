@@ -1,62 +1,97 @@
 package examples.mobilerobot.dsm;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import examples.mobilerobot.factors.Area;
+import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
+import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
+import exceptions.IncompatibleActionException;
 import factors.ActionDefinition;
 import factors.StateVarDefinition;
 import mdp.ActionSpace;
+import mdp.FactoredPSO;
+import mdp.Precondition;
 import mdp.State;
 import mdp.StateSpace;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
+import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 
 public class MobileRobotXMDPBuilder {
 
+	// Robot's default setting
+	private static final RobotSpeed DEFAULT_SPEED = new RobotSpeed(0.35);
+
+	// --- Location --- //
 	// Robot's location state variable
 	private StateVarDefinition<Location> rLocDef;
 
+	// Move actions (depends on map topology)
+
+	// MoveTo action definition
+	private ActionDefinition<MoveToAction> moveToDef;
+	// ------ //
+
+	// --- Speed setting --- //
 	// Speed settings (known, fixed)
 	private RobotSpeed halfSpeed = new RobotSpeed(0.35);
 	private RobotSpeed fullSpeed = new RobotSpeed(0.7);
 
 	// Robot's speed state variable
-	private StateVarDefinition<RobotSpeed> rSpeedDef;
+	private StateVarDefinition<RobotSpeed> rSpeedDef = new StateVarDefinition<>("rSpeed", halfSpeed, fullSpeed);
 
+	// Speed-setting actions
+	private SetSpeedAction setSpeedHalf = new SetSpeedAction(rSpeedDef.getStateVar(halfSpeed));
+	private SetSpeedAction setSpeedFull = new SetSpeedAction(rSpeedDef.getStateVar(fullSpeed));
+
+	// SetSpeed action definition
+	private ActionDefinition<SetSpeedAction> setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedHalf,
+			setSpeedFull);
+	// ------ //
+
+	// --- Bump sensor --- //
 	// Bump sensor values (known, fixed)
 	private RobotBumped bumped = new RobotBumped(true);
 	private RobotBumped notBumped = new RobotBumped(false);
 
 	// Robot's bump sensor state variable
-	private StateVarDefinition<RobotBumped> rBumpedDef;
+	private StateVarDefinition<RobotBumped> rBumpedDef = new StateVarDefinition<>("rBumped", bumped, notBumped);
+	// ------ //
+
+	// --- Travel time --- //
+	private TravelTimeQFunction timeQFunction;
+	// ------ //
+
+	// Map location nodes to the corresponding location values
+	// To be used when adding derived attribute values to move-actions
+	private Map<LocationNode, Location> mLocMap = new HashMap<>();
 
 	public MobileRobotXMDPBuilder() {
-
+		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(MapTopology map) {
-		constructKnownVariableDefinitions();
+	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, double maxTravelTime)
+			throws IncompatibleActionException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
-		State initialState = buildInitialState();
-		State goal = buildGoal();
-		TransitionFunction transFunction = buildTransitionFunction();
+		State initialState = buildInitialState(startNode);
+		State goal = buildGoal(goalNode);
+		TransitionFunction transFunction = buildTransitionFunction(map);
 		Set<IQFunction> qFunctions = buildQFunctions();
-		CostFunction costFunction = buildCostFunction();
+		CostFunction costFunction = buildCostFunction(maxTravelTime);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qFunctions, costFunction);
-	}
-
-	private void constructKnownVariableDefinitions() {
-		rSpeedDef = new StateVarDefinition<>("rSpeed", halfSpeed, fullSpeed);
-		rBumpedDef = new StateVarDefinition<>("rBumped", bumped, notBumped);
 	}
 
 	private StateSpace buildStateSpace(MapTopology map) {
@@ -64,6 +99,9 @@ public class MobileRobotXMDPBuilder {
 		for (LocationNode node : map) {
 			Location loc = new Location(node.getNodeID(), Area.PUBLIC);
 			locs.add(loc);
+
+			// Map each location node to its corresponding location value
+			mLocMap.put(node, loc);
 		}
 
 		rLocDef = new StateVarDefinition<>("rLoc", locs);
@@ -78,21 +116,23 @@ public class MobileRobotXMDPBuilder {
 	private ActionSpace buildActionSpace(MapTopology map) {
 		// MoveTo actions
 		Set<MoveToAction> moveTos = new HashSet<>();
-		for (Location loc : rLocDef.getPossibleValues()) {
-			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(loc));
-			// TODO: put distance
+		for (Location locDest : rLocDef.getPossibleValues()) {
+			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest));
+
+			// Distance (derived-)attribute for each move action from the map
+			LocationNode node = map.lookUpLocationNode(locDest.getId());
+			Set<Connection> connections = map.getConnections(node);
+			for (Connection conn : connections) {
+				Location locSrc = mLocMap.get(getOtherNode(conn, node));
+				Distance distance = new Distance(conn.getDistance());
+				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
+			}
+
 			moveTos.add(moveTo);
 		}
 
 		// MoveTo action definition
-		ActionDefinition<MoveToAction> moveToDef = new ActionDefinition<>("moveTo", moveTos);
-
-		// SetSpeed actions
-		SetSpeedAction setSpeedHalf = new SetSpeedAction(rSpeedDef.getStateVar(halfSpeed));
-		SetSpeedAction setSpeedFull = new SetSpeedAction(rSpeedDef.getStateVar(fullSpeed));
-
-		// SetSpeed action definition
-		ActionDefinition<SetSpeedAction> setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedHalf, setSpeedFull);
+		moveToDef = new ActionDefinition<>("moveTo", moveTos);
 
 		ActionSpace actionSpace = new ActionSpace();
 		actionSpace.addActionDefinition(moveToDef);
@@ -100,23 +140,82 @@ public class MobileRobotXMDPBuilder {
 		return actionSpace;
 	}
 
-	private State buildInitialState() {
-		return null;
+	private State buildInitialState(LocationNode startNode) {
+		Location loc = mLocMap.get(startNode);
+		State initialState = new State();
+		initialState.addStateVar(rLocDef.getStateVar(loc));
+		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
+		return initialState;
 	}
 
-	private State buildGoal() {
-		return null;
+	private State buildGoal(LocationNode goalNode) {
+		Location loc = mLocMap.get(goalNode);
+		State goal = new State();
+		goal.addStateVar(rLocDef.getStateVar(loc));
+		return goal;
 	}
 
-	private TransitionFunction buildTransitionFunction() {
-		return null;
+	private TransitionFunction buildTransitionFunction(MapTopology map) throws IncompatibleActionException {
+		// MoveTo:
+		// Precondition
+		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
+
+		for (MoveToAction moveTo : moveToDef.getActions()) {
+			Location locDest = moveTo.getDestination();
+
+			// Source location for each move action from the map
+			LocationNode node = map.lookUpLocationNode(locDest.getId());
+			Set<Connection> connections = map.getConnections(node);
+			for (Connection conn : connections) {
+				Location locSrc = mLocMap.get(getOtherNode(conn, node));
+				preMoveTo.add(moveTo, rLocDef, locSrc);
+			}
+		}
+
+		// Action description for rLoc
+		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
+				rLocDef);
+
+		// PSO
+		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
+		moveToPSO.addActionDescription(rLocActionDesc);
+
+		// SetSpeed:
+		// Precondition
+		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
+		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
+		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
+
+		// Action description for rSpeed
+		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,
+				rSpeedDef);
+
+		// PSO
+		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef, preSetSpeed);
+		setSpeedPSO.addActionDescription(rSpeedActionDesc);
+
+		TransitionFunction transFunction = new TransitionFunction();
+		transFunction.add(moveToPSO);
+		transFunction.add(setSpeedPSO);
+		return transFunction;
 	}
 
 	private Set<IQFunction> buildQFunctions() {
-		return null;
+		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
+		Set<IQFunction> qFunctions = new HashSet<>();
+		qFunctions.add(timeQFunction);
+		return qFunctions;
 	}
 
-	private CostFunction buildCostFunction() {
-		return null;
+	private CostFunction buildCostFunction(double maxTravelTime) {
+		AttributeCostFunction<TravelTimeQFunction> timeCostFunction = new AttributeCostFunction<>(timeQFunction, 0,
+				1 / maxTravelTime);
+		CostFunction costFunction = new CostFunction();
+		costFunction.put(timeQFunction, timeCostFunction, 1.0);
+		return costFunction;
+	}
+
+	private LocationNode getOtherNode(Connection connection, LocationNode node) {
+		return connection.getNodeA().equals(node) ? connection.getNodeB() : connection.getNodeA();
 	}
 }

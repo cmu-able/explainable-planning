@@ -35,6 +35,13 @@ public class Connection {
 		return mDistance;
 	}
 
+	public LocationNode getOtherNode(LocationNode node) throws LocationNodeNotFoundException {
+		if (!getNodeA().equals(node) && !getNodeB().equals(node)) {
+			throw new LocationNodeNotFoundException(node);
+		}
+		return getNodeA().equals(node) ? getNodeB() : getNodeA();
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -57,5 +64,10 @@ public class Connection {
 			hashCode = result;
 		}
 		return hashCode;
+	}
+
+	@Override
+	public String toString() {
+		return "connected(" + mNodeA + ", " + mNodeB + ")";
 	}
 }

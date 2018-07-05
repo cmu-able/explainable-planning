@@ -39,4 +39,9 @@ public class LocationNode {
 		}
 		return hashCode;
 	}
+
+	@Override
+	public String toString() {
+		return mNodeID;
+	}
 }

@@ -83,7 +83,7 @@ public class MobileRobotXMDPBuilder {
 	}
 
 	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, double maxTravelTime)
-			throws IncompatibleActionException {
+			throws IncompatibleActionException, LocationNodeNotFoundException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
 		State initialState = buildInitialState(startNode);
@@ -113,9 +113,11 @@ public class MobileRobotXMDPBuilder {
 		return stateSpace;
 	}
 
-	private ActionSpace buildActionSpace(MapTopology map) {
+	private ActionSpace buildActionSpace(MapTopology map) throws LocationNodeNotFoundException {
 		// MoveTo actions
 		Set<MoveToAction> moveTos = new HashSet<>();
+
+		// Assume that all locations are reachable
 		for (Location locDest : rLocDef.getPossibleValues()) {
 			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest));
 
@@ -123,7 +125,7 @@ public class MobileRobotXMDPBuilder {
 			LocationNode node = map.lookUpLocationNode(locDest.getId());
 			Set<Connection> connections = map.getConnections(node);
 			for (Connection conn : connections) {
-				Location locSrc = mLocMap.get(getOtherNode(conn, node));
+				Location locSrc = mLocMap.get(conn.getOtherNode(node));
 				Distance distance = new Distance(conn.getDistance());
 				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
 			}
@@ -155,7 +157,8 @@ public class MobileRobotXMDPBuilder {
 		return goal;
 	}
 
-	private TransitionFunction buildTransitionFunction(MapTopology map) throws IncompatibleActionException {
+	private TransitionFunction buildTransitionFunction(MapTopology map)
+			throws IncompatibleActionException, LocationNodeNotFoundException {
 		// MoveTo:
 		// Precondition
 		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
@@ -167,7 +170,7 @@ public class MobileRobotXMDPBuilder {
 			LocationNode node = map.lookUpLocationNode(locDest.getId());
 			Set<Connection> connections = map.getConnections(node);
 			for (Connection conn : connections) {
-				Location locSrc = mLocMap.get(getOtherNode(conn, node));
+				Location locSrc = mLocMap.get(conn.getOtherNode(node));
 				preMoveTo.add(moveTo, rLocDef, locSrc);
 			}
 		}
@@ -213,9 +216,5 @@ public class MobileRobotXMDPBuilder {
 		CostFunction costFunction = new CostFunction();
 		costFunction.put(timeQFunction, timeCostFunction, 1.0);
 		return costFunction;
-	}
-
-	private LocationNode getOtherNode(Connection connection, LocationNode node) {
-		return connection.getNodeA().equals(node) ? connection.getNodeB() : connection.getNodeA();
 	}
 }

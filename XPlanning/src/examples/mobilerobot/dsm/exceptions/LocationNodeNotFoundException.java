@@ -1,6 +1,8 @@
-package examples.mobilerobot.dsm;
+package examples.mobilerobot.dsm.exceptions;
 
-public class LocationNodeNotFoundException extends Exception {
+import examples.mobilerobot.dsm.LocationNode;
+
+public class LocationNodeNotFoundException extends MapTopologyException {
 
 	/**
 	 * 

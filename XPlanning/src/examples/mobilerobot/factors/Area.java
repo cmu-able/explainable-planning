@@ -1,5 +1,6 @@
 package examples.mobilerobot.factors;
 
+import examples.mobilerobot.dsm.INodeAttribute;
 import factors.IStateVarAttribute;
 
 /**
@@ -8,8 +9,6 @@ import factors.IStateVarAttribute;
  * @author rsukkerd
  *
  */
-public enum Area implements IStateVarAttribute {
-	PUBLIC,
-	SEMI_PRIVATE,
-	PRIVATE
+public enum Area implements IStateVarAttribute, INodeAttribute {
+	PUBLIC, SEMI_PRIVATE, PRIVATE
 }

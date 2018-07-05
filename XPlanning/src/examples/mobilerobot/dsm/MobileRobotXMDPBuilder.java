@@ -5,10 +5,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.dsm.exceptions.NodeAttributeNotFoundException;
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
+import examples.mobilerobot.factors.Occlusion;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
@@ -83,7 +87,7 @@ public class MobileRobotXMDPBuilder {
 	}
 
 	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, double maxTravelTime)
-			throws IncompatibleActionException, LocationNodeNotFoundException {
+			throws IncompatibleActionException, MapTopologyException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
 		State initialState = buildInitialState(startNode);
@@ -94,10 +98,11 @@ public class MobileRobotXMDPBuilder {
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qFunctions, costFunction);
 	}
 
-	private StateSpace buildStateSpace(MapTopology map) {
+	private StateSpace buildStateSpace(MapTopology map) throws NodeAttributeNotFoundException {
 		Set<Location> locs = new HashSet<>();
 		for (LocationNode node : map) {
-			Location loc = new Location(node.getNodeID(), Area.PUBLIC);
+			Area area = node.getNodeAttribute(Area.class, "area");
+			Location loc = new Location(node.getNodeID(), area);
 			locs.add(loc);
 
 			// Map each location node to its corresponding location value
@@ -113,7 +118,7 @@ public class MobileRobotXMDPBuilder {
 		return stateSpace;
 	}
 
-	private ActionSpace buildActionSpace(MapTopology map) throws LocationNodeNotFoundException {
+	private ActionSpace buildActionSpace(MapTopology map) throws MapTopologyException {
 		// MoveTo actions
 		Set<MoveToAction> moveTos = new HashSet<>();
 
@@ -121,13 +126,19 @@ public class MobileRobotXMDPBuilder {
 		for (Location locDest : rLocDef.getPossibleValues()) {
 			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest));
 
-			// Distance (derived-)attribute for each move action from the map
+			// Derived attributes for each move action are obtained from edges in the map
 			LocationNode node = map.lookUpLocationNode(locDest.getId());
 			Set<Connection> connections = map.getConnections(node);
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
+
+				// Distance
 				Distance distance = new Distance(conn.getDistance());
 				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
+
+				// Occlusion
+				Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
+				moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
 			}
 
 			moveTos.add(moveTo);

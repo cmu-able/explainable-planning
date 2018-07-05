@@ -1,5 +1,6 @@
 package examples.mobilerobot.factors;
 
+import examples.mobilerobot.dsm.IConnectionAttribute;
 import factors.IActionAttribute;
 
 /**
@@ -8,6 +9,6 @@ import factors.IActionAttribute;
  * @author rsukkerd
  *
  */
-public enum Occlusion implements IActionAttribute {
+public enum Occlusion implements IActionAttribute, IConnectionAttribute {
 	BLOCKED, PARTIALLY_OCCLUDED, CLEAR
 }

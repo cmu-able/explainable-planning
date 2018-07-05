@@ -1,7 +1,12 @@
 package examples.mobilerobot.dsm;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import examples.mobilerobot.dsm.exceptions.ConnectionAttributeNotFoundException;
+import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 
 public class Connection {
 
@@ -14,6 +19,7 @@ public class Connection {
 	private LocationNode mNodeB;
 	private Set<LocationNode> mNodes = new HashSet<>();
 	private double mDistance;
+	private Map<String, IConnectionAttribute> mEdgeAttributes = new HashMap<>();
 
 	public Connection(LocationNode nodeA, LocationNode nodeB, double distance) {
 		mNodeA = nodeA;
@@ -21,6 +27,10 @@ public class Connection {
 		mNodes.add(nodeA);
 		mNodes.add(nodeB);
 		mDistance = distance;
+	}
+
+	public void putConnectionAttribute(String name, IConnectionAttribute value) {
+		mEdgeAttributes.put(name, value);
 	}
 
 	public LocationNode getNodeA() {
@@ -33,6 +43,14 @@ public class Connection {
 
 	public double getDistance() {
 		return mDistance;
+	}
+
+	public <E extends IConnectionAttribute> E getConnectionAttribute(Class<E> attributeType, String name)
+			throws ConnectionAttributeNotFoundException {
+		if (!mEdgeAttributes.containsKey(name)) {
+			throw new ConnectionAttributeNotFoundException(name);
+		}
+		return attributeType.cast(mEdgeAttributes.get(name));
 	}
 
 	public LocationNode getOtherNode(LocationNode node) throws LocationNodeNotFoundException {
@@ -51,7 +69,8 @@ public class Connection {
 			return false;
 		}
 		Connection connection = (Connection) obj;
-		return connection.mNodes.equals(mNodes) && Double.compare(connection.mDistance, mDistance) == 0;
+		return connection.mNodes.equals(mNodes) && Double.compare(connection.mDistance, mDistance) == 0
+				&& connection.mEdgeAttributes.equals(mEdgeAttributes);
 	}
 
 	@Override
@@ -61,6 +80,7 @@ public class Connection {
 			result = 17;
 			result = 31 * result + mNodes.hashCode();
 			result = 31 * result + Double.hashCode(mDistance);
+			result = 31 * result + mEdgeAttributes.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

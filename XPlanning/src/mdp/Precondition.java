@@ -30,25 +30,66 @@ public class Precondition<E extends IAction> {
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDef;
-	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>>> mActionPreconds = new HashMap<>();
+
+	// Univariate preconditions
+	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>>> mUnivarPreconds = new HashMap<>();
+
+	// Multivariate preconditions
+	private Map<E, Set<Set<StateVar<? extends IStateVarValue>>>> mMultivarPreconds = new HashMap<>();
 
 	public Precondition(ActionDefinition<E> actionDef) {
 		mActionDef = actionDef;
 	}
 
+	/**
+	 * For univariate precondition: Add an applicable value of a state variable, for each action.
+	 * 
+	 * @param action
+	 * @param stateVarDef
+	 * @param value
+	 * @throws IncompatibleActionException
+	 */
 	public <T extends IStateVarValue> void add(E action, StateVarDefinition<T> stateVarDef, T value)
 			throws IncompatibleActionException {
 		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);
 		}
-		if (!mActionPreconds.containsKey(action)) {
-			Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> preCond = new HashMap<>();
-			Set<IStateVarValue> applicableValues = new HashSet<>();
-			applicableValues.add(value);
-			preCond.put(stateVarDef, applicableValues);
-			mActionPreconds.put(action, preCond);
+		if (!mUnivarPreconds.containsKey(action)) {
+			Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> precond = new HashMap<>();
+			Set<IStateVarValue> applicableUnivarValues = new HashSet<>();
+			applicableUnivarValues.add(value);
+			precond.put(stateVarDef, applicableUnivarValues);
+			mUnivarPreconds.put(action, precond);
 		} else {
-			mActionPreconds.get(action).get(stateVarDef).add(value);
+			mUnivarPreconds.get(action).get(stateVarDef).add(value);
+		}
+	}
+
+	/**
+	 * For multivariate precondition: Add a set of (dependent) applicable values of different state variables, for each
+	 * action.
+	 * 
+	 * @param action
+	 * @param stateVars
+	 * @throws IncompatibleActionException
+	 */
+	public void add(E action, StateVar<? extends IStateVarValue>... stateVars) throws IncompatibleActionException {
+		if (!sanityCheck(action)) {
+			throw new IncompatibleActionException(action);
+		}
+
+		// Multivariate condition
+		Set<StateVar<? extends IStateVarValue>> multivarCond = new HashSet<>();
+		for (StateVar<? extends IStateVarValue> var : stateVars) {
+			multivarCond.add(var);
+		}
+
+		if (!mMultivarPreconds.containsKey(action)) {
+			Set<Set<StateVar<? extends IStateVarValue>>> applicableMultivarValues = new HashSet<>();
+			applicableMultivarValues.add(multivarCond);
+			mMultivarPreconds.put(action, applicableMultivarValues);
+		} else {
+			mMultivarPreconds.get(action).add(multivarCond);
 		}
 	}
 
@@ -57,17 +98,17 @@ public class Precondition<E extends IAction> {
 		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}
-		if (!mActionPreconds.containsKey(action) || !mActionPreconds.get(action).containsKey(stateVarDef)) {
+		if (!mUnivarPreconds.containsKey(action) || !mUnivarPreconds.get(action).containsKey(stateVarDef)) {
 			return stateVarDef.getPossibleValues();
 		}
-		return (Set<T>) mActionPreconds.get(action).get(stateVarDef);
+		return (Set<T>) mUnivarPreconds.get(action).get(stateVarDef);
 	}
 
 	public boolean isActionApplicable(E action, IPredicate predicate) throws ActionNotFoundException {
 		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}
-		Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> actionPrecond = mActionPreconds
+		Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> actionPrecond = mUnivarPreconds
 				.get(action);
 		for (StateVar<IStateVarValue> stateVar : predicate) {
 			StateVarDefinition<IStateVarValue> varDef = stateVar.getDefinition();
@@ -92,7 +133,7 @@ public class Precondition<E extends IAction> {
 			return false;
 		}
 		Precondition<?> precond = (Precondition<?>) obj;
-		return precond.mActionDef.equals(mActionDef) && precond.mActionPreconds.equals(mActionPreconds);
+		return precond.mActionDef.equals(mActionDef) && precond.mUnivarPreconds.equals(mUnivarPreconds);
 	}
 
 	@Override
@@ -101,7 +142,7 @@ public class Precondition<E extends IAction> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mActionDef.hashCode();
-			result = 31 * result + mActionPreconds.hashCode();
+			result = 31 * result + mUnivarPreconds.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

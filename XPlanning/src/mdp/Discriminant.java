@@ -18,7 +18,7 @@ import factors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class Discriminant implements IPredicate {
+public class Discriminant implements IStatePredicate {
 
 	/*
 	 * Cached hashCode -- Effective Java

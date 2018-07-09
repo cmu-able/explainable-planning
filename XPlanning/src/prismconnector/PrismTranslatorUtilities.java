@@ -25,7 +25,7 @@ import mdp.Effect;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.IActionDescription;
-import mdp.IPredicate;
+import mdp.IStatePredicate;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
 import mdp.State;
@@ -530,7 +530,7 @@ public class PrismTranslatorUtilities {
 	 * @return [actionName] {guard} -> {updates};
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleCommand(IAction action, IPredicate predicate, ProbabilisticEffect probEffect)
+	String buildModuleCommand(IAction action, IStatePredicate predicate, ProbabilisticEffect probEffect)
 			throws VarNotFoundException {
 		String guard = buildExpression(predicate);
 		String updates = buildUpdates(probEffect);
@@ -553,7 +553,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildExpression(IPredicate predicate) throws VarNotFoundException {
+	String buildExpression(IStatePredicate predicate) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {

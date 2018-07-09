@@ -15,7 +15,7 @@ import factors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class State implements IPredicate {
+public class State implements IStatePredicate {
 
 	/*
 	 * Cached hashCode -- Effective Java

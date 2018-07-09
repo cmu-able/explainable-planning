@@ -104,7 +104,7 @@ public class Precondition<E extends IAction> {
 		return (Set<T>) mUnivarPreconds.get(action).get(stateVarDef);
 	}
 
-	public boolean isActionApplicable(E action, IPredicate predicate) throws ActionNotFoundException {
+	public boolean isActionApplicable(E action, IStatePredicate predicate) throws ActionNotFoundException {
 		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}

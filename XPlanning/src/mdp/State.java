@@ -32,10 +32,7 @@ public class State implements IStatePredicate {
 		mStateVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
-	public boolean contains(StateVar<? extends IStateVarValue> stateVar) {
-		return mStateVarMap.containsValue(stateVar);
-	}
-
+	@Override
 	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException {
 		if (!mStateVarMap.containsKey(stateVarDef)) {

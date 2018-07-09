@@ -45,7 +45,7 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 			throw new ActionNotApplicableException(moveTo, discriminant);
 		}
 
-		Location srcLoc = discriminant.getDiscriminantValue(Location.class, mrLocDef);
+		Location srcLoc = discriminant.getStateVarValue(Location.class, mrLocDef);
 		StateVar<Location> rLocSrc = mrLocDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
 		ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect(mEffectClass);

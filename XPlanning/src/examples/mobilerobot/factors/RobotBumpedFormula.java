@@ -60,7 +60,7 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 			throw new ActionNotApplicableException(moveTo, discriminant);
 		}
 
-		Location srcLoc = discriminant.getDiscriminantValue(Location.class, mrLocSrcDef);
+		Location srcLoc = discriminant.getStateVarValue(Location.class, mrLocSrcDef);
 		StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
 		ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(mEffectClass);

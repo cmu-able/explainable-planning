@@ -56,13 +56,14 @@ public class Discriminant implements IStatePredicate {
 		}
 	}
 
-	public <E extends IStateVarValue> E getDiscriminantValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
-			throws VarNotFoundException {
-		return mState.getStateVarValue(valueType, stateVarDef);
-	}
-
 	public DiscriminantClass getDiscriminantClass() {
 		return mDiscriminantClass;
+	}
+
+	@Override
+	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
+			throws VarNotFoundException {
+		return mState.getStateVarValue(valueType, stateVarDef);
 	}
 
 	@Override

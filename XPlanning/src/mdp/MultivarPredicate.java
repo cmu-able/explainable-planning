@@ -3,9 +3,17 @@ package mdp;
 import java.util.HashSet;
 import java.util.Set;
 
+import exceptions.IncompatibleVarsException;
 import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import factors.StateVar;
 
+/**
+ * {@link MultivarPredicate} defines a precondition over a set of state variables. It contains a set of tuples of
+ * allowable values of the variables.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class MultivarPredicate implements IPreconditionPredicate {
 
 	/*
@@ -13,17 +21,33 @@ public class MultivarPredicate implements IPreconditionPredicate {
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mStateVarDefs = new HashSet<>();
+	private MultivarClass mMultivarClass;
 	private Set<IStatePredicate> mAllowableValueTuples = new HashSet<>();
 
-	public MultivarPredicate(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		for (StateVarDefinition<? extends IStateVarValue> stateVarDef : stateVarDefs) {
-			mStateVarDefs.add(stateVarDef);
-		}
+	public MultivarPredicate(MultivarClass multivarClass) {
+		mMultivarClass = multivarClass;
 	}
 
-	public void addAllowableValueTuple(IStatePredicate statePredicate) {
+	public void addAllowableValueTuple(IStatePredicate statePredicate) throws IncompatibleVarsException {
+		if (!sanityCheck(statePredicate)) {
+			throw new IncompatibleVarsException(statePredicate);
+		}
 		mAllowableValueTuples.add(statePredicate);
+	}
+
+	private boolean sanityCheck(IStatePredicate statePredicate) {
+		int predicateSize = 0;
+		for (StateVar<IStateVarValue> stateVar : statePredicate) {
+			predicateSize++;
+			if (!mMultivarClass.contains(stateVar.getDefinition())) {
+				return false;
+			}
+		}
+		return predicateSize == mMultivarClass.size();
+	}
+
+	public MultivarClass getMultivarClass() {
+		return mMultivarClass;
 	}
 
 	public Set<IStatePredicate> getAllowableValueTuples() {
@@ -39,7 +63,7 @@ public class MultivarPredicate implements IPreconditionPredicate {
 			return false;
 		}
 		MultivarPredicate predicate = (MultivarPredicate) obj;
-		return predicate.mStateVarDefs.equals(mStateVarDefs)
+		return predicate.mMultivarClass.equals(mMultivarClass)
 				&& predicate.mAllowableValueTuples.equals(mAllowableValueTuples);
 	}
 
@@ -48,7 +72,7 @@ public class MultivarPredicate implements IPreconditionPredicate {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mStateVarDefs.hashCode();
+			result = 31 * result + mMultivarClass.hashCode();
 			result = 31 * result + mAllowableValueTuples.hashCode();
 			hashCode = result;
 		}

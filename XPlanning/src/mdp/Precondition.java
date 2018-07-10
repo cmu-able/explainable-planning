@@ -33,12 +33,57 @@ public class Precondition<E extends IAction> {
 
 	// Univariate preconditions
 	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>>> mUnivarPreconds = new HashMap<>();
+	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>>> mUnivarPredicates = new HashMap<>();
 
 	// Multivariate preconditions
 	private Map<E, Set<Set<StateVar<? extends IStateVarValue>>>> mMultivarPreconds = new HashMap<>();
+	private Map<E, Map<MultivarClass, MultivarPredicate>> mMultivarPredicates = new HashMap<>();
 
 	public Precondition(ActionDefinition<E> actionDef) {
 		mActionDef = actionDef;
+	}
+
+	/**
+	 * For univariate predicate: Add an allowable value of a single state variable.
+	 * 
+	 * @param action
+	 * @param stateVar
+	 * @throws IncompatibleActionException
+	 */
+	public <T extends IStateVarValue> void add(E action, StateVarDefinition<T> stateVarDef, T value)
+			throws IncompatibleActionException {
+		if (!sanityCheck(action)) {
+			throw new IncompatibleActionException(action);
+		}
+		if (!mUnivarPredicates.containsKey(action)) {
+			Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>> predicates = new HashMap<>();
+			// Create a new univariate predicate for a new variable, and add a first allowable value
+			UnivarPredicate<T> predicate = new UnivarPredicate<>(stateVarDef);
+			predicate.addAllowableValue(value);
+			predicates.put(stateVarDef, predicate);
+			mUnivarPredicates.put(action, predicates);
+		} else if (!mUnivarPredicates.get(action).containsKey(stateVarDef)) {
+			// Create a new univariate predicate for a new variable, and add a first allowable value
+			UnivarPredicate<T> predicate = new UnivarPredicate<>(stateVarDef);
+			predicate.addAllowableValue(value);
+			mUnivarPredicates.get(action).put(stateVarDef, predicate);
+		} else {
+			// Add a new allowable value to an existing univariate predicate
+			UnivarPredicate<T> predicate = (UnivarPredicate<T>) mUnivarPredicates.get(action).get(stateVarDef);
+			predicate.addAllowableValue(value);
+		}
+	}
+
+	public void add(E action, MultivarClass multivarClass, IStatePredicate statePredicate)
+			throws IncompatibleActionException {
+		if (!sanityCheck(action)) {
+			throw new IncompatibleActionException(action);
+		}
+		if (!mMultivarPredicates.containsKey(action)) {
+			Map<MultivarClass, MultivarPredicate> predicates = new HashMap<>();
+			MultivarPredicate predicate = new MultivarPredicate(multivarClass);
+			// TODO
+		}
 	}
 
 	/**
@@ -49,7 +94,7 @@ public class Precondition<E extends IAction> {
 	 * @param value
 	 * @throws IncompatibleActionException
 	 */
-	public <T extends IStateVarValue> void add(E action, StateVarDefinition<T> stateVarDef, T value)
+	public <T extends IStateVarValue> void add2(E action, StateVarDefinition<T> stateVarDef, T value)
 			throws IncompatibleActionException {
 		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);

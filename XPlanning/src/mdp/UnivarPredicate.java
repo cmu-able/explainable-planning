@@ -6,6 +6,14 @@ import java.util.Set;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
+/**
+ * {@link UnivarPredicate} defines a precondition over a single state variable. It contains a set of allowable values of
+ * the variable.
+ * 
+ * @author rsukkerd
+ *
+ * @param <E>
+ */
 public class UnivarPredicate<E extends IStateVarValue> implements IPreconditionPredicate {
 
 	/*

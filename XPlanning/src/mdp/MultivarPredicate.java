@@ -22,20 +22,20 @@ public class MultivarPredicate implements IPreconditionPredicate {
 	private volatile int hashCode;
 
 	private MultivarClass mMultivarClass;
-	private Set<IStatePredicate> mAllowableValueTuples = new HashSet<>();
+	private Set<StatePredicate> mAllowableValueTuples = new HashSet<>();
 
 	public MultivarPredicate(MultivarClass multivarClass) {
 		mMultivarClass = multivarClass;
 	}
 
-	public void addAllowableValueTuple(IStatePredicate statePredicate) throws IncompatibleVarsException {
+	public void addAllowableValueTuple(StatePredicate statePredicate) throws IncompatibleVarsException {
 		if (!sanityCheck(statePredicate)) {
 			throw new IncompatibleVarsException(statePredicate);
 		}
 		mAllowableValueTuples.add(statePredicate);
 	}
 
-	private boolean sanityCheck(IStatePredicate statePredicate) {
+	private boolean sanityCheck(StatePredicate statePredicate) {
 		int predicateSize = 0;
 		for (StateVar<IStateVarValue> stateVar : statePredicate) {
 			predicateSize++;
@@ -50,7 +50,7 @@ public class MultivarPredicate implements IPreconditionPredicate {
 		return mMultivarClass;
 	}
 
-	public Set<IStatePredicate> getAllowableValueTuples() {
+	public Set<StatePredicate> getAllowableValueTuples() {
 		return mAllowableValueTuples;
 	}
 

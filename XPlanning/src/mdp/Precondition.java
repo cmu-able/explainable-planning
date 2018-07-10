@@ -31,12 +31,7 @@ public class Precondition<E extends IAction> {
 
 	private ActionDefinition<E> mActionDef;
 
-	// Univariate preconditions
-	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>>> mUnivarPreconds = new HashMap<>();
 	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>>> mUnivarPredicates = new HashMap<>();
-
-	// Multivariate preconditions
-	private Map<E, Set<Set<StateVar<? extends IStateVarValue>>>> mMultivarPreconds = new HashMap<>();
 	private Map<E, Map<MultivarClass, MultivarPredicate>> mMultivarPredicates = new HashMap<>();
 
 	public Precondition(ActionDefinition<E> actionDef) {
@@ -81,34 +76,33 @@ public class Precondition<E extends IAction> {
 	 * For multivariate predicate: Add an allowable value tuple of a set of state variables.
 	 * 
 	 * @param action
-	 * @param statePredicate
+	 * @param varTuple
 	 * @throws IncompatibleActionException
 	 * @throws IncompatibleVarsException
 	 */
-	public void add(E action, StatePredicate statePredicate)
-			throws IncompatibleActionException, IncompatibleVarsException {
+	public void add(E action, StateVarTuple varTuple) throws IncompatibleActionException, IncompatibleVarsException {
 		if (!sanityCheck(action)) {
 			throw new IncompatibleActionException(action);
 		}
 
-		MultivarClass multivarClass = statePredicate.getMultivarClass();
+		MultivarClass multivarClass = varTuple.getMultivarClass();
 
 		if (!mMultivarPredicates.containsKey(action)) {
 			Map<MultivarClass, MultivarPredicate> predicates = new HashMap<>();
 			// Create a new multivariate predicate for a new set of variables, and add a first allowable value tuple
 			MultivarPredicate predicate = new MultivarPredicate(multivarClass);
-			predicate.addAllowableValueTuple(statePredicate);
+			predicate.addAllowableValueTuple(varTuple);
 			predicates.put(multivarClass, predicate);
 			mMultivarPredicates.put(action, predicates);
 		} else if (!mMultivarPredicates.get(action).containsKey(multivarClass)) {
 			// Create a new multivariate predicate for a new set of variables, and add a first allowable value tuple
 			MultivarPredicate predicate = new MultivarPredicate(multivarClass);
-			predicate.addAllowableValueTuple(statePredicate);
+			predicate.addAllowableValueTuple(varTuple);
 			mMultivarPredicates.get(action).put(multivarClass, predicate);
 		} else {
 			// Add a new allowable value tuple to an existing multivariate predicate
 			MultivarPredicate predicate = mMultivarPredicates.get(action).get(multivarClass);
-			predicate.addAllowableValueTuple(statePredicate);
+			predicate.addAllowableValueTuple(varTuple);
 		}
 	}
 
@@ -117,23 +111,28 @@ public class Precondition<E extends IAction> {
 		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}
-		if (!mUnivarPreconds.containsKey(action) || !mUnivarPreconds.get(action).containsKey(stateVarDef)) {
+		if (!mUnivarPredicates.containsKey(action) || !mUnivarPredicates.get(action).containsKey(stateVarDef)) {
 			return stateVarDef.getPossibleValues();
 		}
-		return (Set<T>) mUnivarPreconds.get(action).get(stateVarDef);
+		return (Set<T>) mUnivarPredicates.get(action).get(stateVarDef).getAllowableValues();
 	}
 
-	public boolean isActionApplicable(E action, IStatePredicate predicate) throws ActionNotFoundException {
+	public boolean isActionApplicable(E action, IStateVarTuple varTuple) throws ActionNotFoundException {
 		if (!sanityCheck(action)) {
 			throw new ActionNotFoundException(action);
 		}
-		Map<StateVarDefinition<? extends IStateVarValue>, Set<IStateVarValue>> actionPrecond = mUnivarPreconds
+		Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>> actionUnivarPrecond = mUnivarPredicates
 				.get(action);
-		for (StateVar<IStateVarValue> stateVar : predicate) {
+		for (StateVar<IStateVarValue> stateVar : varTuple) {
 			StateVarDefinition<IStateVarValue> varDef = stateVar.getDefinition();
 			IStateVarValue value = stateVar.getValue();
-			if (actionPrecond.containsKey(varDef) && !actionPrecond.get(varDef).contains(value)) {
-				return false;
+
+			if (actionUnivarPrecond.containsKey(varDef)) {
+				UnivarPredicate<? extends IStateVarValue> univarPredicate = actionUnivarPrecond.get(varDef);
+				Set<IStateVarValue> allowableValues = (Set<IStateVarValue>) univarPredicate.getAllowableValues();
+				if (!allowableValues.contains(value)) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -152,7 +151,8 @@ public class Precondition<E extends IAction> {
 			return false;
 		}
 		Precondition<?> precond = (Precondition<?>) obj;
-		return precond.mActionDef.equals(mActionDef) && precond.mUnivarPreconds.equals(mUnivarPreconds);
+		return precond.mActionDef.equals(mActionDef) && precond.mUnivarPredicates.equals(mUnivarPredicates)
+				&& precond.mMultivarPredicates.equals(mMultivarPredicates);
 	}
 
 	@Override
@@ -161,7 +161,8 @@ public class Precondition<E extends IAction> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mActionDef.hashCode();
-			result = 31 * result + mUnivarPreconds.hashCode();
+			result = 31 * result + mUnivarPredicates.hashCode();
+			result = 31 * result + mMultivarPredicates.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

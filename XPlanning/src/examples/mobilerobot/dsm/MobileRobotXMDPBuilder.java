@@ -25,8 +25,8 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
-import mdp.StatePredicate;
 import mdp.StateSpace;
+import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -90,8 +90,8 @@ public class MobileRobotXMDPBuilder {
 			throws IncompatibleActionException, MapTopologyException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
-		StatePredicate initialState = buildInitialState(startNode);
-		StatePredicate goal = buildGoal(goalNode);
+		StateVarTuple initialState = buildInitialState(startNode);
+		StateVarTuple goal = buildGoal(goalNode);
 		TransitionFunction transFunction = buildTransitionFunction(map);
 		Set<IQFunction> qFunctions = buildQFunctions();
 		CostFunction costFunction = buildCostFunction(maxTravelTime);
@@ -153,17 +153,17 @@ public class MobileRobotXMDPBuilder {
 		return actionSpace;
 	}
 
-	private StatePredicate buildInitialState(LocationNode startNode) {
+	private StateVarTuple buildInitialState(LocationNode startNode) {
 		Location loc = mLocMap.get(startNode);
-		StatePredicate initialState = new StatePredicate();
+		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
 		return initialState;
 	}
 
-	private StatePredicate buildGoal(LocationNode goalNode) {
+	private StateVarTuple buildGoal(LocationNode goalNode) {
 		Location loc = mLocMap.get(goalNode);
-		StatePredicate goal = new StatePredicate();
+		StateVarTuple goal = new StateVarTuple();
 		goal.addStateVar(rLocDef.getStateVar(loc));
 		return goal;
 	}
@@ -182,7 +182,7 @@ public class MobileRobotXMDPBuilder {
 			Set<Connection> connections = map.getConnections(node);
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
-				preMoveTo.add(moveTo, rLocDef, locSrc);
+				preMoveTo.add(moveTo, rLocDef.getStateVar(locSrc));
 			}
 		}
 
@@ -197,8 +197,8 @@ public class MobileRobotXMDPBuilder {
 		// SetSpeed:
 		// Precondition
 		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
-		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
-		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
+		preSetSpeed.add(setSpeedHalf, rSpeedDef.getStateVar(fullSpeed));
+		preSetSpeed.add(setSpeedFull, rSpeedDef.getStateVar(halfSpeed));
 
 		// Action description for rSpeed
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,

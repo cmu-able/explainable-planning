@@ -22,8 +22,8 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
-import mdp.StatePredicate;
 import mdp.StateSpace;
+import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -84,8 +84,8 @@ public class MobileRobotTestProblem {
 	public XMDP createXMDP() throws XMDPException {
 		StateSpace stateSpace = createStateSpace();
 		ActionSpace actionSpace = createActionSpace();
-		StatePredicate initialState = createInitialState();
-		StatePredicate goal = createGoal();
+		StateVarTuple initialState = createInitialState();
+		StateVarTuple goal = createGoal();
 		TransitionFunction transFunction = createTransitions();
 		Set<IQFunction> qFunctions = createQFunctions();
 		CostFunction costFunction = createCostFunction();
@@ -127,15 +127,15 @@ public class MobileRobotTestProblem {
 		return actionSpace;
 	}
 
-	private StatePredicate createInitialState() {
-		StatePredicate initialState = new StatePredicate();
+	private StateVarTuple createInitialState() {
+		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(locL1));
 		initialState.addStateVar(rSpeedDef.getStateVar(halfSpeed));
 		return initialState;
 	}
 
-	private StatePredicate createGoal() {
-		StatePredicate goal = new StatePredicate();
+	private StateVarTuple createGoal() {
+		StateVarTuple goal = new StateVarTuple();
 		goal.addStateVar(rLocDef.getStateVar(locL2));
 		return goal;
 	}
@@ -144,8 +144,8 @@ public class MobileRobotTestProblem {
 		// MoveTo:
 		// Precondition
 		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
-		preMoveTo.add(moveToL1, rLocDef, locL2);
-		preMoveTo.add(moveToL2, rLocDef, locL1);
+		preMoveTo.add(moveToL1, rLocDef.getStateVar(locL2));
+		preMoveTo.add(moveToL2, rLocDef.getStateVar(locL1));
 
 		// Action description
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
@@ -158,8 +158,8 @@ public class MobileRobotTestProblem {
 		// SetSpeed:
 		// Precondition
 		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
-		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
-		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
+		preSetSpeed.add(setSpeedHalf, rSpeedDef.getStateVar(fullSpeed));
+		preSetSpeed.add(setSpeedFull, rSpeedDef.getStateVar(halfSpeed));
 
 		// Action description
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,
@@ -198,8 +198,8 @@ public class MobileRobotTestProblem {
 
 	private Policy createPolicy() {
 		Policy policy = new Policy();
-		StatePredicate iniState = new StatePredicate();
-		StatePredicate finalState = new StatePredicate();
+		StateVarTuple iniState = new StateVarTuple();
+		StateVarTuple finalState = new StateVarTuple();
 		StateVar<Location> rLocL1 = rLocDef.getStateVar(locL1);
 		StateVar<Location> rLocL2 = rLocDef.getStateVar(locL2);
 		StateVar<RobotSpeed> rSpeedHalf = rSpeedDef.getStateVar(halfSpeed);

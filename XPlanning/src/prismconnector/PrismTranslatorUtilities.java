@@ -25,10 +25,10 @@ import mdp.Effect;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.IActionDescription;
-import mdp.IStatePredicate;
+import mdp.IStateVarTuple;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 import mdp.StateSpace;
 import mdp.TabularActionDescription;
 
@@ -103,7 +103,7 @@ public class PrismTranslatorUtilities {
 	 * @return formula goal = {goal expression};
 	 * @throws VarNotFoundException
 	 */
-	String buildGoalDecl(StatePredicate goal) throws VarNotFoundException {
+	String buildGoalDecl(StateVarTuple goal) throws VarNotFoundException {
 		String goalExpr = buildExpression(goal);
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula goal = ");
@@ -122,7 +122,7 @@ public class PrismTranslatorUtilities {
 	 * @throws VarNotFoundException
 	 * @throws ActionNotFoundException
 	 */
-	String buildHelperModule(StateSpace stateSpace, StatePredicate iniState, Iterable<FactoredPSO<IAction>> actionPSOs)
+	String buildHelperModule(StateSpace stateSpace, StateVarTuple iniState, Iterable<FactoredPSO<IAction>> actionPSOs)
 			throws VarNotFoundException, ActionNotFoundException {
 		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
 		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
@@ -148,7 +148,7 @@ public class PrismTranslatorUtilities {
 	 * @return Declarations of all helper variables of the helper module
 	 * @throws VarNotFoundException
 	 */
-	String buildHelperModuleVarsDecl(StateSpace stateSpace, StatePredicate iniState) throws VarNotFoundException {
+	String buildHelperModuleVarsDecl(StateSpace stateSpace, StateVarTuple iniState) throws VarNotFoundException {
 		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
 		String actionDecl = "action : [-1.." + mEncodings.getMaximumEncodedIntAction() + "] init -1;";
 		String readyToCopyDecl = "readyToCopy : bool init true;";
@@ -259,7 +259,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleVarsDecl(StateSpace moduleVarSpace, StatePredicate iniState) throws VarNotFoundException {
+	String buildModuleVarsDecl(StateSpace moduleVarSpace, StateVarTuple iniState) throws VarNotFoundException {
 		return buildModuleVarsDecl(moduleVarSpace, iniState, "");
 	}
 
@@ -274,7 +274,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleVarsDecl(StateSpace moduleVarSpace, StatePredicate iniState, String nameSuffix)
+	String buildModuleVarsDecl(StateSpace moduleVarSpace, StateVarTuple iniState, String nameSuffix)
 			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
@@ -383,7 +383,7 @@ public class PrismTranslatorUtilities {
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws XMDPException
 	 */
-	String buildModules(StateSpace stateSpace, StatePredicate iniState, Iterable<ActionDefinition<IAction>> actionDefs,
+	String buildModules(StateSpace stateSpace, StateVarTuple iniState, Iterable<ActionDefinition<IAction>> actionDefs,
 			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
@@ -462,7 +462,7 @@ public class PrismTranslatorUtilities {
 	 * @return module {name} {vars decl} {commands} endmodule
 	 * @throws XMDPException
 	 */
-	String buildModule(String moduleName, StateSpace moduleVarSpace, StatePredicate iniState,
+	String buildModule(String moduleName, StateSpace moduleVarSpace, StateVarTuple iniState,
 			Map<FactoredPSO<IAction>, Set<EffectClass>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
 			throws XMDPException {
 		String varsDecl = buildModuleVarsDecl(moduleVarSpace, iniState);
@@ -530,7 +530,7 @@ public class PrismTranslatorUtilities {
 	 * @return [actionName] {guard} -> {updates};
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleCommand(IAction action, IStatePredicate predicate, ProbabilisticEffect probEffect)
+	String buildModuleCommand(IAction action, IStateVarTuple predicate, ProbabilisticEffect probEffect)
 			throws VarNotFoundException {
 		String guard = buildExpression(predicate);
 		String updates = buildUpdates(probEffect);
@@ -553,7 +553,7 @@ public class PrismTranslatorUtilities {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildExpression(IStatePredicate predicate) throws VarNotFoundException {
+	String buildExpression(IStateVarTuple predicate) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {

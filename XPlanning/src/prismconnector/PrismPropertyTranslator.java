@@ -3,7 +3,7 @@ package prismconnector;
 import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 import metrics.IQFunction;
 import objectives.AttributeConstraint;
 import objectives.CostFunction;
@@ -26,7 +26,7 @@ public class PrismPropertyTranslator {
 	 * @return R{"cost"}min=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildMDPCostMinProperty(StatePredicate goal, CostFunction costFunction) throws VarNotFoundException {
+	public String buildMDPCostMinProperty(StateVarTuple goal, CostFunction costFunction) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(costFunction.getName());
@@ -48,7 +48,7 @@ public class PrismPropertyTranslator {
 	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
 	 * @throws VarNotFoundException
 	 */
-	public String buildMDPConstrainedMinProperty(StatePredicate goal, IAdditiveCostFunction objectiveFunction,
+	public String buildMDPConstrainedMinProperty(StateVarTuple goal, IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<? extends IQFunction> constraint) throws VarNotFoundException {
 		IQFunction qFunction = constraint.getQFunction();
 		double upperBound = constraint.getExpectedTotalUpperBound();
@@ -87,7 +87,7 @@ public class PrismPropertyTranslator {
 	 * @return R{"cost"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCCostQueryProperty(StatePredicate goal, CostFunction costFunction) throws VarNotFoundException {
+	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(costFunction.getName());
@@ -107,7 +107,7 @@ public class PrismPropertyTranslator {
 	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCNumQueryProperty(StatePredicate goal, IQFunction qFunction) throws VarNotFoundException {
+	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction qFunction) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
@@ -125,7 +125,7 @@ public class PrismPropertyTranslator {
 	 * @return R=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCRawRewardQueryProperty(StatePredicate goal) throws VarNotFoundException {
+	public String buildDTMCRawRewardQueryProperty(StateVarTuple goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R=? [ F ");
 		String goalPredicate = buildGoalPredicate(goal);
@@ -141,7 +141,7 @@ public class PrismPropertyTranslator {
 	 * @return {varName}={encoded int value} & ... & readyToCopy & barrier
 	 * @throws VarNotFoundException
 	 */
-	private String buildGoalPredicate(StatePredicate goal) throws VarNotFoundException {
+	private String buildGoalPredicate(StateVarTuple goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> goalVar : goal) {

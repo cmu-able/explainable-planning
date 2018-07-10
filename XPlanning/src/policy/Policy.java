@@ -8,7 +8,7 @@ import java.util.Set;
 
 import exceptions.StateNotFoundException;
 import factors.IAction;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 
 /**
  * {@link Policy} contains a set of {@link Decision}s.
@@ -24,19 +24,19 @@ public class Policy implements Iterable<Decision> {
 	private volatile int hashCode;
 
 	private Set<Decision> mDecisions = new HashSet<>();
-	private Map<StatePredicate, IAction> mPolicy = new HashMap<>(); // For fast look-up
+	private Map<StateVarTuple, IAction> mPolicy = new HashMap<>(); // For fast look-up
 
 	public Policy() {
 		// mDecisions and mPolicy are initially empty
 	}
 
-	public void put(StatePredicate state, IAction action) {
+	public void put(StateVarTuple state, IAction action) {
 		Decision decision = new Decision(state, action);
 		mDecisions.add(decision);
 		mPolicy.put(state, action);
 	}
 
-	public IAction getAction(StatePredicate state) throws StateNotFoundException {
+	public IAction getAction(StateVarTuple state) throws StateNotFoundException {
 		if (!mPolicy.containsKey(state)) {
 			throw new StateNotFoundException(state);
 		}

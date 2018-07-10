@@ -22,7 +22,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private EffectClass mEffectClass;
-	private StatePredicate mState = new StatePredicate();
+	private StateVarTuple mState = new StateVarTuple();
 
 	public Effect(EffectClass effectClass) {
 		mEffectClass = effectClass;

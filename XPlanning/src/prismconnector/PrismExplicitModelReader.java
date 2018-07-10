@@ -15,7 +15,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionSpace;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 import mdp.StateSpace;
 import policy.Policy;
 
@@ -35,9 +35,9 @@ public class PrismExplicitModelReader {
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
-	public Map<Integer, StatePredicate> readStatesFromFile() throws IOException, VarNotFoundException {
+	public Map<Integer, StateVarTuple> readStatesFromFile() throws IOException, VarNotFoundException {
 		File staFile = mExplicitModelPtr.getStatesFile();
-		Map<Integer, StatePredicate> indices = new HashMap<>();
+		Map<Integer, StateVarTuple> indices = new HashMap<>();
 
 		List<String> allLines = readLinesFromFile(staFile);
 
@@ -50,7 +50,7 @@ public class PrismExplicitModelReader {
 
 		// Pattern: {index}:({var1Value},{var2Value},...,{varNValue})
 		for (String line : body) {
-			StatePredicate state = new StatePredicate();
+			StateVarTuple state = new StateVarTuple();
 
 			String[] indexStateStr = line.split(":");
 			String indexStr = indexStateStr[0];
@@ -85,7 +85,7 @@ public class PrismExplicitModelReader {
 	 * @return A policy extracted from the "adversary" file
 	 * @throws IOException
 	 */
-	public Policy readPolicyFromFile(Map<Integer, StatePredicate> stateIndices) throws IOException {
+	public Policy readPolicyFromFile(Map<Integer, StateVarTuple> stateIndices) throws IOException {
 		File traFile = mExplicitModelPtr.getTransitionsFile();
 		Policy policy = new Policy();
 
@@ -100,7 +100,7 @@ public class PrismExplicitModelReader {
 			Integer sourceIndex = Integer.parseInt(sourceStr);
 			ActionSpace actionSpace = mEncodings.getActionSpace();
 
-			StatePredicate sourceState = stateIndices.get(sourceIndex);
+			StateVarTuple sourceState = stateIndices.get(sourceIndex);
 			IAction action = actionSpace.getAction(actionName);
 			policy.put(sourceState, action);
 		}
@@ -114,7 +114,7 @@ public class PrismExplicitModelReader {
 	 * @throws VarNotFoundException
 	 */
 	public Policy readPolicyFromFiles() throws IOException, VarNotFoundException {
-		Map<Integer, StatePredicate> stateIndices = readStatesFromFile();
+		Map<Integer, StateVarTuple> stateIndices = readStatesFromFile();
 		return readPolicyFromFile(stateIndices);
 	}
 

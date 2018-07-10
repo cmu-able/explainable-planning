@@ -18,7 +18,7 @@ import factors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class Discriminant implements IStatePredicate {
+public class Discriminant implements IStateVarTuple {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -26,7 +26,7 @@ public class Discriminant implements IStatePredicate {
 	private volatile int hashCode;
 
 	private DiscriminantClass mDiscriminantClass;
-	private StatePredicate mState = new StatePredicate();
+	private StateVarTuple mState = new StateVarTuple();
 
 	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscriminantClass = discriminantClass;

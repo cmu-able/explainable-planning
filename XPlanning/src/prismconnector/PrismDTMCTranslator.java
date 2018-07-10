@@ -18,7 +18,7 @@ import mdp.DiscriminantClass;
 import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 import mdp.XMDP;
 import metrics.IQFunction;
 import objectives.CostFunction;
@@ -113,7 +113,7 @@ public class PrismDTMCTranslator {
 	 * @throws VarNotFoundException
 	 */
 	public String getCostQueryPropertyTranslation() throws VarNotFoundException {
-		StatePredicate goal = mXDTMC.getXMDP().getGoal();
+		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		CostFunction costFunction = mXDTMC.getXMDP().getCostFunction();
 		return mPropertyTranslator.buildDTMCCostQueryProperty(goal, costFunction);
 	}
@@ -126,7 +126,7 @@ public class PrismDTMCTranslator {
 	 * @throws VarNotFoundException
 	 */
 	public String getNumQueryPropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
-		StatePredicate goal = mXDTMC.getXMDP().getGoal();
+		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction);
 	}
 
@@ -144,8 +144,8 @@ public class PrismDTMCTranslator {
 
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
-		for (Entry<StatePredicate, IAction> entry : twoTBN) {
-			StatePredicate state = entry.getKey();
+		for (Entry<StateVarTuple, IAction> entry : twoTBN) {
+			StateVarTuple state = entry.getKey();
 			IAction action = entry.getValue();
 
 			Discriminant discriminant = new Discriminant(discrClass);

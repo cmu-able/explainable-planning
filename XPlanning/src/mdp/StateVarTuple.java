@@ -10,12 +10,13 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**
- * {@link StatePredicate} is a predicate representing a set of states. It contains a set of state variables.
+ * {@link StateVarTuple} is is a tuple (v1,...,vk) of state variables. It defines at most 1 allowable value for each
+ * state variable. Undefined state variables can have any value.
  * 
  * @author rsukkerd
  *
  */
-public class StatePredicate implements IStatePredicate {
+public class StateVarTuple implements IStateVarTuple {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -25,7 +26,7 @@ public class StatePredicate implements IStatePredicate {
 	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mStateVarMap = new HashMap<>();
 	private MultivarClass mMultivarClass = new MultivarClass();
 
-	public StatePredicate() {
+	public StateVarTuple() {
 		// mStateVarMap and mMultivarClass initially empty
 	}
 
@@ -75,10 +76,10 @@ public class StatePredicate implements IStatePredicate {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof StatePredicate)) {
+		if (!(obj instanceof StateVarTuple)) {
 			return false;
 		}
-		StatePredicate state = (StatePredicate) obj;
+		StateVarTuple state = (StateVarTuple) obj;
 		return state.mStateVarMap.equals(mStateVarMap);
 	}
 

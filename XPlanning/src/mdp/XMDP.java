@@ -20,13 +20,13 @@ public class XMDP {
 
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
-	private StatePredicate mInitialState;
-	private StatePredicate mGoal;
+	private StateVarTuple mInitialState;
+	private StateVarTuple mGoal;
 	private TransitionFunction mTransFunction;
 	private Set<IQFunction> mQFunctions;
 	private CostFunction mCostFunction;
 
-	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, StatePredicate initialState, StatePredicate goal,
+	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, StateVarTuple initialState, StateVarTuple goal,
 			TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
 		mActionSpace = actionSpace;
@@ -45,11 +45,11 @@ public class XMDP {
 		return mActionSpace;
 	}
 
-	public StatePredicate getInitialState() {
+	public StateVarTuple getInitialState() {
 		return mInitialState;
 	}
 
-	public StatePredicate getGoal() {
+	public StateVarTuple getGoal() {
 		return mGoal;
 	}
 

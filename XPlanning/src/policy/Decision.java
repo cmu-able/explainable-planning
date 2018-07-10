@@ -1,7 +1,7 @@
 package policy;
 
 import factors.IAction;
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 
 /**
  * {@link Decision} is a pair of a state and an action.
@@ -16,15 +16,15 @@ public class Decision {
 	 */
 	private volatile int hashCode;
 
-	private StatePredicate mState;
+	private StateVarTuple mState;
 	private IAction mAction;
 
-	public Decision(StatePredicate state, IAction action) {
+	public Decision(StateVarTuple state, IAction action) {
 		mState = state;
 		mAction = action;
 	}
 
-	public StatePredicate getState() {
+	public StateVarTuple getState() {
 		return mState;
 	}
 

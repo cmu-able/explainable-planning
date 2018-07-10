@@ -1,6 +1,6 @@
 package exceptions;
 
-import mdp.StatePredicate;
+import mdp.StateVarTuple;
 
 public class StateNotFoundException extends XMDPException {
 
@@ -9,7 +9,7 @@ public class StateNotFoundException extends XMDPException {
 	 */
 	private static final long serialVersionUID = 2445394501462601722L;
 
-	public StateNotFoundException(StatePredicate state) {
+	public StateNotFoundException(StateVarTuple state) {
 		super("State '" + state + "' is not found.");
 	}
 }

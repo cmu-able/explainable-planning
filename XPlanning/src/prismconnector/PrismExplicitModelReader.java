@@ -15,7 +15,7 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import mdp.ActionSpace;
-import mdp.State;
+import mdp.StatePredicate;
 import mdp.StateSpace;
 import policy.Policy;
 
@@ -35,9 +35,9 @@ public class PrismExplicitModelReader {
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
-	public Map<Integer, State> readStatesFromFile() throws IOException, VarNotFoundException {
+	public Map<Integer, StatePredicate> readStatesFromFile() throws IOException, VarNotFoundException {
 		File staFile = mExplicitModelPtr.getStatesFile();
-		Map<Integer, State> indices = new HashMap<>();
+		Map<Integer, StatePredicate> indices = new HashMap<>();
 
 		List<String> allLines = readLinesFromFile(staFile);
 
@@ -50,7 +50,7 @@ public class PrismExplicitModelReader {
 
 		// Pattern: {index}:({var1Value},{var2Value},...,{varNValue})
 		for (String line : body) {
-			State state = new State();
+			StatePredicate state = new StatePredicate();
 
 			String[] indexStateStr = line.split(":");
 			String indexStr = indexStateStr[0];
@@ -85,7 +85,7 @@ public class PrismExplicitModelReader {
 	 * @return A policy extracted from the "adversary" file
 	 * @throws IOException
 	 */
-	public Policy readPolicyFromFile(Map<Integer, State> stateIndices) throws IOException {
+	public Policy readPolicyFromFile(Map<Integer, StatePredicate> stateIndices) throws IOException {
 		File traFile = mExplicitModelPtr.getTransitionsFile();
 		Policy policy = new Policy();
 
@@ -100,7 +100,7 @@ public class PrismExplicitModelReader {
 			Integer sourceIndex = Integer.parseInt(sourceStr);
 			ActionSpace actionSpace = mEncodings.getActionSpace();
 
-			State sourceState = stateIndices.get(sourceIndex);
+			StatePredicate sourceState = stateIndices.get(sourceIndex);
 			IAction action = actionSpace.getAction(actionName);
 			policy.put(sourceState, action);
 		}
@@ -114,7 +114,7 @@ public class PrismExplicitModelReader {
 	 * @throws VarNotFoundException
 	 */
 	public Policy readPolicyFromFiles() throws IOException, VarNotFoundException {
-		Map<Integer, State> stateIndices = readStatesFromFile();
+		Map<Integer, StatePredicate> stateIndices = readStatesFromFile();
 		return readPolicyFromFile(stateIndices);
 	}
 

@@ -17,7 +17,7 @@ import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
-import mdp.State;
+import mdp.StatePredicate;
 import mdp.XMDP;
 import policy.Decision;
 import policy.Policy;
@@ -48,7 +48,7 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 
 	private void induceDTMC(XMDP xmdp, Policy policy) throws XMDPException {
 		for (Decision decision : policy) {
-			State predicate = decision.getState();
+			StatePredicate predicate = decision.getState();
 			IAction action = decision.getAction();
 			ActionDefinition<IAction> actionDef = xmdp.getActionSpace().getActionDefinition(action);
 

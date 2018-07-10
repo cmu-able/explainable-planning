@@ -26,7 +26,7 @@ public class Discriminant implements IStatePredicate {
 	private volatile int hashCode;
 
 	private DiscriminantClass mDiscriminantClass;
-	private State mState = new State();
+	private StatePredicate mState = new StatePredicate();
 
 	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscriminantClass = discriminantClass;

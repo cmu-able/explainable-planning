@@ -10,12 +10,12 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**
- * {@link State} represents a structured state (i.e., a set of {@link StateVar}s).
+ * {@link StatePredicate} is a predicate representing a set of states. It contains a set of state variables.
  * 
  * @author rsukkerd
  *
  */
-public class State implements IStatePredicate {
+public class StatePredicate implements IStatePredicate {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -24,7 +24,7 @@ public class State implements IStatePredicate {
 
 	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mStateVarMap = new HashMap<>();
 
-	public State() {
+	public StatePredicate() {
 		// mStateVarMap initially empty
 	}
 
@@ -69,10 +69,10 @@ public class State implements IStatePredicate {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof State)) {
+		if (!(obj instanceof StatePredicate)) {
 			return false;
 		}
-		State state = (State) obj;
+		StatePredicate state = (StatePredicate) obj;
 		return state.mStateVarMap.equals(mStateVarMap);
 	}
 

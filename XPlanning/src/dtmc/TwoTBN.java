@@ -12,7 +12,7 @@ import factors.ActionDefinition;
 import factors.IAction;
 import mdp.EffectClass;
 import mdp.ProbabilisticEffect;
-import mdp.State;
+import mdp.StatePredicate;
 
 /**
  * {@link TwoTBN} is a 2-step Temporal Bayesian Network (2TBN) for a particular action type (i.e.,
@@ -22,7 +22,7 @@ import mdp.State;
  *
  * @param <E>
  */
-public class TwoTBN<E extends IAction> implements Iterable<Entry<State, E>> {
+public class TwoTBN<E extends IAction> implements Iterable<Entry<StatePredicate, E>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -30,14 +30,14 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<State, E>> {
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDef;
-	private Map<State, Map<EffectClass, ProbabilisticEffect>> m2TBN = new HashMap<>();
-	private Map<State, E> mSubPolicy = new HashMap<>();
+	private Map<StatePredicate, Map<EffectClass, ProbabilisticEffect>> m2TBN = new HashMap<>();
+	private Map<StatePredicate, E> mSubPolicy = new HashMap<>();
 
 	public TwoTBN(ActionDefinition<E> actionDef) {
 		mActionDef = actionDef;
 	}
 
-	public void add(State state, E action, ProbabilisticEffect probEffect) throws IncompatibleActionException {
+	public void add(StatePredicate state, E action, ProbabilisticEffect probEffect) throws IncompatibleActionException {
 		if (!mActionDef.getActions().contains(action)) {
 			throw new IncompatibleActionException(action);
 		}
@@ -53,14 +53,14 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<State, E>> {
 		return mActionDef;
 	}
 
-	public E getAction(State state) throws StateNotFoundException {
+	public E getAction(StatePredicate state) throws StateNotFoundException {
 		if (!mSubPolicy.containsKey(state)) {
 			throw new StateNotFoundException(state);
 		}
 		return mSubPolicy.get(state);
 	}
 
-	public ProbabilisticEffect getProbabilisticEffect(State state, EffectClass effectClass)
+	public ProbabilisticEffect getProbabilisticEffect(StatePredicate state, EffectClass effectClass)
 			throws StateNotFoundException, EffectClassNotFoundException {
 		if (!m2TBN.containsKey(state)) {
 			throw new StateNotFoundException(state);
@@ -72,7 +72,7 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<State, E>> {
 	}
 
 	@Override
-	public Iterator<Entry<State, E>> iterator() {
+	public Iterator<Entry<StatePredicate, E>> iterator() {
 		return mSubPolicy.entrySet().iterator();
 	}
 

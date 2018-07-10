@@ -25,7 +25,7 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
-import mdp.State;
+import mdp.StatePredicate;
 import mdp.StateSpace;
 import mdp.TransitionFunction;
 import mdp.XMDP;
@@ -90,8 +90,8 @@ public class MobileRobotXMDPBuilder {
 			throws IncompatibleActionException, MapTopologyException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
-		State initialState = buildInitialState(startNode);
-		State goal = buildGoal(goalNode);
+		StatePredicate initialState = buildInitialState(startNode);
+		StatePredicate goal = buildGoal(goalNode);
 		TransitionFunction transFunction = buildTransitionFunction(map);
 		Set<IQFunction> qFunctions = buildQFunctions();
 		CostFunction costFunction = buildCostFunction(maxTravelTime);
@@ -153,17 +153,17 @@ public class MobileRobotXMDPBuilder {
 		return actionSpace;
 	}
 
-	private State buildInitialState(LocationNode startNode) {
+	private StatePredicate buildInitialState(LocationNode startNode) {
 		Location loc = mLocMap.get(startNode);
-		State initialState = new State();
+		StatePredicate initialState = new StatePredicate();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
 		return initialState;
 	}
 
-	private State buildGoal(LocationNode goalNode) {
+	private StatePredicate buildGoal(LocationNode goalNode) {
 		Location loc = mLocMap.get(goalNode);
-		State goal = new State();
+		StatePredicate goal = new StatePredicate();
 		goal.addStateVar(rLocDef.getStateVar(loc));
 		return goal;
 	}

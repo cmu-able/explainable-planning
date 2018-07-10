@@ -22,7 +22,7 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
-import mdp.State;
+import mdp.StatePredicate;
 import mdp.StateSpace;
 import mdp.TransitionFunction;
 import mdp.XMDP;
@@ -84,8 +84,8 @@ public class MobileRobotTestProblem {
 	public XMDP createXMDP() throws XMDPException {
 		StateSpace stateSpace = createStateSpace();
 		ActionSpace actionSpace = createActionSpace();
-		State initialState = createInitialState();
-		State goal = createGoal();
+		StatePredicate initialState = createInitialState();
+		StatePredicate goal = createGoal();
 		TransitionFunction transFunction = createTransitions();
 		Set<IQFunction> qFunctions = createQFunctions();
 		CostFunction costFunction = createCostFunction();
@@ -127,15 +127,15 @@ public class MobileRobotTestProblem {
 		return actionSpace;
 	}
 
-	private State createInitialState() {
-		State initialState = new State();
+	private StatePredicate createInitialState() {
+		StatePredicate initialState = new StatePredicate();
 		initialState.addStateVar(rLocDef.getStateVar(locL1));
 		initialState.addStateVar(rSpeedDef.getStateVar(halfSpeed));
 		return initialState;
 	}
 
-	private State createGoal() {
-		State goal = new State();
+	private StatePredicate createGoal() {
+		StatePredicate goal = new StatePredicate();
 		goal.addStateVar(rLocDef.getStateVar(locL2));
 		return goal;
 	}
@@ -198,8 +198,8 @@ public class MobileRobotTestProblem {
 
 	private Policy createPolicy() {
 		Policy policy = new Policy();
-		State iniState = new State();
-		State finalState = new State();
+		StatePredicate iniState = new StatePredicate();
+		StatePredicate finalState = new StatePredicate();
 		StateVar<Location> rLocL1 = rLocDef.getStateVar(locL1);
 		StateVar<Location> rLocL2 = rLocDef.getStateVar(locL2);
 		StateVar<RobotSpeed> rSpeedHalf = rSpeedDef.getStateVar(halfSpeed);

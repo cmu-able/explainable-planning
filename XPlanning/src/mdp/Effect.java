@@ -28,13 +28,6 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		mEffectClass = effectClass;
 	}
 
-	public Effect(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mEffectClass = new EffectClass();
-		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
-			mEffectClass.add(varDef);
-		}
-	}
-
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
 		if (!sanityCheck(stateVar)) {
 			throw new IncompatibleVarException(stateVar.getDefinition());

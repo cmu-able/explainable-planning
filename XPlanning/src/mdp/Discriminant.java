@@ -32,13 +32,6 @@ public class Discriminant implements IStateVarTuple {
 		mDiscriminantClass = discriminantClass;
 	}
 
-	public Discriminant(StateVarDefinition<? extends IStateVarValue>... stateVarDefs) {
-		mDiscriminantClass = new DiscriminantClass();
-		for (StateVarDefinition<? extends IStateVarValue> varDef : stateVarDefs) {
-			mDiscriminantClass.add(varDef);
-		}
-	}
-
 	public void add(StateVar<? extends IStateVarValue> stateVar) throws IncompatibleVarException {
 		if (!sanityCheck(stateVar)) {
 			throw new IncompatibleVarException(stateVar.getDefinition());

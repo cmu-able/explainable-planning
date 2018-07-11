@@ -40,9 +40,14 @@ public class StateVarTuple implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		return mStateVarMap.containsKey(stateVarDef);
+	}
+
+	@Override
 	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException {
-		if (!mStateVarMap.containsKey(stateVarDef)) {
+		if (!contains(stateVarDef)) {
 			throw new VarNotFoundException(stateVarDef);
 		}
 		return valueType.cast(mStateVarMap.get(stateVarDef).getValue());

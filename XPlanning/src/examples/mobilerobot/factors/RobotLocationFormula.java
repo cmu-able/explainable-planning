@@ -1,6 +1,5 @@
 package examples.mobilerobot.factors;
 
-import exceptions.ActionNotApplicableException;
 import exceptions.XMDPException;
 import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
@@ -41,10 +40,6 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 
 	@Override
 	public ProbabilisticEffect formula(Discriminant discriminant, MoveToAction moveTo) throws XMDPException {
-		if (!mPrecondition.isActionApplicable(moveTo, discriminant)) {
-			throw new ActionNotApplicableException(moveTo, discriminant);
-		}
-
 		Location srcLoc = discriminant.getStateVarValue(Location.class, mrLocDef);
 		StateVar<Location> rLocSrc = mrLocDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);

@@ -20,6 +20,7 @@ public interface IProbabilisticTransitionFormula<E extends IAction> {
 	 * Calculate the probabilistic effect of a given action and a discriminant.
 	 * 
 	 * @param discriminant
+	 *            : Values in the discriminant are guaranteed to satisfy the precondition
 	 * @param action
 	 * @return Probabilistic effect of the action
 	 * @throws XMDPException

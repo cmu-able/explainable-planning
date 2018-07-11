@@ -1,6 +1,5 @@
 package examples.mobilerobot.factors;
 
-import exceptions.ActionNotApplicableException;
 import exceptions.XMDPException;
 import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
@@ -32,10 +31,6 @@ public class RobotSpeedFormula implements IProbabilisticTransitionFormula<SetSpe
 
 	@Override
 	public ProbabilisticEffect formula(Discriminant discriminant, SetSpeedAction setSpeed) throws XMDPException {
-		if (!mPrecondition.isActionApplicable(setSpeed, discriminant)) {
-			throw new ActionNotApplicableException(setSpeed, discriminant);
-		}
-
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(mEffectClass);
 		Effect newSpeedEffect = new Effect(mEffectClass);
 		StateVar<RobotSpeed> newSpeed = mrSpeedDef.getStateVar(setSpeed.getTargetSpeed());

@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import factors.IStateVarValue;
-import factors.StateVar;
 import factors.StateVarDefinition;
 
 /**

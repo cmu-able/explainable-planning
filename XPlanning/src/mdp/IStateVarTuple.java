@@ -14,6 +14,8 @@ import factors.StateVarDefinition;
  */
 public interface IStateVarTuple extends Iterable<StateVar<IStateVarValue>> {
 
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef);
+
 	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException;
 }

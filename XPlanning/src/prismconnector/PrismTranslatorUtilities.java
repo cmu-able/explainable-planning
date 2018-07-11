@@ -28,8 +28,8 @@ import mdp.IActionDescription;
 import mdp.IStateVarTuple;
 import mdp.ProbabilisticEffect;
 import mdp.ProbabilisticTransition;
-import mdp.StateVarTuple;
 import mdp.StateSpace;
+import mdp.StateVarTuple;
 import mdp.TabularActionDescription;
 
 public class PrismTranslatorUtilities {
@@ -641,10 +641,10 @@ public class PrismTranslatorUtilities {
 	}
 
 	private <E extends IStateVarValue> StateVarDefinition<E> castTypeStateVarDef(
-			StateVarDefinition<IStateVarValue> genericVarDef, Class<E> type) {
+			StateVarDefinition<IStateVarValue> genericVarDef, Class<E> valueType) {
 		Set<E> possibleValues = new HashSet<>();
 		for (IStateVarValue value : genericVarDef.getPossibleValues()) {
-			possibleValues.add(type.cast(value));
+			possibleValues.add(valueType.cast(value));
 		}
 		return new StateVarDefinition<>(genericVarDef.getName(), possibleValues);
 	}

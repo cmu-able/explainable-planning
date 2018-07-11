@@ -67,6 +67,7 @@ public class Precondition<E extends IAction> {
 			mUnivarPredicates.get(action).put(stateVarDef, predicate);
 		} else {
 			// Add a new allowable value to an existing univariate predicate
+			// Casting: state variable of type T always maps to univariate predicate of type T
 			UnivarPredicate<T> predicate = (UnivarPredicate<T>) mUnivarPredicates.get(action).get(stateVarDef);
 			predicate.addAllowableValue(value);
 		}
@@ -114,28 +115,8 @@ public class Precondition<E extends IAction> {
 		if (!mUnivarPredicates.containsKey(action) || !mUnivarPredicates.get(action).containsKey(stateVarDef)) {
 			return stateVarDef.getPossibleValues();
 		}
+		// Casting: state variable of type T always maps to univariate predicate of type T
 		return (Set<T>) mUnivarPredicates.get(action).get(stateVarDef).getAllowableValues();
-	}
-
-	public boolean isActionApplicable(E action, IStateVarTuple varTuple) throws ActionNotFoundException {
-		if (!sanityCheck(action)) {
-			throw new ActionNotFoundException(action);
-		}
-		Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>> actionUnivarPrecond = mUnivarPredicates
-				.get(action);
-		for (StateVar<IStateVarValue> stateVar : varTuple) {
-			StateVarDefinition<IStateVarValue> varDef = stateVar.getDefinition();
-			IStateVarValue value = stateVar.getValue();
-
-			if (actionUnivarPrecond.containsKey(varDef)) {
-				UnivarPredicate<? extends IStateVarValue> univarPredicate = actionUnivarPrecond.get(varDef);
-				Set<IStateVarValue> allowableValues = (Set<IStateVarValue>) univarPredicate.getAllowableValues();
-				if (!allowableValues.contains(value)) {
-					return false;
-				}
-			}
-		}
-		return true;
 	}
 
 	private boolean sanityCheck(E action) {

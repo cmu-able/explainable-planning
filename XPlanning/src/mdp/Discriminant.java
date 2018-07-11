@@ -26,7 +26,7 @@ public class Discriminant implements IStateVarTuple {
 	private volatile int hashCode;
 
 	private DiscriminantClass mDiscriminantClass;
-	private StateVarTuple mState = new StateVarTuple();
+	private StateVarTuple mVarTuple = new StateVarTuple();
 
 	public Discriminant(DiscriminantClass discriminantClass) {
 		mDiscriminantClass = discriminantClass;
@@ -43,7 +43,7 @@ public class Discriminant implements IStateVarTuple {
 		if (!sanityCheck(stateVar)) {
 			throw new IncompatibleVarException(stateVar.getDefinition());
 		}
-		mState.addStateVar(stateVar);
+		mVarTuple.addStateVar(stateVar);
 	}
 
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
@@ -61,14 +61,19 @@ public class Discriminant implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		return mVarTuple.contains(stateVarDef);
+	}
+
+	@Override
 	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
 			throws VarNotFoundException {
-		return mState.getStateVarValue(valueType, stateVarDef);
+		return mVarTuple.getStateVarValue(valueType, stateVarDef);
 	}
 
 	@Override
 	public Iterator<StateVar<IStateVarValue>> iterator() {
-		return mState.iterator();
+		return mVarTuple.iterator();
 	}
 
 	@Override
@@ -80,7 +85,7 @@ public class Discriminant implements IStateVarTuple {
 			return false;
 		}
 		Discriminant discriminant = (Discriminant) obj;
-		return discriminant.mDiscriminantClass.equals(mDiscriminantClass) && discriminant.mState.equals(mState);
+		return discriminant.mDiscriminantClass.equals(mDiscriminantClass) && discriminant.mVarTuple.equals(mVarTuple);
 	}
 
 	@Override
@@ -89,7 +94,7 @@ public class Discriminant implements IStateVarTuple {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDiscriminantClass.hashCode();
-			result = 31 * result + mState.hashCode();
+			result = 31 * result + mVarTuple.hashCode();
 			hashCode = result;
 		}
 		return hashCode;
@@ -97,7 +102,7 @@ public class Discriminant implements IStateVarTuple {
 
 	@Override
 	public String toString() {
-		return mState.toString();
+		return mVarTuple.toString();
 	}
 
 }

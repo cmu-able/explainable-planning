@@ -182,7 +182,7 @@ public class MobileRobotXMDPBuilder {
 			Set<Connection> connections = map.getConnections(node);
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
-				preMoveTo.add(moveTo, rLocDef.getStateVar(locSrc));
+				preMoveTo.add(moveTo, rLocDef, locSrc);
 			}
 		}
 
@@ -197,8 +197,8 @@ public class MobileRobotXMDPBuilder {
 		// SetSpeed:
 		// Precondition
 		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
-		preSetSpeed.add(setSpeedHalf, rSpeedDef.getStateVar(fullSpeed));
-		preSetSpeed.add(setSpeedFull, rSpeedDef.getStateVar(halfSpeed));
+		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
+		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
 
 		// Action description for rSpeed
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,

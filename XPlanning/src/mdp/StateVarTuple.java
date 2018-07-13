@@ -24,7 +24,6 @@ public class StateVarTuple implements IStateVarTuple {
 	private volatile int hashCode;
 
 	private Map<StateVarDefinition<? extends IStateVarValue>, StateVar<? extends IStateVarValue>> mStateVarMap = new HashMap<>();
-	private MultivarClass mMultivarClass = new MultivarClass();
 
 	public StateVarTuple() {
 		// mStateVarMap and mMultivarClass initially empty
@@ -32,11 +31,6 @@ public class StateVarTuple implements IStateVarTuple {
 
 	public void addStateVar(StateVar<? extends IStateVarValue> stateVar) {
 		mStateVarMap.put(stateVar.getDefinition(), stateVar);
-		mMultivarClass.add(stateVar.getDefinition());
-	}
-
-	public MultivarClass getMultivarClass() {
-		return mMultivarClass;
 	}
 
 	@Override

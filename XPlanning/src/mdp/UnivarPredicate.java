@@ -7,8 +7,8 @@ import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
 /**
- * {@link UnivarPredicate} defines a precondition over a single state variable. It contains a set of allowable values of
- * the variable.
+ * {@link UnivarPredicate} is a disjunction of allowable values of a particular state variable. It contains a set of
+ * allowable values of the variable.
  * 
  * @author rsukkerd
  *

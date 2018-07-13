@@ -144,8 +144,8 @@ public class MobileRobotTestProblem {
 		// MoveTo:
 		// Precondition
 		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
-		preMoveTo.add(moveToL1, rLocDef.getStateVar(locL2));
-		preMoveTo.add(moveToL2, rLocDef.getStateVar(locL1));
+		preMoveTo.add(moveToL1, rLocDef, locL2);
+		preMoveTo.add(moveToL2, rLocDef, locL1);
 
 		// Action description
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
@@ -158,8 +158,8 @@ public class MobileRobotTestProblem {
 		// SetSpeed:
 		// Precondition
 		Precondition<SetSpeedAction> preSetSpeed = new Precondition<>(setSpeedDef);
-		preSetSpeed.add(setSpeedHalf, rSpeedDef.getStateVar(fullSpeed));
-		preSetSpeed.add(setSpeedFull, rSpeedDef.getStateVar(halfSpeed));
+		preSetSpeed.add(setSpeedHalf, rSpeedDef, fullSpeed);
+		preSetSpeed.add(setSpeedFull, rSpeedDef, halfSpeed);
 
 		// Action description
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,

@@ -7,11 +7,9 @@ import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
-import factors.StateVar;
 import factors.StateVarDefinition;
 import metrics.IStandardMetricQFunction;
 import metrics.Transition;
-import metrics.TransitionDefinition;
 
 /**
  * {@link TravelTimeQFunction} calculates the travel time of the robot of a single transition.
@@ -19,7 +17,7 @@ import metrics.TransitionDefinition;
  * @author rsukkerd
  *
  */
-public class TravelTimeQFunction implements IStandardMetricQFunction {
+public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToAction, TravelTimeDomain> {
 
 	private static final String NAME = "travelTime";
 	/*
@@ -27,44 +25,20 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 	 */
 	private volatile int hashCode;
 
-	private StateVarDefinition<Location> mrLocSrcDef;
-	private StateVarDefinition<RobotSpeed> mrSpeedSrcDef;
-	private StateVarDefinition<Location> mrLocDestDef;
-	private TransitionDefinition mTransitionDef;
+	private TravelTimeDomain mDomain;
 
 	public TravelTimeQFunction(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
 			ActionDefinition<MoveToAction> moveToDef, StateVarDefinition<Location> rLocDestDef) {
-		mrLocSrcDef = rLocSrcDef;
-		mrSpeedSrcDef = rSpeedSrcDef;
-		mrLocDestDef = rLocDestDef;
-		mTransitionDef = new TransitionDefinition(moveToDef);
-		mTransitionDef.addSrcStateVarDef(rLocSrcDef);
-		mTransitionDef.addSrcStateVarDef(rSpeedSrcDef);
-		mTransitionDef.addDestStateVarDef(rLocDestDef);
-	}
-
-	public double getTravelTime(StateVar<Location> rLocSrc, StateVar<RobotSpeed> rSpeedSrc, MoveToAction moveTo,
-			StateVar<Location> rLocDest) throws AttributeNameNotFoundException {
-		Distance distance = moveTo.getDistance(rLocSrc);
-		return distance.getDistance() / rSpeedSrc.getValue().getSpeed();
+		mDomain = new TravelTimeDomain(rLocSrcDef, rSpeedSrcDef, moveToDef, rLocDestDef);
 	}
 
 	@Override
-	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
-		if (trans.getSrcStateVarValue(mrLocSrcDef) instanceof Location
-				&& trans.getSrcStateVarValue(mrSpeedSrcDef) instanceof RobotSpeed
-				&& trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
-			Location locSrc = (Location) trans.getSrcStateVarValue(mrLocSrcDef);
-			RobotSpeed speedSrc = (RobotSpeed) trans.getSrcStateVarValue(mrSpeedSrcDef);
-			Location locDest = (Location) trans.getDestStateVarValue(mrLocDestDef);
-			StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(locSrc);
-			StateVar<RobotSpeed> rSpeedSrc = mrSpeedSrcDef.getStateVar(speedSrc);
-			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<Location> rLocDest = mrLocDestDef.getStateVar(locDest);
-			return getTravelTime(rLocSrc, rSpeedSrc, moveTo, rLocDest);
-		}
-		return 0;
+	public double getValue(Transition<MoveToAction, TravelTimeDomain> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException {
+		TravelTimeDomain domain = transition.getQFunctionDomain();
+		Distance distance = domain.getDistance(transition);
+		RobotSpeed speed = domain.getRobotSpeed(transition);
+		return distance.getDistance() / speed.getSpeed();
 	}
 
 	@Override
@@ -73,8 +47,8 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 	}
 
 	@Override
-	public TransitionDefinition getTransitionDefinition() {
-		return mTransitionDef;
+	public TravelTimeDomain getQFunctionDomain() {
+		return mDomain;
 	}
 
 	@Override
@@ -86,7 +60,7 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 			return false;
 		}
 		TravelTimeQFunction qFunc = (TravelTimeQFunction) obj;
-		return qFunc.mTransitionDef.equals(mTransitionDef);
+		return qFunc.mDomain.equals(mDomain);
 	}
 
 	@Override
@@ -94,7 +68,7 @@ public class TravelTimeQFunction implements IStandardMetricQFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mTransitionDef.hashCode();
+			result = 31 * result + mDomain.hashCode();
 			hashCode = result;
 		}
 		return result;

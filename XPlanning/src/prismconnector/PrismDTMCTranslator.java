@@ -125,7 +125,7 @@ public class PrismDTMCTranslator {
 	 * @return Numerical query property of the expected total QA value of this DTMC
 	 * @throws VarNotFoundException
 	 */
-	public String getNumQueryPropertyTranslation(IQFunction qFunction) throws VarNotFoundException {
+	public String getNumQueryPropertyTranslation(IQFunction<?, ?> qFunction) throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction);
 	}

@@ -2,7 +2,9 @@ package mdp;
 
 import java.util.Set;
 
+import factors.IAction;
 import metrics.IQFunction;
+import metrics.IQFunctionDomain;
 import objectives.CostFunction;
 
 /**
@@ -23,11 +25,12 @@ public class XMDP {
 	private StateVarTuple mInitialState;
 	private StateVarTuple mGoal;
 	private TransitionFunction mTransFunction;
-	private Set<IQFunction> mQFunctions;
+	private Set<IQFunction<IAction, IQFunctionDomain<IAction>>> mQFunctions;
 	private CostFunction mCostFunction;
 
 	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, StateVarTuple initialState, StateVarTuple goal,
-			TransitionFunction transFunction, Set<IQFunction> qFunctions, CostFunction costFunction) {
+			TransitionFunction transFunction, Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions,
+			CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
@@ -57,7 +60,7 @@ public class XMDP {
 		return mTransFunction;
 	}
 
-	public Set<IQFunction> getQFunctions() {
+	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
 		return mQFunctions;
 	}
 

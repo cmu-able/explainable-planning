@@ -50,7 +50,8 @@ public class PrismRewardTranslator {
 	 * @return Reward structures representing the QA functions
 	 * @throws XMDPException
 	 */
-	public String getQAFunctionsTranslation(Set<IQFunction<?, ?>> qFunctions) throws XMDPException {
+	public String getQAFunctionsTranslation(Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions)
+			throws XMDPException {
 		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
 	}
 

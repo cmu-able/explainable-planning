@@ -11,8 +11,10 @@ import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import exceptions.XMDPException;
+import factors.IAction;
 import mdp.XMDP;
 import metrics.IQFunction;
+import metrics.IQFunctionDomain;
 import objectives.AttributeConstraint;
 import objectives.IAdditiveCostFunction;
 import policy.Policy;
@@ -32,7 +34,7 @@ public class PrismConnector {
 	private boolean mUseExplicitModel;
 	private PrismAPIWrapper mPrismAPI;
 	private Map<Policy, Double> mCachedTotalCosts = new HashMap<>();
-	private Map<Policy, Map<IQFunction, Double>> mCachedQAValues = new HashMap<>();
+	private Map<Policy, Map<IQFunction<?, ?>, Double>> mCachedQAValues = new HashMap<>();
 	private Map<PrismExplicitModelPointer, Policy> mExplicitModelPtrToPolicy = new HashMap<>();
 
 	public PrismConnector(XMDP xmdp, String outputPath, boolean useExplicitModel, PrismConfiguration prismConfig)
@@ -86,7 +88,7 @@ public class PrismConnector {
 	 * @throws IOException
 	 */
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
-			AttributeConstraint<IQFunction> constraint)
+			AttributeConstraint<IQFunction<?, ?>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		// Use transition rewards for multi-objective adversary synthesis
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);
@@ -215,7 +217,7 @@ public class PrismConnector {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double getQAValue(Policy policy, IQFunction qFunction)
+	public double getQAValue(Policy policy, IQFunction<?, ?> qFunction)
 			throws XMDPException, PrismException, ResultParsingException {
 		if (!mXMDP.getQFunctions().contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
@@ -235,15 +237,15 @@ public class PrismConnector {
 		mCachedTotalCosts.put(policy, totalCost);
 	}
 
-	private void computeQAValues(Policy policy, Set<IQFunction> qFunctions)
+	private void computeQAValues(Policy policy, Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions)
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
-		Map<IQFunction, String> queryProperties = new HashMap<>();
+		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
 		StringBuilder builder = new StringBuilder();
-		for (IQFunction qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : qFunctions) {
 			String queryProperty = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
 			queryProperties.put(qFunction, queryProperty);
 			builder.append(queryProperty);
@@ -254,9 +256,9 @@ public class PrismConnector {
 		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr);
 
 		// Cache the QA values of the policy
-		Map<IQFunction, Double> qaValues = new HashMap<>();
-		for (Entry<IQFunction, String> entry : queryProperties.entrySet()) {
-			IQFunction qFunction = entry.getKey();
+		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
+		for (Entry<IQFunction<?, ?>, String> entry : queryProperties.entrySet()) {
+			IQFunction<?, ?> qFunction = entry.getKey();
 			String queryProperty = entry.getValue();
 			qaValues.put(qFunction, results.get(queryProperty));
 		}
@@ -264,15 +266,15 @@ public class PrismConnector {
 	}
 
 	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
-			Set<IQFunction> qFunctions, PrismMDPTranslator mdpTranslator)
+			Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions, PrismMDPTranslator mdpTranslator)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
 		PrismPropertyTranslator propertyTranslator = mdpTranslator.getPrismPropertyTransltor();
 		ValueEncodingScheme encodings = mdpTranslator.getValueEncodingScheme();
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
 
 		// Cache the QA values of the policy
-		Map<IQFunction, Double> qaValues = new HashMap<>();
-		for (IQFunction qFunction : qFunctions) {
+		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
+		for (IQFunction<?, ?> qFunction : qFunctions) {
 			Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
 			double qaValue = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer,
 					rewardStructIndex);

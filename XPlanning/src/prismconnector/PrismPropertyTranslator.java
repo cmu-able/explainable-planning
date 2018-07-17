@@ -49,8 +49,8 @@ public class PrismPropertyTranslator {
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPConstrainedMinProperty(StateVarTuple goal, IAdditiveCostFunction objectiveFunction,
-			AttributeConstraint<? extends IQFunction> constraint) throws VarNotFoundException {
-		IQFunction qFunction = constraint.getQFunction();
+			AttributeConstraint<? extends IQFunction<?, ?>> constraint) throws VarNotFoundException {
+		IQFunction<?, ?> qFunction = constraint.getQFunction();
 		double upperBound = constraint.getExpectedTotalUpperBound();
 		StringBuilder builder = new StringBuilder();
 		builder.append("multi(R{\"");
@@ -87,7 +87,8 @@ public class PrismPropertyTranslator {
 	 * @return R{"cost"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction) throws VarNotFoundException {
+	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction)
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(costFunction.getName());
@@ -107,7 +108,8 @@ public class PrismPropertyTranslator {
 	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction qFunction) throws VarNotFoundException {
+	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction<?, ?> qFunction)
+			throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
 		builder.append(qFunction.getName());

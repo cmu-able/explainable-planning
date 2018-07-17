@@ -49,8 +49,8 @@ public class PrismRewardTranslatorUtilities {
 	 * @return Reward structures for the QA functions
 	 * @throws XMDPException
 	 */
-	String buildRewardStructures(TransitionFunction transFunction, Set<IQFunction<?, ?>> qFunctions)
-			throws XMDPException {
+	String buildRewardStructures(TransitionFunction transFunction,
+			Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions) throws XMDPException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Quality-Attribute Functions\n\n");
 		boolean first = true;

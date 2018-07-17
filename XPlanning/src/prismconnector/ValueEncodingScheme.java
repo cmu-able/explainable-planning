@@ -41,7 +41,7 @@ public class ValueEncodingScheme {
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
-	private List<IQFunction> mIndexedQFunctions = new ArrayList<>();
+	private List<IQFunction<?, ?>> mIndexedQFunctions = new ArrayList<>();
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
 	private boolean mThreeParamRewards;
@@ -85,7 +85,7 @@ public class ValueEncodingScheme {
 		return encoding;
 	}
 
-	void appendQFunction(IQFunction qFunction) {
+	void appendQFunction(IQFunction<?, ?> qFunction) {
 		mIndexedQFunctions.add(qFunction);
 	}
 
@@ -150,7 +150,7 @@ public class ValueEncodingScheme {
 		throw new VarNotFoundException(stateVarName);
 	}
 
-	public int getRewardStructureIndex(IQFunction qFunction) throws QFunctionNotFoundException {
+	public int getRewardStructureIndex(IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
 		if (!mIndexedQFunctions.contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}

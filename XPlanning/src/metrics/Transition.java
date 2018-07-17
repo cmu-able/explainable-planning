@@ -12,7 +12,9 @@ import factors.StateVarDefinition;
 import mdp.StateVarTuple;
 
 /**
- * {@link Transition} represents a factored (s, a, s') transition.
+ * {@link Transition} represents a factored (s, a, s') transition. A transition has a parameterized type of
+ * {@link IQFunctionDomain}. That is, it has source and destination state variables and an action according to the
+ * {@link IQFunctionDomain}.
  * 
  * @author rsukkerd
  *

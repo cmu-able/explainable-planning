@@ -1,5 +1,7 @@
 package metrics;
 
+import factors.IAction;
+
 /**
  * {@link INonStandardMetricQFunction} is an interface to a Q_i function that characterizes a QA i using a non-standard
  * metric.
@@ -7,7 +9,8 @@ package metrics;
  * @author rsukkerd
  *
  */
-public interface INonStandardMetricQFunction extends IQFunction {
+public interface INonStandardMetricQFunction<E extends IAction, T extends IQFunctionDomain<E>>
+		extends IQFunction<E, T> {
 
-	public EventBasedMetric getMetric();
+	public EventBasedMetric<E, T> getMetric();
 }

@@ -2,6 +2,7 @@ package metrics;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
+import factors.IAction;
 
 /**
  * {@link IEvent} is an interface to an event.
@@ -9,9 +10,8 @@ import exceptions.VarNotFoundException;
  * @author rsukkerd
  *
  */
-public interface IEvent {
+public interface IEvent<E extends IAction, T extends IQFunctionDomain<E>> {
 
-	public TransitionDefinition getTransitionDefinition();
-
-	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException;
+	public boolean hasEventOccurred(Transition<E, T> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException;
 }

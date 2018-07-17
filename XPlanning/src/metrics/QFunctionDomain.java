@@ -8,6 +8,15 @@ import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 
+/**
+ * {@link QFunctionDomain} represents the domain of a {@link IQFunction}. It contains a set of variable definitions in
+ * the source state, a set in the destination state, and an action definition. This is to facilitate PRISM translator in
+ * generating a reward structure for the corresponding QA function.
+ * 
+ * @author rsukkerd
+ *
+ * @param <E>
+ */
 public class QFunctionDomain<E extends IAction> implements IQFunctionDomain<E> {
 
 	/*

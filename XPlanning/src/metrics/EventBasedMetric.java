@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
+import factors.IAction;
 
 /**
  * {@link EventBasedMetric} is an event-based metric that assigns a specific value to a particular event.
@@ -13,33 +14,33 @@ import exceptions.VarNotFoundException;
  * @author rsukkerd
  *
  */
-public class EventBasedMetric {
+public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private TransitionDefinition mTransitionDef;
-	private Map<IEvent, Double> mMetric = new HashMap<>();
+	private T mDomain;
+	private Map<IEvent<E, T>, Double> mMetric = new HashMap<>();
 
-	public EventBasedMetric(TransitionDefinition transitionDef) {
-		mTransitionDef = transitionDef;
+	public EventBasedMetric(T domain) {
+		mDomain = domain;
 	}
 
-	public void put(IEvent event, Double value) {
+	public void put(IEvent<E, T> event, Double value) {
 		mMetric.put(event, value);
 	}
 
-	public TransitionDefinition getTransitionDefinition() {
-		return mTransitionDef;
+	public T getQFunctionDomain() {
+		return mDomain;
 	}
 
-	public double getValue(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
-		for (Entry<IEvent, Double> e : mMetric.entrySet()) {
-			IEvent event = e.getKey();
+	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException {
+		for (Entry<IEvent<E, T>, Double> e : mMetric.entrySet()) {
+			IEvent<E, T> event = e.getKey();
 			Double value = e.getValue();
-			if (event.hasEventOccurred(trans)) {
+			if (event.hasEventOccurred(transition)) {
 				return value;
 			}
 		}
@@ -51,11 +52,11 @@ public class EventBasedMetric {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof EventBasedMetric)) {
+		if (!(obj instanceof EventBasedMetric<?, ?>)) {
 			return false;
 		}
-		EventBasedMetric metric = (EventBasedMetric) obj;
-		return metric.mMetric.equals(mMetric);
+		EventBasedMetric<?, ?> metric = (EventBasedMetric<?, ?>) obj;
+		return metric.mDomain.equals(mDomain) && metric.mMetric.equals(mMetric);
 	}
 
 	@Override
@@ -63,6 +64,7 @@ public class EventBasedMetric {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mDomain.hashCode();
 			result = 31 * result + mMetric.hashCode();
 			hashCode = result;
 		}

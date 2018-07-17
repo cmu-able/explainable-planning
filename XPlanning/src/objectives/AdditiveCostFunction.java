@@ -1,14 +1,11 @@
 package objectives;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
+import factors.IAction;
 import metrics.IQFunction;
-import metrics.Transition;
+import metrics.IQFunctionDomain;
 
 /**
  * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs of a single
@@ -24,68 +21,36 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	 */
 	private volatile int hashCode;
 
-	private Map<AttributeCostFunction<? extends IQFunction>, Double> mScalingConsts = new HashMap<>();
+	private Map<AttributeCostFunction<? extends IQFunction<?, ?>>, Double> mScalingConsts = new HashMap<>();
 	private String mName;
+
 	// For fast look-up
-	private Map<IQFunction, AttributeCostFunction<? extends IQFunction>> mAttrCostFuncs = new HashMap<>();
+	private Map<IQFunction<?, ?>, AttributeCostFunction<? extends IQFunction<?, ?>>> mAttrCostFuncs = new HashMap<>();
 
 	public AdditiveCostFunction(String name) {
 		mName = name;
 	}
 
-	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {
+	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> void put(S qFunction,
+			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAttrCostFuncs.put(qFunction, attrCostFunc);
 		mScalingConsts.put(attrCostFunc, scalingConst);
 	}
 
 	@Override
-	public <E extends IQFunction> AttributeCostFunction<E> getAttributeCostFunction(E qFunction) {
-		return (AttributeCostFunction<E>) (mAttrCostFuncs.get(qFunction));
+	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+			S qFunction) {
+		// Casting: We ensure type-safety in put()
+		return (AttributeCostFunction<S>) (mAttrCostFuncs.get(qFunction));
 	}
 
 	@Override
-	public double getScalingConstant(AttributeCostFunction<? extends IQFunction> attrCostFunc) {
+	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc) {
 		return mScalingConsts.get(attrCostFunc);
-	}
-
-	@Override
-	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
-		double cost = 0;
-		for (Entry<AttributeCostFunction<? extends IQFunction>, Double> entry : mScalingConsts.entrySet()) {
-			AttributeCostFunction<? extends IQFunction> attrCostFunc = entry.getKey();
-			double scalingConst = entry.getValue();
-			double attrCost = attrCostFunc.getCost(transition);
-			double scaledAttrCost = scalingConst * attrCost;
-			cost += scaledAttrCost;
-		}
-		return cost;
 	}
 
 	public String getName() {
 		return mName;
-	}
-
-	@Override
-	public Iterator<AttributeCostFunction<IQFunction>> iterator() {
-		return new Iterator<AttributeCostFunction<IQFunction>>() {
-
-			private Iterator<AttributeCostFunction<? extends IQFunction>> iter = mScalingConsts.keySet().iterator();
-
-			@Override
-			public boolean hasNext() {
-				return iter.hasNext();
-			}
-
-			@Override
-			public AttributeCostFunction<IQFunction> next() {
-				return (AttributeCostFunction<IQFunction>) iter.next();
-			}
-
-			@Override
-			public void remove() {
-				iter.remove();
-			}
-		};
 	}
 
 	@Override

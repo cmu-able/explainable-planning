@@ -1,9 +1,8 @@
 package objectives;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
+import factors.IAction;
 import metrics.IQFunction;
-import metrics.Transition;
+import metrics.IQFunctionDomain;
 
 /**
  * {@link IAdditiveCostFunction} is an interface to an additive, multi-attribute cost function of n values
@@ -12,13 +11,12 @@ import metrics.Transition;
  * @author rsukkerd
  *
  */
-public interface IAdditiveCostFunction extends Iterable<AttributeCostFunction<IQFunction>> {
+public interface IAdditiveCostFunction {
 
-	public <E extends IQFunction> AttributeCostFunction<E> getAttributeCostFunction(E qFunction);
+	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+			S qFunction);
 
-	public double getScalingConstant(AttributeCostFunction<? extends IQFunction> attrCostFunc);
-
-	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
+	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc);
 
 	public String getName();
 }

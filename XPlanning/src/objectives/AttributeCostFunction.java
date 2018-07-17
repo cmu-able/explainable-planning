@@ -1,9 +1,6 @@
 package objectives;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
 import metrics.IQFunction;
-import metrics.Transition;
 
 /**
  * {@link AttributeCostFunction} represents a linear (i.e., risk-neutral) single-attribute cost function of the form
@@ -14,7 +11,7 @@ import metrics.Transition;
  *
  * @param <E>
  */
-public class AttributeCostFunction<E extends IQFunction> implements ILinearCostFunction {
+public class AttributeCostFunction<E extends IQFunction<?, ?>> implements ILinearCostFunction {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -43,12 +40,6 @@ public class AttributeCostFunction<E extends IQFunction> implements ILinearCostF
 
 	public E getQFunction() {
 		return mQFunction;
-	}
-
-	@Override
-	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
-		double transQValue = mQFunction.getValue(transition);
-		return maConst + mbConst * transQValue;
 	}
 
 	@Override

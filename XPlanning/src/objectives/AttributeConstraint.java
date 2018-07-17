@@ -9,7 +9,7 @@ import metrics.IQFunction;
  *
  * @param <E>
  */
-public class AttributeConstraint<E extends IQFunction> {
+public class AttributeConstraint<E extends IQFunction<?, ?>> {
 
 	/*
 	 * Cached hashCode -- Effective Java

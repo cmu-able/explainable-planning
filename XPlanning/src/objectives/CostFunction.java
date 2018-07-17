@@ -1,11 +1,8 @@
 package objectives;
 
-import java.util.Iterator;
-
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
+import factors.IAction;
 import metrics.IQFunction;
-import metrics.Transition;
+import metrics.IQFunctionDomain;
 
 /**
  * {@link CostFunction} is a cost function of a regular Markov Decision Process (MDP). This is an additive
@@ -28,33 +25,25 @@ public class CostFunction implements IAdditiveCostFunction {
 		// mAdditiveCostFunc initially empty
 	}
 
-	public <E extends IQFunction> void put(E qFunction, AttributeCostFunction<E> attrCostFunc, Double scalingConst) {
+	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> void put(S qFunction,
+			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAdditiveCostFunc.put(qFunction, attrCostFunc, scalingConst);
 	}
 
 	@Override
-	public <E extends IQFunction> AttributeCostFunction<E> getAttributeCostFunction(E qFunction) {
+	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+			S qFunction) {
 		return mAdditiveCostFunc.getAttributeCostFunction(qFunction);
 	}
 
 	@Override
-	public double getScalingConstant(AttributeCostFunction<? extends IQFunction> attrCostFunc) {
+	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc) {
 		return mAdditiveCostFunc.getScalingConstant(attrCostFunc);
-	}
-
-	@Override
-	public double getCost(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
-		return mAdditiveCostFunc.getCost(transition);
 	}
 
 	@Override
 	public String getName() {
 		return mAdditiveCostFunc.getName();
-	}
-
-	@Override
-	public Iterator<AttributeCostFunction<IQFunction>> iterator() {
-		return mAdditiveCostFunc.iterator();
 	}
 
 	@Override

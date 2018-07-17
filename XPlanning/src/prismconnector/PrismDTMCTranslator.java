@@ -99,7 +99,7 @@ public class PrismDTMCTranslator {
 		builder.append(costStruct);
 
 		if (withQAFunctions) {
-			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(xmdp.getQFunctions());
+			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(xmdp.getQSpace());
 			builder.append("\n\n");
 			builder.append(qasRewards);
 		}

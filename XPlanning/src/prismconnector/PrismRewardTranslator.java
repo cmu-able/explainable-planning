@@ -1,7 +1,5 @@
 package prismconnector;
 
-import java.util.Set;
-
 import exceptions.XMDPException;
 import factors.IAction;
 import mdp.TransitionFunction;
@@ -50,7 +48,7 @@ public class PrismRewardTranslator {
 	 * @return Reward structures representing the QA functions
 	 * @throws XMDPException
 	 */
-	public String getQAFunctionsTranslation(Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions)
+	public String getQAFunctionsTranslation(Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions)
 			throws XMDPException {
 		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
 	}

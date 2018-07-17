@@ -1,10 +1,5 @@
 package mdp;
 
-import java.util.Set;
-
-import factors.IAction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
 import objectives.CostFunction;
 
 /**
@@ -25,18 +20,17 @@ public class XMDP {
 	private StateVarTuple mInitialState;
 	private StateVarTuple mGoal;
 	private TransitionFunction mTransFunction;
-	private Set<IQFunction<IAction, IQFunctionDomain<IAction>>> mQFunctions;
+	private QSpace mQSpace;
 	private CostFunction mCostFunction;
 
 	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, StateVarTuple initialState, StateVarTuple goal,
-			TransitionFunction transFunction, Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions,
-			CostFunction costFunction) {
+			TransitionFunction transFunction, QSpace qSpace, CostFunction costFunction) {
 		mStateSpace = stateVarDefs;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
 		mGoal = goal;
 		mTransFunction = transFunction;
-		mQFunctions = qFunctions;
+		mQSpace = qSpace;
 		mCostFunction = costFunction;
 	}
 
@@ -60,8 +54,8 @@ public class XMDP {
 		return mTransFunction;
 	}
 
-	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
-		return mQFunctions;
+	public QSpace getQSpace() {
+		return mQSpace;
 	}
 
 	public CostFunction getCostFunction() {
@@ -79,7 +73,7 @@ public class XMDP {
 		XMDP mdp = (XMDP) obj;
 		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionSpace.equals(mActionSpace)
 				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
-				&& mdp.mTransFunction.equals(mTransFunction) && mdp.mQFunctions.equals(mQFunctions)
+				&& mdp.mTransFunction.equals(mTransFunction) && mdp.mQSpace.equals(mQSpace)
 				&& mdp.mCostFunction.equals(mCostFunction);
 	}
 
@@ -93,7 +87,7 @@ public class XMDP {
 			result = 31 * result + mInitialState.hashCode();
 			result = 31 * result + mGoal.hashCode();
 			result = 31 * result + mTransFunction.hashCode();
-			result = 31 * result + mQFunctions.hashCode();
+			result = 31 * result + mQSpace.hashCode();
 			result = 31 * result + mCostFunction.hashCode();
 			hashCode = result;
 		}

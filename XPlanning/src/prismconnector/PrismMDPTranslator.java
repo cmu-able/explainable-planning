@@ -83,7 +83,7 @@ public class PrismMDPTranslator {
 		builder.append(costStruct);
 
 		if (withQAFunctions) {
-			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(mXMDP.getQFunctions());
+			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(mXMDP.getQSpace());
 			builder.append("\n\n");
 			builder.append(qasRewards);
 		}

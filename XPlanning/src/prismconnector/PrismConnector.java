@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import dtmc.XDTMC;
 import exceptions.QFunctionNotFoundException;
@@ -179,10 +178,10 @@ public class PrismConnector {
 
 		if (mUseExplicitModel) {
 			// Compute and cache the QA values of the policy, using explicit DTMC model
-			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQFunctions(), mdpTranslator);
+			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQSpace(), mdpTranslator);
 		} else {
 			// Compute and cache the QA values of the policy
-			computeQAValues(policy, mXMDP.getQFunctions());
+			computeQAValues(policy, mXMDP.getQSpace());
 		}
 
 		return policy;
@@ -219,11 +218,11 @@ public class PrismConnector {
 	 */
 	public double getQAValue(Policy policy, IQFunction<?, ?> qFunction)
 			throws XMDPException, PrismException, ResultParsingException {
-		if (!mXMDP.getQFunctions().contains(qFunction)) {
+		if (!mXMDP.getQSpace().contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}
 		if (!mCachedQAValues.containsKey(policy)) {
-			computeQAValues(policy, mXMDP.getQFunctions());
+			computeQAValues(policy, mXMDP.getQSpace());
 		}
 		return mCachedQAValues.get(policy).get(qFunction);
 	}
@@ -237,7 +236,7 @@ public class PrismConnector {
 		mCachedTotalCosts.put(policy, totalCost);
 	}
 
-	private void computeQAValues(Policy policy, Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions)
+	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qSpace)
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
@@ -245,7 +244,7 @@ public class PrismConnector {
 
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
 		StringBuilder builder = new StringBuilder();
-		for (IQFunction<?, ?> qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : qSpace) {
 			String queryProperty = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
 			queryProperties.put(qFunction, queryProperty);
 			builder.append(queryProperty);
@@ -266,7 +265,7 @@ public class PrismConnector {
 	}
 
 	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
-			Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions, PrismMDPTranslator mdpTranslator)
+			Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qSpace, PrismMDPTranslator mdpTranslator)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
 		PrismPropertyTranslator propertyTranslator = mdpTranslator.getPrismPropertyTransltor();
 		ValueEncodingScheme encodings = mdpTranslator.getValueEncodingScheme();
@@ -274,7 +273,7 @@ public class PrismConnector {
 
 		// Cache the QA values of the policy
 		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
-		for (IQFunction<?, ?> qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : qSpace) {
 			Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
 			double qaValue = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer,
 					rewardStructIndex);

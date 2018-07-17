@@ -1,5 +1,7 @@
 package objectives;
 
+import java.util.Set;
+
 import factors.IAction;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;
@@ -44,6 +46,10 @@ public class CostFunction implements IAdditiveCostFunction {
 	@Override
 	public String getName() {
 		return mAdditiveCostFunc.getName();
+	}
+
+	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
+		return mAdditiveCostFunc.getQFunctions();
 	}
 
 	@Override

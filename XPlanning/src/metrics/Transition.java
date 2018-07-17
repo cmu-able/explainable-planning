@@ -31,8 +31,7 @@ public class Transition<E extends IAction, T extends IQFunctionDomain<E>> {
 	private StateVarTuple mSrcVarTuple = new StateVarTuple();
 	private StateVarTuple mDestVarTuple = new StateVarTuple();
 
-	public Transition(T domain, E action, Set<StateVar<? extends IStateVarValue>> srcVars,
-			Set<StateVar<? extends IStateVarValue>> destVars)
+	public Transition(T domain, E action, Set<StateVar<IStateVarValue>> srcVars, Set<StateVar<IStateVarValue>> destVars)
 			throws IncompatibleActionException, IncompatibleVarException {
 		if (!sanityCheck(domain, action)) {
 			throw new IncompatibleActionException(action);

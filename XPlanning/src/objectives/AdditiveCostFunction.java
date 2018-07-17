@@ -1,7 +1,9 @@
 package objectives;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import factors.IAction;
 import metrics.IQFunction;
@@ -21,11 +23,14 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	 */
 	private volatile int hashCode;
 
-	private Map<AttributeCostFunction<? extends IQFunction<?, ?>>, Double> mScalingConsts = new HashMap<>();
 	private String mName;
+	private Map<AttributeCostFunction<? extends IQFunction<?, ?>>, Double> mScalingConsts = new HashMap<>();
 
-	// For fast look-up
+	// For fast look-up of AttributeCostFunction via IQFunction
 	private Map<IQFunction<?, ?>, AttributeCostFunction<? extends IQFunction<?, ?>>> mAttrCostFuncs = new HashMap<>();
+
+	// For client to obtain a set of generic QA functions
+	private Set<IQFunction<IAction, IQFunctionDomain<IAction>>> mQFunctions = new HashSet<>();
 
 	public AdditiveCostFunction(String name) {
 		mName = name;
@@ -35,6 +40,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAttrCostFuncs.put(qFunction, attrCostFunc);
 		mScalingConsts.put(attrCostFunc, scalingConst);
+		mQFunctions.add((IQFunction<IAction, IQFunctionDomain<IAction>>) qFunction);
 	}
 
 	@Override
@@ -53,6 +59,10 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		return mName;
 	}
 
+	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
+		return mQFunctions;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -62,8 +72,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			return false;
 		}
 		AdditiveCostFunction costFunc = (AdditiveCostFunction) obj;
-		return costFunc.mAttrCostFuncs.equals(mAttrCostFuncs) && costFunc.mScalingConsts.equals(mScalingConsts)
-				&& costFunc.mName.equals(mName);
+		return costFunc.mName.equals(mName) && costFunc.mScalingConsts.equals(mScalingConsts);
 	}
 
 	@Override
@@ -71,9 +80,8 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mAttrCostFuncs.hashCode();
-			result = 31 * result + mScalingConsts.hashCode();
 			result = 31 * result + mName.hashCode();
+			result = 31 * result + mScalingConsts.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -1,5 +1,7 @@
 package objectives;
 
+import java.util.Set;
+
 import factors.IAction;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;
@@ -19,4 +21,6 @@ public interface IAdditiveCostFunction {
 	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc);
 
 	public String getName();
+
+	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions();
 }

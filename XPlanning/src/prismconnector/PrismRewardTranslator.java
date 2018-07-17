@@ -3,8 +3,10 @@ package prismconnector;
 import java.util.Set;
 
 import exceptions.XMDPException;
+import factors.IAction;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
+import metrics.IQFunctionDomain;
 import objectives.CostFunction;
 import objectives.IAdditiveCostFunction;
 
@@ -48,7 +50,7 @@ public class PrismRewardTranslator {
 	 * @return Reward structures representing the QA functions
 	 * @throws XMDPException
 	 */
-	public String getQAFunctionsTranslation(Set<IQFunction> qFunctions) throws XMDPException {
+	public String getQAFunctionsTranslation(Set<IQFunction<?, ?>> qFunctions) throws XMDPException {
 		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
 	}
 
@@ -59,7 +61,8 @@ public class PrismRewardTranslator {
 	 * @return Reward structure representing the QA function
 	 * @throws XMDPException
 	 */
-	public String getQAFunctionTranslation(IQFunction qFunction) throws XMDPException {
+	public <E extends IAction, T extends IQFunctionDomain<E>> String getQAFunctionTranslation(
+			IQFunction<E, T> qFunction) throws XMDPException {
 		return mRewardUtilities.buildRewardStructure(mTransFunction, qFunction);
 	}
 }

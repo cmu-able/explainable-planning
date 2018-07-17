@@ -22,8 +22,8 @@ import mdp.FactoredPSO;
 import mdp.Precondition;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
+import metrics.IQFunctionDomain;
 import metrics.Transition;
-import metrics.TransitionDefinition;
 import objectives.AttributeCostFunction;
 import objectives.IAdditiveCostFunction;
 
@@ -49,11 +49,12 @@ public class PrismRewardTranslatorUtilities {
 	 * @return Reward structures for the QA functions
 	 * @throws XMDPException
 	 */
-	String buildRewardStructures(TransitionFunction transFunction, Set<IQFunction> qFunctions) throws XMDPException {
+	String buildRewardStructures(TransitionFunction transFunction, Set<IQFunction<?, ?>> qFunctions)
+			throws XMDPException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Quality-Attribute Functions\n\n");
 		boolean first = true;
-		for (IQFunction qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : qFunctions) {
 			if (!first) {
 				builder.append("\n\n");
 			} else {
@@ -97,23 +98,27 @@ public class PrismRewardTranslatorUtilities {
 		builder.append(objectiveFunction.getName());
 		builder.append("\"\n");
 
-		for (AttributeCostFunction<IQFunction> attrCostFunction : objectiveFunction) {
-			IQFunction qFunction = attrCostFunction.getQFunction();
+		Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions = objectiveFunction.getQFunctions();
+
+		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : qFunctions) {
+			AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> attrCostFunction = objectiveFunction
+					.getAttributeCostFunction(qFunction);
 			double scalingConst = objectiveFunction.getScalingConstant(attrCostFunction);
 
-			TransitionDefinition transDef = qFunction.getTransitionDefinition();
-			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
-			TransitionEvaluator evaluator = new TransitionEvaluator() {
+			IQFunctionDomain<IAction> domain = qFunction.getQFunctionDomain();
+			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(domain.getActionDef());
+			TransitionEvaluator<IAction, IQFunctionDomain<IAction>> evaluator = new TransitionEvaluator<IAction, IQFunctionDomain<IAction>>() {
 
 				@Override
-				public double evaluate(Transition transition)
+				public double evaluate(Transition<IAction, IQFunctionDomain<IAction>> transition)
 						throws VarNotFoundException, AttributeNameNotFoundException {
-					double attrCost = attrCostFunction.getCost(transition);
+					double qValue = qFunction.getValue(transition);
+					double attrCost = attrCostFunction.getCost(qValue);
 					return scalingConst * attrCost;
 				}
 			};
 
-			String rewardItems = buildRewardItems(objectiveFunction.getName(), transDef, actionPSO, evaluator);
+			String rewardItems = buildRewardItems(objectiveFunction.getName(), domain, actionPSO, evaluator);
 			builder.append(rewardItems);
 		}
 
@@ -134,14 +139,16 @@ public class PrismRewardTranslatorUtilities {
 	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
 	 * @throws XMDPException
 	 */
-	String buildRewardStructure(TransitionFunction transFunction, IQFunction qFunction) throws XMDPException {
+	<E extends IAction, T extends IQFunctionDomain<E>> String buildRewardStructure(TransitionFunction transFunction,
+			IQFunction<E, T> qFunction) throws XMDPException {
 		String rewardName = qFunction.getName();
-		TransitionDefinition transDef = qFunction.getTransitionDefinition();
-		FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(transDef.getActionDef());
-		TransitionEvaluator evaluator = new TransitionEvaluator() {
+		T domain = qFunction.getQFunctionDomain();
+		FactoredPSO<E> actionPSO = transFunction.getActionPSO(domain.getActionDef());
+		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
 
 			@Override
-			public double evaluate(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException {
+			public double evaluate(Transition<E, T> transition)
+					throws VarNotFoundException, AttributeNameNotFoundException {
 				return qFunction.getValue(transition);
 			}
 		};
@@ -157,7 +164,7 @@ public class PrismRewardTranslatorUtilities {
 		builder.append("rewards \"");
 		builder.append(rewardName);
 		builder.append("\"\n");
-		String rewardItems = buildRewardItems(rewardName, transDef, actionPSO, evaluator);
+		String rewardItems = buildRewardItems(rewardName, domain, actionPSO, evaluator);
 		builder.append(rewardItems);
 		builder.append("endrewards");
 		return builder.toString();
@@ -173,8 +180,8 @@ public class PrismRewardTranslatorUtilities {
 	 * 
 	 * @param rewardName
 	 *            : Name of the reward structure
-	 * @param transDef
-	 *            : Transition definition
+	 * @param domain
+	 *            : Domain of the QA function
 	 * @param actionPSO
 	 *            : PSO of the corresponding action type
 	 * @param evaluator
@@ -183,15 +190,15 @@ public class PrismRewardTranslatorUtilities {
 	 *         : {transition value}; ...
 	 * @throws XMDPException
 	 */
-	String buildRewardItems(String rewardName, TransitionDefinition transDef, FactoredPSO<IAction> actionPSO,
-			TransitionEvaluator evaluator) throws XMDPException {
-		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transDef.getSrcStateVarDefs();
-		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transDef.getDestStateVarDefs();
-		ActionDefinition<IAction> actionDef = transDef.getActionDef();
+	<E extends IAction, T extends IQFunctionDomain<E>> String buildRewardItems(String rewardName, T domain,
+			FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator) throws XMDPException {
+		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = domain.getSrcStateVarDefs();
+		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = domain.getDestStateVarDefs();
+		ActionDefinition<E> actionDef = domain.getActionDef();
 
 		StringBuilder builder = new StringBuilder();
 
-		for (IAction action : actionDef.getActions()) {
+		for (E action : actionDef.getActions()) {
 			Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
 
 			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(actionPSO, action,
@@ -212,7 +219,7 @@ public class PrismRewardTranslatorUtilities {
 				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
 					String destPartialGuard = buildPartialRewardGuard(destVars);
 
-					Transition transition = new Transition(action, srcVars, destVars);
+					Transition<E, T> transition = new Transition<>(domain, action, srcVars, destVars);
 					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
@@ -300,7 +307,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @return State variables in srcVars that are not affected by the given action
 	 */
 	private Set<StateVar<IStateVarValue>> getUnchangedStateVars(Set<StateVar<IStateVarValue>> srcVars,
-			FactoredPSO<IAction> actionPSO) {
+			FactoredPSO<? extends IAction> actionPSO) {
 		Set<StateVar<IStateVarValue>> unchangedVars = new HashSet<>();
 		for (StateVar<IStateVarValue> srcVar : srcVars) {
 			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
@@ -313,9 +320,10 @@ public class PrismRewardTranslatorUtilities {
 		return unchangedVars;
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(FactoredPSO<IAction> actionPSO,
-			IAction action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs) throws ActionNotFoundException {
-		Precondition<IAction> precondition = actionPSO.getPrecondition();
+	private <E extends IAction> Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(
+			FactoredPSO<E> actionPSO, E action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs)
+			throws ActionNotFoundException {
+		Precondition<E> precondition = actionPSO.getPrecondition();
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
 			Set<IStateVarValue> applicableVals = precondition.getApplicableValues(action, srcVarDef);
@@ -324,8 +332,8 @@ public class PrismRewardTranslatorUtilities {
 		return getCombinations(srcVarValues);
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(FactoredPSO<IAction> actionPSO,
-			IAction action, Set<StateVarDefinition<IStateVarValue>> destStateVarDefs,
+	private <E extends IAction> Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(
+			FactoredPSO<E> actionPSO, E action, Set<StateVarDefinition<IStateVarValue>> destStateVarDefs,
 			Set<StateVar<IStateVarValue>> srcVars) throws XMDPException {
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
@@ -337,7 +345,7 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
-			Set<StateVar<IStateVarValue>> srcVars, FactoredPSO<IAction> actionPSO)
+			Set<StateVar<IStateVarValue>> srcVars, FactoredPSO<? extends IAction> actionPSO)
 			throws IncompatibleVarException, VarNotFoundException {
 		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
 		Discriminant discriminant = new Discriminant(discrClass);
@@ -390,8 +398,8 @@ public class PrismRewardTranslatorUtilities {
 		return newCombinations;
 	}
 
-	interface TransitionEvaluator {
-		double evaluate(Transition transition) throws VarNotFoundException, AttributeNameNotFoundException;
+	interface TransitionEvaluator<E extends IAction, T extends IQFunctionDomain<E>> {
+		double evaluate(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException;
 	}
 
 }

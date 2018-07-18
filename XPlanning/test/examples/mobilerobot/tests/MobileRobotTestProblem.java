@@ -1,8 +1,5 @@
 package examples.mobilerobot.tests;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import dtmc.XDTMC;
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Distance;
@@ -22,11 +19,11 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
+import mdp.QSpace;
 import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
-import metrics.IQFunction;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 import policy.Policy;
@@ -87,9 +84,9 @@ public class MobileRobotTestProblem {
 		StateVarTuple initialState = createInitialState();
 		StateVarTuple goal = createGoal();
 		TransitionFunction transFunction = createTransitions();
-		Set<IQFunction> qFunctions = createQFunctions();
+		QSpace qSpace = createQFunctions();
 		CostFunction costFunction = createCostFunction();
-		XMDP xmdp = new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qFunctions, costFunction);
+		XMDP xmdp = new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 		return xmdp;
 	}
 
@@ -175,11 +172,11 @@ public class MobileRobotTestProblem {
 		return transFunction;
 	}
 
-	private Set<IQFunction> createQFunctions() {
+	private QSpace createQFunctions() {
 		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
-		Set<IQFunction> qFunctions = new HashSet<>();
-		qFunctions.add(timeQFunction);
-		return qFunctions;
+		QSpace qSpace = new QSpace();
+		qSpace.addQFunction(timeQFunction);
+		return qSpace;
 	}
 
 	private CostFunction createCostFunction() {

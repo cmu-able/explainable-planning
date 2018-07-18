@@ -8,6 +8,12 @@ import factors.IAction;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;
 
+/**
+ * {@link QSpace} is a set of {@link IQFunction}s of an MDP.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class QSpace implements Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> {
 
 	/*

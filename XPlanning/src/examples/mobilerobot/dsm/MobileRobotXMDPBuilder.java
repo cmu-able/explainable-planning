@@ -18,6 +18,7 @@ import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
 import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
+import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import exceptions.IncompatibleActionException;
 import factors.ActionDefinition;
@@ -25,11 +26,11 @@ import factors.StateVarDefinition;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
+import mdp.QSpace;
 import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
-import metrics.IQFunction;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 
@@ -93,9 +94,9 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple initialState = buildInitialState(startNode);
 		StateVarTuple goal = buildGoal(goalNode);
 		TransitionFunction transFunction = buildTransitionFunction(map);
-		Set<IQFunction> qFunctions = buildQFunctions();
+		QSpace qSpace = buildQFunctions();
 		CostFunction costFunction = buildCostFunction(maxTravelTime);
-		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qFunctions, costFunction);
+		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
 	private StateSpace buildStateSpace(MapTopology map) throws NodeAttributeNotFoundException {
@@ -214,11 +215,14 @@ public class MobileRobotXMDPBuilder {
 		return transFunction;
 	}
 
-	private Set<IQFunction> buildQFunctions() {
-		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
-		Set<IQFunction> qFunctions = new HashSet<>();
-		qFunctions.add(timeQFunction);
-		return qFunctions;
+	private QSpace buildQFunctions() {
+		// Travel time
+		TravelTimeDomain timeDomain = new TravelTimeDomain(rLocDef, rSpeedDef, moveToDef, rLocDef);
+		timeQFunction = new TravelTimeQFunction(timeDomain);
+
+		QSpace qSpace = new QSpace();
+		qSpace.addQFunction(timeQFunction);
+		return qSpace;
 	}
 
 	private CostFunction buildCostFunction(double maxTravelTime) {

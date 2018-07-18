@@ -1,13 +1,10 @@
 package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.factors.Distance;
-import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
-import factors.ActionDefinition;
-import factors.StateVarDefinition;
 import metrics.IStandardMetricQFunction;
 import metrics.Transition;
 
@@ -28,9 +25,8 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 
 	private TravelTimeDomain mDomain;
 
-	public TravelTimeQFunction(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
-			ActionDefinition<MoveToAction> moveToDef, StateVarDefinition<Location> rLocDestDef) {
-		mDomain = new TravelTimeDomain(rLocSrcDef, rSpeedSrcDef, moveToDef, rLocDestDef);
+	public TravelTimeQFunction(TravelTimeDomain domain) {
+		mDomain = domain;
 	}
 
 	@Override

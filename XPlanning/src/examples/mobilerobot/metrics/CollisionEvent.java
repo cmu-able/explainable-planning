@@ -4,8 +4,6 @@ import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNotFoundException;
-import factors.ActionDefinition;
-import factors.StateVarDefinition;
 import metrics.IEvent;
 import metrics.Transition;
 
@@ -28,9 +26,8 @@ public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
 	private CollisionDomain mDomain;
 	private double mSpeedThreshold;
 
-	public CollisionEvent(StateVarDefinition<RobotSpeed> rSpeedSrcDef, ActionDefinition<MoveToAction> moveToDef,
-			StateVarDefinition<RobotBumped> rBumpedDestDef, double speedThreshold) {
-		mDomain = new CollisionDomain(rSpeedSrcDef, moveToDef, rBumpedDestDef);
+	public CollisionEvent(CollisionDomain domain, double speedThreshold) {
+		mDomain = domain;
 		mSpeedThreshold = speedThreshold;
 	}
 

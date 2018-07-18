@@ -11,6 +11,7 @@ import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
 import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
+import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import exceptions.XMDPException;
 import factors.ActionDefinition;
@@ -173,7 +174,8 @@ public class MobileRobotTestProblem {
 	}
 
 	private QSpace createQFunctions() {
-		timeQFunction = new TravelTimeQFunction(rLocDef, rSpeedDef, moveToDef, rLocDef);
+		TravelTimeDomain timeDomain = new TravelTimeDomain(rLocDef, rSpeedDef, moveToDef, rLocDef);
+		timeQFunction = new TravelTimeQFunction(timeDomain);
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		return qSpace;

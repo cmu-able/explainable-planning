@@ -42,6 +42,7 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 		if (!mLookupTable.containsKey(actionDefinition)) {
 			throw new ActionDefinitionNotFoundException(actionDefinition);
 		}
+		// Casting: We ensure type-safety in add()
 		return (FactoredPSO<E>) mLookupTable.get(actionDefinition);
 	}
 

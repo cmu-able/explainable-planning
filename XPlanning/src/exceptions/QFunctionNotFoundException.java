@@ -9,7 +9,7 @@ public class QFunctionNotFoundException extends XMDPException {
 	 */
 	private static final long serialVersionUID = 4557752879934242335L;
 
-	public QFunctionNotFoundException(IQFunction qFunction) {
+	public QFunctionNotFoundException(IQFunction<?, ?> qFunction) {
 		super("QA function '" + qFunction.getName() + "' is not found.");
 	}
 }

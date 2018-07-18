@@ -40,6 +40,7 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 	}
 
 	public <E extends IAction> ActionDefinition<E> getActionDefinition(E action) {
+		// Casting: We ensure type-safety in addActionDefinition()
 		return (ActionDefinition<E>) mActionDefsLookup.get(action);
 	}
 

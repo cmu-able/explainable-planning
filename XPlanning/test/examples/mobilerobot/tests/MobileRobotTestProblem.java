@@ -11,6 +11,8 @@ import examples.mobilerobot.factors.RobotLocationActionDescription;
 import examples.mobilerobot.factors.RobotSpeed;
 import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import exceptions.XMDPException;
@@ -25,6 +27,8 @@ import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
+import metrics.EventBasedMetric;
+import metrics.NonStandardMetricQFunction;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 import policy.Policy;
@@ -71,9 +75,14 @@ public class MobileRobotTestProblem {
 
 	// QA functions
 	TravelTimeQFunction timeQFunction;
+	NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction;
 
 	// Single-attribute cost functions
 	private AttributeCostFunction<TravelTimeQFunction> timeCostFunction;
+
+	private static final double NON_INTRUSIVE_PENALTY = 0;
+	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
+	private static final double VERY_INTRUSIVE_PENALTY = 3;
 
 	public MobileRobotTestProblem() {
 
@@ -174,8 +183,23 @@ public class MobileRobotTestProblem {
 	}
 
 	private QSpace createQFunctions() {
+		// Travel time
 		TravelTimeDomain timeDomain = new TravelTimeDomain(rLocDef, rSpeedDef, moveToDef, rLocDef);
 		timeQFunction = new TravelTimeQFunction(timeDomain);
+
+		// Intrusiveness
+		IntrusivenessDomain intrusiveDomain = new IntrusivenessDomain(moveToDef, rLocDef);
+		IntrusiveMoveEvent nonIntrusive = new IntrusiveMoveEvent("non-intrusive", intrusiveDomain, Area.PUBLIC);
+		IntrusiveMoveEvent somewhatIntrusive = new IntrusiveMoveEvent("somewhat-intrusive", intrusiveDomain,
+				Area.SEMI_PRIVATE);
+		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent("very-intrusive", intrusiveDomain, Area.PRIVATE);
+		EventBasedMetric<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> metric = new EventBasedMetric<>(
+				"intrusiveness", intrusiveDomain);
+		metric.put(nonIntrusive, NON_INTRUSIVE_PENALTY);
+		metric.put(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
+		metric.put(veryIntrusive, VERY_INTRUSIVE_PENALTY);
+		intrusiveQFunction = new NonStandardMetricQFunction<>(metric);
+
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		return qSpace;

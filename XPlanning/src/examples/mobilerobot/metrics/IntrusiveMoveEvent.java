@@ -1,33 +1,26 @@
 package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.factors.Area;
-import examples.mobilerobot.factors.Location;
 import examples.mobilerobot.factors.MoveToAction;
 import exceptions.AttributeNameNotFoundException;
 import exceptions.VarNotFoundException;
-import factors.ActionDefinition;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import metrics.IEvent;
 import metrics.Transition;
-import metrics.TransitionDefinition;
 
-public class IntrusiveMoveEvent implements IEvent {
+public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDomain> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private StateVarDefinition<Location> mrLocDestDef;
-	private TransitionDefinition mTransitionDef;
+	private String mName;
+	private IntrusivenessDomain mDomain;
 	private Area mArea;
 
-	public IntrusiveMoveEvent(ActionDefinition<MoveToAction> moveTo, StateVarDefinition<Location> rLocDestDef,
-			Area area) {
-		mrLocDestDef = rLocDestDef;
-		mTransitionDef = new TransitionDefinition(moveTo);
-		mTransitionDef.addDestStateVarDef(rLocDestDef);
+	public IntrusiveMoveEvent(String name, IntrusivenessDomain domain, Area area) {
+		mName = name;
+		mDomain = domain;
 		mArea = area;
 	}
 
@@ -35,24 +28,20 @@ public class IntrusiveMoveEvent implements IEvent {
 		return mArea;
 	}
 
-	public boolean isIntrusive(MoveToAction moveTo, StateVar<Location> rLocDest) throws AttributeNameNotFoundException {
-		return rLocDest.getValue().getArea() == getArea();
+	@Override
+	public String getName() {
+		return mName;
 	}
 
 	@Override
-	public TransitionDefinition getTransitionDefinition() {
-		return mTransitionDef;
+	public IntrusivenessDomain getQFunctionDomain() {
+		return mDomain;
 	}
 
 	@Override
-	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException, AttributeNameNotFoundException {
-		if (trans.getAction() instanceof MoveToAction && trans.getDestStateVarValue(mrLocDestDef) instanceof Location) {
-			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			Location locDest = (Location) trans.getDestStateVarValue(mrLocDestDef);
-			StateVar<Location> rLocDest = mrLocDestDef.getStateVar(locDest);
-			return isIntrusive(moveTo, rLocDest);
-		}
-		return false;
+	public boolean hasEventOccurred(Transition<MoveToAction, IntrusivenessDomain> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException {
+		return mDomain.getArea(transition).equals(getArea());
 	}
 
 	@Override
@@ -64,7 +53,7 @@ public class IntrusiveMoveEvent implements IEvent {
 			return false;
 		}
 		IntrusiveMoveEvent event = (IntrusiveMoveEvent) obj;
-		return event.mTransitionDef.equals(mTransitionDef) && event.mArea.equals(mArea);
+		return event.mName.equals(mName) && event.mDomain.equals(mDomain) && event.mArea.equals(mArea);
 	}
 
 	@Override
@@ -72,7 +61,8 @@ public class IntrusiveMoveEvent implements IEvent {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mTransitionDef.hashCode();
+			result = 31 * result + mName.hashCode();
+			result = 31 * result + mDomain.hashCode();
 			result = 31 * result + mArea.hashCode();
 			hashCode = result;
 		}

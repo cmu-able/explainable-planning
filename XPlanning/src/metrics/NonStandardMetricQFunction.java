@@ -11,30 +11,27 @@ import factors.IAction;
  * @author rsukkerd
  *
  */
-public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionDomain<E>>
-		implements INonStandardMetricQFunction<E, T> {
+public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionDomain<E>, S extends IEvent<E, T>>
+		implements IQFunction<E, T> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private String mName;
-	private EventBasedMetric<E, T> mMetric;
+	private EventBasedMetric<E, T, S> mMetric;
 
-	public NonStandardMetricQFunction(String name, EventBasedMetric<E, T> metric) {
-		mName = name;
+	public NonStandardMetricQFunction(EventBasedMetric<E, T, S> metric) {
 		mMetric = metric;
 	}
 
-	@Override
-	public EventBasedMetric<E, T> getMetric() {
+	public EventBasedMetric<E, T, S> getEventBasedMetric() {
 		return mMetric;
 	}
 
 	@Override
 	public String getName() {
-		return mName;
+		return mMetric.getName();
 	}
 
 	@Override
@@ -52,11 +49,11 @@ public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionD
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof NonStandardMetricQFunction<?, ?>)) {
+		if (!(obj instanceof NonStandardMetricQFunction<?, ?, ?>)) {
 			return false;
 		}
-		NonStandardMetricQFunction<?, ?> qFunc = (NonStandardMetricQFunction<?, ?>) obj;
-		return qFunc.mName.equals(mName) && qFunc.mMetric.equals(mMetric);
+		NonStandardMetricQFunction<?, ?, ?> qFunction = (NonStandardMetricQFunction<?, ?, ?>) obj;
+		return qFunction.mMetric.equals(mMetric);
 	}
 
 	@Override
@@ -64,7 +61,6 @@ public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionD
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mName.hashCode();
 			result = 31 * result + mMetric.hashCode();
 			hashCode = result;
 		}

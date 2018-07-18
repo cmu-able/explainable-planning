@@ -36,9 +36,8 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 	@Override
 	public double getValue(Transition<MoveToAction, TravelTimeDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
-		TravelTimeDomain domain = transition.getQFunctionDomain();
-		Distance distance = domain.getDistance(transition);
-		RobotSpeed speed = domain.getRobotSpeed(transition);
+		Distance distance = mDomain.getDistance(transition);
+		RobotSpeed speed = mDomain.getRobotSpeed(transition);
 		return distance.getDistance() / speed.getSpeed();
 	}
 

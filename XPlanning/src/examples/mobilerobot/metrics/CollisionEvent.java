@@ -5,11 +5,9 @@ import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
 import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
-import factors.StateVar;
 import factors.StateVarDefinition;
 import metrics.IEvent;
 import metrics.Transition;
-import metrics.TransitionDefinition;
 
 /**
  * {@link CollisionEvent} represents a collision, where the robot bumps into obstacles at a speed greater than some
@@ -18,25 +16,21 @@ import metrics.TransitionDefinition;
  * @author rsukkerd
  *
  */
-public class CollisionEvent implements IEvent {
+public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
+
+	private static final String NAME = "collision";
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private StateVarDefinition<RobotSpeed> mrSpeedSrcDef;
-	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
-	private TransitionDefinition mTransitionDef;
+	private CollisionDomain mDomain;
 	private double mSpeedThreshold;
 
 	public CollisionEvent(StateVarDefinition<RobotSpeed> rSpeedSrcDef, ActionDefinition<MoveToAction> moveToDef,
 			StateVarDefinition<RobotBumped> rBumpedDestDef, double speedThreshold) {
-		mrSpeedSrcDef = rSpeedSrcDef;
-		mrBumpedDestDef = rBumpedDestDef;
-		mTransitionDef = new TransitionDefinition(moveToDef);
-		mTransitionDef.addSrcStateVarDef(rSpeedSrcDef);
-		mTransitionDef.addDestStateVarDef(rBumpedDestDef);
+		mDomain = new CollisionDomain(rSpeedSrcDef, moveToDef, rBumpedDestDef);
 		mSpeedThreshold = speedThreshold;
 	}
 
@@ -44,27 +38,21 @@ public class CollisionEvent implements IEvent {
 		return mSpeedThreshold;
 	}
 
-	public boolean hasCollided(StateVar<RobotSpeed> rSpeedSrc, MoveToAction moveTo, StateVar<RobotBumped> rBumpedDest) {
-		return rBumpedDest.getValue().hasBumped() && rSpeedSrc.getValue().getSpeed() > getSpeedThreshold();
+	@Override
+	public String getName() {
+		return NAME;
 	}
 
 	@Override
-	public TransitionDefinition getTransitionDefinition() {
-		return mTransitionDef;
+	public CollisionDomain getQFunctionDomain() {
+		return mDomain;
 	}
 
 	@Override
-	public boolean hasEventOccurred(Transition trans) throws VarNotFoundException {
-		if (trans.getSrcStateVarValue(mrSpeedSrcDef) instanceof RobotSpeed && trans.getAction() instanceof MoveToAction
-				&& trans.getDestStateVarValue(mrBumpedDestDef) instanceof RobotBumped) {
-			RobotSpeed speedSrc = (RobotSpeed) trans.getSrcStateVarValue(mrSpeedSrcDef);
-			RobotBumped bumpedDest = (RobotBumped) trans.getDestStateVarValue(mrBumpedDestDef);
-			StateVar<RobotSpeed> rSpeedSrc = mrSpeedSrcDef.getStateVar(speedSrc);
-			MoveToAction moveTo = (MoveToAction) trans.getAction();
-			StateVar<RobotBumped> rBumpedDest = mrBumpedDestDef.getStateVar(bumpedDest);
-			return hasCollided(rSpeedSrc, moveTo, rBumpedDest);
-		}
-		return false;
+	public boolean hasEventOccurred(Transition<MoveToAction, CollisionDomain> transition) throws VarNotFoundException {
+		RobotSpeed speed = mDomain.getRobotSpeed(transition);
+		RobotBumped bumped = mDomain.getRobotBumped(transition);
+		return speed.getSpeed() > getSpeedThreshold() && bumped.hasBumped();
 	}
 
 	@Override
@@ -76,8 +64,7 @@ public class CollisionEvent implements IEvent {
 			return false;
 		}
 		CollisionEvent event = (CollisionEvent) obj;
-		return event.mTransitionDef.equals(mTransitionDef)
-				&& Double.compare(event.mSpeedThreshold, mSpeedThreshold) == 0;
+		return event.mDomain.equals(mDomain) && Double.compare(event.mSpeedThreshold, mSpeedThreshold) == 0;
 	}
 
 	@Override
@@ -85,7 +72,7 @@ public class CollisionEvent implements IEvent {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mTransitionDef.hashCode();
+			result = 31 * result + mDomain.hashCode();
 			result = 31 * result + Double.valueOf(mSpeedThreshold).hashCode();
 			hashCode = result;
 		}

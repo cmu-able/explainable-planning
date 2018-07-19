@@ -398,6 +398,15 @@ public class PrismRewardTranslatorUtilities {
 		return newCombinations;
 	}
 
+	/**
+	 * {@link TransitionEvaluator} is an interface to a function that evaluates a real-value of a transition. This
+	 * function can calculate a QA value of a transition, or calculate a scaled cost of a particular QA of a transition.
+	 * 
+	 * @author rsukkerd
+	 *
+	 * @param <E>
+	 * @param <T>
+	 */
 	interface TransitionEvaluator<E extends IAction, T extends IQFunctionDomain<E>> {
 		double evaluate(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException;
 	}

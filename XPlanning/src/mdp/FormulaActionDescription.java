@@ -80,12 +80,29 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 		Set<Discriminant> subDiscriminants = getAllDiscriminants(copyDiscrClass, action, precondition);
 		Set<IStateVarValue> applicableValues = precondition.getApplicableValues(action, srcVarDef);
 
+		// Build a set of all discriminants of the variable srcVarDef
+		Set<Discriminant> discriminants = new HashSet<>();
+		DiscriminantClass srcVarDiscrClass = new DiscriminantClass();
+		srcVarDiscrClass.add(srcVarDef);
+
 		for (IStateVarValue value : applicableValues) {
-			for (Discriminant subDiscriminant : subDiscriminants) {
-				Discriminant discriminant = new Discriminant(discrClass);
-				discriminant.addAll(subDiscriminant);
-				discriminant.add(srcVarDef.getStateVar(value));
-				allDiscriminants.add(discriminant);
+			Discriminant discriminant = new Discriminant(srcVarDiscrClass);
+			discriminant.add(srcVarDef.getStateVar(value));
+			discriminants.add(discriminant);
+		}
+
+		if (subDiscriminants.isEmpty()) {
+			return discriminants;
+		}
+
+		// Build a set of all discriminants of all variables
+		for (Discriminant tailDiscriminant : subDiscriminants) {
+			for (Discriminant headDiscriminant : discriminants) {
+				Discriminant fullDiscriminant = new Discriminant(discrClass);
+				fullDiscriminant.addAll(headDiscriminant);
+				fullDiscriminant.addAll(tailDiscriminant);
+
+				allDiscriminants.add(fullDiscriminant);
 			}
 		}
 

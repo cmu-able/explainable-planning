@@ -206,7 +206,7 @@ public class MobileRobotTestProblem {
 	}
 
 	private CostFunction createCostFunction() {
-		timeCostFunction = new AttributeCostFunction<TravelTimeQFunction>(timeQFunction, 0, 1 / MAX_TOTAL_TIME);
+		timeCostFunction = new AttributeCostFunction<>(timeQFunction, 0, 1 / MAX_TOTAL_TIME);
 		CostFunction costFunction = new CostFunction();
 		costFunction.put(timeQFunction, timeCostFunction, 1.0);
 		return costFunction;

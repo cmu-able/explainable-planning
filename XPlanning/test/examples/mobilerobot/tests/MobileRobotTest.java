@@ -49,7 +49,7 @@ class MobileRobotTest {
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			System.out.println("MDP Translation (with QAs):");
+			System.out.println("State-reward MDP Translation (with QAs):");
 			System.out.println(mdpWithQAs);
 			System.out.println();
 			System.out.println("Goal Property Translation:");
@@ -69,7 +69,7 @@ class MobileRobotTest {
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			System.out.println("MDP Translation (with QAs):");
+			System.out.println("Transition-reward MDP Translation with (with QAs):");
 			System.out.println(mdpWithQAs);
 			System.out.println();
 			System.out.println("Goal Property Translation:");
@@ -99,7 +99,7 @@ class MobileRobotTest {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(mTestProblem.timeQFunction);
-			System.out.println("DTMC Translation (with QAs):");
+			System.out.println("State-reward DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
 			System.out.println();
 			System.out.println("Time Query Property Translation:");
@@ -121,7 +121,7 @@ class MobileRobotTest {
 					PrismRewardType.TRANSITION_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(mTestProblem.timeQFunction);
-			System.out.println("DTMC Translation (with QAs):");
+			System.out.println("Transition-reward DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
 			System.out.println();
 			System.out.println("Time Query Property Translation:");
@@ -154,6 +154,7 @@ class MobileRobotTest {
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
+			System.out.println("Generate adverary from state-reward MDP...");
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
 			System.out.println();
@@ -181,6 +182,7 @@ class MobileRobotTest {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double totalCost = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 1);
 			double totalTime = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitModelPointer, 2);
+			System.out.println("Query values from explicit DTMC file...");
 			System.out.print("Query property: ");
 			System.out.println(propertyStr);
 			System.out.print("Expected total cost of adversary: ");
@@ -207,6 +209,7 @@ class MobileRobotTest {
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
+			System.out.println("Query value from DTMC...");
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);
 			System.out.print("Expected total time: ");

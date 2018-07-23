@@ -13,10 +13,14 @@ public class LocationNode {
 	private volatile int hashCode;
 
 	private String mNodeID;
+	private double mXCoord;
+	private double mYCoord;
 	private Map<String, INodeAttribute> mNodeAttributes = new HashMap<>();
 
-	public LocationNode(String nodeID) {
+	public LocationNode(String nodeID, double xCoord, double yCoord) {
 		mNodeID = nodeID;
+		mXCoord = xCoord;
+		mYCoord = yCoord;
 	}
 
 	public void putNodeAttribute(String name, INodeAttribute value) {
@@ -25,6 +29,14 @@ public class LocationNode {
 
 	public String getNodeID() {
 		return mNodeID;
+	}
+
+	public double getNodeXCoordinate() {
+		return mXCoord;
+	}
+
+	public double getNodeYCoordinate() {
+		return mYCoord;
 	}
 
 	public <E extends INodeAttribute> E getNodeAttribute(Class<E> attributeType, String name)
@@ -44,7 +56,8 @@ public class LocationNode {
 			return false;
 		}
 		LocationNode node = (LocationNode) obj;
-		return node.mNodeID.equals(mNodeID) && node.mNodeAttributes.equals(mNodeAttributes);
+		return node.mNodeID.equals(mNodeID) && Double.compare(node.mXCoord, mXCoord) == 0
+				&& Double.compare(node.mYCoord, mYCoord) == 0 && node.mNodeAttributes.equals(mNodeAttributes);
 	}
 
 	@Override
@@ -53,6 +66,8 @@ public class LocationNode {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mNodeID.hashCode();
+			result = 31 * result + Double.hashCode(mXCoord);
+			result = 31 * result + Double.hashCode(mYCoord);
 			result = 31 * result + mNodeAttributes.hashCode();
 			hashCode = result;
 		}

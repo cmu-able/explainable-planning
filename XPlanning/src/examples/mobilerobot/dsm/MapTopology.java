@@ -21,7 +21,7 @@ public class MapTopology implements Iterable<LocationNode> {
 	private Map<LocationNode, Set<Connection>> mConnections = new HashMap<>();
 
 	public MapTopology() {
-		// Constructor may take as input JSON file representing a map
+		// MapTopology is initially empty
 	}
 
 	public void addLocationNode(LocationNode node) {

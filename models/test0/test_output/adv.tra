@@ -1,5 +1,6 @@
-25 4
-12 23 1 setSpeed0_7
-15 16 1 next
-23 24 1 next
-24 15 1 moveToL2
+13 5
+4 5 1 compute
+6 10 1 setSpeed0_7
+10 12 1 compute
+11 4 1 moveToL2
+12 11 1 next

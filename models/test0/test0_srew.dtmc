@@ -8,13 +8,13 @@ const int rLoc_L1 = 1;
 const int rSpeed_0_35 = 0;
 const int rSpeed_0_7 = 1;
 
-// Possible instances of action moveTo
-const int moveToL1 = 0;
-const int moveToL2 = 1;
-
 // Possible instances of action setSpeed
-const int setSpeed0_35 = 2;
-const int setSpeed0_7 = 3;
+const int setSpeed0_35 = 1;
+const int setSpeed0_7 = 2;
+
+// Possible instances of action moveTo
+const int moveToL2 = 0;
+const int moveToL1 = 3;
 
 
 formula goal = rLoc=0;
@@ -40,14 +40,24 @@ module helper
   readyToCopy : bool init true;
   barrier : bool init false;
 
-  [moveToL1] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false) & (barrier'=true);
-  [moveToL2] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=1) & (readyToCopy'=false) & (barrier'=true);
+  [moveToL2] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=0) & (readyToCopy'=false) & (barrier'=true);
+  [moveToL1] readyToCopy & !barrier -> (rLocSrc'=rLoc) & (action'=3) & (readyToCopy'=false) & (barrier'=true);
 
   [compute] !readyToCopy & barrier -> (readyToCopy'=true);
 
   [next] readyToCopy & barrier & !goal -> (barrier'=false);
   [end] readyToCopy & barrier & goal -> true;
 endmodule
+
+formula compute_cost = !readyToCopy;
+
+rewards "cost"
+  compute_cost & action=0 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 0.28571428571428575;
+  compute_cost & action=0 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 0.14285714285714288;
+  compute_cost & action=3 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 0.28571428571428575;
+  compute_cost & action=3 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 0.14285714285714288;
+  compute_cost : 0.01;
+endrewards
 
 // Quality-Attribute Functions
 
@@ -56,8 +66,8 @@ endmodule
 formula compute_travelTime = !readyToCopy;
 
 rewards "travelTime"
-  compute_travelTime & action=0 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
-  compute_travelTime & action=0 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
-  compute_travelTime & action=1 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
-  compute_travelTime & action=1 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
+  compute_travelTime & action=0 & rLocSrc=1 & rSpeed=0 & rLoc=0 : 28.571428571428573;
+  compute_travelTime & action=0 & rLocSrc=1 & rSpeed=1 & rLoc=0 : 14.285714285714286;
+  compute_travelTime & action=3 & rLocSrc=0 & rSpeed=0 & rLoc=1 : 28.571428571428573;
+  compute_travelTime & action=3 & rLocSrc=0 & rSpeed=1 & rLoc=1 : 14.285714285714286;
 endrewards

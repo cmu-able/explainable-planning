@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import examples.mobilerobot.dsm.exceptions.ConnectionNotFoundException;
+import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
+
 public class MapTopology implements Iterable<LocationNode> {
 
 	/*
@@ -43,6 +46,17 @@ public class MapTopology implements Iterable<LocationNode> {
 
 	public Set<Connection> getConnections(LocationNode node) {
 		return mConnections.get(node);
+	}
+
+	public Connection getConnection(LocationNode nodeA, LocationNode nodeB)
+			throws LocationNodeNotFoundException, ConnectionNotFoundException {
+		Set<Connection> connections = mConnections.get(nodeA);
+		for (Connection connection : connections) {
+			if (connection.getOtherNode(nodeA).equals(nodeB)) {
+				return connection;
+			}
+		}
+		throw new ConnectionNotFoundException(nodeA, nodeB);
 	}
 
 	@Override

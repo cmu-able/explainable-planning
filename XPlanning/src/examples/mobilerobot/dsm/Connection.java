@@ -19,7 +19,7 @@ public class Connection {
 	private LocationNode mNodeB;
 	private Set<LocationNode> mNodes = new HashSet<>();
 	private double mDistance;
-	private Map<String, IConnectionAttribute> mEdgeAttributes = new HashMap<>();
+	private Map<String, IEdgeAttribute> mEdgeAttributes = new HashMap<>();
 
 	public Connection(LocationNode nodeA, LocationNode nodeB, double distance) {
 		mNodeA = nodeA;
@@ -29,7 +29,7 @@ public class Connection {
 		mDistance = distance;
 	}
 
-	public void putConnectionAttribute(String name, IConnectionAttribute value) {
+	public void putConnectionAttribute(String name, IEdgeAttribute value) {
 		mEdgeAttributes.put(name, value);
 	}
 
@@ -45,7 +45,7 @@ public class Connection {
 		return mDistance;
 	}
 
-	public <E extends IConnectionAttribute> E getConnectionAttribute(Class<E> attributeType, String name)
+	public <E extends IEdgeAttribute> E getConnectionAttribute(Class<E> attributeType, String name)
 			throws ConnectionAttributeNotFoundException {
 		if (!mEdgeAttributes.containsKey(name)) {
 			throw new ConnectionAttributeNotFoundException(name);

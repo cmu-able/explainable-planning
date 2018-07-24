@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeAttributeNotFoundException;
 import examples.mobilerobot.factors.Area;
@@ -170,7 +169,7 @@ public class MobileRobotXMDPBuilder {
 	}
 
 	private TransitionFunction buildTransitionFunction(MapTopology map)
-			throws IncompatibleActionException, LocationNodeNotFoundException {
+			throws IncompatibleActionException, MapTopologyException {
 		// MoveTo:
 		// Precondition
 		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);

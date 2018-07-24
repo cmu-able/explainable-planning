@@ -13,6 +13,7 @@ import org.json.simple.parser.ParseException;
 import examples.mobilerobot.dsm.exceptions.ConnectionNotFoundException;
 import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 
 public class MapTopologyReader {
 
@@ -69,8 +70,11 @@ public class MapTopologyReader {
 			visitedNodes.add(locNode);
 		}
 
-		// Add attributes to edges in the map
-		parseAndPutEdgeAttributes(jsonObject, map);
+		// Parse and add additional attributes to nodes in the map
+		parseAdditionalNodeAttributes(jsonObject, map);
+
+		// Parse and add attributes to edges in the map
+		parseEdgeAttributes(jsonObject, map);
 		return map;
 	}
 
@@ -81,6 +85,13 @@ public class MapTopologyReader {
 		double yCoord = (double) coordsObject.get("y");
 		LocationNode locNode = new LocationNode(nodeID, xCoord, yCoord);
 		for (INodeAttributeParser<? extends INodeAttribute> parser : mNodeAttributeParsers) {
+
+			if (!nodeObject.containsKey(parser.getJSONObjectKey())) {
+				// This attribute is not specified in a node object, but it may be specified as a key-value pair in the
+				// JSONObject
+				continue;
+			}
+
 			INodeAttribute value = parser.parseAttribute(nodeObject);
 			locNode.putNodeAttribute(parser.getAttributeName(), value);
 		}
@@ -96,26 +107,42 @@ public class MapTopologyReader {
 		return pixelDistance / meterToPixelRatio;
 	}
 
-	private void parseAndPutEdgeAttributes(JSONObject jsonObject, MapTopology map)
-			throws LocationNodeNotFoundException, ConnectionNotFoundException {
-		for (IEdgeAttributeParser<? extends IEdgeAttribute> parser : mEdgeAttributeParsers) {
-			// Attributes: Array of edges
-			JSONArray edgeArray = (JSONArray) jsonObject.get(parser.getAttributeName());
-			for (Object obj : edgeArray) {
-				JSONObject edgeObject = (JSONObject) obj;
-				parseAndPutEdgeAttribute(parser, edgeObject, map);
+	private void parseAdditionalNodeAttributes(JSONObject jsonObject, MapTopology map) throws NodeIDNotFoundException {
+		for (INodeAttributeParser<? extends INodeAttribute> parser : mNodeAttributeParsers) {
+			String attributeKey = parser.getJSONObjectKey();
+
+			if (jsonObject.containsKey(attributeKey)) {
+				// This attribute is specified as a key-value pair in the JSONObject
+
+				// Additional node attributes: Array of objects with node ids
+				JSONArray nodeAttributeArray = (JSONArray) jsonObject.get(attributeKey);
+				for (Object obj : nodeAttributeArray) {
+					JSONObject nodeAttributeObject = (JSONObject) obj;
+					String nodeID = (String) nodeAttributeObject.get("at-id");
+					INodeAttribute value = parser.parseAttribute(nodeAttributeObject);
+					LocationNode node = map.lookUpLocationNode(nodeID);
+					node.putNodeAttribute(parser.getAttributeName(), value);
+				}
 			}
 		}
 	}
 
-	private <E extends IEdgeAttribute> void parseAndPutEdgeAttribute(IEdgeAttributeParser<E> parser,
-			JSONObject edgeObject, MapTopology map) throws LocationNodeNotFoundException, ConnectionNotFoundException {
-		E value = parser.parseAttribute(edgeObject);
-		String fromNodeID = (String) edgeObject.get("from-id");
-		String toNodeID = (String) edgeObject.get("to-id");
-		LocationNode fromNode = map.lookUpLocationNode(fromNodeID);
-		LocationNode toNode = map.lookUpLocationNode(toNodeID);
-		Connection connection = map.getConnection(fromNode, toNode);
-		connection.putConnectionAttribute(parser.getAttributeName(), value);
+	private void parseEdgeAttributes(JSONObject jsonObject, MapTopology map)
+			throws NodeIDNotFoundException, LocationNodeNotFoundException, ConnectionNotFoundException {
+		for (IEdgeAttributeParser<? extends IEdgeAttribute> parser : mEdgeAttributeParsers) {
+			// Edge attributes: Array of edges
+			String attributeKey = parser.getJSONObjectKey();
+			JSONArray edgeArray = (JSONArray) jsonObject.get(attributeKey);
+			for (Object obj : edgeArray) {
+				JSONObject edgeObject = (JSONObject) obj;
+				IEdgeAttribute value = parser.parseAttribute(edgeObject);
+				String fromNodeID = (String) edgeObject.get("from-id");
+				String toNodeID = (String) edgeObject.get("to-id");
+				LocationNode fromNode = map.lookUpLocationNode(fromNodeID);
+				LocationNode toNode = map.lookUpLocationNode(toNodeID);
+				Connection connection = map.getConnection(fromNode, toNode);
+				connection.putConnectionAttribute(parser.getAttributeName(), value);
+			}
+		}
 	}
 }

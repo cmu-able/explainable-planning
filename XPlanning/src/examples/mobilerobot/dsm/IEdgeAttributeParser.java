@@ -6,5 +6,7 @@ public interface IEdgeAttributeParser<E extends IEdgeAttribute> {
 
 	public String getAttributeName();
 
-	public E parseAttribute(JSONObject nodeObject);
+	public String getJSONObjectKey();
+
+	public E parseAttribute(JSONObject edgeObject);
 }

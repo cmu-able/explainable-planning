@@ -8,6 +8,7 @@ import java.util.Set;
 
 import examples.mobilerobot.dsm.exceptions.ConnectionNotFoundException;
 import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
+import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 
 public class MapTopology implements Iterable<LocationNode> {
 
@@ -40,11 +41,17 @@ public class MapTopology implements Iterable<LocationNode> {
 		mConnections.get(nodeB).add(connection);
 	}
 
-	public LocationNode lookUpLocationNode(String nodeID) {
+	public LocationNode lookUpLocationNode(String nodeID) throws NodeIDNotFoundException {
+		if (!mNodeIDs.containsKey(nodeID)) {
+			throw new NodeIDNotFoundException(nodeID);
+		}
 		return mNodeIDs.get(nodeID);
 	}
 
-	public Set<Connection> getConnections(LocationNode node) {
+	public Set<Connection> getConnections(LocationNode node) throws LocationNodeNotFoundException {
+		if (!mConnections.containsKey(node)) {
+			throw new LocationNodeNotFoundException(node);
+		}
 		return mConnections.get(node);
 	}
 

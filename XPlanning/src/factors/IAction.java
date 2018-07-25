@@ -1,5 +1,6 @@
 package factors;
 
+import java.util.List;
 import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
@@ -14,6 +15,10 @@ import exceptions.AttributeNameNotFoundException;
 public interface IAction {
 
 	public String getName();
+
+	public String getNamePrefix();
+
+	public List<IStateVarValue> getParameters();
 
 	public IActionAttribute getAttributeValue(String name) throws AttributeNameNotFoundException;
 

@@ -1,5 +1,6 @@
 package examples.mobilerobot.factors;
 
+import java.util.List;
 import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
@@ -26,8 +27,7 @@ public class SetSpeedAction implements IAction {
 	private StateVar<RobotSpeed> mrSpeedDest;
 
 	public SetSpeedAction(StateVar<RobotSpeed> rSpeedDest) {
-		mAction = new Action("setSpeed" + rSpeedDest.getValue().getSpeed());
-		mAction.addParameter(rSpeedDest);
+		mAction = new Action("setSpeed", rSpeedDest.getValue());
 		mrSpeedDest = rSpeedDest;
 	}
 
@@ -38,6 +38,16 @@ public class SetSpeedAction implements IAction {
 	@Override
 	public String getName() {
 		return mAction.getName();
+	}
+
+	@Override
+	public String getNamePrefix() {
+		return mAction.getNamePrefix();
+	}
+
+	@Override
+	public List<IStateVarValue> getParameters() {
+		return mAction.getParameters();
 	}
 
 	@Override

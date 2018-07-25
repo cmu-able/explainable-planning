@@ -1,6 +1,7 @@
 package examples.mobilerobot.factors;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import exceptions.AttributeNameNotFoundException;
@@ -19,8 +20,6 @@ import factors.StateVar;
  */
 public class MoveToAction implements IAction {
 
-	private static final String ACTION_NAME_PREFIX = "moveTo";
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -30,8 +29,7 @@ public class MoveToAction implements IAction {
 	private StateVar<Location> mrLocDest;
 
 	public MoveToAction(StateVar<Location> rLocDest) {
-		mAction = new Action(ACTION_NAME_PREFIX + rLocDest.getValue());
-		mAction.addParameter(rLocDest);
+		mAction = new Action("moveTo", rLocDest.getValue());
 		mrLocDest = rLocDest;
 	}
 
@@ -66,6 +64,16 @@ public class MoveToAction implements IAction {
 	@Override
 	public String getName() {
 		return mAction.getName();
+	}
+
+	@Override
+	public String getNamePrefix() {
+		return mAction.getNamePrefix();
+	}
+
+	@Override
+	public List<IStateVarValue> getParameters() {
+		return mAction.getParameters();
 	}
 
 	@Override

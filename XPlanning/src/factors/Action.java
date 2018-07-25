@@ -1,6 +1,8 @@
 package factors;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,17 +21,29 @@ public class Action implements IAction {
 	 */
 	private volatile int hashCode;
 
+	private String mActionNamePrefix;
 	private String mActionName;
-	private Map<String, StateVar<? extends IStateVarValue>> mParameters = new HashMap<>();
+	private List<IStateVarValue> mParameters = new ArrayList<>();
 	private Map<String, IActionAttribute> mAttributes = new HashMap<>();
 	private Map<String, DerivedActionAttribute> mDerivedAttributes = new HashMap<>();
 
-	public Action(String actionName) {
-		mActionName = actionName;
-	}
-
-	public void addParameter(StateVar<? extends IStateVarValue> parameter) {
-		mParameters.put(parameter.getName(), parameter);
+	public Action(String actionNamePrefix, IStateVarValue... parameters) {
+		mActionNamePrefix = actionNamePrefix;
+		StringBuilder builder = new StringBuilder();
+		builder.append(actionNamePrefix);
+		builder.append("(");
+		boolean firstParam = true;
+		for (IStateVarValue param : parameters) {
+			if (firstParam) {
+				firstParam = false;
+			} else {
+				builder.append(", ");
+			}
+			builder.append(param);
+			mParameters.add(param);
+		}
+		builder.append(")");
+		mActionName = builder.toString();
 	}
 
 	public void putAttributeValue(String name, IActionAttribute value) {
@@ -50,6 +64,16 @@ public class Action implements IAction {
 	@Override
 	public String getName() {
 		return mActionName;
+	}
+
+	@Override
+	public String getNamePrefix() {
+		return mActionNamePrefix;
+	}
+
+	@Override
+	public List<IStateVarValue> getParameters() {
+		return mParameters;
 	}
 
 	@Override
@@ -78,7 +102,7 @@ public class Action implements IAction {
 			return false;
 		}
 		Action action = (Action) obj;
-		return action.mActionName.equals(mActionName) && action.mParameters.equals(mParameters)
+		return action.mActionNamePrefix.equals(mActionNamePrefix) && action.mParameters.equals(mParameters)
 				&& action.mAttributes.equals(mAttributes) && action.mDerivedAttributes.equals(mDerivedAttributes);
 	}
 
@@ -87,7 +111,7 @@ public class Action implements IAction {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mActionName.hashCode();
+			result = 31 * result + mActionNamePrefix.hashCode();
 			result = 31 * result + mParameters.hashCode();
 			result = 31 * result + mAttributes.hashCode();
 			result = 31 * result + mDerivedAttributes.hashCode();
@@ -98,7 +122,7 @@ public class Action implements IAction {
 
 	@Override
 	public String toString() {
-		return mActionName;
+		return mActionNamePrefix;
 	}
 
 }

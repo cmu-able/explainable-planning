@@ -1,5 +1,6 @@
 package uiconnector;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -18,7 +19,13 @@ import policy.Policy;
 
 public class PolicyWriter {
 
-	public void writePolicy(Policy policy, String policyJsonFilename) throws IOException {
+	private String mPolicyJsonDir;
+
+	public PolicyWriter(String policyJsonDir) {
+		mPolicyJsonDir = policyJsonDir;
+	}
+
+	public File writePolicy(Policy policy, String policyJsonFilename) throws IOException {
 		JSONArray policyArray = new JSONArray();
 
 		for (Decision decision : policy) {
@@ -30,10 +37,13 @@ public class PolicyWriter {
 			policyArray.add(decisionJsonObj);
 		}
 
-		try (FileWriter writer = new FileWriter(policyJsonFilename)) {
+		File policyJsonFile = new File(mPolicyJsonDir, policyJsonFilename);
+		try (FileWriter writer = new FileWriter(policyJsonFile)) {
 			writer.write(policyArray.toJSONString());
 			writer.flush();
 		}
+
+		return policyJsonFile;
 	}
 
 	private JSONObject writeState(StateVarTuple stateVarTuple) {

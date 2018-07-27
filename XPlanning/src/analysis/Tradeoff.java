@@ -3,16 +3,13 @@ package analysis;
 import java.util.HashMap;
 import java.util.Map;
 
-import exceptions.ResultParsingException;
-import exceptions.XMDPException;
 import factors.IAction;
+import mdp.QSpace;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 import policy.Policy;
-import prism.PrismException;
-import prismconnector.PrismConnector;
 
 public class Tradeoff {
 
@@ -21,25 +18,21 @@ public class Tradeoff {
 	 */
 	private volatile int hashCode;
 
-	private PrismConnector mConnector;
-	private Policy mSolnPolicy;
-	private Policy mAltPolicy;
+	private PolicyInfo mSolnPolicyInfo;
+	private PolicyInfo mAltPolicyInfo;
 	private Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> mQAGains = new HashMap<>();
 	private Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> mQALosses = new HashMap<>();
 
-	public Tradeoff(PrismConnector prismConnector, Policy solnPolicy, Policy altPolicy)
-			throws ResultParsingException, XMDPException, PrismException {
-		mConnector = prismConnector;
-		mSolnPolicy = solnPolicy;
-		mAltPolicy = altPolicy;
-		computeTradeoff();
+	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace, CostFunction costFunction) {
+		mSolnPolicyInfo = solnPolicyInfo;
+		mAltPolicyInfo = altPolicyInfo;
+		computeTradeoff(qSpace, costFunction);
 	}
 
-	private void computeTradeoff() throws ResultParsingException, XMDPException, PrismException {
-		CostFunction costFunction = mConnector.getXMDP().getCostFunction();
-		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : mConnector.getXMDP().getQSpace()) {
-			double solnQAValue = mConnector.getQAValue(mSolnPolicy, qFunction);
-			double altQAValue = mConnector.getQAValue(mAltPolicy, qFunction);
+	private void computeTradeoff(QSpace qSpace, CostFunction costFunction) {
+		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : qSpace) {
+			double solnQAValue = mSolnPolicyInfo.getQAValue(qFunction);
+			double altQAValue = mAltPolicyInfo.getQAValue(qFunction);
 			double diffQAValue = Math.abs(solnQAValue - altQAValue);
 			AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> attrCostFunc = costFunction
 					.getAttributeCostFunction(qFunction);
@@ -54,11 +47,11 @@ public class Tradeoff {
 	}
 
 	public Policy getSolutionPolicy() {
-		return mSolnPolicy;
+		return mSolnPolicyInfo.getPolicy();
 	}
 
 	public Policy getAlternativePolicy() {
-		return mAltPolicy;
+		return mAltPolicyInfo.getPolicy();
 	}
 
 	public Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> getQAGains() {
@@ -78,7 +71,7 @@ public class Tradeoff {
 			return false;
 		}
 		Tradeoff tradeoff = (Tradeoff) obj;
-		return tradeoff.mSolnPolicy.equals(mSolnPolicy) && tradeoff.mAltPolicy.equals(mAltPolicy)
+		return tradeoff.mSolnPolicyInfo.equals(mSolnPolicyInfo) && tradeoff.mAltPolicyInfo.equals(mAltPolicyInfo)
 				&& tradeoff.mQAGains.equals(mQAGains) && tradeoff.mQALosses.equals(mQALosses);
 	}
 
@@ -87,8 +80,8 @@ public class Tradeoff {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mSolnPolicy.hashCode();
-			result = 31 * result + mAltPolicy.hashCode();
+			result = 31 * result + mSolnPolicyInfo.hashCode();
+			result = 31 * result + mAltPolicyInfo.hashCode();
 			result = 31 * result + mQAGains.hashCode();
 			result = 31 * result + mQALosses.hashCode();
 			hashCode = result;

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import factors.IAction;
 import language.dtmc.XDTMC;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
@@ -16,6 +15,7 @@ import language.metrics.IQFunctionDomain;
 import language.objectives.AttributeConstraint;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
+import language.qfactors.IAction;
 import prism.PrismException;
 import prismconnector.PrismConfiguration.PrismEngine;
 import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;

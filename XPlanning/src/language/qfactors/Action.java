@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -2,10 +2,10 @@ package language.metrics;
 
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link IQFunctionDomain} is an interface to the domain of a {@link IQFunction}. This is to facilitate PRISM

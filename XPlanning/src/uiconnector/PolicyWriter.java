@@ -7,15 +7,15 @@ import java.io.IOException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import factors.IAction;
-import factors.IStateVarBoolean;
-import factors.IStateVarDouble;
-import factors.IStateVarInt;
-import factors.IStateVarValue;
-import factors.StateVar;
 import language.mdp.StateVarTuple;
 import language.policy.Decision;
 import language.policy.Policy;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarDouble;
+import language.qfactors.IStateVarInt;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
 
 public class PolicyWriter {
 

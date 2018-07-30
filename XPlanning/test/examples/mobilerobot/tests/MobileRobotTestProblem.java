@@ -14,9 +14,6 @@ import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import factors.ActionDefinition;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.ActionSpace;
@@ -32,6 +29,9 @@ import language.metrics.NonStandardMetricQFunction;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.policy.Policy;
+import language.qfactors.ActionDefinition;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 public class MobileRobotTestProblem {
 

@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import factors.Action;
-import factors.IAction;
-import factors.IActionAttribute;
-import factors.IStateVarValue;
-import factors.StateVar;
 import language.exceptions.AttributeNameNotFoundException;
+import language.qfactors.Action;
+import language.qfactors.IAction;
+import language.qfactors.IActionAttribute;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
 
 /**
  * {@link MoveToAction} is a type of actions that move the robot to specified destinations. It has an associated

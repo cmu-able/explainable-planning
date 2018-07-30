@@ -1,14 +1,14 @@
 package examples.mobilerobot.factors;
 
-import factors.IProbabilisticTransitionFormula;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
 import language.mdp.EffectClass;
 import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
+import language.qfactors.IProbabilisticTransitionFormula;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 public class RobotSpeedFormula implements IProbabilisticTransitionFormula<SetSpeedAction> {
 

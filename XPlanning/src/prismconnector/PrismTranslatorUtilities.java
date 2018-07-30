@@ -7,13 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarBoolean;
-import factors.IStateVarInt;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.VarNotFoundException;
@@ -31,6 +24,13 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.mdp.TabularActionDescription;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarInt;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 public class PrismTranslatorUtilities {
 

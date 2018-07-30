@@ -8,16 +8,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
 import language.mdp.StateSpace;
 import language.metrics.IQFunction;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's

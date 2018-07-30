@@ -1,9 +1,9 @@
 package examples.mobilerobot.factors;
 
-import factors.IStateVarAttribute;
-import factors.IStateVarValue;
-import factors.StateVarValue;
 import language.exceptions.AttributeNameNotFoundException;
+import language.qfactors.IStateVarAttribute;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarValue;
 
 /**
  * {@link Location} is a type of location values, which has a unique ID and an associated {@link Area}.

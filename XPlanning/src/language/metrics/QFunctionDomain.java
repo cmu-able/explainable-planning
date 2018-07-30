@@ -3,10 +3,10 @@ package language.metrics;
 import java.util.HashSet;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link QFunctionDomain} represents the domain of a {@link IQFunction}. It contains a set of variable definitions in

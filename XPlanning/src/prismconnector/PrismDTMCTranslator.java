@@ -4,11 +4,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
@@ -22,6 +17,11 @@ import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.objectives.CostFunction;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {

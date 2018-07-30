@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import factors.IAction;
 import language.exceptions.StateNotFoundException;
 import language.mdp.StateVarTuple;
+import language.qfactors.IAction;
 
 /**
  * {@link Policy} contains a set of {@link Decision}s.

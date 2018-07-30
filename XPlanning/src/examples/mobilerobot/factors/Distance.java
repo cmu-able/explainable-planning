@@ -1,6 +1,6 @@
 package examples.mobilerobot.factors;
 
-import factors.IActionAttribute;
+import language.qfactors.IActionAttribute;
 
 /**
  * {@link Distance} represents a distance attribute of an action.

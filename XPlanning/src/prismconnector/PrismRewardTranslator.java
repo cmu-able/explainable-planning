@@ -1,12 +1,12 @@
 package prismconnector;
 
-import factors.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.TransitionFunction;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
+import language.qfactors.IAction;
 
 public class PrismRewardTranslator {
 

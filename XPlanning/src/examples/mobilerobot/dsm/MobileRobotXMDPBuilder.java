@@ -19,8 +19,6 @@ import examples.mobilerobot.factors.RobotSpeedActionDescription;
 import examples.mobilerobot.factors.SetSpeedAction;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import factors.ActionDefinition;
-import factors.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.mdp.ActionSpace;
 import language.mdp.FactoredPSO;
@@ -32,6 +30,8 @@ import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
+import language.qfactors.ActionDefinition;
+import language.qfactors.StateVarDefinition;
 
 public class MobileRobotXMDPBuilder {
 

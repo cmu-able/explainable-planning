@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import factors.IAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.qfactors.IAction;
 
 /**
  * {@link EventBasedMetric} is an event-based metric that assigns a specific value to a particular event.

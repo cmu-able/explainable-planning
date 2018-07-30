@@ -9,15 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
 import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 public class PrismExplicitModelReader {
 

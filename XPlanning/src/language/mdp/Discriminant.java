@@ -2,11 +2,11 @@ package language.mdp;
 
 import java.util.Iterator;
 
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Discriminant} determines what effect an action will have. Each action has a finite set of mutually exclusive

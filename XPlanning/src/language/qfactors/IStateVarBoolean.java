@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 /**
  * {@link IStateVarBoolean} is an interface to a boolean value of {@link StateVar}.

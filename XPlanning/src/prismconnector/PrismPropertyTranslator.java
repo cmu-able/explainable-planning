@@ -1,13 +1,13 @@
 package prismconnector;
 
-import factors.IStateVarValue;
-import factors.StateVar;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
 import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
 
 public class PrismPropertyTranslator {
 

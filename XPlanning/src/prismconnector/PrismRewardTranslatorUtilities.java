@@ -5,11 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.IncompatibleVarException;
@@ -26,6 +21,11 @@ import language.metrics.IQFunctionDomain;
 import language.metrics.Transition;
 import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 public class PrismRewardTranslatorUtilities {
 

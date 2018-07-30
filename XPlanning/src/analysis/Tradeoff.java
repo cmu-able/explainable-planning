@@ -3,12 +3,12 @@ package analysis;
 import java.util.HashMap;
 import java.util.Map;
 
-import factors.IAction;
 import language.mdp.QSpace;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
+import language.qfactors.IAction;
 
 public class Tradeoff {
 

@@ -2,8 +2,6 @@ package prismconnector;
 
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -11,6 +9,8 @@ import language.mdp.IActionDescription;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {

@@ -1,9 +1,9 @@
 package language.mdp;
 
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link IStateVarTuple} is a tuple (v1,...,vk) of state variables. It defines at most 1 allowable value for each state

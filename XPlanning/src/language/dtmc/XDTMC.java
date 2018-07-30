@@ -5,11 +5,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
@@ -21,6 +16,11 @@ import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.policy.Decision;
 import language.policy.Policy;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link XDTMC} is a discrete-time Markov chain induced from a policy and a MDP. It is consists of a 2TBN for each

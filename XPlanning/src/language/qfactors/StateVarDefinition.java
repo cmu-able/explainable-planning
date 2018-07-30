@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -2,8 +2,6 @@ package examples.mobilerobot.factors;
 
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.StateVarDefinition;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -14,6 +12,8 @@ import language.mdp.IActionDescription;
 import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.ProbabilisticTransition;
+import language.qfactors.ActionDefinition;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link RobotBumpedActionDescription} is an action description for the "rBumped" effect class of an instance of

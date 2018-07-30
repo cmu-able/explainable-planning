@@ -2,14 +2,14 @@ package language.metrics;
 
 import java.util.Set;
 
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVar;
-import factors.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Transition} represents a factored (s, a, s') transition. A transition has a parameterized type of

@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 /**
  * {@link IStateVarAttribute} defines a type of attributes of a state variable. This is a marker interface.

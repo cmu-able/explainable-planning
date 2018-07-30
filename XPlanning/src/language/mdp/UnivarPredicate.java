@@ -3,8 +3,8 @@ package language.mdp;
 import java.util.HashSet;
 import java.util.Set;
 
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link UnivarPredicate} is a disjunction of allowable values of a particular state variable. It contains a set of

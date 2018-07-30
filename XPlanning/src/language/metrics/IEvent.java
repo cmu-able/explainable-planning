@@ -1,8 +1,8 @@
 package language.metrics;
 
-import factors.IAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.qfactors.IAction;
 
 /**
  * {@link IEvent} is an interface to an event.

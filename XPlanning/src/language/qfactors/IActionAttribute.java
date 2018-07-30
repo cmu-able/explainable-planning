@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 /**
  * {@link IActionAttribute} defines a type of action attributes.

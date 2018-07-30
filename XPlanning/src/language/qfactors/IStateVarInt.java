@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 /**
  * {@link IStateVarInt} is an interface to an integer value of {@link StateVar}.

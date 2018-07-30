@@ -1,7 +1,7 @@
 package examples.mobilerobot.factors;
 
 import examples.mobilerobot.dsm.INodeAttribute;
-import factors.IStateVarAttribute;
+import language.qfactors.IStateVarAttribute;
 
 /**
  * {@link Area} is an attribute associated with a {@link Location} value.

@@ -1,7 +1,7 @@
 package language.exceptions;
 
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 public class VarNotFoundException extends XMDPException {
 

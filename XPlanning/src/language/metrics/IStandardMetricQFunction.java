@@ -1,6 +1,6 @@
 package language.metrics;
 
-import factors.IAction;
+import language.qfactors.IAction;
 
 /**
  * {@link IStandardMetricQFunction} is an interface to a Q_i function that characterizes a QA i using a standard metric.

@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IAction;
 import language.exceptions.ActionDefinitionNotFoundException;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
@@ -25,6 +24,7 @@ import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.policy.Policy;
+import language.qfactors.IAction;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.exceptions.ResultParsingException;

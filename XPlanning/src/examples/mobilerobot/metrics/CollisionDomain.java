@@ -5,13 +5,13 @@ import java.util.Set;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
-import factors.ActionDefinition;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IQFunctionDomain;
 import language.metrics.QFunctionDomain;
 import language.metrics.Transition;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 public class CollisionDomain implements IQFunctionDomain<MoveToAction> {
 

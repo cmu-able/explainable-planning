@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link DiscriminantClass} is a set of {@link StateVarDefinition} that defines a class of {@link Discriminant}s.

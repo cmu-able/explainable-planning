@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
 import language.exceptions.EffectClassNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link FactoredPSO} is a generic "factored" probabilistic STRIPS operator (PSO) representation.

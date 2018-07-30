@@ -3,12 +3,12 @@ package examples.mobilerobot.factors;
 import java.util.List;
 import java.util.Set;
 
-import factors.Action;
-import factors.IAction;
-import factors.IActionAttribute;
-import factors.IStateVarValue;
-import factors.StateVar;
 import language.exceptions.AttributeNameNotFoundException;
+import language.qfactors.Action;
+import language.qfactors.IAction;
+import language.qfactors.IActionAttribute;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVar;
 
 /**
  * {@link SetSpeedAction} is a type of actions that set the speed of the robot to a specific value.

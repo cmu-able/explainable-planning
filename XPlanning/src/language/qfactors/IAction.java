@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 import java.util.List;
 import java.util.Set;

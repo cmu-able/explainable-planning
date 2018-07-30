@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * {@link EffectClass} is a class of state variables that are dependently affected by a particular action. An action can

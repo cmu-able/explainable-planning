@@ -1,8 +1,8 @@
 package language.metrics;
 
-import factors.IAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.qfactors.IAction;
 
 /**
  * {@link CountQFunction} is a Q_i function that characterizes a QA i by the number of occurrences of a particular type

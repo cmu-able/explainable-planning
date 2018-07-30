@@ -1,6 +1,6 @@
 package language.mdp;
 
-import factors.IAction;
+import language.qfactors.IAction;
 
 /**
  * {@link ProbabilisticTransition} represents a probabilistic transition Pr(s'|s,a).

@@ -4,12 +4,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import factors.ActionDefinition;
-import factors.IAction;
-import factors.IProbabilisticTransitionFormula;
-import factors.IStateVarValue;
-import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
+import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
+import language.qfactors.IProbabilisticTransitionFormula;
+import language.qfactors.IStateVarValue;
+import language.qfactors.StateVarDefinition;
 
 /**
  * 

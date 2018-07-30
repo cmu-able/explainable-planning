@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;

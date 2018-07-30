@@ -1,4 +1,4 @@
-package factors;
+package language.qfactors;
 
 /**
  * {@link IStateVarDouble} is an interface to a double value of {@link StateVar}.

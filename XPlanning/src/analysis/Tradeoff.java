@@ -9,7 +9,6 @@ import metrics.IQFunction;
 import metrics.IQFunctionDomain;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
-import policy.Policy;
 
 public class Tradeoff {
 
@@ -33,7 +32,7 @@ public class Tradeoff {
 		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : qSpace) {
 			double solnQAValue = mSolnPolicyInfo.getQAValue(qFunction);
 			double altQAValue = mAltPolicyInfo.getQAValue(qFunction);
-			double diffQAValue = Math.abs(solnQAValue - altQAValue);
+			double diffQAValue = altQAValue - solnQAValue;
 			AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> attrCostFunc = costFunction
 					.getAttributeCostFunction(qFunction);
 			double solnQACost = attrCostFunc.getCost(solnQAValue);
@@ -46,12 +45,12 @@ public class Tradeoff {
 		}
 	}
 
-	public Policy getSolutionPolicy() {
-		return mSolnPolicyInfo.getPolicy();
+	public PolicyInfo getSolutionPolicyInfo() {
+		return mSolnPolicyInfo;
 	}
 
-	public Policy getAlternativePolicy() {
-		return mAltPolicyInfo.getPolicy();
+	public PolicyInfo getAlternativePolicyInfo() {
+		return mAltPolicyInfo;
 	}
 
 	public Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> getQAGains() {

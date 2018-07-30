@@ -10,9 +10,9 @@ import java.util.Set;
 import analysis.PolicyInfo;
 import analysis.Tradeoff;
 import factors.IAction;
+import language.mdp.QSpace;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
-import mdp.QSpace;
 import uiconnector.PolicyWriter;
 
 public class Verbalizer {

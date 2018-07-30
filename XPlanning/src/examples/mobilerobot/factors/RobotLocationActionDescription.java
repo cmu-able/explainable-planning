@@ -5,14 +5,14 @@ import java.util.Set;
 import factors.ActionDefinition;
 import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
-import mdp.Discriminant;
-import mdp.DiscriminantClass;
-import mdp.EffectClass;
-import mdp.FormulaActionDescription;
-import mdp.IActionDescription;
-import mdp.Precondition;
-import mdp.ProbabilisticEffect;
-import mdp.ProbabilisticTransition;
+import language.mdp.Discriminant;
+import language.mdp.DiscriminantClass;
+import language.mdp.EffectClass;
+import language.mdp.FormulaActionDescription;
+import language.mdp.IActionDescription;
+import language.mdp.Precondition;
+import language.mdp.ProbabilisticEffect;
+import language.mdp.ProbabilisticTransition;
 
 /**
  * {@link RobotLocationActionDescription} is an action description for the "rLoc" effect class of an instance of

@@ -1,7 +1,7 @@
 package language.policy;
 
 import factors.IAction;
-import mdp.StateVarTuple;
+import language.mdp.StateVarTuple;
 
 /**
  * {@link Decision} is a pair of a state and an action.

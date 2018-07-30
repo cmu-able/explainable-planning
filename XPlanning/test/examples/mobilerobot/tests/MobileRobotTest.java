@@ -13,7 +13,7 @@ import language.exceptions.DiscriminantNotFoundException;
 import language.exceptions.EffectClassNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
-import mdp.XMDP;
+import language.mdp.XMDP;
 import prism.PrismException;
 import prismconnector.PrismAPIWrapper;
 import prismconnector.PrismConfiguration;

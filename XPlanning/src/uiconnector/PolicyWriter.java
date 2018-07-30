@@ -13,9 +13,9 @@ import factors.IStateVarDouble;
 import factors.IStateVarInt;
 import factors.IStateVarValue;
 import factors.StateVar;
+import language.mdp.StateVarTuple;
 import language.policy.Decision;
 import language.policy.Policy;
-import mdp.StateVarTuple;
 
 public class PolicyWriter {
 

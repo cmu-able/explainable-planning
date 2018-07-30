@@ -15,17 +15,17 @@ import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.mdp.Discriminant;
+import language.mdp.DiscriminantClass;
+import language.mdp.EffectClass;
+import language.mdp.FactoredPSO;
+import language.mdp.Precondition;
+import language.mdp.TransitionFunction;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
 import language.metrics.Transition;
 import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
-import mdp.Discriminant;
-import mdp.DiscriminantClass;
-import mdp.EffectClass;
-import mdp.FactoredPSO;
-import mdp.Precondition;
-import mdp.TransitionFunction;
 
 public class PrismRewardTranslatorUtilities {
 

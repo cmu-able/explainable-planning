@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import mdp.Discriminant;
+import language.mdp.Discriminant;
 
 public class DiscriminantNotFoundException extends XMDPException {
 

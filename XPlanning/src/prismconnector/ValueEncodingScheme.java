@@ -15,9 +15,9 @@ import factors.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.mdp.ActionSpace;
+import language.mdp.StateSpace;
 import language.metrics.IQFunction;
-import mdp.ActionSpace;
-import mdp.StateSpace;
 
 /**
  * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's

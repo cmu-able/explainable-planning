@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import language.exceptions.XMDPException;
+import language.mdp.QSpace;
+import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.policy.Policy;
-import mdp.QSpace;
-import mdp.XMDP;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismConnectorSettings;

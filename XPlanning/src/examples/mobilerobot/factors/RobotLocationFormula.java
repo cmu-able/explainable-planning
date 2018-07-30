@@ -4,11 +4,11 @@ import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
-import mdp.Discriminant;
-import mdp.Effect;
-import mdp.EffectClass;
-import mdp.Precondition;
-import mdp.ProbabilisticEffect;
+import language.mdp.Discriminant;
+import language.mdp.Effect;
+import language.mdp.EffectClass;
+import language.mdp.Precondition;
+import language.mdp.ProbabilisticEffect;
 
 /**
  * {@link RobotLocationFormula} is a formula of the probability of the robot's next location when it moves.

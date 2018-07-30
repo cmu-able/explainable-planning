@@ -4,11 +4,11 @@ import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import language.exceptions.XMDPException;
-import mdp.Discriminant;
-import mdp.Effect;
-import mdp.EffectClass;
-import mdp.Precondition;
-import mdp.ProbabilisticEffect;
+import language.mdp.Discriminant;
+import language.mdp.Effect;
+import language.mdp.EffectClass;
+import language.mdp.Precondition;
+import language.mdp.ProbabilisticEffect;
 
 public class RobotSpeedFormula implements IProbabilisticTransitionFormula<SetSpeedAction> {
 

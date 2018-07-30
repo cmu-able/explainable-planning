@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import mdp.StateVarTuple;
+import language.mdp.StateVarTuple;
 
 public class StateNotFoundException extends XMDPException {
 

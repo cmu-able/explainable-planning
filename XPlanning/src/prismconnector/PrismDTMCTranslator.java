@@ -13,15 +13,15 @@ import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.mdp.Discriminant;
+import language.mdp.DiscriminantClass;
+import language.mdp.FactoredPSO;
+import language.mdp.IActionDescription;
+import language.mdp.ProbabilisticEffect;
+import language.mdp.StateVarTuple;
+import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.objectives.CostFunction;
-import mdp.Discriminant;
-import mdp.DiscriminantClass;
-import mdp.FactoredPSO;
-import mdp.IActionDescription;
-import mdp.ProbabilisticEffect;
-import mdp.StateVarTuple;
-import mdp.XMDP;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {

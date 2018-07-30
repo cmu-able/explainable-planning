@@ -9,7 +9,7 @@ import factors.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
-import mdp.StateVarTuple;
+import language.mdp.StateVarTuple;
 
 /**
  * {@link Transition} represents a factored (s, a, s') transition. A transition has a parameterized type of

@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import mdp.Effect;
+import language.mdp.Effect;
 
 public class EffectNotFoundException extends XMDPException {
 

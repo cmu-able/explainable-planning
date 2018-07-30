@@ -6,11 +6,11 @@ import factors.ActionDefinition;
 import factors.IAction;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
-import mdp.Discriminant;
-import mdp.IActionDescription;
-import mdp.ProbabilisticEffect;
-import mdp.ProbabilisticTransition;
-import mdp.XMDP;
+import language.mdp.Discriminant;
+import language.mdp.IActionDescription;
+import language.mdp.ProbabilisticEffect;
+import language.mdp.ProbabilisticTransition;
+import language.mdp.XMDP;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {

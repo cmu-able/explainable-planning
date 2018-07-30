@@ -1,9 +1,9 @@
 package factors;
 
 import language.exceptions.XMDPException;
-import mdp.Discriminant;
-import mdp.Precondition;
-import mdp.ProbabilisticEffect;
+import language.mdp.Discriminant;
+import language.mdp.Precondition;
+import language.mdp.ProbabilisticEffect;
 
 /**
  * {@link IProbabilisticTransitionFormula} is an interface for a probabilistic function that calculates probability

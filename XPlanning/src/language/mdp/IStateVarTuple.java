@@ -1,4 +1,4 @@
-package mdp;
+package language.mdp;
 
 import factors.IStateVarValue;
 import factors.StateVar;

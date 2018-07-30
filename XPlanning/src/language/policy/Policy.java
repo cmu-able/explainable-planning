@@ -8,7 +8,7 @@ import java.util.Set;
 
 import factors.IAction;
 import language.exceptions.StateNotFoundException;
-import mdp.StateVarTuple;
+import language.mdp.StateVarTuple;
 
 /**
  * {@link Policy} contains a set of {@link Decision}s.

@@ -18,19 +18,19 @@ import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
-import mdp.ActionSpace;
-import mdp.Discriminant;
-import mdp.DiscriminantClass;
-import mdp.Effect;
-import mdp.EffectClass;
-import mdp.FactoredPSO;
-import mdp.IActionDescription;
-import mdp.IStateVarTuple;
-import mdp.ProbabilisticEffect;
-import mdp.ProbabilisticTransition;
-import mdp.StateSpace;
-import mdp.StateVarTuple;
-import mdp.TabularActionDescription;
+import language.mdp.ActionSpace;
+import language.mdp.Discriminant;
+import language.mdp.DiscriminantClass;
+import language.mdp.Effect;
+import language.mdp.EffectClass;
+import language.mdp.FactoredPSO;
+import language.mdp.IActionDescription;
+import language.mdp.IStateVarTuple;
+import language.mdp.ProbabilisticEffect;
+import language.mdp.ProbabilisticTransition;
+import language.mdp.StateSpace;
+import language.mdp.StateVarTuple;
+import language.mdp.TabularActionDescription;
 
 public class PrismTranslatorUtilities {
 

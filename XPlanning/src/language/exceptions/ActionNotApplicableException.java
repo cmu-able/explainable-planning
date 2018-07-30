@@ -1,7 +1,7 @@
 package language.exceptions;
 
 import factors.IAction;
-import mdp.IStateVarTuple;
+import language.mdp.IStateVarTuple;
 
 public class ActionNotApplicableException extends XMDPException {
 

@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import mdp.EffectClass;
+import language.mdp.EffectClass;
 
 public class IncompatibleEffectClassException extends XMDPException {
 

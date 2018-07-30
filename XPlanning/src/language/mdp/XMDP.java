@@ -1,4 +1,4 @@
-package mdp;
+package language.mdp;
 
 import language.objectives.CostFunction;
 

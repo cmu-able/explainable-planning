@@ -10,9 +10,9 @@ import factors.IAction;
 import language.exceptions.EffectClassNotFoundException;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.StateNotFoundException;
-import mdp.EffectClass;
-import mdp.ProbabilisticEffect;
-import mdp.StateVarTuple;
+import language.mdp.EffectClass;
+import language.mdp.ProbabilisticEffect;
+import language.mdp.StateVarTuple;
 
 /**
  * {@link TwoTBN} is a 2-step Temporal Bayesian Network (2TBN) for a particular action type (i.e.,

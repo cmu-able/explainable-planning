@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import mdp.IStateVarTuple;
+import language.mdp.IStateVarTuple;
 
 public class IncompatibleVarsException extends XMDPException {
 

@@ -1,4 +1,4 @@
-package dtmc;
+package language.dtmc;
 
 import java.util.HashMap;
 import java.util.Iterator;

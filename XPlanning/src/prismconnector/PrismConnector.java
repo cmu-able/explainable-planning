@@ -5,12 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import dtmc.XDTMC;
 import exceptions.QFunctionNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import exceptions.XMDPException;
 import factors.IAction;
+import language.dtmc.XDTMC;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;

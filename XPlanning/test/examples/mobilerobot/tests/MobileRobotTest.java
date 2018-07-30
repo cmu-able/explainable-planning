@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-import dtmc.XDTMC;
 import exceptions.ActionDefinitionNotFoundException;
 import exceptions.ActionNotFoundException;
 import exceptions.DiscriminantNotFoundException;
@@ -14,6 +13,7 @@ import exceptions.EffectClassNotFoundException;
 import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import exceptions.XMDPException;
+import language.dtmc.XDTMC;
 import mdp.XMDP;
 import prism.PrismException;
 import prismconnector.PrismAPIWrapper;

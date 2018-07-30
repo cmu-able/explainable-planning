@@ -1,6 +1,5 @@
 package examples.mobilerobot.tests;
 
-import dtmc.XDTMC;
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.Location;
@@ -19,6 +18,7 @@ import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.dtmc.XDTMC;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;

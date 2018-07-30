@@ -1,4 +1,4 @@
-package exceptions;
+package language.exceptions;
 
 public class XMDPException extends Exception {
 

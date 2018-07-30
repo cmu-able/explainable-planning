@@ -2,10 +2,10 @@ package prismconnector;
 
 import java.util.Set;
 
-import exceptions.VarNotFoundException;
-import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
+import language.exceptions.VarNotFoundException;
+import language.exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;

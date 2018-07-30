@@ -6,14 +6,13 @@ import java.io.FileNotFoundException;
 
 import org.junit.jupiter.api.Test;
 
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.ResultParsingException;
-import exceptions.VarNotFoundException;
-import exceptions.XMDPException;
 import language.dtmc.XDTMC;
+import language.exceptions.ActionDefinitionNotFoundException;
+import language.exceptions.ActionNotFoundException;
+import language.exceptions.DiscriminantNotFoundException;
+import language.exceptions.EffectClassNotFoundException;
+import language.exceptions.VarNotFoundException;
+import language.exceptions.XMDPException;
 import mdp.XMDP;
 import prism.PrismException;
 import prismconnector.PrismAPIWrapper;
@@ -22,6 +21,7 @@ import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismMDPTranslator;
 import prismconnector.PrismRewardType;
+import prismconnector.exceptions.ResultParsingException;
 
 class MobileRobotTest {
 

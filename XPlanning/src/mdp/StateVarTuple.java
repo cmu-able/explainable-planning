@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link StateVarTuple} is is a tuple (v1,...,vk) of state variables. It defines at most 1 allowable value for each

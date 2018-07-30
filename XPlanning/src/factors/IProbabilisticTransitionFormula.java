@@ -1,6 +1,6 @@
 package factors;
 
-import exceptions.XMDPException;
+import language.exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.Precondition;
 import mdp.ProbabilisticEffect;

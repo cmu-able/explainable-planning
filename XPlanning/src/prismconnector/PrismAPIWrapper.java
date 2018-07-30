@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import exceptions.ResultParsingException;
 import parser.ast.ModulesFile;
 import parser.ast.PropertiesFile;
 import parser.ast.Property;
@@ -23,6 +22,7 @@ import prism.Result;
 import prismconnector.PrismConfiguration.PrismEngine;
 import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 import prismconnector.PrismConfiguration.PrismMDPSolutionMethod;
+import prismconnector.exceptions.ResultParsingException;
 
 /**
  * References: https://github.com/prismmodelchecker/prism-api/blob/master/src/demos/MDPAdversaryGeneration.java,

@@ -3,7 +3,7 @@ package factors;
 import java.util.HashMap;
 import java.util.Map;
 
-import exceptions.AttributeNameNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link StateVarValue} defines a generic type of values that a state variable can take. Its attribute values have a

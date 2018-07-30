@@ -1,9 +1,9 @@
 package examples.mobilerobot.factors;
 
-import exceptions.XMDPException;
 import factors.IProbabilisticTransitionFormula;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.Effect;
 import mdp.EffectClass;

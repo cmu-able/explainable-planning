@@ -1,8 +1,8 @@
 package prismconnector;
 
-import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
+import language.exceptions.VarNotFoundException;
 import mdp.StateVarTuple;
 import metrics.IQFunction;
 import objectives.AttributeConstraint;

@@ -3,8 +3,8 @@ package examples.mobilerobot.metrics;
 import examples.mobilerobot.factors.Distance;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotSpeed;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.VarNotFoundException;
 import metrics.IStandardMetricQFunction;
 import metrics.Transition;
 

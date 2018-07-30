@@ -2,10 +2,10 @@ package examples.mobilerobot.factors;
 
 import java.util.Set;
 
-import exceptions.IncompatibleVarException;
-import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.StateVarDefinition;
+import language.exceptions.IncompatibleVarException;
+import language.exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.EffectClass;

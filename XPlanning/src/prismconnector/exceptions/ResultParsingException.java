@@ -1,6 +1,8 @@
-package exceptions;
+package prismconnector.exceptions;
 
 import java.util.Arrays;
+
+import language.exceptions.PrismConnectorException;
 
 public class ResultParsingException extends PrismConnectorException {
 

@@ -2,8 +2,8 @@ package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.MoveToAction;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.VarNotFoundException;
 import metrics.IEvent;
 import metrics.Transition;
 

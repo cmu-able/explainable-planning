@@ -6,9 +6,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
+import language.exceptions.ActionDefinitionNotFoundException;
 
 /**
  * {@link TransitionFunction} represents a probabilistic transition function (i.e., a set of {@link FactoredPSO}s) of an

@@ -1,8 +1,8 @@
 package metrics;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
 import factors.IAction;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard

@@ -3,7 +3,7 @@ package factors;
 import java.util.List;
 import java.util.Set;
 
-import exceptions.AttributeNameNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link IAction} is an interface to the types of actions. An action has a name and can have parameters, attribute

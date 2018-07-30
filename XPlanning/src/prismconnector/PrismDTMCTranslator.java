@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import exceptions.VarNotFoundException;
-import exceptions.XMDPException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
@@ -13,6 +11,8 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
+import language.exceptions.VarNotFoundException;
+import language.exceptions.XMDPException;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.FactoredPSO;

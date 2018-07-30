@@ -1,8 +1,8 @@
 package metrics;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
 import factors.IAction;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link IEvent} is an interface to an event.

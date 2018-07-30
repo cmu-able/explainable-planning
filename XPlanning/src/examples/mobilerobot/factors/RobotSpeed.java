@@ -2,9 +2,9 @@ package examples.mobilerobot.factors;
 
 import java.text.DecimalFormat;
 
-import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
 import factors.IStateVarDouble;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link RobotSpeed} is a type of speed value of the robot.

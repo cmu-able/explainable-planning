@@ -1,9 +1,9 @@
 package examples.mobilerobot.factors;
 
-import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
 import factors.IStateVarValue;
 import factors.StateVarValue;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link Location} is a type of location values, which has a unique ID and an associated {@link Area}.

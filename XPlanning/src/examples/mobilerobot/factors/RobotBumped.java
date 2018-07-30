@@ -1,8 +1,8 @@
 package examples.mobilerobot.factors;
 
-import exceptions.AttributeNameNotFoundException;
 import factors.IStateVarAttribute;
 import factors.IStateVarBoolean;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link RobotBumped} is a type of bump sensor value (boolean) of the robot.

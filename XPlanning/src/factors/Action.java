@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.AttributeNameNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link Action} defines a type of actions.

@@ -2,11 +2,11 @@ package mdp;
 
 import java.util.Iterator;
 
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.IncompatibleVarException;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link Discriminant} determines what effect an action will have. Each action has a finite set of mutually exclusive

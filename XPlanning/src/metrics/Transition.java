@@ -2,13 +2,13 @@ package metrics;
 
 import java.util.Set;
 
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.IncompatibleActionException;
+import language.exceptions.IncompatibleVarException;
+import language.exceptions.VarNotFoundException;
 import mdp.StateVarTuple;
 
 /**

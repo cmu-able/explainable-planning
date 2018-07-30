@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import exceptions.VarNotFoundException;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.VarNotFoundException;
 import language.policy.Policy;
 import mdp.ActionSpace;
 import mdp.StateVarTuple;

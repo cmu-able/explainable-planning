@@ -3,7 +3,7 @@ package examples.mobilerobot.metrics;
 import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotBumped;
 import examples.mobilerobot.factors.RobotSpeed;
-import exceptions.VarNotFoundException;
+import language.exceptions.VarNotFoundException;
 import metrics.IEvent;
 import metrics.Transition;
 

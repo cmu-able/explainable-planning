@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import exceptions.EffectNotFoundException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
+import language.exceptions.EffectNotFoundException;
+import language.exceptions.IncompatibleEffectClassException;
+import language.exceptions.IncompatibleVarException;
 
 /**
  * {@link ProbabilisticEffect} is a distribution over the changed state variables as a result of an action.

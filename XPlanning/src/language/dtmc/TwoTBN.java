@@ -5,11 +5,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.StateNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
+import language.exceptions.EffectClassNotFoundException;
+import language.exceptions.IncompatibleActionException;
+import language.exceptions.StateNotFoundException;
 import mdp.EffectClass;
 import mdp.ProbabilisticEffect;
 import mdp.StateVarTuple;

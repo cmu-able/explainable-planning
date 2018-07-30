@@ -2,11 +2,11 @@ package mdp;
 
 import java.util.Iterator;
 
-import exceptions.IncompatibleVarException;
-import exceptions.VarNotFoundException;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.exceptions.IncompatibleVarException;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link Effect} is a set of state variables whose values changed from their previous values in the previous stage.

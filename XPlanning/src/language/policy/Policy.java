@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.StateNotFoundException;
 import factors.IAction;
+import language.exceptions.StateNotFoundException;
 import mdp.StateVarTuple;
 
 /**

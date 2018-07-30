@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import exceptions.ResultParsingException;
-import exceptions.XMDPException;
+import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mdp.QSpace;
 import mdp.XMDP;
@@ -13,6 +12,7 @@ import metrics.IQFunction;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismConnectorSettings;
+import prismconnector.exceptions.ResultParsingException;
 import verbalization.Verbalizer;
 import verbalization.Vocabulary;
 

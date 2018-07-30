@@ -1,6 +1,6 @@
 package factors;
 
-import exceptions.AttributeNameNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
 
 /**
  * {@link IStateVarValue} is an interface to a type of values that a state variable can take. Such a value can be an

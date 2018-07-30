@@ -5,12 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import exceptions.QFunctionNotFoundException;
-import exceptions.ResultParsingException;
-import exceptions.VarNotFoundException;
-import exceptions.XMDPException;
 import factors.IAction;
 import language.dtmc.XDTMC;
+import language.exceptions.QFunctionNotFoundException;
+import language.exceptions.VarNotFoundException;
+import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -20,6 +19,7 @@ import objectives.IAdditiveCostFunction;
 import prism.PrismException;
 import prismconnector.PrismConfiguration.PrismEngine;
 import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
+import prismconnector.exceptions.ResultParsingException;
 
 public class PrismConnector {
 

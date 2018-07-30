@@ -1,8 +1,8 @@
 package metrics;
 
-import exceptions.AttributeNameNotFoundException;
-import exceptions.VarNotFoundException;
 import factors.IAction;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.VarNotFoundException;
 
 /**
  * {@link IQFunction} is an interface to a function Q_i: S x A x S -> R>=0 that characterizes the QA i at a single

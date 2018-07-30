@@ -1,7 +1,7 @@
 package prismconnector;
 
-import exceptions.XMDPException;
 import factors.IAction;
+import language.exceptions.XMDPException;
 import mdp.TransitionFunction;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;

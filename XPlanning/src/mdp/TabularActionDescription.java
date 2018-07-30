@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import exceptions.ActionNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.IncompatibleActionException;
 import factors.ActionDefinition;
 import factors.IAction;
+import language.exceptions.ActionNotFoundException;
+import language.exceptions.DiscriminantNotFoundException;
+import language.exceptions.IncompatibleActionException;
 
 /**
  * {@link TabularActionDescription} is a generic action description of a specific {@link EffectClass}. A "tabular"

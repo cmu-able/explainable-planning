@@ -5,19 +5,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import exceptions.ActionDefinitionNotFoundException;
-import exceptions.ActionNotFoundException;
-import exceptions.AttributeNameNotFoundException;
-import exceptions.DiscriminantNotFoundException;
-import exceptions.EffectClassNotFoundException;
-import exceptions.IncompatibleActionException;
-import exceptions.IncompatibleEffectClassException;
-import exceptions.IncompatibleVarException;
-import exceptions.QFunctionNotFoundException;
-import exceptions.ResultParsingException;
-import exceptions.VarNotFoundException;
-import exceptions.XMDPException;
 import factors.IAction;
+import language.exceptions.ActionDefinitionNotFoundException;
+import language.exceptions.ActionNotFoundException;
+import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.DiscriminantNotFoundException;
+import language.exceptions.EffectClassNotFoundException;
+import language.exceptions.IncompatibleActionException;
+import language.exceptions.IncompatibleEffectClassException;
+import language.exceptions.IncompatibleVarException;
+import language.exceptions.QFunctionNotFoundException;
+import language.exceptions.VarNotFoundException;
+import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mdp.XMDP;
 import metrics.IQFunction;
@@ -28,6 +27,7 @@ import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 import prism.PrismException;
 import prismconnector.PrismConnector;
+import prismconnector.exceptions.ResultParsingException;
 
 public class AlternativeExplorer {
 

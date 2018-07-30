@@ -8,13 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import exceptions.ActionNotFoundException;
-import exceptions.QFunctionNotFoundException;
-import exceptions.VarNotFoundException;
 import factors.ActionDefinition;
 import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
+import language.exceptions.ActionNotFoundException;
+import language.exceptions.QFunctionNotFoundException;
+import language.exceptions.VarNotFoundException;
 import mdp.ActionSpace;
 import mdp.StateSpace;
 import metrics.IQFunction;

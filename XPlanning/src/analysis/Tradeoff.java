@@ -6,9 +6,9 @@ import java.util.Map;
 import factors.IAction;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
+import language.objectives.AttributeCostFunction;
+import language.objectives.CostFunction;
 import mdp.QSpace;
-import objectives.AttributeCostFunction;
-import objectives.CostFunction;
 
 public class Tradeoff {
 

@@ -22,6 +22,8 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import factors.ActionDefinition;
 import factors.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
+import language.objectives.AttributeCostFunction;
+import language.objectives.CostFunction;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
@@ -30,8 +32,6 @@ import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
-import objectives.AttributeCostFunction;
-import objectives.CostFunction;
 
 public class MobileRobotXMDPBuilder {
 

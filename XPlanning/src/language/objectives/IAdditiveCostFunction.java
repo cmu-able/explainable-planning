@@ -1,4 +1,4 @@
-package objectives;
+package language.objectives;
 
 import java.util.Set;
 

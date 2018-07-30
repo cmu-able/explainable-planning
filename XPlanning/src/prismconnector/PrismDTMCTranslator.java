@@ -14,6 +14,7 @@ import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.metrics.IQFunction;
+import language.objectives.CostFunction;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.FactoredPSO;
@@ -21,7 +22,6 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.StateVarTuple;
 import mdp.XMDP;
-import objectives.CostFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {

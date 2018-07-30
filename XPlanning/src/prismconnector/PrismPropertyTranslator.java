@@ -4,10 +4,10 @@ import factors.IStateVarValue;
 import factors.StateVar;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IQFunction;
+import language.objectives.AttributeConstraint;
+import language.objectives.CostFunction;
+import language.objectives.IAdditiveCostFunction;
 import mdp.StateVarTuple;
-import objectives.AttributeConstraint;
-import objectives.CostFunction;
-import objectives.IAdditiveCostFunction;
 
 public class PrismPropertyTranslator {
 

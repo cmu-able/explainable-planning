@@ -18,14 +18,14 @@ import language.exceptions.XMDPException;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
 import language.metrics.Transition;
+import language.objectives.AttributeCostFunction;
+import language.objectives.IAdditiveCostFunction;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.Precondition;
 import mdp.TransitionFunction;
-import objectives.AttributeCostFunction;
-import objectives.IAdditiveCostFunction;
 
 public class PrismRewardTranslatorUtilities {
 

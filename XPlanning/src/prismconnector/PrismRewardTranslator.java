@@ -4,9 +4,9 @@ import factors.IAction;
 import language.exceptions.XMDPException;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
+import language.objectives.CostFunction;
+import language.objectives.IAdditiveCostFunction;
 import mdp.TransitionFunction;
-import objectives.CostFunction;
-import objectives.IAdditiveCostFunction;
 
 public class PrismRewardTranslator {
 

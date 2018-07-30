@@ -1,6 +1,6 @@
 package mdp;
 
-import objectives.CostFunction;
+import language.objectives.CostFunction;
 
 /**
  * {@link XMDP} is an Explainable MDP.

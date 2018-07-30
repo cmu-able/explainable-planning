@@ -21,6 +21,8 @@ import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.metrics.EventBasedMetric;
 import language.metrics.NonStandardMetricQFunction;
+import language.objectives.AttributeCostFunction;
+import language.objectives.CostFunction;
 import language.policy.Policy;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
@@ -30,8 +32,6 @@ import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
-import objectives.AttributeCostFunction;
-import objectives.CostFunction;
 
 public class MobileRobotTestProblem {
 

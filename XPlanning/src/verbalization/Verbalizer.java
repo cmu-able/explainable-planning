@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import explanation.analysis.PolicyInfo;
+import explanation.analysis.Tradeoff;
+
 import java.util.Set;
 
-import analysis.PolicyInfo;
-import analysis.Tradeoff;
 import language.mdp.QSpace;
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;

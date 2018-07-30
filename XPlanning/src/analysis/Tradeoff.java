@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import factors.IAction;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
 import mdp.QSpace;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 

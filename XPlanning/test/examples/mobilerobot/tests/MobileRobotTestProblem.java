@@ -19,6 +19,8 @@ import factors.StateVar;
 import factors.StateVarDefinition;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
+import language.metrics.EventBasedMetric;
+import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
@@ -28,8 +30,6 @@ import mdp.StateSpace;
 import mdp.StateVarTuple;
 import mdp.TransitionFunction;
 import mdp.XMDP;
-import metrics.EventBasedMetric;
-import metrics.NonStandardMetricQFunction;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
 

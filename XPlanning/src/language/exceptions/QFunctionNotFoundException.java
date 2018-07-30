@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import metrics.IQFunction;
+import language.metrics.IQFunction;
 
 public class QFunctionNotFoundException extends XMDPException {
 

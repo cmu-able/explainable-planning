@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import factors.IAction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
 
 /**
  * {@link QSpace} is a set of {@link IQFunction}s of an MDP.

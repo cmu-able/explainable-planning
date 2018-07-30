@@ -9,9 +9,9 @@ import factors.ActionDefinition;
 import factors.IStateVarValue;
 import factors.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
-import metrics.IQFunctionDomain;
-import metrics.QFunctionDomain;
-import metrics.Transition;
+import language.metrics.IQFunctionDomain;
+import language.metrics.QFunctionDomain;
+import language.metrics.Transition;
 
 public class CollisionDomain implements IQFunctionDomain<MoveToAction> {
 

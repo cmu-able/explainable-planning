@@ -2,9 +2,9 @@ package prismconnector;
 
 import factors.IAction;
 import language.exceptions.XMDPException;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
 import mdp.TransitionFunction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
 import objectives.CostFunction;
 import objectives.IAdditiveCostFunction;
 

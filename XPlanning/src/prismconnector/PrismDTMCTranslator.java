@@ -13,6 +13,7 @@ import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.metrics.IQFunction;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.FactoredPSO;
@@ -20,7 +21,6 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.StateVarTuple;
 import mdp.XMDP;
-import metrics.IQFunction;
 import objectives.CostFunction;
 import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
 

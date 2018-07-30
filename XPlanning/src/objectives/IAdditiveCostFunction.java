@@ -3,8 +3,8 @@ package objectives;
 import java.util.Set;
 
 import factors.IAction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
 
 /**
  * {@link IAdditiveCostFunction} is an interface to an additive, multi-attribute cost function of n values

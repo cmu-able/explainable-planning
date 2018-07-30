@@ -1,6 +1,6 @@
 package objectives;
 
-import metrics.IQFunction;
+import language.metrics.IQFunction;
 
 /**
  * {@link AttributeCostFunction} represents a linear (i.e., risk-neutral) single-attribute cost function of the form

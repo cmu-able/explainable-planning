@@ -5,8 +5,8 @@ import examples.mobilerobot.factors.MoveToAction;
 import examples.mobilerobot.factors.RobotSpeed;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import metrics.IStandardMetricQFunction;
-import metrics.Transition;
+import language.metrics.IStandardMetricQFunction;
+import language.metrics.Transition;
 
 /**
  * {@link TravelTimeQFunction} calculates the travel time of the robot of a single transition.

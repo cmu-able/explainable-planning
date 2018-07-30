@@ -4,8 +4,8 @@ import examples.mobilerobot.factors.Area;
 import examples.mobilerobot.factors.MoveToAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import metrics.IEvent;
-import metrics.Transition;
+import language.metrics.IEvent;
+import language.metrics.Transition;
 
 public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDomain> {
 

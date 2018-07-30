@@ -15,15 +15,15 @@ import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
+import language.metrics.Transition;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.EffectClass;
 import mdp.FactoredPSO;
 import mdp.Precondition;
 import mdp.TransitionFunction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
-import metrics.Transition;
 import objectives.AttributeCostFunction;
 import objectives.IAdditiveCostFunction;
 

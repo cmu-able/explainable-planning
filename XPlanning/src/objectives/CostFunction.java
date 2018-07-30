@@ -3,8 +3,8 @@ package objectives;
 import java.util.Set;
 
 import factors.IAction;
-import metrics.IQFunction;
-import metrics.IQFunctionDomain;
+import language.metrics.IQFunction;
+import language.metrics.IQFunctionDomain;
 
 /**
  * {@link CostFunction} is a cost function of a regular Markov Decision Process (MDP). This is an additive

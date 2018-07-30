@@ -1,4 +1,4 @@
-package metrics;
+package language.metrics;
 
 import factors.IAction;
 import language.exceptions.AttributeNameNotFoundException;

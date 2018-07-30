@@ -3,7 +3,7 @@ package verbalization;
 import java.util.HashMap;
 import java.util.Map;
 
-import metrics.IQFunction;
+import language.metrics.IQFunction;
 
 public class Vocabulary {
 

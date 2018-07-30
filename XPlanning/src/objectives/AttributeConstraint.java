@@ -1,6 +1,6 @@
 package objectives;
 
-import metrics.IQFunction;
+import language.metrics.IQFunction;
 
 /**
  * {@link AttributeConstraint} represents a constraint on the expected total value of a particular QA of a policy.

@@ -18,6 +18,7 @@ import exceptions.ResultParsingException;
 import exceptions.VarNotFoundException;
 import exceptions.XMDPException;
 import factors.IAction;
+import language.policy.Policy;
 import mdp.XMDP;
 import metrics.IQFunction;
 import metrics.IQFunctionDomain;
@@ -25,7 +26,6 @@ import objectives.AdditiveCostFunction;
 import objectives.AttributeConstraint;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
-import policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 

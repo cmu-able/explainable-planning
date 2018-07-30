@@ -3,8 +3,8 @@ package analysis;
 import java.util.HashMap;
 import java.util.Map;
 
+import language.policy.Policy;
 import metrics.IQFunction;
-import policy.Policy;
 
 public class PolicyInfo {
 

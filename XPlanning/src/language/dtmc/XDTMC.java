@@ -11,6 +11,8 @@ import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.policy.Decision;
+import language.policy.Policy;
 import mdp.Discriminant;
 import mdp.DiscriminantClass;
 import mdp.EffectClass;
@@ -19,8 +21,6 @@ import mdp.IActionDescription;
 import mdp.ProbabilisticEffect;
 import mdp.StateVarTuple;
 import mdp.XMDP;
-import policy.Decision;
-import policy.Policy;
 
 /**
  * {@link XDTMC} is a discrete-time Markov chain induced from a policy and a MDP. It is consists of a 2TBN for each

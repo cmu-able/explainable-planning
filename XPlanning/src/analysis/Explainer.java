@@ -6,10 +6,10 @@ import java.util.Set;
 
 import exceptions.ResultParsingException;
 import exceptions.XMDPException;
+import language.policy.Policy;
 import mdp.QSpace;
 import mdp.XMDP;
 import metrics.IQFunction;
-import policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismConnectorSettings;

@@ -1,4 +1,4 @@
-package policy;
+package language.policy;
 
 import factors.IAction;
 import mdp.StateVarTuple;

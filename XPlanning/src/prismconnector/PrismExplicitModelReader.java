@@ -14,10 +14,10 @@ import factors.IAction;
 import factors.IStateVarValue;
 import factors.StateVar;
 import factors.StateVarDefinition;
+import language.policy.Policy;
 import mdp.ActionSpace;
 import mdp.StateVarTuple;
 import mdp.StateSpace;
-import policy.Policy;
 
 public class PrismExplicitModelReader {
 

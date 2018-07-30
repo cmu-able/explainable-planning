@@ -1,4 +1,4 @@
-package policy;
+package language.policy;
 
 import java.util.HashMap;
 import java.util.HashSet;

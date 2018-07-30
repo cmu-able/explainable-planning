@@ -19,6 +19,7 @@ import factors.ActionDefinition;
 import factors.StateVar;
 import factors.StateVarDefinition;
 import language.dtmc.XDTMC;
+import language.policy.Policy;
 import mdp.ActionSpace;
 import mdp.FactoredPSO;
 import mdp.Precondition;
@@ -31,7 +32,6 @@ import metrics.EventBasedMetric;
 import metrics.NonStandardMetricQFunction;
 import objectives.AttributeCostFunction;
 import objectives.CostFunction;
-import policy.Policy;
 
 public class MobileRobotTestProblem {
 

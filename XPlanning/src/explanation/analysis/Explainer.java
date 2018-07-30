@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import explanation.verbalization.Verbalizer;
+import explanation.verbalization.Vocabulary;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
@@ -13,8 +15,6 @@ import prism.PrismException;
 import prismconnector.PrismConnector;
 import prismconnector.PrismConnectorSettings;
 import prismconnector.exceptions.ResultParsingException;
-import verbalization.Verbalizer;
-import verbalization.Vocabulary;
 
 public class Explainer {
 

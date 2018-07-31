@@ -1,6 +1,9 @@
 package examples.mobilerobot.tests;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.json.simple.parser.ParseException;
@@ -10,22 +13,104 @@ import org.testng.annotations.Test;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.IncompatibleActionException;
+import language.exceptions.XMDPException;
 import language.mdp.XMDP;
+import prism.PrismException;
+import prismconnector.PrismAPIWrapper;
+import prismconnector.PrismConfiguration;
+import prismconnector.PrismExplicitModelPointer;
+import prismconnector.PrismMDPTranslator;
+import prismconnector.PrismRewardType;
+import prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotXMDPTest {
+
+	private static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
+	private static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
+	private static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism";
 
 	private MobileRobotTestLoader mTestLoader;
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testXMDPConstructor(File missionJsonFile, XMDP xmdp) {
-		System.out.println("mission: " + missionJsonFile.getName());
+		printMissionFilename(missionJsonFile);
+	}
+
+	@Test(dataProvider = "xmdpProblems")
+	public void testPrismMDPTranslatorStateReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
+		printMissionFilename(missionJsonFile);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+
+		try {
+			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
+			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+			System.out.println("State-reward MDP Translation (with QAs):");
+			System.out.println(mdpWithQAs);
+			System.out.println();
+			System.out.println("Goal Property Translation:");
+			System.out.println(goalProperty);
+			System.out.println();
+		} catch (XMDPException e) {
+			e.printStackTrace();
+			fail("Exception thrown while translating XMDP to PRISM MDP");
+		}
+	}
+
+	@Test(dataProvider = "xmdpProblems")
+	public void testPrismMDPTranslatorTransitionReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
+		printMissionFilename(missionJsonFile);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.TRANSITION_REWARD);
+
+		try {
+			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
+			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+			System.out.println("Transition-reward MDP Translation with (with QAs):");
+			System.out.println(mdpWithQAs);
+			System.out.println();
+			System.out.println("Goal Property Translation:");
+			System.out.println(goalProperty);
+			System.out.println();
+		} catch (XMDPException e) {
+			e.printStackTrace();
+			fail("Exception thrown while translating XMDP to PRISM MDP");
+		}
+	}
+
+	@Test(dataProvider = "xmdpProblems")
+	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
+		String outputPath = PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
+		String staOutputFilename = "adv.sta";
+		String traOutputFilename = "adv.tra";
+		String labOutputFilename = "adv.lab";
+		String srewOutputFilename = "adv.srew";
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
+				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename);
+
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
+		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+
+		// Default PRISM configuration
+		PrismConfiguration prismConfig = new PrismConfiguration();
+
+		try {
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
+			System.out.println("Generate adverary from state-reward MDP...");
+			System.out.print("Expected total cost of adversary: ");
+			System.out.println(totalCost);
+			System.out.println();
+		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
+			e.printStackTrace();
+			fail("Exception thrown while PRISM generating MDP adversary");
+		}
 	}
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] xmdpProblems()
 			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
-		String mapJsonDirPath = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
-		String missionJsonDirPath = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
+		String mapJsonDirPath = MAPS_PATH;
+		String missionJsonDirPath = MISSIONS_PATH;
 
 		mTestLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
@@ -42,6 +127,10 @@ public class MobileRobotXMDPTest {
 
 	@BeforeClass
 	public void beforeClass() {
+	}
+
+	private void printMissionFilename(File missionJsonFile) {
+		System.out.println("mission: " + missionJsonFile.getName());
 	}
 
 }

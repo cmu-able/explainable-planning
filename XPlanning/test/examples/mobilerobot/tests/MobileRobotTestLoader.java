@@ -1,5 +1,6 @@
 package examples.mobilerobot.tests;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,8 +28,12 @@ public class MobileRobotTestLoader {
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
 	private MobileRobotXMDPBuilder mXMDPBuilder = new MobileRobotXMDPBuilder();
+	private File mMapJsonDir;
+	private File mMissionJsonDir;
 
-	public MobileRobotTestLoader() {
+	public MobileRobotTestLoader(String mapJsonDirPath, String missionJsonDirPath) {
+		mMapJsonDir = new File(mapJsonDirPath);
+		mMissionJsonDir = new File(missionJsonDirPath);
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
@@ -38,10 +43,22 @@ public class MobileRobotTestLoader {
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 	}
 
-	public XMDP loadXMDP(String mapJsonDir, String mapJsonFilename, String missionJsonDir, String missionJsonFilename)
+	public Set<XMDP> loadAllXMDPs()
+			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
+		Set<XMDP> xmdps = new HashSet<>();
+		File[] missionJsonFiles = mMissionJsonDir.listFiles();
+		for (File missionJsonFile : missionJsonFiles) {
+			xmdps.add(loadXMDP(missionJsonFile));
+		}
+		return xmdps;
+	}
+
+	public XMDP loadXMDP(File missionJsonFile)
 			throws IOException, ParseException, MapTopologyException, IncompatibleActionException {
-		MapTopology map = mMapReader.readMapTopology(mapJsonDir, mapJsonFilename);
-		Mission mission = mMissionReader.readMission(missionJsonDir, missionJsonFilename);
+		Mission mission = mMissionReader.readMission(missionJsonFile);
+		String mapJsonFilename = mission.getMapJSONFilename();
+		File mapJsonFile = new File(mMapJsonDir, mapJsonFilename);
+		MapTopology map = mMapReader.readMapTopology(mapJsonFile);
 		LocationNode startNode = map.lookUpLocationNode(mission.getStartNodeID());
 		LocationNode goalNode = map.lookUpLocationNode(mission.getGoalNodeID());
 		return mXMDPBuilder.buildXMDP(map, startNode, goalNode, mission.getMaxTravelTime());

@@ -1,4 +1,4 @@
-package examples.mobilerobot.dsm;
+package examples.mobilerobot.dsm.parser;
 
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +11,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.Connection;
+import examples.mobilerobot.dsm.IEdgeAttribute;
+import examples.mobilerobot.dsm.INodeAttribute;
+import examples.mobilerobot.dsm.LocationNode;
+import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.ConnectionNotFoundException;
 import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;

@@ -1,6 +1,8 @@
-package examples.mobilerobot.dsm;
+package examples.mobilerobot.dsm.parser;
 
 import org.json.simple.JSONObject;
+
+import examples.mobilerobot.dsm.IEdgeAttribute;
 
 public interface IEdgeAttributeParser<E extends IEdgeAttribute> {
 

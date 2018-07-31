@@ -1,4 +1,4 @@
-package examples.mobilerobot.dsm;
+package examples.mobilerobot.dsm.parser;
 
 import org.json.simple.JSONObject;
 

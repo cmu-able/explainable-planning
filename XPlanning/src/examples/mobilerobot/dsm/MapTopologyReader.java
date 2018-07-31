@@ -1,5 +1,6 @@
 package examples.mobilerobot.dsm;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
@@ -18,18 +19,19 @@ import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 public class MapTopologyReader {
 
 	private JSONParser mParser = new JSONParser();
-	private Set<? extends INodeAttributeParser<? extends INodeAttribute>> mNodeAttributeParsers;
-	private Set<? extends IEdgeAttributeParser<? extends IEdgeAttribute>> mEdgeAttributeParsers;
+	private Set<INodeAttributeParser<? extends INodeAttribute>> mNodeAttributeParsers;
+	private Set<IEdgeAttributeParser<? extends IEdgeAttribute>> mEdgeAttributeParsers;
 
-	public MapTopologyReader(Set<? extends INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers,
-			Set<? extends IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers) {
+	public MapTopologyReader(Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers,
+			Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers) {
 		mNodeAttributeParsers = nodeAttributeParsers;
 		mEdgeAttributeParsers = edgeAttributeParsers;
 	}
 
-	public MapTopology readMapTopology(String mapJsonFilename)
+	public MapTopology readMapTopology(String mapJsonDir, String mapJsonFilename)
 			throws IOException, ParseException, MapTopologyException {
-		FileReader reader = new FileReader(mapJsonFilename);
+		File mapJsonFile = new File(mapJsonDir, mapJsonFilename);
+		FileReader reader = new FileReader(mapJsonFile);
 		Object object = mParser.parse(reader);
 
 		JSONObject jsonObject = (JSONObject) object;

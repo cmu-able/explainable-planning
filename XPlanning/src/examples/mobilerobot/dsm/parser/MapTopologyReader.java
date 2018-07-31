@@ -33,9 +33,7 @@ public class MapTopologyReader {
 		mEdgeAttributeParsers = edgeAttributeParsers;
 	}
 
-	public MapTopology readMapTopology(String mapJsonDir, String mapJsonFilename)
-			throws IOException, ParseException, MapTopologyException {
-		File mapJsonFile = new File(mapJsonDir, mapJsonFilename);
+	public MapTopology readMapTopology(File mapJsonFile) throws IOException, ParseException, MapTopologyException {
 		FileReader reader = new FileReader(mapJsonFile);
 		Object object = mParser.parse(reader);
 

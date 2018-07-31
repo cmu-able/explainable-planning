@@ -14,8 +14,7 @@ public class MissionReader {
 
 	private JSONParser mParser = new JSONParser();
 
-	public Mission readMission(String missionJsonDir, String missionJsonFilename) throws IOException, ParseException {
-		File missionJsonFile = new File(missionJsonDir, missionJsonFilename);
+	public Mission readMission(File missionJsonFile) throws IOException, ParseException {
 		FileReader reader = new FileReader(missionJsonFile);
 		Object object = mParser.parse(reader);
 		JSONObject jsonObject = (JSONObject) object;
@@ -23,6 +22,7 @@ public class MissionReader {
 		String startNodeID = (String) jsonObject.get("start-id");
 		String goalNodeID = (String) jsonObject.get("goal-id");
 		double maxTravelTime = (double) jsonObject.get("max-time");
-		return new Mission(startNodeID, goalNodeID, maxTravelTime);
+		String mapJsonFilename = (String) jsonObject.get("map-file");
+		return new Mission(startNodeID, goalNodeID, maxTravelTime, mapJsonFilename);
 	}
 }

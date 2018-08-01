@@ -109,7 +109,7 @@ public class PrismExplicitModelReader {
 
 	/**
 	 * 
-	 * @return A policy extracted from the "adversary" file
+	 * @return A policy extracted from the "adversary" file and the "states" file
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */

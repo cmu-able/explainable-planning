@@ -25,11 +25,9 @@ import prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotXMDPTest {
 
-	private static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
-	private static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
-	private static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism";
-
-	private MobileRobotTestLoader mTestLoader;
+	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
+	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
+	static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism";
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testXMDPConstructor(File missionJsonFile, XMDP xmdp) {
@@ -107,14 +105,14 @@ public class MobileRobotXMDPTest {
 		String mapJsonDirPath = MAPS_PATH;
 		String missionJsonDirPath = MISSIONS_PATH;
 
-		mTestLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
 		Object[][] data = new Object[missionJsonFiles.length][2];
 
 		int i = 0;
 		for (File missionJsonFile : missionJsonFiles) {
-			XMDP xmdp = mTestLoader.loadXMDP(missionJsonFile);
+			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
 			data[i] = new Object[] { missionJsonFile, xmdp };
 		}
 		return data;

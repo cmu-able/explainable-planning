@@ -23,6 +23,8 @@ import prismconnector.exceptions.ResultParsingException;
 
 public class PrismConnector {
 
+	public static final String ADVERSARY_FILENAME_PREFIX = "adv";
+
 	private XMDP mXMDP;
 	private PrismConnectorSettings mSettings;
 	private PrismAPIWrapper mPrismAPI;
@@ -132,7 +134,7 @@ public class PrismConnector {
 			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mSettings.getOutputPath(),
-				"adv");
+				ADVERSARY_FILENAME_PREFIX);
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(

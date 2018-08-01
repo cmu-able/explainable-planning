@@ -162,7 +162,7 @@ class MobileRobotTest {
 	@Test
 	public void testPrismExplicitDTMCPropertyQuery() {
 		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
-		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath, "adv");
+		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath);
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
 		// Default PRISM configuration

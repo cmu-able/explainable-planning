@@ -125,7 +125,7 @@ public class MobileRobotXMDPTest {
 	}
 
 	private void printMissionFilename(File missionJsonFile) {
-		System.out.println("mission: " + missionJsonFile.getName());
+		System.out.println("Mission: " + missionJsonFile.getName());
 	}
 
 }

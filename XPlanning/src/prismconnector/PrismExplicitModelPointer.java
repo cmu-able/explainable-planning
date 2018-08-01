@@ -1,6 +1,7 @@
 package prismconnector;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,35 +17,75 @@ public class PrismExplicitModelPointer {
 	 */
 	private volatile int hashCode;
 
-	private String mModelPath;
+	private File mModelDir;
 	private File mStaFile;
 	private File mTraFile;
 	private File mLabFile;
 	private File mSrewFile;
 	private List<File> mIndexedSrewFiles;
 
+	/**
+	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath
+	 * 
+	 * @param modelPath
+	 * @param filenamePrefix
+	 */
 	public PrismExplicitModelPointer(String modelPath, String filenamePrefix) {
-		mModelPath = modelPath;
-		mSrewFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
+		mModelDir = new File(modelPath);
+		mStaFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
 		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
 		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
 		mSrewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
 		mIndexedSrewFiles = getSortedStateRewardsFiles(filenamePrefix);
 	}
 
+	/**
+	 * Use this constructor if the PRISM explicit model already exists at modelPath
+	 * 
+	 * @param modelPath
+	 */
+	public PrismExplicitModelPointer(String modelPath) {
+		mModelDir = new File(modelPath);
+		File[] prismFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(STA_EXTENSION)
+				|| name.toLowerCase().endsWith(TRA_EXTENSION) || name.toLowerCase().endsWith(LAB_EXTENSION));
+		List<File> srewFiles = new ArrayList<>();
+
+		for (File prismFile : prismFiles) {
+			String filename = prismFile.getName().toLowerCase();
+			if (filename.endsWith(STA_EXTENSION)) {
+				mStaFile = prismFile;
+			} else if (filename.endsWith(TRA_EXTENSION)) {
+				mTraFile = prismFile;
+			} else if (filename.endsWith(LAB_EXTENSION)) {
+				mLabFile = prismFile;
+			} else if (filename.endsWith(SREW_EXTENSION)) {
+				srewFiles.add(prismFile);
+			}
+		}
+		srewFiles.sort((file1, file2) -> file1.compareTo(file2));
+
+		if (srewFiles.size() > 1) {
+			File srew1File = srewFiles.get(0);
+			String srew1Filename = srew1File.getName(); // <name>1.srew
+			String srewFilenamePrefix = srew1Filename.substring(0, srew1Filename.indexOf(SREW_EXTENSION) - 1); // <name>
+			mSrewFile = new File(modelPath, srewFilenamePrefix + SREW_EXTENSION); // <name>.srew
+		} else {
+			mSrewFile = srewFiles.get(0);
+		}
+	}
+
 	private List<File> getSortedStateRewardsFiles(String filenamePrefix) {
-		File modelDir = new File(mModelPath);
-		File[] srewFiles = modelDir.listFiles((dir, name) -> name.toLowerCase().startsWith(filenamePrefix)
+		File[] srewFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().startsWith(filenamePrefix)
 				&& name.toLowerCase().endsWith(SREW_EXTENSION));
 
 		// Sort .srew files lexicographically based on their abstract pathnames
 		// {name}1.srew, {name}2.srew, {name}3.srew, ...
-		Arrays.sort(srewFiles);
+		Arrays.sort(srewFiles, (file1, file2) -> file1.compareTo(file2));
 		return Arrays.asList(srewFiles);
 	}
 
-	public String getExplicitModelPath() {
-		return mModelPath;
+	public File getExplicitModelDirectory() {
+		return mModelDir;
 	}
 
 	public File getStatesFile() {
@@ -84,7 +125,7 @@ public class PrismExplicitModelPointer {
 			return false;
 		}
 		PrismExplicitModelPointer pointer = (PrismExplicitModelPointer) obj;
-		return pointer.mModelPath.equals(mModelPath) && pointer.mStaFile.equals(mStaFile)
+		return pointer.mModelDir.equals(mModelDir) && pointer.mStaFile.equals(mStaFile)
 				&& pointer.mTraFile.equals(mTraFile) && pointer.mLabFile.equals(mLabFile)
 				&& pointer.mSrewFile.equals(mSrewFile) && pointer.mIndexedSrewFiles.equals(mIndexedSrewFiles);
 	}
@@ -94,7 +135,7 @@ public class PrismExplicitModelPointer {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mModelPath.hashCode();
+			result = 31 * result + mModelDir.hashCode();
 			result = 31 * result + mStaFile.hashCode();
 			result = 31 * result + mTraFile.hashCode();
 			result = 31 * result + mLabFile.hashCode();

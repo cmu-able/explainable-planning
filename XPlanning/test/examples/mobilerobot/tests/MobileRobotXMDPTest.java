@@ -79,12 +79,7 @@ public class MobileRobotXMDPTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
 		String outputPath = PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
-		String staOutputFilename = "adv.sta";
-		String traOutputFilename = "adv.tra";
-		String labOutputFilename = "adv.lab";
-		String srewOutputFilename = "adv.srew";
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename);
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv");
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);

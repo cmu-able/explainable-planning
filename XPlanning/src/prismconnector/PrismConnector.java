@@ -23,11 +23,6 @@ import prismconnector.exceptions.ResultParsingException;
 
 public class PrismConnector {
 
-	private static final String STA_OUTPUT_FILENAME = "adv.sta";
-	private static final String TRA_OUTPUT_FILENAME = "adv.tra";
-	private static final String LAB_OUTPUT_FILENAME = "adv.lab";
-	private static final String SREW_OUTPUT_FILENAME = "adv.srew";
-
 	private XMDP mXMDP;
 	private PrismConnectorSettings mSettings;
 	private PrismAPIWrapper mPrismAPI;
@@ -137,7 +132,7 @@ public class PrismConnector {
 			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mSettings.getOutputPath(),
-				STA_OUTPUT_FILENAME, TRA_OUTPUT_FILENAME, LAB_OUTPUT_FILENAME, SREW_OUTPUT_FILENAME);
+				"adv");
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(

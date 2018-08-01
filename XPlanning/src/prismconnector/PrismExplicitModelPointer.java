@@ -6,6 +6,11 @@ import java.util.List;
 
 public class PrismExplicitModelPointer {
 
+	private static final String STA_EXTENSION = ".sta";
+	private static final String TRA_EXTENSION = ".tra";
+	private static final String LAB_EXTENSION = ".lab";
+	private static final String SREW_EXTENSION = ".srew";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -18,23 +23,19 @@ public class PrismExplicitModelPointer {
 	private File mSrewFile;
 	private List<File> mIndexedSrewFiles;
 
-	public PrismExplicitModelPointer(String modelPath, String staFilename, String traFilename, String labFilename,
-			String srewFilename) {
+	public PrismExplicitModelPointer(String modelPath, String filenamePrefix) {
 		mModelPath = modelPath;
-		mStaFile = new File(modelPath, staFilename);
-		mTraFile = new File(modelPath, traFilename);
-		mLabFile = new File(modelPath, labFilename);
-		mSrewFile = new File(modelPath, srewFilename);
-		mIndexedSrewFiles = getSortedStateRewardsFiles(srewFilename);
+		mSrewFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
+		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
+		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
+		mSrewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
+		mIndexedSrewFiles = getSortedStateRewardsFiles(filenamePrefix);
 	}
 
-	private List<File> getSortedStateRewardsFiles(String srewFilename) {
-		int extensionIndex = srewFilename.indexOf(".srew");
-		String srewName = srewFilename.substring(0, extensionIndex);
-
+	private List<File> getSortedStateRewardsFiles(String filenamePrefix) {
 		File modelDir = new File(mModelPath);
-		File[] srewFiles = modelDir.listFiles(
-				(dir, name) -> name.toLowerCase().startsWith(srewName) && name.toLowerCase().endsWith(".srew"));
+		File[] srewFiles = modelDir.listFiles((dir, name) -> name.toLowerCase().startsWith(filenamePrefix)
+				&& name.toLowerCase().endsWith(SREW_EXTENSION));
 
 		// Sort .srew files lexicographically based on their abstract pathnames
 		// {name}1.srew, {name}2.srew, {name}3.srew, ...

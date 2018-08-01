@@ -136,12 +136,7 @@ class MobileRobotTest {
 	@Test
 	public void testPrismMDPAdversaryGeneration() throws XMDPException {
 		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/output";
-		String staOutputFilename = "adv.sta";
-		String traOutputFilename = "adv.tra";
-		String labOutputFilename = "adv.lab";
-		String srewOutputFilename = "adv.srew";
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				staOutputFilename, traOutputFilename, labOutputFilename, srewOutputFilename);
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv");
 
 		XMDP xmdp = mTestProblem.createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
@@ -167,12 +162,7 @@ class MobileRobotTest {
 	@Test
 	public void testPrismExplicitDTMCPropertyQuery() {
 		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
-		String staFilename = "adv.sta";
-		String traFilename = "adv.tra";
-		String labFilename = "adv.lab";
-		String srewFilename = "adv.srew";
-		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath, staFilename,
-				traFilename, labFilename, srewFilename);
+		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath, "adv");
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
 		// Default PRISM configuration

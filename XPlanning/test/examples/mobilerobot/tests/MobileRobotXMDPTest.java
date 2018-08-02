@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.json.simple.parser.ParseException;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -30,13 +30,7 @@ public class MobileRobotXMDPTest {
 	static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism";
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testXMDPConstructor(File missionJsonFile, XMDP xmdp) {
-		printMissionFilename(missionJsonFile);
-	}
-
-	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPTranslatorStateReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
-		printMissionFilename(missionJsonFile);
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 
 		try {
@@ -55,8 +49,7 @@ public class MobileRobotXMDPTest {
 	}
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testPrismMDPTranslatorTransitionReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
-		printMissionFilename(missionJsonFile);
+	public void testPrismMDPTranslatorTransitionReward(File missionJsonFile, XMDP xmdp) {
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.TRANSITION_REWARD);
 
 		try {
@@ -118,11 +111,9 @@ public class MobileRobotXMDPTest {
 		return data;
 	}
 
-	@BeforeClass
-	public void beforeClass() {
-	}
-
-	private void printMissionFilename(File missionJsonFile) {
+	@BeforeMethod
+	public void printMissionFilename(Object[] data) {
+		File missionJsonFile = (File) data[0];
 		System.out.println("Mission: " + missionJsonFile.getName());
 	}
 

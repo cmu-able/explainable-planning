@@ -29,7 +29,12 @@ public class PrismExplicitModelReader {
 		mExplicitModelPtr = explicitModelPtr;
 	}
 
+	public PrismExplicitModelPointer getPrismExplicitModelPointer() {
+		return mExplicitModelPtr;
+	}
+
 	/**
+	 * Read states from a PRISM .sta file.
 	 * 
 	 * @return Mapping from integer values indexing states to the corresponding states
 	 * @throws IOException
@@ -79,6 +84,7 @@ public class PrismExplicitModelReader {
 	}
 
 	/**
+	 * Read a policy from a PRISM .tra file, given a index-state mapping.
 	 * 
 	 * @param stateIndices
 	 *            : Mapping from integer values indexing states to the corresponding states
@@ -108,6 +114,7 @@ public class PrismExplicitModelReader {
 	}
 
 	/**
+	 * Read a policy from PRISM .sta and .tra files.
 	 * 
 	 * @return A policy extracted from the "adversary" file and the "states" file
 	 * @throws IOException

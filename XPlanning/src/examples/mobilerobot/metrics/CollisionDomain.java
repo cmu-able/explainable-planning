@@ -2,9 +2,9 @@ package examples.mobilerobot.metrics;
 
 import java.util.Set;
 
-import examples.mobilerobot.factors.MoveToAction;
-import examples.mobilerobot.factors.RobotBumped;
-import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.qfactors.MoveToAction;
+import examples.mobilerobot.qfactors.RobotBumped;
+import examples.mobilerobot.qfactors.RobotSpeed;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IQFunctionDomain;
 import language.metrics.QFunctionDomain;

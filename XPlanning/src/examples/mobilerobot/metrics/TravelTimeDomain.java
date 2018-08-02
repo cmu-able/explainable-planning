@@ -2,10 +2,10 @@ package examples.mobilerobot.metrics;
 
 import java.util.Set;
 
-import examples.mobilerobot.factors.Distance;
-import examples.mobilerobot.factors.Location;
-import examples.mobilerobot.factors.MoveToAction;
-import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.qfactors.Distance;
+import examples.mobilerobot.qfactors.Location;
+import examples.mobilerobot.qfactors.MoveToAction;
+import examples.mobilerobot.qfactors.RobotSpeed;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IQFunctionDomain;

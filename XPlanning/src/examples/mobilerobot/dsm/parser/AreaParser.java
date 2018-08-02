@@ -2,7 +2,7 @@ package examples.mobilerobot.dsm.parser;
 
 import org.json.simple.JSONObject;
 
-import examples.mobilerobot.factors.Area;
+import examples.mobilerobot.qfactors.Area;
 
 public class AreaParser implements INodeAttributeParser<Area> {
 

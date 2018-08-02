@@ -1,4 +1,4 @@
-package examples.mobilerobot.factors;
+package examples.mobilerobot.qfactors;
 
 import examples.mobilerobot.dsm.INodeAttribute;
 import language.qfactors.IStateVarAttribute;

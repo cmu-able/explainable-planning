@@ -1,39 +1,35 @@
-package examples.mobilerobot.factors;
-
-import java.text.DecimalFormat;
+package examples.mobilerobot.qfactors;
 
 import language.exceptions.AttributeNameNotFoundException;
 import language.qfactors.IStateVarAttribute;
-import language.qfactors.IStateVarDouble;
+import language.qfactors.IStateVarBoolean;
 
 /**
- * {@link RobotSpeed} is a type of speed value of the robot.
+ * {@link RobotBumped} is a type of bump sensor value (boolean) of the robot.
  * 
  * @author rsukkerd
  *
  */
-public class RobotSpeed implements IStateVarDouble {
+public class RobotBumped implements IStateVarBoolean {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private double mSpeed;
+	private boolean mBumped;
 
-	private DecimalFormat decimalFormatter = new DecimalFormat("#.###");
-
-	public RobotSpeed(double speed) {
-		mSpeed = speed;
+	public RobotBumped(boolean bumped) {
+		mBumped = bumped;
 	}
 
-	public double getSpeed() {
-		return mSpeed;
+	public boolean hasBumped() {
+		return mBumped;
 	}
 
 	@Override
-	public double getValue() {
-		return getSpeed();
+	public boolean getValue() {
+		return hasBumped();
 	}
 
 	@Override
@@ -46,18 +42,18 @@ public class RobotSpeed implements IStateVarDouble {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof RobotSpeed)) {
+		if (!(obj instanceof RobotBumped)) {
 			return false;
 		}
-		RobotSpeed speed = (RobotSpeed) obj;
-		return Double.compare(speed.mSpeed, mSpeed) == 0;
+		RobotBumped bumped = (RobotBumped) obj;
+		return bumped.mBumped == mBumped;
 	}
 
 	@Override
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Double.valueOf(mSpeed).hashCode();
+			result = Boolean.valueOf(mBumped).hashCode();
 			hashCode = result;
 		}
 		return hashCode;
@@ -65,7 +61,7 @@ public class RobotSpeed implements IStateVarDouble {
 
 	@Override
 	public String toString() {
-		return decimalFormatter.format(mSpeed);
+		return Boolean.toString(mBumped);
 	}
 
 }

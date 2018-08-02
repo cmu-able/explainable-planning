@@ -2,9 +2,9 @@ package examples.mobilerobot.metrics;
 
 import java.util.Set;
 
-import examples.mobilerobot.factors.Area;
-import examples.mobilerobot.factors.Location;
-import examples.mobilerobot.factors.MoveToAction;
+import examples.mobilerobot.qfactors.Area;
+import examples.mobilerobot.qfactors.Location;
+import examples.mobilerobot.qfactors.MoveToAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IQFunctionDomain;

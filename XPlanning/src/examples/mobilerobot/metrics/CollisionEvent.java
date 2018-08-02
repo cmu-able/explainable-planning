@@ -1,8 +1,8 @@
 package examples.mobilerobot.metrics;
 
-import examples.mobilerobot.factors.MoveToAction;
-import examples.mobilerobot.factors.RobotBumped;
-import examples.mobilerobot.factors.RobotSpeed;
+import examples.mobilerobot.qfactors.MoveToAction;
+import examples.mobilerobot.qfactors.RobotBumped;
+import examples.mobilerobot.qfactors.RobotSpeed;
 import language.exceptions.VarNotFoundException;
 import language.metrics.IEvent;
 import language.metrics.Transition;

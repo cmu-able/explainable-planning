@@ -1,8 +1,8 @@
 package language.mdp;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 import language.metrics.IQFunction;
 import language.metrics.IQFunctionDomain;
@@ -21,26 +21,29 @@ public class QSpace implements Iterable<IQFunction<IAction, IQFunctionDomain<IAc
 	 */
 	private volatile int hashCode;
 
-	private Set<IQFunction<? extends IAction, ? extends IQFunctionDomain<? extends IAction>>> mQFunctions = new HashSet<>();
+	private Map<Class<?>, IQFunction<?, ?>> mQFunctions = new HashMap<>();
 
 	public QSpace() {
 		// mQFunctions initially empty
 	}
 
-	public <E extends IAction, T extends IQFunctionDomain<E>> void addQFunction(IQFunction<E, T> qFunction) {
-		mQFunctions.add(qFunction);
+	public void addQFunction(IQFunction<?, ?> qFunction) {
+		mQFunctions.put(qFunction.getClass(), qFunction);
 	}
 
-	public <E extends IAction, T extends IQFunctionDomain<E>> boolean contains(IQFunction<E, T> qFunction) {
-		return mQFunctions.contains(qFunction);
+	public boolean contains(IQFunction<?, ?> qFunction) {
+		return mQFunctions.containsValue(qFunction);
+	}
+
+	public <E extends IQFunction<?, ?>> E getQFunction(Class<E> qFunctionType) {
+		return qFunctionType.cast(mQFunctions.get(qFunctionType));
 	}
 
 	@Override
 	public Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>> iterator() {
 		return new Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>>() {
 
-			private Iterator<IQFunction<? extends IAction, ? extends IQFunctionDomain<? extends IAction>>> iter = mQFunctions
-					.iterator();
+			private Iterator<IQFunction<?, ?>> iter = mQFunctions.values().iterator();
 
 			@Override
 			public boolean hasNext() {

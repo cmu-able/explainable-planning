@@ -11,10 +11,10 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import examples.mobilerobot.metrics.TravelTimeQFunction;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
+import language.metrics.IQFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismAPIWrapper;
@@ -30,18 +30,20 @@ public class MobileRobotXDTMCTest {
 
 	@Test(dataProvider = "xdtmcSolutions")
 	public void testPrismDTMCTranslatorStateReward(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc) {
-		TravelTimeQFunction timeQFunction = xdtmc.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class);
-
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("State-reward DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
 			System.out.println();
-			System.out.println("Time Query Property Translation:");
-			System.out.println(timeQueryTranslation);
-			System.out.println();
+
+			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
+				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+				System.out.print("Query Property Translation: ");
+				System.out.println(qFunction.getName());
+				System.out.println(queryTranslation);
+				System.out.println();
+			}
 		} catch (XMDPException e) {
 			e.printStackTrace();
 			fail("Exception thrown while translating XDTMC to PRISM DTMC");
@@ -50,19 +52,21 @@ public class MobileRobotXDTMCTest {
 
 	@Test(dataProvider = "xdtmcSolutions")
 	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc) {
-		TravelTimeQFunction timeQFunction = xdtmc.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class);
-
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
 					PrismRewardType.TRANSITION_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-			String timeQueryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 			System.out.println("Transition-reward DTMC Translation (with QAs):");
 			System.out.println(dtmcWithQAs);
 			System.out.println();
-			System.out.println("Time Query Property Translation:");
-			System.out.println(timeQueryTranslation);
-			System.out.println();
+
+			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
+				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+				System.out.print("Query Property Translation: ");
+				System.out.println(qFunction.getName());
+				System.out.println(queryTranslation);
+				System.out.println();
+			}
 		} catch (XMDPException e) {
 			e.printStackTrace();
 			fail("Exception thrown while translating XDTMC to PRISM DTMC");
@@ -97,24 +101,23 @@ public class MobileRobotXDTMCTest {
 	@Test(dataProvider = "xdtmcSolutions")
 	public void testPrismDTMCPropertyQuery(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc)
 			throws XMDPException {
-		TravelTimeQFunction timeQFunction = xdtmc.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class);
-
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-		String timeQuery = dtmcTranslator.getNumQueryPropertyTranslation(timeQFunction);
 
 		// Default PRISM configuration
 		PrismConfiguration prismConfig = new PrismConfiguration();
 
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
-			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
-			System.out.println("Query value from DTMC...");
-			System.out.print("Query property: ");
-			System.out.println(timeQuery);
-			System.out.print("Expected total time: ");
-			System.out.println(result);
-			System.out.println();
+			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
+				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
+				System.out.print("Query Property: ");
+				System.out.println(query);
+				System.out.print("Expected total " + qFunction.getName() + ":");
+				System.out.println(result);
+				System.out.println();
+			}
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");

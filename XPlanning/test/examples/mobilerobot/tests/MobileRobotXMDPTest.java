@@ -93,7 +93,7 @@ public class MobileRobotXMDPTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] xmdpProblems()
+	public Object[][] loadXMDPs()
 			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
 		String mapJsonDirPath = MAPS_PATH;
 		String missionJsonDirPath = MISSIONS_PATH;

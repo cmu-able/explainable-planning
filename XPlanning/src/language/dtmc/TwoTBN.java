@@ -37,6 +37,18 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<StateVarTuple, 
 		mActionDef = actionDef;
 	}
 
+	/**
+	 * Add a probabilistic transition to this 2TBN.
+	 * 
+	 * @param state
+	 *            : A tuple of state variables describing the condition under which the action is taken. This subsumes
+	 *            the discriminant variables of the action's effect class.
+	 * @param action
+	 *            : An action
+	 * @param probEffect
+	 *            : A probabilistic effect
+	 * @throws IncompatibleActionException
+	 */
 	public void add(StateVarTuple state, E action, ProbabilisticEffect probEffect) throws IncompatibleActionException {
 		if (!mActionDef.getActions().contains(action)) {
 			throw new IncompatibleActionException(action);
@@ -53,6 +65,14 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<StateVarTuple, 
 		return mActionDef;
 	}
 
+	/**
+	 * Get the action taken in a given state.
+	 * 
+	 * @param state
+	 *            : A tuple of state variables that are sufficient to determine the corresponding action.
+	 * @return The action taken in the given state.
+	 * @throws StateNotFoundException
+	 */
 	public E getAction(StateVarTuple state) throws StateNotFoundException {
 		if (!mSubPolicy.containsKey(state)) {
 			throw new StateNotFoundException(state);
@@ -60,6 +80,17 @@ public class TwoTBN<E extends IAction> implements Iterable<Entry<StateVarTuple, 
 		return mSubPolicy.get(state);
 	}
 
+	/**
+	 * Get the probabilistic effect of a given effect class, given a previous state.
+	 * 
+	 * @param state
+	 *            : A tuple of state variables that are sufficient to (probabilistically) determine the next state(s).
+	 * @param effectClass
+	 *            : An effect class
+	 * @return The probabilistic effect of the given class.
+	 * @throws StateNotFoundException
+	 * @throws EffectClassNotFoundException
+	 */
 	public ProbabilisticEffect getProbabilisticEffect(StateVarTuple state, EffectClass effectClass)
 			throws StateNotFoundException, EffectClassNotFoundException {
 		if (!m2TBN.containsKey(state)) {

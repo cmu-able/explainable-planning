@@ -16,6 +16,7 @@ import language.mdp.EffectClass;
 import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
 import language.mdp.TransitionFunction;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.metrics.Transition;
@@ -30,6 +31,8 @@ import language.qfactors.StateVarDefinition;
 public class PrismRewardTranslatorUtilities {
 
 	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
+	private static final String BEGIN_REWARDS = "rewards \"%s\"";
+	private static final String END_REWARDS = "endrewards";
 
 	private ValueEncodingScheme mEncodings;
 	private PrismRewardType mPrismRewardType;
@@ -94,9 +97,8 @@ public class PrismRewardTranslatorUtilities {
 			builder.append("\n\n");
 		}
 
-		builder.append("rewards \"");
-		builder.append(objectiveFunction.getName());
-		builder.append("\"\n");
+		builder.append(String.format(BEGIN_REWARDS, objectiveFunction.getName()));
+		builder.append("\n");
 
 		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
 
@@ -125,7 +127,7 @@ public class PrismRewardTranslatorUtilities {
 		String artificialReward = buildArtificialRewardItem(ARTIFICIAL_REWARD_VALUE);
 		builder.append(artificialReward);
 		builder.append("\n");
-		builder.append("endrewards");
+		builder.append(END_REWARDS);
 		return builder.toString();
 	}
 
@@ -161,12 +163,81 @@ public class PrismRewardTranslatorUtilities {
 			builder.append("\n\n");
 		}
 
-		builder.append("rewards \"");
-		builder.append(rewardName);
-		builder.append("\"\n");
+		builder.append(String.format(BEGIN_REWARDS, rewardName));
+		builder.append("\n");
 		String rewardItems = buildRewardItems(rewardName, domain, actionPSO, evaluator);
 		builder.append(rewardItems);
-		builder.append("endrewards");
+		builder.append(END_REWARDS);
+		return builder.toString();
+	}
+
+	/**
+	 * Build a list of reward structures for counting events.
+	 * 
+	 * @param transFunction
+	 *            : Transition function of MDP
+	 * @param events
+	 *            : Events to be counted
+	 * @return Reward structures for counting the events.
+	 * @throws XMDPException
+	 */
+	String buildRewardStructuresForEventCounts(TransitionFunction transFunction, Set<? extends IEvent<?, ?>> events)
+			throws XMDPException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("// Counters for events\n\n");
+		boolean first = true;
+		for (IEvent<?, ?> event : events) {
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
+			builder.append("// ");
+			builder.append(event.getName());
+			builder.append("\n\n");
+			String rewards = buildRewardStructureForEventCount(transFunction, event);
+			builder.append(rewards);
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Build a reward structure for counting a particular event.
+	 * 
+	 * @param transFunction
+	 *            : Transition function of MDP
+	 * @param event
+	 *            : Event to be counted
+	 * @return Reward structure for counting the event.
+	 * @throws XMDPException
+	 */
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructureForEventCount(
+			TransitionFunction transFunction, IEvent<E, T> event) throws XMDPException {
+		String rewardName = event.getName() + "_count";
+		T eventStructure = event.getTransitionStructure();
+		FactoredPSO<E> actionPSO = transFunction.getActionPSO(eventStructure.getActionDef());
+		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
+
+			@Override
+			public double evaluate(Transition<E, T> transition)
+					throws VarNotFoundException, AttributeNameNotFoundException {
+				return event.hasEventOccurred(transition) ? 1 : 0;
+			}
+		};
+
+		StringBuilder builder = new StringBuilder();
+
+		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
+			String computeEventCountFormula = buildComputeRewardFormula(rewardName);
+			builder.append(computeEventCountFormula);
+			builder.append("\n\n");
+		}
+
+		builder.append(String.format(BEGIN_REWARDS, rewardName));
+		builder.append("\n");
+		String rewardItems = buildRewardItems(rewardName, eventStructure, actionPSO, evaluator);
+		builder.append(rewardItems);
+		builder.append(END_REWARDS);
 		return builder.toString();
 	}
 

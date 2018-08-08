@@ -3,6 +3,7 @@ package language.metrics;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
@@ -42,6 +43,10 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 		return mTransStructure;
 	}
 
+	public Set<S> getEvents() {
+		return mMetric.keySet();
+	}
+
 	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException {
 		for (Entry<S, Double> e : mMetric.entrySet()) {
 			S event = e.getKey();
@@ -62,7 +67,8 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 			return false;
 		}
 		EventBasedMetric<?, ?, ?> metric = (EventBasedMetric<?, ?, ?>) obj;
-		return metric.mName.equals(mName) && metric.mTransStructure.equals(mTransStructure) && metric.mMetric.equals(mMetric);
+		return metric.mName.equals(mName) && metric.mTransStructure.equals(mTransStructure)
+				&& metric.mMetric.equals(mMetric);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package prismconnector;
 
 import language.exceptions.XMDPException;
 import language.mdp.TransitionFunction;
+import language.metrics.EventBasedMetric;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.objectives.CostFunction;
@@ -60,8 +61,18 @@ public class PrismRewardTranslator {
 	 * @return Reward structure representing the QA function
 	 * @throws XMDPException
 	 */
-	public <E extends IAction, T extends ITransitionStructure<E>> String getQAFunctionTranslation(
-			IQFunction<E, T> qFunction) throws XMDPException {
+	public String getQAFunctionTranslation(IQFunction<?, ?> qFunction) throws XMDPException {
 		return mRewardUtilities.buildRewardStructure(mTransFunction, qFunction);
+	}
+
+	/**
+	 * 
+	 * @param eventBasedMetric
+	 *            : Event-based metric of a non-standard QA function
+	 * @return Counters for different events in the eventBasedMetric
+	 * @throws XMDPException
+	 */
+	public String getEventCounters(EventBasedMetric<?, ?, ?> eventBasedMetric) throws XMDPException {
+		return mRewardUtilities.buildRewardStructuresForEventCounts(mTransFunction, eventBasedMetric.getEvents());
 	}
 }

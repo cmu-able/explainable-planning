@@ -11,7 +11,7 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionDomain<E>, S extends IEvent<E, T>>
+public class NonStandardMetricQFunction<E extends IAction, T extends ITransitionStructure<E>, S extends IEvent<E, T>>
 		implements IQFunction<E, T> {
 
 	/*
@@ -35,8 +35,8 @@ public class NonStandardMetricQFunction<E extends IAction, T extends IQFunctionD
 	}
 
 	@Override
-	public T getQFunctionDomain() {
-		return mMetric.getQFunctionDomain();
+	public T getTransitionStructure() {
+		return mMetric.getTransitionStructure();
 	}
 
 	@Override

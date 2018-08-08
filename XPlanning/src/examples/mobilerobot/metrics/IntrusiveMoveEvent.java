@@ -34,7 +34,7 @@ public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDom
 	}
 
 	@Override
-	public IntrusivenessDomain getQFunctionDomain() {
+	public IntrusivenessDomain getTransitionStructure() {
 		return mDomain;
 	}
 

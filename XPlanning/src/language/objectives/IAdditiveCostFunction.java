@@ -3,7 +3,7 @@ package language.objectives;
 import java.util.Set;
 
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.qfactors.IAction;
 
 /**
@@ -15,12 +15,12 @@ import language.qfactors.IAction;
  */
 public interface IAdditiveCostFunction {
 
-	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
 			S qFunction);
 
 	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc);
 
 	public String getName();
 
-	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions();
+	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions();
 }

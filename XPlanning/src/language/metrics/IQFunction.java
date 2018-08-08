@@ -11,11 +11,11 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public interface IQFunction<E extends IAction, T extends IQFunctionDomain<E>> {
+public interface IQFunction<E extends IAction, T extends ITransitionStructure<E>> {
 
 	public String getName();
 
-	public T getQFunctionDomain();
+	public T getTransitionStructure();
 
 	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException;
 }

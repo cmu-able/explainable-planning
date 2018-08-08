@@ -41,7 +41,7 @@ public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
 	}
 
 	@Override
-	public CollisionDomain getQFunctionDomain() {
+	public CollisionDomain getTransitionStructure() {
 		return mDomain;
 	}
 

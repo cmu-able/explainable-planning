@@ -10,11 +10,11 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public interface IEvent<E extends IAction, T extends IQFunctionDomain<E>> {
+public interface IEvent<E extends IAction, T extends ITransitionStructure<E>> {
 
 	public String getName();
 
-	public T getQFunctionDomain();
+	public T getTransitionStructure();
 
 	public boolean hasEventOccurred(Transition<E, T> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException;

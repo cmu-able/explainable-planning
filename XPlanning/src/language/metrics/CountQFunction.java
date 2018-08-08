@@ -15,7 +15,7 @@ import language.qfactors.IAction;
  * @param <S>
  *            : Type of event
  */
-public class CountQFunction<E extends IAction, T extends IQFunctionDomain<E>, S extends IEvent<E, T>>
+public class CountQFunction<E extends IAction, T extends ITransitionStructure<E>, S extends IEvent<E, T>>
 		implements IQFunction<E, T> {
 
 	/*
@@ -39,8 +39,8 @@ public class CountQFunction<E extends IAction, T extends IQFunctionDomain<E>, S 
 	}
 
 	@Override
-	public T getQFunctionDomain() {
-		return mEvent.getQFunctionDomain();
+	public T getTransitionStructure() {
+		return mEvent.getTransitionStructure();
 	}
 
 	@Override

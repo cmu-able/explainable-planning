@@ -9,15 +9,16 @@ import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
 /**
- * {@link QFunctionDomain} represents the domain of a {@link IQFunction}. It contains a set of variable definitions in
- * the source state, a set in the destination state, and an action definition. This is to facilitate PRISM translator in
- * generating a reward structure for the corresponding QA function.
+ * {@link TransitionStructure} represents the structure of a transition. It contains a set of variable definitions in
+ * the source state, a set in the destination state, and an action definition. It can be used to represent the domain of
+ * a {@link IQFunction} -- among others. This is to facilitate PRISM translator in generating a reward structure for the
+ * corresponding QA function.
  * 
  * @author rsukkerd
  *
  * @param <E>
  */
-public class QFunctionDomain<E extends IAction> implements IQFunctionDomain<E> {
+public class TransitionStructure<E extends IAction> implements ITransitionStructure<E> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -83,10 +84,10 @@ public class QFunctionDomain<E extends IAction> implements IQFunctionDomain<E> {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof QFunctionDomain<?>)) {
+		if (!(obj instanceof TransitionStructure<?>)) {
 			return false;
 		}
-		QFunctionDomain<?> domain = (QFunctionDomain<?>) obj;
+		TransitionStructure<?> domain = (TransitionStructure<?>) obj;
 		return domain.mSrcVarDefs.equals(mSrcVarDefs) && domain.mDestVarDefs.equals(mDestVarDefs)
 				&& domain.mActionDef.equals(mActionDef);
 	}

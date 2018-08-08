@@ -17,7 +17,7 @@ import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
 import language.mdp.TransitionFunction;
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.metrics.Transition;
 import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
@@ -50,7 +50,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @throws XMDPException
 	 */
 	String buildRewardStructures(TransitionFunction transFunction,
-			Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions) throws XMDPException {
+			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions) throws XMDPException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Quality-Attribute Functions\n\n");
 		boolean first = true;
@@ -98,19 +98,19 @@ public class PrismRewardTranslatorUtilities {
 		builder.append(objectiveFunction.getName());
 		builder.append("\"\n");
 
-		Set<IQFunction<IAction, IQFunctionDomain<IAction>>> qFunctions = objectiveFunction.getQFunctions();
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
 
-		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : qFunctions) {
-			AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> attrCostFunction = objectiveFunction
+		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qFunctions) {
+			AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunction = objectiveFunction
 					.getAttributeCostFunction(qFunction);
 			double scalingConst = objectiveFunction.getScalingConstant(attrCostFunction);
 
-			IQFunctionDomain<IAction> domain = qFunction.getQFunctionDomain();
+			ITransitionStructure<IAction> domain = qFunction.getTransitionStructure();
 			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(domain.getActionDef());
-			TransitionEvaluator<IAction, IQFunctionDomain<IAction>> evaluator = new TransitionEvaluator<IAction, IQFunctionDomain<IAction>>() {
+			TransitionEvaluator<IAction, ITransitionStructure<IAction>> evaluator = new TransitionEvaluator<IAction, ITransitionStructure<IAction>>() {
 
 				@Override
-				public double evaluate(Transition<IAction, IQFunctionDomain<IAction>> transition)
+				public double evaluate(Transition<IAction, ITransitionStructure<IAction>> transition)
 						throws VarNotFoundException, AttributeNameNotFoundException {
 					double qValue = qFunction.getValue(transition);
 					double attrCost = attrCostFunction.getCost(qValue);
@@ -139,10 +139,10 @@ public class PrismRewardTranslatorUtilities {
 	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
 	 * @throws XMDPException
 	 */
-	<E extends IAction, T extends IQFunctionDomain<E>> String buildRewardStructure(TransitionFunction transFunction,
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(TransitionFunction transFunction,
 			IQFunction<E, T> qFunction) throws XMDPException {
 		String rewardName = qFunction.getName();
-		T domain = qFunction.getQFunctionDomain();
+		T domain = qFunction.getTransitionStructure();
 		FactoredPSO<E> actionPSO = transFunction.getActionPSO(domain.getActionDef());
 		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
 
@@ -175,13 +175,14 @@ public class PrismRewardTranslatorUtilities {
 	}
 
 	/**
-	 * Build reward items for a given QA function. The reward values may represent either: (1)~a scaled cost of the QA
-	 * of each transition, or (2)~an actual value of the QA of each transition, depending on the given evaluator.
+	 * Build reward items for a given evaluator. The reward values may represent either: (1)~a scaled cost of the QA of
+	 * each transition, (2)~an actual value of the QA of each transition, or (3)~occurrence of a particular event,
+	 * depending on the given evaluator.
 	 * 
 	 * @param rewardName
 	 *            : Name of the reward structure
-	 * @param domain
-	 *            : Domain of the QA function
+	 * @param transStructure
+	 *            : Transition structure -- this may be the domain of a QA function
 	 * @param actionPSO
 	 *            : PSO of the corresponding action type
 	 * @param evaluator
@@ -190,11 +191,11 @@ public class PrismRewardTranslatorUtilities {
 	 *         : {transition value}; ...
 	 * @throws XMDPException
 	 */
-	<E extends IAction, T extends IQFunctionDomain<E>> String buildRewardItems(String rewardName, T domain,
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItems(String rewardName, T transStructure,
 			FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator) throws XMDPException {
-		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = domain.getSrcStateVarDefs();
-		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = domain.getDestStateVarDefs();
-		ActionDefinition<E> actionDef = domain.getActionDef();
+		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transStructure.getSrcStateVarDefs();
+		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transStructure.getDestStateVarDefs();
+		ActionDefinition<E> actionDef = transStructure.getActionDef();
 
 		StringBuilder builder = new StringBuilder();
 
@@ -219,7 +220,7 @@ public class PrismRewardTranslatorUtilities {
 				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
 					String destPartialGuard = buildPartialRewardGuard(destVars);
 
-					Transition<E, T> transition = new Transition<>(domain, action, srcVars, destVars);
+					Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
 					double value = evaluator.evaluate(transition);
 
 					builder.append(PrismTranslatorUtilities.INDENT);
@@ -407,7 +408,7 @@ public class PrismRewardTranslatorUtilities {
 	 * @param <E>
 	 * @param <T>
 	 */
-	interface TransitionEvaluator<E extends IAction, T extends IQFunctionDomain<E>> {
+	interface TransitionEvaluator<E extends IAction, T extends ITransitionStructure<E>> {
 		double evaluate(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException;
 	}
 

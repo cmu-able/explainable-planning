@@ -43,7 +43,7 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 	}
 
 	@Override
-	public TravelTimeDomain getQFunctionDomain() {
+	public TravelTimeDomain getTransitionStructure() {
 		return mDomain;
 	}
 

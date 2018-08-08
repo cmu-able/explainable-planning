@@ -14,7 +14,7 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>, S extends IEvent<E, T>> {
+public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<E>, S extends IEvent<E, T>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -22,12 +22,12 @@ public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>, 
 	private volatile int hashCode;
 
 	private String mName;
-	private T mDomain;
+	private T mTransStructure;
 	private Map<S, Double> mMetric = new HashMap<>();
 
-	public EventBasedMetric(String name, T domain) {
+	public EventBasedMetric(String name, T transStructure) {
 		mName = name;
-		mDomain = domain;
+		mTransStructure = transStructure;
 	}
 
 	public void put(S event, double value) {
@@ -38,8 +38,8 @@ public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>, 
 		return mName;
 	}
 
-	public T getQFunctionDomain() {
-		return mDomain;
+	public T getTransitionStructure() {
+		return mTransStructure;
 	}
 
 	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException {
@@ -62,7 +62,7 @@ public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>, 
 			return false;
 		}
 		EventBasedMetric<?, ?, ?> metric = (EventBasedMetric<?, ?, ?>) obj;
-		return metric.mName.equals(mName) && metric.mDomain.equals(mDomain) && metric.mMetric.equals(mMetric);
+		return metric.mName.equals(mName) && metric.mTransStructure.equals(mTransStructure) && metric.mMetric.equals(mMetric);
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class EventBasedMetric<E extends IAction, T extends IQFunctionDomain<E>, 
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mName.hashCode();
-			result = 31 * result + mDomain.hashCode();
+			result = 31 * result + mTransStructure.hashCode();
 			result = 31 * result + mMetric.hashCode();
 			hashCode = result;
 		}

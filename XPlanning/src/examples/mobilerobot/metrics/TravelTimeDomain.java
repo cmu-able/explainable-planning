@@ -8,14 +8,14 @@ import examples.mobilerobot.qfactors.MoveToAction;
 import examples.mobilerobot.qfactors.RobotSpeed;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import language.metrics.IQFunctionDomain;
-import language.metrics.QFunctionDomain;
+import language.metrics.ITransitionStructure;
+import language.metrics.TransitionStructure;
 import language.metrics.Transition;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
-public class TravelTimeDomain implements IQFunctionDomain<MoveToAction> {
+public class TravelTimeDomain implements ITransitionStructure<MoveToAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -25,7 +25,7 @@ public class TravelTimeDomain implements IQFunctionDomain<MoveToAction> {
 	private StateVarDefinition<Location> mrLocSrcDef;
 	private StateVarDefinition<RobotSpeed> mrSpeedSrcDef;
 
-	private QFunctionDomain<MoveToAction> mDomain = new QFunctionDomain<>();
+	private TransitionStructure<MoveToAction> mDomain = new TransitionStructure<>();
 
 	public TravelTimeDomain(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
 			ActionDefinition<MoveToAction> moveToDef, StateVarDefinition<Location> rLocDestDef) {

@@ -8,14 +8,15 @@ import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
 /**
- * {@link IQFunctionDomain} is an interface to the domain of a {@link IQFunction}. This is to facilitate PRISM
- * translator in generating a reward structure for the corresponding QA function.
+ * {@link ITransitionStructure} is an interface to the structure of a transition. It can be used to represent the domain
+ * of a {@link IQFunction} -- among others. This is to facilitate PRISM translator in generating a reward structure for
+ * the corresponding QA function.
  * 
  * @author rsukkerd
  *
  * @param <E>
  */
-public interface IQFunctionDomain<E extends IAction> {
+public interface ITransitionStructure<E extends IAction> {
 
 	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs();
 

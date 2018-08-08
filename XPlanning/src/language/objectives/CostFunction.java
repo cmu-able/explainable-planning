@@ -3,7 +3,7 @@ package language.objectives;
 import java.util.Set;
 
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.qfactors.IAction;
 
 /**
@@ -27,13 +27,13 @@ public class CostFunction implements IAdditiveCostFunction {
 		// mAdditiveCostFunc initially empty
 	}
 
-	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> void put(S qFunction,
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(S qFunction,
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAdditiveCostFunc.put(qFunction, attrCostFunc, scalingConst);
 	}
 
 	@Override
-	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
 			S qFunction) {
 		return mAdditiveCostFunc.getAttributeCostFunction(qFunction);
 	}
@@ -48,7 +48,7 @@ public class CostFunction implements IAdditiveCostFunction {
 		return mAdditiveCostFunc.getName();
 	}
 
-	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
+	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions() {
 		return mAdditiveCostFunc.getQFunctions();
 	}
 

@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.qfactors.IAction;
 
 /**
@@ -14,7 +14,7 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public class QSpace implements Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> {
+public class QSpace implements Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -40,8 +40,8 @@ public class QSpace implements Iterable<IQFunction<IAction, IQFunctionDomain<IAc
 	}
 
 	@Override
-	public Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>> iterator() {
-		return new Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>>() {
+	public Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iterator() {
+		return new Iterator<IQFunction<IAction, ITransitionStructure<IAction>>>() {
 
 			private Iterator<IQFunction<?, ?>> iter = mQFunctions.values().iterator();
 
@@ -51,8 +51,8 @@ public class QSpace implements Iterable<IQFunction<IAction, IQFunctionDomain<IAc
 			}
 
 			@Override
-			public IQFunction<IAction, IQFunctionDomain<IAction>> next() {
-				return (IQFunction<IAction, IQFunctionDomain<IAction>>) iter.next();
+			public IQFunction<IAction, ITransitionStructure<IAction>> next() {
+				return (IQFunction<IAction, ITransitionStructure<IAction>>) iter.next();
 			}
 
 			@Override

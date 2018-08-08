@@ -13,39 +13,39 @@ import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Transition} represents a factored (s, a, s') transition. A transition has a parameterized type of
- * {@link IQFunctionDomain}. That is, it has source and destination state variables and an action according to the
- * {@link IQFunctionDomain}.
+ * {@link ITransitionStructure}. That is, it has source and destination state variables and an action according to the
+ * {@link ITransitionStructure}.
  * 
  * @author rsukkerd
  *
  */
-public class Transition<E extends IAction, T extends IQFunctionDomain<E>> {
+public class Transition<E extends IAction, T extends ITransitionStructure<E>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private T mDomain;
+	private T mTransStructure;
 	private E mAction;
 	private StateVarTuple mSrcVarTuple = new StateVarTuple();
 	private StateVarTuple mDestVarTuple = new StateVarTuple();
 
-	public Transition(T domain, E action, Set<StateVar<IStateVarValue>> srcVars, Set<StateVar<IStateVarValue>> destVars)
+	public Transition(T transStructure, E action, Set<StateVar<IStateVarValue>> srcVars, Set<StateVar<IStateVarValue>> destVars)
 			throws IncompatibleActionException, IncompatibleVarException {
-		if (!sanityCheck(domain, action)) {
+		if (!sanityCheck(transStructure, action)) {
 			throw new IncompatibleActionException(action);
 		}
-		mDomain = domain;
+		mTransStructure = transStructure;
 		mAction = action;
 		for (StateVar<? extends IStateVarValue> var : srcVars) {
-			if (!sanityCheckSrc(domain, var)) {
+			if (!sanityCheckSrc(transStructure, var)) {
 				throw new IncompatibleVarException(var.getDefinition());
 			}
 			mSrcVarTuple.addStateVar(var);
 		}
 		for (StateVar<? extends IStateVarValue> var : destVars) {
-			if (!sanityCheckDest(domain, var)) {
+			if (!sanityCheckDest(transStructure, var)) {
 				throw new IncompatibleVarException(var.getDefinition());
 			}
 			mDestVarTuple.addStateVar(var);
@@ -62,10 +62,6 @@ public class Transition<E extends IAction, T extends IQFunctionDomain<E>> {
 
 	private boolean sanityCheckDest(T domain, StateVar<? extends IStateVarValue> destVar) {
 		return domain.containsDestStateVarDef(destVar.getDefinition());
-	}
-
-	public T getQFunctionDomain() {
-		return mDomain;
 	}
 
 	public E getAction() {
@@ -91,7 +87,7 @@ public class Transition<E extends IAction, T extends IQFunctionDomain<E>> {
 			return false;
 		}
 		Transition<?, ?> trans = (Transition<?, ?>) obj;
-		return trans.mDomain.equals(mDomain) && trans.mAction.equals(mAction) && trans.mSrcVarTuple.equals(mSrcVarTuple)
+		return trans.mTransStructure.equals(mTransStructure) && trans.mAction.equals(mAction) && trans.mSrcVarTuple.equals(mSrcVarTuple)
 				&& trans.mDestVarTuple.equals(mDestVarTuple);
 	}
 
@@ -100,7 +96,7 @@ public class Transition<E extends IAction, T extends IQFunctionDomain<E>> {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDomain.hashCode();
+			result = 31 * result + mTransStructure.hashCode();
 			result = 31 * result + mAction.hashCode();
 			result = 31 * result + mSrcVarTuple.hashCode();
 			result = 31 * result + mDestVarTuple.hashCode();

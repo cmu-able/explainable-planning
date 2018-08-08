@@ -18,7 +18,7 @@ import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.objectives.AdditiveCostFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
@@ -66,26 +66,26 @@ public class AlternativeExplorer {
 		CostFunction costFunction = xmdp.getCostFunction();
 
 		// QAs to be explored
-		Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>> frontierIter = xmdp.getQSpace().iterator();
+		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> frontierIter = xmdp.getQSpace().iterator();
 
 		// Generate alternatives by improving each QA (one at a time) to the next best value, if exists
 		while (frontierIter.hasNext()) {
-			IQFunction<IAction, IQFunctionDomain<IAction>> qFunction = frontierIter.next();
+			IQFunction<IAction, ITransitionStructure<IAction>> qFunction = frontierIter.next();
 			frontierIter.remove();
 
 			// QA value of the solution policy
 			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 
 			// Set a new aspirational level of the QA; use this as a constraint for an alternative
-			AttributeConstraint<IQFunction<IAction, IQFunctionDomain<IAction>>> attrConstraint = new AttributeConstraint<>(
+			AttributeConstraint<IQFunction<IAction, ITransitionStructure<IAction>>> attrConstraint = new AttributeConstraint<>(
 					qFunction, currQAValue, true);
 
 			// Create a new objective function of n-1 attributes that excludes this QA
 			AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
 
-			for (IQFunction<IAction, IQFunctionDomain<IAction>> otherQFunction : costFunction.getQFunctions()) {
+			for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
 				if (!otherQFunction.equals(qFunction)) {
-					AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> otherAttrCostFunc = costFunction
+					AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
 							.getAttributeCostFunction(otherQFunction);
 					double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
 					objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
@@ -106,7 +106,7 @@ public class AlternativeExplorer {
 		return alternatives;
 	}
 
-	private <E extends IAction, T extends IQFunctionDomain<E>> void update(Iterator<IQFunction<E, T>> frontierIter,
+	private <E extends IAction, T extends ITransitionStructure<E>> void update(Iterator<IQFunction<E, T>> frontierIter,
 			Policy alternative) throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
 			IQFunction<E, T> qFunction = frontierIter.next();

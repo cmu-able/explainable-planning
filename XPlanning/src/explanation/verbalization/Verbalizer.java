@@ -13,7 +13,7 @@ import java.util.Set;
 
 import language.mdp.QSpace;
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.qfactors.IAction;
 import uiconnector.PolicyWriter;
 
@@ -49,7 +49,7 @@ public class Verbalizer {
 		StringBuilder builder = new StringBuilder();
 		builder.append("It is expected to ");
 
-		Iterator<IQFunction<IAction, IQFunctionDomain<IAction>>> iter = qSpace.iterator();
+		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = qSpace.iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
 			IQFunction<?, ?> qFunction = iter.next();
@@ -75,8 +75,8 @@ public class Verbalizer {
 
 	private String verbalizeTradeoff(Tradeoff tradeoff, int index) throws IOException {
 		PolicyInfo altPolicyInfo = tradeoff.getAlternativePolicyInfo();
-		Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaGains = tradeoff.getQAGains();
-		Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaLosses = tradeoff.getQALosses();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaGains = tradeoff.getQAGains();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaLosses = tradeoff.getQALosses();
 		File altPolicyJsonFile = mPolicyWriter.writePolicy(altPolicyInfo.getPolicy(), "altPolicy" + index + ".json");
 
 		StringBuilder builder = new StringBuilder();
@@ -92,12 +92,12 @@ public class Verbalizer {
 	}
 
 	private String verbalizeQADifferences(PolicyInfo altPolicyInfo,
-			Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaDiffs) {
+			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<Entry<IQFunction<IAction, IQFunctionDomain<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
+		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
-			Entry<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> e = iter.next();
+			Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double> e = iter.next();
 			IQFunction<?, ?> qFunction = e.getKey();
 			double diffQAValue = e.getValue();
 			double altQAValue = altPolicyInfo.getQAValue(qFunction);
@@ -121,8 +121,8 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String verbalizePreference(Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaGains,
-			Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaLosses) {
+	private String verbalizePreference(Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaGains,
+			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaLosses) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(summarizeQADifferences(qaGains, true));
 		builder.append(qaGains.size() > 1 ? " are " : " is ");
@@ -132,13 +132,13 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String summarizeQADifferences(Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> qaDiffs,
+	private String summarizeQADifferences(Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs,
 			boolean beginSentence) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<Entry<IQFunction<IAction, IQFunctionDomain<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
+		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
-			Entry<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> e = iter.next();
+			Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double> e = iter.next();
 			IQFunction<?, ?> qFunction = e.getKey();
 			double diffQAValue = e.getValue();
 

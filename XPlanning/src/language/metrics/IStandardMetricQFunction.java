@@ -8,6 +8,6 @@ import language.qfactors.IAction;
  * @author rsukkerd
  *
  */
-public interface IStandardMetricQFunction<E extends IAction, T extends IQFunctionDomain<E>> extends IQFunction<E, T> {
+public interface IStandardMetricQFunction<E extends IAction, T extends ITransitionStructure<E>> extends IQFunction<E, T> {
 
 }

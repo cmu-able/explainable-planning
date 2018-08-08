@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.qfactors.IAction;
 
 /**
@@ -30,21 +30,21 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	private Map<IQFunction<?, ?>, AttributeCostFunction<? extends IQFunction<?, ?>>> mAttrCostFuncs = new HashMap<>();
 
 	// For client to obtain a set of generic QA functions
-	private Set<IQFunction<IAction, IQFunctionDomain<IAction>>> mQFunctions = new HashSet<>();
+	private Set<IQFunction<IAction, ITransitionStructure<IAction>>> mQFunctions = new HashSet<>();
 
 	public AdditiveCostFunction(String name) {
 		mName = name;
 	}
 
-	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> void put(S qFunction,
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(S qFunction,
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAttrCostFuncs.put(qFunction, attrCostFunc);
 		mScalingConsts.put(attrCostFunc, scalingConst);
-		mQFunctions.add((IQFunction<IAction, IQFunctionDomain<IAction>>) qFunction);
+		mQFunctions.add((IQFunction<IAction, ITransitionStructure<IAction>>) qFunction);
 	}
 
 	@Override
-	public <E extends IAction, T extends IQFunctionDomain<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> AttributeCostFunction<S> getAttributeCostFunction(
 			S qFunction) {
 		// Casting: We ensure type-safety in put()
 		return (AttributeCostFunction<S>) (mAttrCostFuncs.get(qFunction));
@@ -59,7 +59,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		return mName;
 	}
 
-	public Set<IQFunction<IAction, IQFunctionDomain<IAction>>> getQFunctions() {
+	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions() {
 		return mQFunctions;
 	}
 

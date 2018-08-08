@@ -7,14 +7,14 @@ import examples.mobilerobot.qfactors.Location;
 import examples.mobilerobot.qfactors.MoveToAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import language.metrics.IQFunctionDomain;
-import language.metrics.QFunctionDomain;
+import language.metrics.ITransitionStructure;
+import language.metrics.TransitionStructure;
 import language.metrics.Transition;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
-public class IntrusivenessDomain implements IQFunctionDomain<MoveToAction> {
+public class IntrusivenessDomain implements ITransitionStructure<MoveToAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -23,7 +23,7 @@ public class IntrusivenessDomain implements IQFunctionDomain<MoveToAction> {
 
 	private StateVarDefinition<Location> mrLocDestDef;
 
-	private QFunctionDomain<MoveToAction> mDomain = new QFunctionDomain<>();
+	private TransitionStructure<MoveToAction> mDomain = new TransitionStructure<>();
 
 	public IntrusivenessDomain(ActionDefinition<MoveToAction> moveToDef, StateVarDefinition<Location> rLocDestDef) {
 		mrLocDestDef = rLocDestDef;

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import language.mdp.QSpace;
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.qfactors.IAction;
@@ -19,8 +19,8 @@ public class Tradeoff {
 
 	private PolicyInfo mSolnPolicyInfo;
 	private PolicyInfo mAltPolicyInfo;
-	private Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> mQAGains = new HashMap<>();
-	private Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> mQALosses = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAGains = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQALosses = new HashMap<>();
 
 	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace, CostFunction costFunction) {
 		mSolnPolicyInfo = solnPolicyInfo;
@@ -29,11 +29,11 @@ public class Tradeoff {
 	}
 
 	private void computeTradeoff(QSpace qSpace, CostFunction costFunction) {
-		for (IQFunction<IAction, IQFunctionDomain<IAction>> qFunction : qSpace) {
+		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
 			double solnQAValue = mSolnPolicyInfo.getQAValue(qFunction);
 			double altQAValue = mAltPolicyInfo.getQAValue(qFunction);
 			double diffQAValue = altQAValue - solnQAValue;
-			AttributeCostFunction<IQFunction<IAction, IQFunctionDomain<IAction>>> attrCostFunc = costFunction
+			AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc = costFunction
 					.getAttributeCostFunction(qFunction);
 			double solnQACost = attrCostFunc.getCost(solnQAValue);
 			double altQACost = attrCostFunc.getCost(altQAValue);
@@ -53,11 +53,11 @@ public class Tradeoff {
 		return mAltPolicyInfo;
 	}
 
-	public Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> getQAGains() {
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQAGains() {
 		return mQAGains;
 	}
 
-	public Map<IQFunction<IAction, IQFunctionDomain<IAction>>, Double> getQALosses() {
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQALosses() {
 		return mQALosses;
 	}
 

@@ -11,7 +11,7 @@ import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
-import language.metrics.IQFunctionDomain;
+import language.metrics.ITransitionStructure;
 import language.objectives.AttributeConstraint;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
@@ -80,7 +80,7 @@ public class PrismConnector {
 	 * @throws ResultParsingException
 	 * @throws IOException
 	 */
-	public <E extends IAction, T extends IQFunctionDomain<E>> Policy generateOptimalPolicy(
+	public <E extends IAction, T extends ITransitionStructure<E>> Policy generateOptimalPolicy(
 			IAdditiveCostFunction objectiveFunction, AttributeConstraint<IQFunction<E, T>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		// Use transition rewards for multi-objective adversary synthesis
@@ -230,7 +230,7 @@ public class PrismConnector {
 		mCachedTotalCosts.put(policy, totalCost);
 	}
 
-	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qSpace)
+	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
@@ -259,7 +259,7 @@ public class PrismConnector {
 	}
 
 	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
-			Iterable<IQFunction<IAction, IQFunctionDomain<IAction>>> qSpace, PrismMDPTranslator mdpTranslator)
+			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace, PrismMDPTranslator mdpTranslator)
 			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
 		PrismPropertyTranslator propertyTranslator = mdpTranslator.getPrismPropertyTransltor();
 		ValueEncodingScheme encodings = mdpTranslator.getValueEncodingScheme();

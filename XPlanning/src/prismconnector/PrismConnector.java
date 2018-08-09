@@ -5,13 +5,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import explanation.analysis.EventBasedQAValue;
 import language.dtmc.XDTMC;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
+import language.metrics.NonStandardMetricQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
@@ -198,6 +201,15 @@ public class PrismConnector {
 		return mCachedTotalCosts.get(policy);
 	}
 
+	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
+		XDTMC xdtmc = new XDTMC(mXMDP, policy);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false);
+		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
+		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
+		mCachedTotalCosts.put(policy, totalCost);
+	}
+
 	/**
 	 * Retrieve the QA value of a given policy from the cache. If the policy is not already in the cache, then compute
 	 * and cache all of its QA values.
@@ -219,15 +231,6 @@ public class PrismConnector {
 			computeQAValues(policy, mXMDP.getQSpace());
 		}
 		return mCachedQAValues.get(policy).get(qFunction);
-	}
-
-	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
-		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
-		String dtmc = dtmcTranslator.getDTMCTranslation(false);
-		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
-		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
-		mCachedTotalCosts.put(policy, totalCost);
 	}
 
 	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
@@ -275,5 +278,52 @@ public class PrismConnector {
 		}
 		Policy policy = mExplicitModelPtrToPolicy.get(explicitDTMCPointer);
 		mCachedQAValues.put(policy, qaValues);
+	}
+
+	/**
+	 * Compute the expected total occurrences of each event in a given non-standard QA metric.
+	 * 
+	 * @param policy
+	 * @param qFunction
+	 *            : Non-standard QA function
+	 * @return Event-based QA value of the policy
+	 * @throws XMDPException
+	 * @throws ResultParsingException
+	 * @throws PrismException
+	 */
+	public <E extends IEvent<?, ?>> EventBasedQAValue<E> computeEventBasedQAValue(Policy policy,
+			NonStandardMetricQFunction<?, ?, E> qFunction)
+			throws XMDPException, ResultParsingException, PrismException {
+		XDTMC xdtmc = new XDTMC(mXMDP, policy);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false);
+		String eventCounterRewards = dtmcTranslator.getEventCounterRewardsTranslation(qFunction.getEventBasedMetric());
+
+		StringBuilder dtmcStrBuilder = new StringBuilder();
+		dtmcStrBuilder.append(dtmc);
+		dtmcStrBuilder.append("\n\n");
+		dtmcStrBuilder.append(eventCounterRewards);
+		String dtmcWithEventCounters = dtmcStrBuilder.toString();
+
+		Map<E, String> eventQueryProps = new HashMap<>();
+		StringBuilder propsStrBuilder = new StringBuilder();
+		for (E event : qFunction.getEventBasedMetric().getEvents()) {
+			String eventQueryProp = dtmcTranslator.getEventCountPropertyTranslation(event);
+			eventQueryProps.put(event, eventQueryProp);
+			propsStrBuilder.append(eventQueryProp);
+			propsStrBuilder.append("\n");
+		}
+		String propsStr = propsStrBuilder.toString();
+
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithEventCounters, propsStr);
+
+		EventBasedQAValue<E> eventBasedQAValue = new EventBasedQAValue<>();
+		for (Entry<E, String> entry : eventQueryProps.entrySet()) {
+			E event = entry.getKey();
+			String eventQueryProp = entry.getValue();
+			eventBasedQAValue.putExpectedCount(event, results.get(eventQueryProp));
+		}
+
+		return eventBasedQAValue;
 	}
 }

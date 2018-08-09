@@ -2,6 +2,7 @@ package prismconnector;
 
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostFunction;
@@ -114,6 +115,26 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}=? [ F ");
+		String goalPredicate = buildGoalPredicate(goal);
+		builder.append(goalPredicate);
+		builder.append(" ]");
+		return builder.toString();
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 *            : Goal of the corresponding MDP
+	 * @param event
+	 *            : Event to be counted
+	 * @return R{"{event name}_count"}=? [ F {goal predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	public String buildDTMCEventCountProperty(StateVarTuple goal, IEvent<?, ?> event) throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		builder.append("R{\"");
+		builder.append(event.getName());
+		builder.append("_count\"}=? [ F ");
 		String goalPredicate = buildGoalPredicate(goal);
 		builder.append(goalPredicate);
 		builder.append(" ]");

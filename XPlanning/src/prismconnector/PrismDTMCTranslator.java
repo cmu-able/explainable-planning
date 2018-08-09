@@ -15,6 +15,8 @@ import language.mdp.IActionDescription;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
+import language.metrics.EventBasedMetric;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.objectives.CostFunction;
 import language.qfactors.ActionDefinition;
@@ -109,6 +111,17 @@ public class PrismDTMCTranslator {
 
 	/**
 	 * 
+	 * @param eventBasedMetric
+	 *            : Event-based metric
+	 * @return Reward structures for counters of events in the event-based metric
+	 * @throws XMDPException
+	 */
+	public String getEventCounterRewardsTranslation(EventBasedMetric<?, ?, ?> eventBasedMetric) throws XMDPException {
+		return mRewardTranslator.getEventCounters(eventBasedMetric);
+	}
+
+	/**
+	 * 
 	 * @return Numerical query property of the expected total cost of this DTMC
 	 * @throws VarNotFoundException
 	 */
@@ -128,6 +141,18 @@ public class PrismDTMCTranslator {
 	public String getNumQueryPropertyTranslation(IQFunction<?, ?> qFunction) throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction);
+	}
+
+	/**
+	 * 
+	 * @param event
+	 *            : Event to be counted
+	 * @return Numerical query property of the expected total occurrences of the event in this DTMC
+	 * @throws VarNotFoundException
+	 */
+	public String getEventCountPropertyTranslation(IEvent<?, ?> event) throws VarNotFoundException {
+		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
+		return mPropertyTranslator.buildDTMCEventCountProperty(goal, event);
 	}
 
 	/**

@@ -9,7 +9,9 @@ import explanation.verbalization.Vocabulary;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
+import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConnector;
@@ -47,6 +49,13 @@ public class Explainer {
 		for (IQFunction<?, ?> qFunction : qSpace) {
 			double qaValue = prismConnector.getQAValue(policy, qFunction);
 			policyInfo.putQAValue(qFunction, qaValue);
+
+			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
+				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = prismConnector.computeEventBasedQAValue(policy,
+						nonStdQFunction);
+				policyInfo.putEventBasedQAValue(nonStdQFunction, eventBasedQAValue);
+			}
 		}
 		return policyInfo;
 	}

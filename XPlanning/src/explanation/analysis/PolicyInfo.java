@@ -3,7 +3,9 @@ package explanation.analysis;
 import java.util.HashMap;
 import java.util.Map;
 
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
+import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 
 public class PolicyInfo {
@@ -15,6 +17,7 @@ public class PolicyInfo {
 
 	private Policy mPolicy;
 	private Map<IQFunction<?, ?>, Double> mQAValues = new HashMap<>();
+	private Map<NonStandardMetricQFunction<?, ?, ?>, EventBasedQAValue<?>> mEventBasedQAValues = new HashMap<>();
 
 	public PolicyInfo(Policy policy) {
 		mPolicy = policy;
@@ -24,12 +27,23 @@ public class PolicyInfo {
 		mQAValues.put(qFunction, qaValue);
 	}
 
+	public <E extends IEvent<?, ?>> void putEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
+			EventBasedQAValue<E> qaValue) {
+		mEventBasedQAValues.put(qFunction, qaValue);
+	}
+
 	public Policy getPolicy() {
 		return mPolicy;
 	}
 
 	public double getQAValue(IQFunction<?, ?> qFunction) {
 		return mQAValues.get(qFunction);
+	}
+
+	public <E extends IEvent<?, ?>> EventBasedQAValue<E> getEventBasedQAValue(
+			NonStandardMetricQFunction<?, ?, E> qFunction) {
+		// Casting: type-safety is ensured in putEventBasedQAValue()
+		return (EventBasedQAValue<E>) mEventBasedQAValues.get(qFunction);
 	}
 
 	@Override
@@ -41,7 +55,8 @@ public class PolicyInfo {
 			return false;
 		}
 		PolicyInfo policyInfo = (PolicyInfo) obj;
-		return policyInfo.mPolicy.equals(mPolicy) && policyInfo.mQAValues.equals(mQAValues);
+		return policyInfo.mPolicy.equals(mPolicy) && policyInfo.mQAValues.equals(mQAValues)
+				&& policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues);
 	}
 
 	@Override
@@ -51,6 +66,7 @@ public class PolicyInfo {
 			result = 17;
 			result = 31 * result + mPolicy.hashCode();
 			result = 31 * result + mQAValues.hashCode();
+			result = 31 * result + mEventBasedQAValues.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -9,6 +9,8 @@ import language.metrics.Transition;
 
 public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDomain> {
 
+	public static final String NAME = "intrusiveness";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */

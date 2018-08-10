@@ -16,7 +16,7 @@ import language.metrics.Transition;
  */
 public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToAction, TravelTimeDomain> {
 
-	private static final String NAME = "travelTime";
+	public static final String NAME = "travelTime";
 
 	/*
 	 * Cached hashCode -- Effective Java

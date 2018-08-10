@@ -20,8 +20,18 @@ import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
+import examples.mobilerobot.metrics.CollisionDomain;
+import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.IntrusivenessDomain;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
+import examples.mobilerobot.qfactors.MoveToAction;
+import explanation.verbalization.Vocabulary;
 import language.exceptions.IncompatibleActionException;
+import language.mdp.QSpace;
 import language.mdp.XMDP;
+import language.metrics.CountQFunction;
+import language.metrics.NonStandardMetricQFunction;
 
 public class MobileRobotTestLoader {
 
@@ -62,5 +72,29 @@ public class MobileRobotTestLoader {
 		LocationNode startNode = map.lookUpLocationNode(mission.getStartNodeID());
 		LocationNode goalNode = map.lookUpLocationNode(mission.getGoalNodeID());
 		return mXMDPBuilder.buildXMDP(map, startNode, goalNode, mission.getMaxTravelTime());
+	}
+
+	public Vocabulary getVocabulary(XMDP xmdp) {
+		QSpace qSpace = xmdp.getQSpace();
+		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
+		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace
+				.getQFunction(CountQFunction.class, CollisionEvent.NAME);
+		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = qSpace
+				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
+
+		Vocabulary vocab = new Vocabulary();
+		vocab.putNoun(timeQFunction, "time");
+		vocab.putVerb(timeQFunction, "take");
+		vocab.putUnit(timeQFunction, "minute", "minutes");
+		vocab.putNoun(collideQFunction, "collision");
+		vocab.putVerb(collideQFunction, "have");
+		vocab.putUnit(collideQFunction, "collision", "collisions");
+		vocab.putNoun(intrusiveQFunction, "intrusiveness");
+		vocab.putVerb(intrusiveQFunction, "be");
+		for (IntrusiveMoveEvent event : intrusiveQFunction.getEventBasedMetric().getEvents()) {
+			vocab.putCategoricalValue(intrusiveQFunction, event, event.getName());
+		}
+		vocab.putUnit(intrusiveQFunction, "step", "steps");
+		return vocab;
 	}
 }

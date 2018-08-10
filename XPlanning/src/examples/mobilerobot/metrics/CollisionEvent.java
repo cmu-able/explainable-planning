@@ -16,7 +16,7 @@ import language.metrics.Transition;
  */
 public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
 
-	private static final String NAME = "collision";
+	public static final String NAME = "collision";
 
 	/*
 	 * Cached hashCode -- Effective Java

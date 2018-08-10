@@ -21,22 +21,23 @@ public class QSpace implements Iterable<IQFunction<IAction, ITransitionStructure
 	 */
 	private volatile int hashCode;
 
-	private Map<Class<?>, IQFunction<?, ?>> mQFunctions = new HashMap<>();
+	private Map<String, IQFunction<?, ?>> mQFunctions = new HashMap<>();
 
 	public QSpace() {
 		// mQFunctions initially empty
 	}
 
 	public void addQFunction(IQFunction<?, ?> qFunction) {
-		mQFunctions.put(qFunction.getClass(), qFunction);
+		mQFunctions.put(qFunction.getName(), qFunction);
 	}
 
 	public boolean contains(IQFunction<?, ?> qFunction) {
 		return mQFunctions.containsValue(qFunction);
 	}
 
-	public <E extends IQFunction<?, ?>> E getQFunction(Class<E> qFunctionType) {
-		return qFunctionType.cast(mQFunctions.get(qFunctionType));
+	public <E extends IQFunction<?, ?>> E getQFunction(Class<E> qFunctionType, String name) {
+		IQFunction<?, ?> qFunction = mQFunctions.get(name);
+		return qFunctionType.cast(qFunction);
 	}
 
 	@Override

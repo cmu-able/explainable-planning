@@ -194,7 +194,7 @@ public class MobileRobotTestProblem {
 				Area.SEMI_PRIVATE);
 		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent("very-intrusive", intrusiveDomain, Area.PRIVATE);
 		EventBasedMetric<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> metric = new EventBasedMetric<>(
-				"intrusiveness", intrusiveDomain);
+				IntrusiveMoveEvent.NAME, intrusiveDomain);
 		metric.put(nonIntrusive, NON_INTRUSIVE_PENALTY);
 		metric.put(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
 		metric.put(veryIntrusive, VERY_INTRUSIVE_PENALTY);

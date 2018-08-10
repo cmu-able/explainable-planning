@@ -5,15 +5,16 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import explanation.analysis.PolicyInfo;
-import explanation.analysis.Tradeoff;
-
 import java.util.Set;
 
+import explanation.analysis.EventBasedQAValue;
+import explanation.analysis.PolicyInfo;
+import explanation.analysis.Tradeoff;
 import language.mdp.QSpace;
+import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
+import language.metrics.NonStandardMetricQFunction;
 import language.qfactors.IAction;
 import uiconnector.PolicyWriter;
 
@@ -57,19 +58,60 @@ public class Verbalizer {
 			if (firstQA) {
 				firstQA = false;
 			} else if (!iter.hasNext()) {
+				builder.append("; and ");
+			} else {
+				builder.append("; ");
+			}
+
+			builder.append(mVocabulary.getVerb(qFunction));
+			builder.append(" ");
+
+			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
+				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = policyInfo.getEventBasedQAValue(nonStdQFunction);
+				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue));
+			} else {
+				double qaValue = policyInfo.getQAValue(qFunction);
+				builder.append(verbalizeQAValue(qFunction, qaValue));
+			}
+		}
+		builder.append(".");
+		return builder.toString();
+	}
+
+	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(qaValue);
+		builder.append(" ");
+		builder.append(qaValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+		return builder.toString();
+	}
+
+	private <E extends IEvent<?, ?>> String verbalizeEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
+			EventBasedQAValue<E> qaValue) {
+		StringBuilder builder = new StringBuilder();
+		Iterator<Entry<E, Double>> iter = qaValue.iterator();
+		boolean firstCatValue = true;
+		while (iter.hasNext()) {
+			Entry<E, Double> entry = iter.next();
+
+			if (firstCatValue) {
+				firstCatValue = false;
+			} else if (!iter.hasNext()) {
 				builder.append(", and ");
 			} else {
 				builder.append(", ");
 			}
 
-			double qaValue = policyInfo.getQAValue(qFunction);
-			builder.append(mVocabulary.getVerb(qFunction));
+			E event = entry.getKey();
+			double expectedCount = entry.getValue();
+			builder.append(mVocabulary.getCategoricalValue(qFunction, event));
 			builder.append(" ");
-			builder.append(qaValue);
+			builder.append(expectedCount);
 			builder.append(" ");
-			builder.append(qaValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+			builder.append(
+					expectedCount > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
 		}
-		builder.append(".");
 		return builder.toString();
 	}
 
@@ -94,7 +136,8 @@ public class Verbalizer {
 	private String verbalizeQADifferences(PolicyInfo altPolicyInfo,
 			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
+		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet()
+				.iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
 			Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double> e = iter.next();
@@ -113,10 +156,14 @@ public class Verbalizer {
 			builder.append(diffQAValue < 0 ? "reduce the " : "increase the ");
 			builder.append(mVocabulary.getNoun(qFunction));
 			builder.append(" to ");
-			builder.append(altQAValue);
-			builder.append(" ");
-			builder.append(
-					altQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+
+			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
+				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = altPolicyInfo.getEventBasedQAValue(nonStdQFunction);
+				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue));
+			} else {
+				builder.append(verbalizeQAValue(qFunction, altQAValue));
+			}
 		}
 		return builder.toString();
 	}
@@ -135,7 +182,8 @@ public class Verbalizer {
 	private String summarizeQADifferences(Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs,
 			boolean beginSentence) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet().iterator();
+		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet()
+				.iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
 			Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double> e = iter.next();

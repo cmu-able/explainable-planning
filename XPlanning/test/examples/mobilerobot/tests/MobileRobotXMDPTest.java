@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -68,7 +69,8 @@ public class MobileRobotXMDPTest {
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
-		String outputPath = PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
+		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+		String outputPath = PRISM_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv");
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);

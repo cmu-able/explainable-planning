@@ -24,6 +24,8 @@ import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
@@ -349,7 +351,7 @@ public class PrismRewardTranslatorHelper {
 	 * 
 	 * @param stateVars
 	 * @param nameSuffix
-	 * @return {varName_1{Suffix}}={encoded int value} & ... & {varName_m{Suffix}}={encoded int value}
+	 * @return {varName_1{Suffix}}={value OR encoded int value} & ... & {varName_m{Suffix}}={value OR encoded int value}
 	 * @throws VarNotFoundException
 	 */
 	String buildPartialRewardGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix)
@@ -358,7 +360,8 @@ public class PrismRewardTranslatorHelper {
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : stateVars) {
 			String varName = var.getName();
-			Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), var.getValue());
+			IStateVarValue value = var.getValue();
+
 			if (!first) {
 				builder.append(" & ");
 			} else {
@@ -367,7 +370,13 @@ public class PrismRewardTranslatorHelper {
 			builder.append(varName);
 			builder.append(nameSuffix);
 			builder.append("=");
-			builder.append(encodedValue);
+
+			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
+				builder.append(value);
+			} else {
+				Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), value);
+				builder.append(encodedValue);
+			}
 		}
 		return builder.toString();
 	}

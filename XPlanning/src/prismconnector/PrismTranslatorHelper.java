@@ -44,6 +44,7 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
+	 * Build constants' declarations for values of variables of types unsupported by PRISM language.
 	 * 
 	 * @param stateSpace
 	 * @return const int {varName}_{value} = {encoded int value}; ...
@@ -304,6 +305,7 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
+	 * Build a variable declaration of a module, where the variable type is unsupported by PRISM language.
 	 * 
 	 * @param varDef
 	 * @param nameSuffix
@@ -550,7 +552,7 @@ public class PrismTranslatorHelper {
 	/**
 	 * 
 	 * @param predicate
-	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
+	 * @return {varName_1}={value OR encoded int value} & ... & {varName_m}={value OR encoded int value}
 	 * @throws VarNotFoundException
 	 */
 	String buildExpression(IStateVarTuple predicate) throws VarNotFoundException {
@@ -558,7 +560,8 @@ public class PrismTranslatorHelper {
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {
 			String varName = var.getName();
-			Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), var.getValue());
+			IStateVarValue value = var.getValue();
+
 			if (!first) {
 				builder.append(" & ");
 			} else {
@@ -566,7 +569,13 @@ public class PrismTranslatorHelper {
 			}
 			builder.append(varName);
 			builder.append("=");
-			builder.append(encodedValue);
+
+			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
+				builder.append(value);
+			} else {
+				Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), value);
+				builder.append(encodedValue);
+			}
 		}
 		return builder.toString();
 	}
@@ -619,19 +628,24 @@ public class PrismTranslatorHelper {
 	/**
 	 * 
 	 * @param updatedStateVar
-	 * @return ({varName}'={encoded int value})
+	 * @return ({varName}'={value OR encoded int value})
 	 * @throws VarNotFoundException
 	 */
 	String buildVariableUpdate(StateVar<IStateVarValue> updatedStateVar) throws VarNotFoundException {
 		String varName = updatedStateVar.getName();
-		Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar.getDefinition(),
-				updatedStateVar.getValue());
+		IStateVarValue value = updatedStateVar.getValue();
 		StringBuilder builder = new StringBuilder();
 		builder.append("(");
 		builder.append(varName);
 		builder.append("'");
 		builder.append("=");
-		builder.append(encodedValue);
+
+		if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
+			builder.append(value);
+		} else {
+			Integer encodedValue = mEncodings.getEncodedIntValue(updatedStateVar.getDefinition(), value);
+			builder.append(encodedValue);
+		}
 		builder.append(")");
 		return builder.toString();
 	}

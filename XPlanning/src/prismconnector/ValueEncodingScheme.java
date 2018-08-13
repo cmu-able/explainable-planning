@@ -16,6 +16,8 @@ import language.mdp.StateSpace;
 import language.metrics.IQFunction;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
@@ -62,6 +64,12 @@ public class ValueEncodingScheme {
 
 	private void encodeStates(StateSpace stateSpace) {
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
+			IStateVarValue sampleValue = stateVarDef.getPossibleValues().iterator().next();
+			if (sampleValue instanceof IStateVarBoolean || sampleValue instanceof IStateVarInt) {
+				// Don't build int-encoding for variable types supported by PRISM language
+				continue;
+			}
+
 			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
 			mStateVarEncodings.put(stateVarDef, encoding);
 		}

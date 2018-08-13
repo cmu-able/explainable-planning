@@ -7,6 +7,8 @@ import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 
@@ -161,14 +163,15 @@ public class PrismPropertyTranslator {
 	 * 
 	 * @param goal
 	 *            : Goal of MDP
-	 * @return {varName}={encoded int value} & ... & readyToCopy & barrier
+	 * @return {varName}={value OR encoded int value} & ... & readyToCopy & barrier
 	 * @throws VarNotFoundException
 	 */
 	private String buildGoalPredicate(StateVarTuple goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean firstVar = true;
 		for (StateVar<IStateVarValue> goalVar : goal) {
-			Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), goalVar.getValue());
+			IStateVarValue value = goalVar.getValue();
+
 			if (!firstVar) {
 				builder.append(" & ");
 			} else {
@@ -176,7 +179,13 @@ public class PrismPropertyTranslator {
 			}
 			builder.append(goalVar.getName());
 			builder.append("=");
-			builder.append(encodedValue);
+
+			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
+				builder.append(value);
+			} else {
+				Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), value);
+				builder.append(encodedValue);
+			}
 		}
 
 		if (mEncodings.isThreeParamRewards()) {

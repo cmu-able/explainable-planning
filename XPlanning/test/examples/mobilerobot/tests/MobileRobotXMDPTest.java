@@ -12,7 +12,6 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import language.exceptions.IncompatibleActionException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import prism.PrismException;
@@ -93,10 +92,12 @@ public class MobileRobotXMDPTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] loadXMDPs()
-			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
+	public Object[][] loadXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
 		String mapJsonDirPath = MAPS_PATH;
 		String missionJsonDirPath = MISSIONS_PATH;
+
+		log("Loading maps from", mapJsonDirPath);
+		log("Loading missions from", missionJsonDirPath);
 
 		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
@@ -115,6 +116,11 @@ public class MobileRobotXMDPTest {
 	public void printMissionFilename(Object[] data) {
 		File missionJsonFile = (File) data[0];
 		System.out.println("Mission: " + missionJsonFile.getName());
+	}
+
+	private void log(String header, String message) {
+		System.out.print(header + ": ");
+		System.out.println(message);
 	}
 
 }

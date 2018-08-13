@@ -40,7 +40,7 @@ public class MapTopologyReader {
 		JSONObject jsonObject = (JSONObject) object;
 
 		// MPR: Meter-to-Pixel ratio
-		int mpr = (int) jsonObject.get("mpr");
+		int mpr = JSONSimpleParserUtils.parseInt(jsonObject, "mpr");
 
 		// Map: Array of nodes
 		JSONArray nodeArray = (JSONArray) jsonObject.get("map");
@@ -86,8 +86,8 @@ public class MapTopologyReader {
 	private LocationNode parseLocationNode(JSONObject nodeObject) {
 		String nodeID = (String) nodeObject.get("node-id");
 		JSONObject coordsObject = (JSONObject) nodeObject.get("coords");
-		double xCoord = (double) coordsObject.get("x");
-		double yCoord = (double) coordsObject.get("y");
+		double xCoord = JSONSimpleParserUtils.parseDouble(coordsObject, "x");
+		double yCoord = JSONSimpleParserUtils.parseDouble(coordsObject, "y");
 		LocationNode locNode = new LocationNode(nodeID, xCoord, yCoord);
 		for (INodeAttributeParser<? extends INodeAttribute> parser : mNodeAttributeParsers) {
 

@@ -21,7 +21,7 @@ public class MissionReader {
 
 		String startNodeID = (String) jsonObject.get("start-id");
 		String goalNodeID = (String) jsonObject.get("goal-id");
-		double maxTravelTime = (double) jsonObject.get("max-time");
+		double maxTravelTime = JSONSimpleParserUtils.parseDouble(jsonObject, "max-time");
 		String mapJsonFilename = (String) jsonObject.get("map-file");
 		return new Mission(startNodeID, goalNodeID, maxTravelTime, mapJsonFilename);
 	}

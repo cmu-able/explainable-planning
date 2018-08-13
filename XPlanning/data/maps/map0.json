@@ -1,0 +1,34 @@
+{
+  "mpr" : 20,
+  "map" : [
+    {
+      "node-id" : "l0",
+      "coords" : {
+        "x" : 0,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l1"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l1",
+      "coords" : {
+        "x" : 20,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l0"
+      ],
+      "area" : "PUBLIC"
+    }
+  ],
+  "obstacles" : [
+    {
+      "from-id" : "l0",
+      "to-id" : "l1",
+      "occlusion" : "CLEAR"
+    }
+  ]
+}

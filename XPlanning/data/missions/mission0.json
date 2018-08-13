@@ -1,0 +1,6 @@
+{
+  "start-id" : "l0",
+  "goal-id" : "l1",
+  "max-time" : 60,
+  "map-file" : "map0.json"
+}

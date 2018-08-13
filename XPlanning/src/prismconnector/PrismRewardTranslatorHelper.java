@@ -382,11 +382,16 @@ public class PrismRewardTranslatorHelper {
 			FactoredPSO<? extends IAction> actionPSO) {
 		Set<StateVar<IStateVarValue>> unchangedVars = new HashSet<>();
 		for (StateVar<IStateVarValue> srcVar : srcVars) {
+			boolean affected = false;
 			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 			for (EffectClass effectClass : effectClasses) {
-				if (!effectClass.contains(srcVar.getDefinition())) {
-					unchangedVars.add(srcVar);
+				if (effectClass.contains(srcVar.getDefinition())) {
+					affected = true;
+					break;
 				}
+			}
+			if (!affected) {
+				unchangedVars.add(srcVar);
 			}
 		}
 		return unchangedVars;

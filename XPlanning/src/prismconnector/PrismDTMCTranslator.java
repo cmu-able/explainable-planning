@@ -24,7 +24,7 @@ import language.qfactors.IAction;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
-import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
+import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
 
@@ -32,7 +32,7 @@ public class PrismDTMCTranslator {
 	private ValueEncodingScheme mEncodings;
 	private PrismRewardTranslator mRewardTranslator;
 	private PrismPropertyTranslator mPropertyTranslator;
-	private PrismTranslatorUtilities mUtilities;
+	private PrismTranslatorHelper mHelper;
 
 	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXDTMC = xdtmc;
@@ -44,7 +44,7 @@ public class PrismDTMCTranslator {
 		mRewardTranslator = new PrismRewardTranslator(xdtmc.getXMDP().getTransitionFunction(), mEncodings,
 				prismRewardType);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
-		mUtilities = new PrismTranslatorUtilities(mEncodings);
+		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -81,10 +81,10 @@ public class PrismDTMCTranslator {
 			}
 		};
 
-		String constsDecl = mUtilities.buildConstsDecl(xmdp.getStateSpace());
-		String actionsDecl = mUtilities.buildConstsDecl(xmdp.getActionSpace());
-		String goalDecl = mUtilities.buildGoalDecl(xmdp.getGoal());
-		String modules = mUtilities.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
+		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
+		String actionsDecl = mHelper.buildConstsDecl(xmdp.getActionSpace());
+		String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
+		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
 
@@ -180,13 +180,13 @@ public class PrismDTMCTranslator {
 				discriminant.add(stateVar);
 			}
 			ProbabilisticEffect probEffect = actionDescription.getProbabilisticEffect(discriminant, action);
-			String command = mUtilities.buildModuleCommand(action, state, probEffect);
+			String command = mHelper.buildModuleCommand(action, state, probEffect);
 			if (!first) {
 				builder.append("\n");
 			} else {
 				first = false;
 			}
-			builder.append(PrismTranslatorUtilities.INDENT);
+			builder.append(PrismTranslatorHelper.INDENT);
 			builder.append(command);
 		}
 		return builder.toString();

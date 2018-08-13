@@ -11,7 +11,7 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
-import prismconnector.PrismTranslatorUtilities.PartialModuleCommandsBuilder;
+import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
 
@@ -19,7 +19,7 @@ public class PrismMDPTranslator {
 	private ValueEncodingScheme mEncodings;
 	private PrismRewardTranslator mRewardTranslator;
 	private PrismPropertyTranslator mPropertyTranslator;
-	private PrismTranslatorUtilities mUtilities;
+	private PrismTranslatorHelper mHelper;
 
 	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXMDP = xmdp;
@@ -30,7 +30,7 @@ public class PrismMDPTranslator {
 		}
 		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, prismRewardType);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
-		mUtilities = new PrismTranslatorUtilities(mEncodings);
+		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -63,10 +63,10 @@ public class PrismMDPTranslator {
 			}
 		};
 
-		String constsDecl = mUtilities.buildConstsDecl(mXMDP.getStateSpace());
-		String actionsDecl = mUtilities.buildConstsDecl(mXMDP.getActionSpace());
-		String goalDecl = mUtilities.buildGoalDecl(mXMDP.getGoal());
-		String modules = mUtilities.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
+		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
+		String actionsDecl = mHelper.buildConstsDecl(mXMDP.getActionSpace());
+		String goalDecl = mHelper.buildGoalDecl(mXMDP.getGoal());
+		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
@@ -119,13 +119,13 @@ public class PrismMDPTranslator {
 			for (ProbabilisticTransition<IAction> probTrans : probTransitions) {
 				Discriminant discriminant = probTrans.getDiscriminant();
 				ProbabilisticEffect probEffect = probTrans.getProbabilisticEffect();
-				String command = mUtilities.buildModuleCommand(action, discriminant, probEffect);
+				String command = mHelper.buildModuleCommand(action, discriminant, probEffect);
 				if (!first) {
 					builder.append("\n");
 				} else {
 					first = false;
 				}
-				builder.append(PrismTranslatorUtilities.INDENT);
+				builder.append(PrismTranslatorHelper.INDENT);
 				builder.append(command);
 			}
 		}

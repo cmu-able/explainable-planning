@@ -12,12 +12,12 @@ import language.qfactors.IAction;
 public class PrismRewardTranslator {
 
 	private TransitionFunction mTransFunction;
-	private PrismRewardTranslatorUtilities mRewardUtilities;
+	private PrismRewardTranslatorHelper mRewardHelper;
 
 	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings,
 			PrismRewardType prismRewardType) {
 		mTransFunction = transFunction;
-		mRewardUtilities = new PrismRewardTranslatorUtilities(encodings, prismRewardType);
+		mRewardHelper = new PrismRewardTranslatorHelper(encodings, prismRewardType);
 	}
 
 	/**
@@ -28,7 +28,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getCostFunctionTranslation(CostFunction costFunction) throws XMDPException {
-		return mRewardUtilities.buildRewardStructure(mTransFunction, costFunction);
+		return mRewardHelper.buildRewardStructure(mTransFunction, costFunction);
 	}
 
 	/**
@@ -39,7 +39,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getObjectiveFunctionTranslation(IAdditiveCostFunction objectiveFunction) throws XMDPException {
-		return mRewardUtilities.buildRewardStructure(mTransFunction, objectiveFunction);
+		return mRewardHelper.buildRewardStructure(mTransFunction, objectiveFunction);
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class PrismRewardTranslator {
 	 */
 	public String getQAFunctionsTranslation(Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions)
 			throws XMDPException {
-		return mRewardUtilities.buildRewardStructures(mTransFunction, qFunctions);
+		return mRewardHelper.buildRewardStructures(mTransFunction, qFunctions);
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getQAFunctionTranslation(IQFunction<?, ?> qFunction) throws XMDPException {
-		return mRewardUtilities.buildRewardStructure(mTransFunction, qFunction);
+		return mRewardHelper.buildRewardStructure(mTransFunction, qFunction);
 	}
 
 	/**
@@ -73,6 +73,6 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getEventCounters(EventBasedMetric<?, ?, ?> eventBasedMetric) throws XMDPException {
-		return mRewardUtilities.buildRewardStructuresForEventCounts(mTransFunction, eventBasedMetric.getEvents());
+		return mRewardHelper.buildRewardStructuresForEventCounts(mTransFunction, eventBasedMetric.getEvents());
 	}
 }

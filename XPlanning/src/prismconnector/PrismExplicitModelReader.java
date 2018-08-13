@@ -139,7 +139,7 @@ public class PrismExplicitModelReader {
 	}
 
 	private boolean isSpecialVariable(String varName) {
-		return varName.endsWith(PrismTranslatorUtilities.SRC_SUFFIX) || varName.equals("action")
+		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || varName.equals("action")
 				|| varName.equals("readyToCopy");
 	}
 }

@@ -28,7 +28,7 @@ import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
 
-public class PrismRewardTranslatorUtilities {
+public class PrismRewardTranslatorHelper {
 
 	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
 	private static final String BEGIN_REWARDS = "rewards \"%s\"";
@@ -37,7 +37,7 @@ public class PrismRewardTranslatorUtilities {
 	private ValueEncodingScheme mEncodings;
 	private PrismRewardType mPrismRewardType;
 
-	public PrismRewardTranslatorUtilities(ValueEncodingScheme encodings, PrismRewardType prismRewardType) {
+	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings, PrismRewardType prismRewardType) {
 		mEncodings = encodings;
 		mPrismRewardType = prismRewardType;
 	}
@@ -283,7 +283,7 @@ public class PrismRewardTranslatorUtilities {
 				changedSrcVars.removeAll(unchangedSrcVars);
 
 				String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars,
-						PrismTranslatorUtilities.SRC_SUFFIX);
+						PrismTranslatorHelper.SRC_SUFFIX);
 				String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
 
 				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(actionPSO,
@@ -294,7 +294,7 @@ public class PrismRewardTranslatorUtilities {
 					Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
 					double value = evaluator.evaluate(transition);
 
-					builder.append(PrismTranslatorUtilities.INDENT);
+					builder.append(PrismTranslatorHelper.INDENT);
 
 					if (mPrismRewardType == PrismRewardType.STATE_REWARD) {
 						builder.append("compute_");
@@ -332,7 +332,7 @@ public class PrismRewardTranslatorUtilities {
 	 */
 	String buildArtificialRewardItem(double value) {
 		String synchStr = mPrismRewardType == PrismRewardType.STATE_REWARD ? "compute_cost" : "[compute] true";
-		return PrismTranslatorUtilities.INDENT + synchStr + " : " + value + ";";
+		return PrismTranslatorHelper.INDENT + synchStr + " : " + value + ";";
 	}
 
 	/**

@@ -32,14 +32,14 @@ import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
 
-public class PrismTranslatorUtilities {
+public class PrismTranslatorHelper {
 
 	static final String INDENT = "  ";
 	static final String SRC_SUFFIX = "Src";
 
 	private ValueEncodingScheme mEncodings;
 
-	public PrismTranslatorUtilities(ValueEncodingScheme encodings) {
+	public PrismTranslatorHelper(ValueEncodingScheme encodings) {
 		mEncodings = encodings;
 	}
 

@@ -17,7 +17,6 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.qfactors.MoveToAction;
 import explanation.analysis.Explainer;
 import explanation.verbalization.Vocabulary;
-import language.exceptions.IncompatibleActionException;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
@@ -50,8 +49,7 @@ public class MobileRobotExplanationTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] loadXMDPs()
-			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
+	public Object[][] loadXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
 		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
 

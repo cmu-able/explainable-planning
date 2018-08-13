@@ -15,11 +15,12 @@ import examples.mobilerobot.qfactors.Location;
 import examples.mobilerobot.qfactors.MoveToAction;
 import examples.mobilerobot.qfactors.Occlusion;
 import examples.mobilerobot.qfactors.RobotBumped;
+import examples.mobilerobot.qfactors.RobotBumpedActionDescription;
 import examples.mobilerobot.qfactors.RobotLocationActionDescription;
 import examples.mobilerobot.qfactors.RobotSpeed;
 import examples.mobilerobot.qfactors.RobotSpeedActionDescription;
 import examples.mobilerobot.qfactors.SetSpeedAction;
-import language.exceptions.IncompatibleActionException;
+import language.exceptions.XMDPException;
 import language.mdp.ActionSpace;
 import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
@@ -37,6 +38,9 @@ public class MobileRobotXMDPBuilder {
 
 	// Robot's default setting
 	private static final RobotSpeed DEFAULT_SPEED = new RobotSpeed(0.35);
+
+	// Robot's initial bump-sensor value
+	private static final RobotBumped DEFAULT_BUMPED = new RobotBumped(false);
 
 	// --- Location --- //
 	// Robot's location state variable
@@ -87,7 +91,7 @@ public class MobileRobotXMDPBuilder {
 	}
 
 	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, double maxTravelTime)
-			throws IncompatibleActionException, MapTopologyException {
+			throws XMDPException, MapTopologyException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
 		StateVarTuple initialState = buildInitialState(startNode);
@@ -158,6 +162,7 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
+		initialState.addStateVar(rBumpedDef.getStateVar(DEFAULT_BUMPED));
 		return initialState;
 	}
 
@@ -168,8 +173,7 @@ public class MobileRobotXMDPBuilder {
 		return goal;
 	}
 
-	private TransitionFunction buildTransitionFunction(MapTopology map)
-			throws IncompatibleActionException, MapTopologyException {
+	private TransitionFunction buildTransitionFunction(MapTopology map) throws XMDPException, MapTopologyException {
 		// MoveTo:
 		// Precondition
 		Precondition<MoveToAction> preMoveTo = new Precondition<>(moveToDef);
@@ -190,9 +194,14 @@ public class MobileRobotXMDPBuilder {
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
 				rLocDef);
 
+		// Action description for rBumped
+		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, preMoveTo, rLocDef,
+				rBumpedDef);
+
 		// PSO
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
 		moveToPSO.addActionDescription(rLocActionDesc);
+		moveToPSO.addActionDescription(rBumpedActionDesc);
 
 		// SetSpeed:
 		// Precondition

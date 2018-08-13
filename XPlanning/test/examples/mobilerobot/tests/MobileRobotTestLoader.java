@@ -20,7 +20,7 @@ import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
-import language.exceptions.IncompatibleActionException;
+import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 
 public class MobileRobotTestLoader {
@@ -43,8 +43,7 @@ public class MobileRobotTestLoader {
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 	}
 
-	public Set<XMDP> loadAllXMDPs()
-			throws IncompatibleActionException, IOException, ParseException, MapTopologyException {
+	public Set<XMDP> loadAllXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
 		Set<XMDP> xmdps = new HashSet<>();
 		File[] missionJsonFiles = mMissionJsonDir.listFiles();
 		for (File missionJsonFile : missionJsonFiles) {
@@ -53,8 +52,7 @@ public class MobileRobotTestLoader {
 		return xmdps;
 	}
 
-	public XMDP loadXMDP(File missionJsonFile)
-			throws IOException, ParseException, MapTopologyException, IncompatibleActionException {
+	public XMDP loadXMDP(File missionJsonFile) throws IOException, ParseException, MapTopologyException, XMDPException {
 		Mission mission = mMissionReader.readMission(missionJsonFile);
 		String mapJsonFilename = mission.getMapJSONFilename();
 		File mapJsonFile = new File(mMapJsonDir, mapJsonFilename);

@@ -3,7 +3,7 @@ package examples.mobilerobot.qfactors;
 import language.qfactors.IActionAttribute;
 
 /**
- * {@link Distance} represents a distance attribute of an action.
+ * {@link Distance} represents a distance attribute of an action. The unit of distance is meter.
  * 
  * @author rsukkerd
  *
@@ -21,6 +21,10 @@ public class Distance implements IActionAttribute {
 		mDistance = distance;
 	}
 
+	/**
+	 * 
+	 * @return The distance in meter.
+	 */
 	public double getDistance() {
 		return mDistance;
 	}

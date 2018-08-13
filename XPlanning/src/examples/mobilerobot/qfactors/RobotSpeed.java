@@ -7,7 +7,7 @@ import language.qfactors.IStateVarAttribute;
 import language.qfactors.IStateVarDouble;
 
 /**
- * {@link RobotSpeed} is a type of speed value of the robot.
+ * {@link RobotSpeed} is a type of speed value of the robot. The unit of speed is meter/second.
  * 
  * @author rsukkerd
  *
@@ -27,6 +27,10 @@ public class RobotSpeed implements IStateVarDouble {
 		mSpeed = speed;
 	}
 
+	/**
+	 * 
+	 * @return The robot's speed in meter/second.
+	 */
 	public double getSpeed() {
 		return mSpeed;
 	}

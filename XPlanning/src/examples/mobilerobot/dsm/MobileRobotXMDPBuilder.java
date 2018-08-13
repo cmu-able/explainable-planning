@@ -55,7 +55,7 @@ public class MobileRobotXMDPBuilder {
 	// --- Speed setting --- //
 	// Speed settings (known, fixed)
 	private RobotSpeed halfSpeed = new RobotSpeed(0.35);
-	private RobotSpeed fullSpeed = new RobotSpeed(0.7);
+	private RobotSpeed fullSpeed = new RobotSpeed(0.68);
 
 	// Robot's speed state variable
 	private StateVarDefinition<RobotSpeed> rSpeedDef = new StateVarDefinition<>("rSpeed", halfSpeed, fullSpeed);

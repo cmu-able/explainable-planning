@@ -25,7 +25,7 @@ public class PrismExplicitModelPointer {
 	private List<File> mIndexedSrewFiles;
 
 	/**
-	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath
+	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath.
 	 * 
 	 * @param modelPath
 	 * @param filenamePrefix
@@ -36,11 +36,11 @@ public class PrismExplicitModelPointer {
 		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
 		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
 		mSrewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
-		mIndexedSrewFiles = getSortedStateRewardsFiles(filenamePrefix);
+		// mIndexedSrewFiles will be created once the PRISM explicit model is created
 	}
 
 	/**
-	 * Use this constructor if the PRISM explicit model already exists at modelPath
+	 * Use this constructor if the PRISM explicit model already exists at modelPath.
 	 * 
 	 * @param modelPath
 	 */
@@ -48,7 +48,7 @@ public class PrismExplicitModelPointer {
 		mModelDir = new File(modelPath);
 		File[] prismFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(STA_EXTENSION)
 				|| name.toLowerCase().endsWith(TRA_EXTENSION) || name.toLowerCase().endsWith(LAB_EXTENSION));
-		List<File> srewFiles = new ArrayList<>();
+		mIndexedSrewFiles = new ArrayList<>();
 
 		for (File prismFile : prismFiles) {
 			String filename = prismFile.getName().toLowerCase();
@@ -59,24 +59,23 @@ public class PrismExplicitModelPointer {
 			} else if (filename.endsWith(LAB_EXTENSION)) {
 				mLabFile = prismFile;
 			} else if (filename.endsWith(SREW_EXTENSION)) {
-				srewFiles.add(prismFile);
+				mIndexedSrewFiles.add(prismFile);
 			}
 		}
-		srewFiles.sort((file1, file2) -> file1.compareTo(file2));
+		mIndexedSrewFiles.sort((file1, file2) -> file1.compareTo(file2));
 
-		if (srewFiles.size() > 1) {
-			File srew1File = srewFiles.get(0);
+		if (mIndexedSrewFiles.size() > 1) {
+			File srew1File = mIndexedSrewFiles.get(0);
 			String srew1Filename = srew1File.getName(); // <name>1.srew
 			String srewFilenamePrefix = srew1Filename.substring(0, srew1Filename.indexOf(SREW_EXTENSION) - 1); // <name>
 			mSrewFile = new File(modelPath, srewFilenamePrefix + SREW_EXTENSION); // <name>.srew
 		} else {
-			mSrewFile = srewFiles.get(0);
+			mSrewFile = mIndexedSrewFiles.get(0);
 		}
 	}
 
-	private List<File> getSortedStateRewardsFiles(String filenamePrefix) {
-		File[] srewFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().startsWith(filenamePrefix)
-				&& name.toLowerCase().endsWith(SREW_EXTENSION));
+	private List<File> getSortedStateRewardsFiles() {
+		File[] srewFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(SREW_EXTENSION));
 
 		// Sort .srew files lexicographically based on their abstract pathnames
 		// {name}1.srew, {name}2.srew, {name}3.srew, ...
@@ -104,15 +103,17 @@ public class PrismExplicitModelPointer {
 		return mSrewFile;
 	}
 
-	public List<File> getIndexedStateRewardsFiles() {
-		return mIndexedSrewFiles;
-	}
-
 	public File getIndexedStateRewardsFile(int rewardStructIndex) {
+		if (mIndexedSrewFiles == null) {
+			mIndexedSrewFiles = getSortedStateRewardsFiles();
+		}
 		return mIndexedSrewFiles.get(rewardStructIndex - 1);
 	}
 
 	public int getNumRewardStructs() {
+		if (mIndexedSrewFiles == null) {
+			mIndexedSrewFiles = getSortedStateRewardsFiles();
+		}
 		return mIndexedSrewFiles.size();
 	}
 

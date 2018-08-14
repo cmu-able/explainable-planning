@@ -36,12 +36,10 @@ public class MobileRobotXMDPTest {
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			System.out.println("State-reward MDP Translation (with QAs):");
-			System.out.println(mdpWithQAs);
-			System.out.println();
-			System.out.println("Goal Property Translation:");
-			System.out.println(goalProperty);
-			System.out.println();
+			SimpleConsoleLogger.log("State-reward MDP Translation (with QAs)", mdpWithQAs, false);
+			SimpleConsoleLogger.newLine();
+			SimpleConsoleLogger.log("Goal Property Translation", goalProperty, false);
+			SimpleConsoleLogger.newLine();
 		} catch (XMDPException e) {
 			e.printStackTrace();
 			fail("Exception thrown while translating XMDP to PRISM MDP");
@@ -55,12 +53,10 @@ public class MobileRobotXMDPTest {
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			System.out.println("Transition-reward MDP Translation with (with QAs):");
-			System.out.println(mdpWithQAs);
-			System.out.println();
-			System.out.println("Goal Property Translation:");
-			System.out.println(goalProperty);
-			System.out.println();
+			SimpleConsoleLogger.log("Transition-reward MDP Translation with (with QAs)", mdpWithQAs, false);
+			SimpleConsoleLogger.newLine();
+			SimpleConsoleLogger.log("Goal Property Translation", goalProperty, false);
+			SimpleConsoleLogger.newLine();
 		} catch (XMDPException e) {
 			e.printStackTrace();
 			fail("Exception thrown while translating XMDP to PRISM MDP");
@@ -82,11 +78,10 @@ public class MobileRobotXMDPTest {
 
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+			SimpleConsoleLogger.log("Generate adverary from state-reward MDP...");
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
-			System.out.println("Generate adverary from state-reward MDP...");
-			System.out.print("Expected total cost of adversary: ");
-			System.out.println(totalCost);
-			System.out.println();
+			SimpleConsoleLogger.log("Expected total cost of adversary", totalCost, true);
+			SimpleConsoleLogger.newLine();
 		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM generating MDP adversary");
@@ -98,8 +93,8 @@ public class MobileRobotXMDPTest {
 		String mapJsonDirPath = MAPS_PATH;
 		String missionJsonDirPath = MISSIONS_PATH;
 
-		log("Loading maps from", mapJsonDirPath);
-		log("Loading missions from", missionJsonDirPath);
+		SimpleConsoleLogger.log("Loading maps from", mapJsonDirPath, true);
+		SimpleConsoleLogger.log("Loading missions from", missionJsonDirPath, true);
 
 		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
@@ -117,12 +112,7 @@ public class MobileRobotXMDPTest {
 	@BeforeMethod
 	public void printMissionFilename(Object[] data) {
 		File missionJsonFile = (File) data[0];
-		System.out.println("Mission: " + missionJsonFile.getName());
-	}
-
-	private void log(String header, String message) {
-		System.out.print(header + ": ");
-		System.out.println(message);
+		SimpleConsoleLogger.log("Mission", missionJsonFile.getName(), true);
 	}
 
 }

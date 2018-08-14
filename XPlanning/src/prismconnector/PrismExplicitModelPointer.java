@@ -22,7 +22,7 @@ public class PrismExplicitModelPointer {
 	private File mTraFile;
 	private File mLabFile;
 	private File mSrewFile;
-	private List<File> mIndexedSrewFiles;
+	private List<File> mIndexedSrewFiles = new ArrayList<>();
 
 	/**
 	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath. Create a modelPath directory if
@@ -52,7 +52,6 @@ public class PrismExplicitModelPointer {
 		mModelDir = new File(modelPath);
 		File[] prismFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(STA_EXTENSION)
 				|| name.toLowerCase().endsWith(TRA_EXTENSION) || name.toLowerCase().endsWith(LAB_EXTENSION));
-		mIndexedSrewFiles = new ArrayList<>();
 
 		for (File prismFile : prismFiles) {
 			String filename = prismFile.getName().toLowerCase();
@@ -108,15 +107,15 @@ public class PrismExplicitModelPointer {
 	}
 
 	public File getIndexedStateRewardsFile(int rewardStructIndex) {
-		if (mIndexedSrewFiles == null) {
-			mIndexedSrewFiles = getSortedStateRewardsFiles();
+		if (mIndexedSrewFiles.isEmpty()) {
+			mIndexedSrewFiles.addAll(getSortedStateRewardsFiles());
 		}
 		return mIndexedSrewFiles.get(rewardStructIndex - 1);
 	}
 
 	public int getNumRewardStructs() {
-		if (mIndexedSrewFiles == null) {
-			mIndexedSrewFiles = getSortedStateRewardsFiles();
+		if (mIndexedSrewFiles.isEmpty()) {
+			mIndexedSrewFiles.addAll(getSortedStateRewardsFiles());
 		}
 		return mIndexedSrewFiles.size();
 	}

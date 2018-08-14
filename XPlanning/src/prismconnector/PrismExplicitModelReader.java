@@ -5,21 +5,31 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
-import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
 import language.qfactors.IAction;
+import language.qfactors.IStateVarBoolean;
+import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
 
 public class PrismExplicitModelReader {
+
+	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(
+			Arrays.asList("action", "readyToCopy", "barrier"));
+	private static final Set<String> HELPER_ACTIONS = new HashSet<>(Arrays.asList("compute", "next", "end"));
+	private static final String INT_REGEX = "[0-9]+";
+	private static final String BOOLEAN_REGEX = "(true|false)";
 
 	private ValueEncodingScheme mEncodings;
 	private PrismExplicitModelPointer mExplicitModelPtr;
@@ -67,15 +77,28 @@ public class PrismExplicitModelReader {
 				String varName = varNames[i];
 				String valueStr = values[i];
 
-				if (!isSpecialVariable(varName)) {
+				if (isSpecialVariable(varName)) {
+					// Skip -- this is a helper variable
+					continue;
+				}
+
+				StateVarDefinition<IStateVarValue> varDef = mEncodings.getStateSpace().getStateVarDefinition(varName);
+				StateVar<? extends IStateVarValue> stateVar;
+
+				if (valueStr.matches(BOOLEAN_REGEX)) {
+					IStateVarBoolean value = mEncodings.lookupStateVarBoolean(varName, Boolean.parseBoolean(valueStr));
+					stateVar = varDef.getStateVar(value);
+				} else if (valueStr.matches(INT_REGEX) && !mEncodings.hasEncodedIntValue(varDef)) {
+					IStateVarInt value = mEncodings.lookupStateVarInt(varName, Integer.parseInt(valueStr));
+					stateVar = varDef.getStateVar(value);
+				} else {
 					Integer encodedIntValue = Integer.parseInt(valueStr);
-					StateSpace stateSpace = mEncodings.getStateSpace();
-					StateVarDefinition<IStateVarValue> definition = stateSpace.getStateVarDefinition(varName);
 					IStateVarValue value = mEncodings.decodeStateVarValue(IStateVarValue.class, varName,
 							encodedIntValue);
-					StateVar<IStateVarValue> stateVar = definition.getStateVar(value);
-					state.addStateVar(stateVar);
+					stateVar = varDef.getStateVar(value);
 				}
+
+				state.addStateVar(stateVar);
 			}
 
 			indices.put(index, state);
@@ -98,11 +121,18 @@ public class PrismExplicitModelReader {
 		List<String> allLines = readLinesFromFile(traFile);
 		List<String> body = allLines.subList(1, allLines.size());
 
-		// Pattern: *source* {destination} {index of action} {probability} *action name*
+		// Pattern: *source* {destination} {probability} *action name*
 		for (String line : body) {
 			String[] tokens = line.split(" ");
 			String sourceStr = tokens[0];
-			String actionName = tokens[4];
+			String sanitizedActionName = tokens[3];
+
+			if (HELPER_ACTIONS.contains(sanitizedActionName)) {
+				// Skip -- this is a helper action
+				continue;
+			}
+
+			String actionName = PrismTranslatorHelper.desanitizeNameString(sanitizedActionName);
 			Integer sourceIndex = Integer.parseInt(sourceStr);
 			ActionSpace actionSpace = mEncodings.getActionSpace();
 
@@ -139,7 +169,6 @@ public class PrismExplicitModelReader {
 	}
 
 	private boolean isSpecialVariable(String varName) {
-		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || varName.equals("action")
-				|| varName.equals("readyToCopy");
+		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || HELPER_VAR_NAMES.contains(varName);
 	}
 }

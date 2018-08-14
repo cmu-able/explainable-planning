@@ -42,6 +42,8 @@ public class ValueEncodingScheme {
 	private volatile int hashCode;
 
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
+	private Map<String, Map<Boolean, ? extends IStateVarBoolean>> mBooleanVarLookups = new HashMap<>();
+	private Map<String, Map<Integer, ? extends IStateVarInt>> mIntVarLookups = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
 	private List<IQFunction<?, ?>> mIndexedQFunctions = new ArrayList<>();
 	private StateSpace mStateSpace;
@@ -65,14 +67,31 @@ public class ValueEncodingScheme {
 	private void encodeStates(StateSpace stateSpace) {
 		for (StateVarDefinition<IStateVarValue> stateVarDef : stateSpace) {
 			IStateVarValue sampleValue = stateVarDef.getPossibleValues().iterator().next();
-			if (sampleValue instanceof IStateVarBoolean || sampleValue instanceof IStateVarInt) {
-				// Don't build int-encoding for variable types supported by PRISM language
-				continue;
-			}
 
-			Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
-			mStateVarEncodings.put(stateVarDef, encoding);
+			if (sampleValue instanceof IStateVarBoolean) {
+				// Boolean->IStateVarBoolean lookup table for recovering boolean variables
+				Set<IStateVarBoolean> possibleValues = downcastSet(stateVarDef.getPossibleValues());
+				Map<Boolean, IStateVarBoolean> booleanVarLookup = buildBooleanVarLookup(possibleValues);
+				mBooleanVarLookups.put(stateVarDef.getName(), booleanVarLookup);
+			} else if (sampleValue instanceof IStateVarInt) {
+				// Integer->IStateVarInt lookup table for recovering int variables
+				Set<IStateVarInt> possibleValues = downcastSet(stateVarDef.getPossibleValues());
+				Map<Integer, IStateVarInt> intVarLookup = buildIntVarLookup(possibleValues);
+				mIntVarLookups.put(stateVarDef.getName(), intVarLookup);
+			} else {
+				// Build int-encoding for variable types NOT supported by PRISM language
+				Map<IStateVarValue, Integer> encoding = buildIntEncoding(stateVarDef.getPossibleValues());
+				mStateVarEncodings.put(stateVarDef, encoding);
+			}
 		}
+	}
+
+	private <T, E extends T> Set<E> downcastSet(Set<T> originalSet) {
+		Set<E> resultSet = new HashSet<>();
+		for (T value : originalSet) {
+			resultSet.add((E) value);
+		}
+		return resultSet;
 	}
 
 	private void encodeActions(ActionSpace actionSpace) {
@@ -93,6 +112,22 @@ public class ValueEncodingScheme {
 		return encoding;
 	}
 
+	private <E extends IStateVarBoolean> Map<Boolean, E> buildBooleanVarLookup(Set<E> possibleValues) {
+		Map<Boolean, E> mapping = new HashMap<>();
+		for (E value : possibleValues) {
+			mapping.put(value.getValue(), value);
+		}
+		return mapping;
+	}
+
+	private <E extends IStateVarInt> Map<Integer, E> buildIntVarLookup(Set<E> possibleValues) {
+		Map<Integer, E> mapping = new HashMap<>();
+		for (E value : possibleValues) {
+			mapping.put(value.getValue(), value);
+		}
+		return mapping;
+	}
+
 	void appendQFunction(IQFunction<?, ?> qFunction) {
 		mIndexedQFunctions.add(qFunction);
 	}
@@ -107,6 +142,18 @@ public class ValueEncodingScheme {
 
 	public ActionSpace getActionSpace() {
 		return mActionSpace;
+	}
+
+	public IStateVarBoolean lookupStateVarBoolean(String stateVarName, Boolean boolValue) {
+		return mBooleanVarLookups.get(stateVarName).get(boolValue);
+	}
+
+	public IStateVarInt lookupStateVarInt(String stateVarName, Integer intValue) {
+		return mIntVarLookups.get(stateVarName).get(intValue);
+	}
+
+	public boolean hasEncodedIntValue(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		return mStateVarEncodings.containsKey(stateVarDef);
 	}
 
 	public <E extends IStateVarValue> Integer getEncodedIntValue(StateVarDefinition<E> stateVarDef, E value)

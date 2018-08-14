@@ -650,8 +650,12 @@ public class PrismTranslatorHelper {
 		return builder.toString();
 	}
 
-	private String sanitizeNameString(String name) {
-		return name.replaceAll("[.\\(]", "_").replaceAll("\\)", "");
+	public static String sanitizeNameString(String name) {
+		return name.replaceAll("[.]", "_DOT_").replaceAll("\\(", "_LP_").replaceAll("\\)", "_RP_");
+	}
+
+	public static String desanitizeNameString(String sanitizedName) {
+		return sanitizedName.replaceAll("_DOT_", ".").replaceAll("_LP_", "\\(").replaceAll("_RP_", "\\)");
 	}
 
 	private <E extends IStateVarValue> StateVarDefinition<E> castTypeStateVarDef(

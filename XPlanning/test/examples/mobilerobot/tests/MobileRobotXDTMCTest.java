@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -33,16 +35,14 @@ public class MobileRobotXDTMCTest {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-			System.out.println("State-reward DTMC Translation (with QAs):");
-			System.out.println(dtmcWithQAs);
-			System.out.println();
+			SimpleConsoleLogger.log("State-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
+			SimpleConsoleLogger.newLine();
 
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
-				System.out.print("Query Property Translation: ");
-				System.out.println(qFunction.getName());
-				System.out.println(queryTranslation);
-				System.out.println();
+				SimpleConsoleLogger.log("Query Property Translation of " + qFunction.getName(), queryTranslation,
+						false);
+				SimpleConsoleLogger.newLine();
 			}
 		} catch (XMDPException e) {
 			e.printStackTrace();
@@ -56,16 +56,14 @@ public class MobileRobotXDTMCTest {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
 					PrismRewardType.TRANSITION_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-			System.out.println("Transition-reward DTMC Translation (with QAs):");
-			System.out.println(dtmcWithQAs);
-			System.out.println();
+			SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
+			SimpleConsoleLogger.newLine();
 
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
-				System.out.print("Query Property Translation: ");
-				System.out.println(qFunction.getName());
-				System.out.println(queryTranslation);
-				System.out.println();
+				SimpleConsoleLogger.log("Query Property Translation of " + qFunction.getName(), queryTranslation,
+						false);
+				SimpleConsoleLogger.newLine();
 			}
 		} catch (XMDPException e) {
 			e.printStackTrace();
@@ -83,15 +81,16 @@ public class MobileRobotXDTMCTest {
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 			double totalCost = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitDTMCPointer, 1);
-			double totalTime = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitDTMCPointer, 2);
-			System.out.println("Query values from explicit DTMC file...");
-			System.out.print("Query property: ");
-			System.out.println(propertyStr);
-			System.out.print("Expected total cost of adversary: ");
-			System.out.println(totalCost);
-			System.out.print("Expected total time of adversary: ");
-			System.out.println(totalTime);
-			System.out.println();
+			List<Double> totalValues = prismAPI.queryPropertiesFromExplicitDTMC(propertyStr, explicitDTMCPointer);
+
+			SimpleConsoleLogger.log("Query values from explicit DTMC file...");
+			SimpleConsoleLogger.log("Query property", propertyStr, true);
+			SimpleConsoleLogger.log("Expected total cost of adversary", totalCost, true);
+			for (int i = 0; i < totalValues.size(); i++) {
+				int rewIndex = i + 1;
+				SimpleConsoleLogger.log("Expected total value " + rewIndex + " of adversary", totalValues.get(i), true);
+			}
+			SimpleConsoleLogger.newLine();
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");
@@ -112,11 +111,10 @@ public class MobileRobotXDTMCTest {
 				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
 				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
-				System.out.print("Query Property: ");
-				System.out.println(query);
-				System.out.print("Expected total " + qFunction.getName() + ":");
-				System.out.println(result);
-				System.out.println();
+
+				SimpleConsoleLogger.log("Query Property", query, true);
+				SimpleConsoleLogger.log("Expected total " + qFunction.getName(), result, true);
+				SimpleConsoleLogger.newLine();
 			}
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
@@ -150,7 +148,8 @@ public class MobileRobotXDTMCTest {
 
 	private PrismExplicitModelReader generateAdverary(File missionJsonFile, XMDP xmdp)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
-		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
+		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv");
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
@@ -171,6 +170,6 @@ public class MobileRobotXDTMCTest {
 	@BeforeMethod
 	public void printExplicitModelDirName(Object[] data) {
 		PrismExplicitModelPointer explicitDTMCPointer = (PrismExplicitModelPointer) data[0];
-		System.out.println("Adversary: " + explicitDTMCPointer.getExplicitModelDirectory().getName());
+		SimpleConsoleLogger.log("Adversary", explicitDTMCPointer.getExplicitModelDirectory().getName(), true);
 	}
 }

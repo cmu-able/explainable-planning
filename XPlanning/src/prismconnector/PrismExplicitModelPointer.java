@@ -25,13 +25,17 @@ public class PrismExplicitModelPointer {
 	private List<File> mIndexedSrewFiles;
 
 	/**
-	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath.
+	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath. Create a modelPath directory if
+	 * it doesn't already exist.
 	 * 
 	 * @param modelPath
 	 * @param filenamePrefix
 	 */
 	public PrismExplicitModelPointer(String modelPath, String filenamePrefix) {
 		mModelDir = new File(modelPath);
+		if (!mModelDir.exists()) {
+			mModelDir.mkdirs();
+		}
 		mStaFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
 		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
 		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);

@@ -52,6 +52,10 @@ public class PrismDTMCTranslator {
 		return mEncodings;
 	}
 
+	public PrismPropertyTranslator getPrismPropertyTranslator() {
+		return mPropertyTranslator;
+	}
+
 	/**
 	 * 
 	 * @param withQAFunctions

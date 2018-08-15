@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.dtmc.XDTMC;
+import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
@@ -25,13 +26,15 @@ import prismconnector.PrismDTMCTranslator;
 import prismconnector.PrismExplicitModelPointer;
 import prismconnector.PrismExplicitModelReader;
 import prismconnector.PrismMDPTranslator;
+import prismconnector.PrismPropertyTranslator;
 import prismconnector.PrismRewardType;
+import prismconnector.ValueEncodingScheme;
 import prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotXDTMCTest {
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCTranslatorStateReward(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc) {
+	public void testPrismDTMCTranslatorStateReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
@@ -51,7 +54,7 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc) {
+	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
 					PrismRewardType.TRANSITION_REWARD);
@@ -72,8 +75,12 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismExplicitDTMCPropertyQuery(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc) {
-		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
+	public void testPrismExplicitDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
+			throws VarNotFoundException {
+		ValueEncodingScheme encodings = explicitDTMCReader.getValueEncodingScheme();
+		PrismPropertyTranslator propTranslator = new PrismPropertyTranslator(encodings);
+		String propertyStr = propTranslator.buildDTMCRawRewardQueryProperty(xdtmc.getXMDP().getGoal());
+		PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
 
 		// Default PRISM configuration
 		PrismConfiguration prismConfig = new PrismConfiguration();
@@ -98,7 +105,7 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCPropertyQuery(PrismExplicitModelPointer explicitDTMCPointer, XDTMC xdtmc)
+	public void testPrismDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
 			throws XMDPException {
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
@@ -139,8 +146,7 @@ public class MobileRobotXDTMCTest {
 			PrismExplicitModelReader explicitDTMCReader = generateAdverary(missionJsonFile, xmdp);
 			Policy policy = explicitDTMCReader.readPolicyFromFiles();
 			XDTMC xdtmc = new XDTMC(xmdp, policy);
-			PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
-			data[i] = new Object[] { explicitDTMCPointer, xdtmc };
+			data[i] = new Object[] { explicitDTMCReader, xdtmc };
 			i++;
 		}
 		return data;
@@ -169,7 +175,8 @@ public class MobileRobotXDTMCTest {
 
 	@BeforeMethod
 	public void printExplicitModelDirName(Object[] data) {
-		PrismExplicitModelPointer explicitDTMCPointer = (PrismExplicitModelPointer) data[0];
+		PrismExplicitModelReader explicitDTMCReader = (PrismExplicitModelReader) data[0];
+		PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
 		SimpleConsoleLogger.log("Adversary", explicitDTMCPointer.getExplicitModelDirectory().getName(), true);
 	}
 }

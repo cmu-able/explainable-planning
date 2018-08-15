@@ -39,6 +39,10 @@ public class PrismExplicitModelReader {
 		mExplicitModelPtr = explicitModelPtr;
 	}
 
+	public ValueEncodingScheme getValueEncodingScheme() {
+		return mEncodings;
+	}
+
 	public PrismExplicitModelPointer getPrismExplicitModelPointer() {
 		return mExplicitModelPtr;
 	}

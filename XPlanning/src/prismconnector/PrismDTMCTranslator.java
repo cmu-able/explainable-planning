@@ -24,6 +24,7 @@ import language.qfactors.IAction;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
+import prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
 import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
@@ -81,11 +82,13 @@ public class PrismDTMCTranslator {
 			}
 		};
 
+		HelperModuleActionFilter helperModuleActionFilter = action -> mXDTMC.getPolicy().containsAction(action);
+
 		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
 		String actionsDecl = mHelper.buildConstsDecl(xmdp.getActionSpace());
 		String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
 		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
-				partialCommandsBuilder);
+				partialCommandsBuilder, helperModuleActionFilter);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
@@ -160,7 +163,7 @@ public class PrismDTMCTranslator {
 	 * 
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)
-	 * @return commands for updating a particular effect class of actionDescription
+	 * @return Commands for updating the effect class of actionDescription
 	 * @throws XMDPException
 	 */
 	private String buildDTMCPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException {

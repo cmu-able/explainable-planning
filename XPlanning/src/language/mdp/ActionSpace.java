@@ -39,6 +39,14 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 		}
 	}
 
+	public boolean contains(ActionDefinition<? extends IAction> actionDef) {
+		return mActionDefs.contains(actionDef);
+	}
+
+	public boolean contains(IAction action) {
+		return mActionDefsLookup.containsKey(action);
+	}
+
 	public <E extends IAction> ActionDefinition<E> getActionDefinition(E action) {
 		// Casting: We ensure type-safety in addActionDefinition()
 		return (ActionDefinition<E>) mActionDefsLookup.get(action);

@@ -118,15 +118,16 @@ public class PrismTranslatorHelper {
 	 * @param stateSpace
 	 * @param iniState
 	 * @param actionPSOs
+	 * @param helperActionFilter
 	 * @return A helper module that copies values of the variables in the source state when an action is taken, and
 	 *         saves the value of that action
 	 * @throws VarNotFoundException
 	 * @throws ActionNotFoundException
 	 */
-	String buildHelperModule(StateSpace stateSpace, StateVarTuple iniState, Iterable<FactoredPSO<IAction>> actionPSOs)
-			throws VarNotFoundException, ActionNotFoundException {
+	String buildHelperModule(StateSpace stateSpace, StateVarTuple iniState, Iterable<FactoredPSO<IAction>> actionPSOs,
+			HelperModuleActionFilter helperActionFilter) throws VarNotFoundException, ActionNotFoundException {
 		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
-		String copyCmds = buildHelperCopyCommands(actionPSOs, SRC_SUFFIX);
+		String copyCmds = buildHelperCopyCommands(actionPSOs, helperActionFilter, SRC_SUFFIX);
 		String synchCmds = buildHelperSynchCommands();
 
 		StringBuilder builder = new StringBuilder();
@@ -172,17 +173,24 @@ public class PrismTranslatorHelper {
 	/**
 	 * 
 	 * @param actionPSOs
+	 * @param helperActionFilter
 	 * @param nameSuffix
 	 * @return [{actionName}] readyToCopy & !barrier -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action
 	 *         value}) & (readyToCopy'=false) & (barrier'=true); ...
 	 * @throws ActionNotFoundException
 	 */
-	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs, String nameSuffix)
-			throws ActionNotFoundException {
+	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs,
+			HelperModuleActionFilter helperActionFilter, String nameSuffix) throws ActionNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
 			for (IAction action : actionDef.getActions()) {
+
+				if (!helperActionFilter.filterAction(action)) {
+					// Skip actions that are not present in the model (in the case of DTMC)
+					continue;
+				}
+
 				builder.append(INDENT);
 				builder.append("[");
 				builder.append(sanitizeNameString(action.getName()));
@@ -382,12 +390,14 @@ public class PrismTranslatorHelper {
 	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @param partialCommandsBuilder
 	 *            : A function that builds partial commands of a module, given an action description
+	 * @param helperActionFilter
+	 *            : A function that filters actions of the helper module
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws XMDPException
 	 */
 	String buildModules(StateSpace stateSpace, StateVarTuple iniState, Iterable<ActionDefinition<IAction>> actionDefs,
-			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder)
-			throws XMDPException {
+			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
+			HelperModuleActionFilter helperActionFilter) throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -440,7 +450,7 @@ public class PrismTranslatorHelper {
 		}
 
 		if (mEncodings.isThreeParamRewards()) {
-			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs);
+			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs, helperActionFilter);
 			builder.append("\n\n");
 			builder.append(helperModule);
 		}
@@ -800,8 +810,44 @@ public class PrismTranslatorHelper {
 		return mergedProbTransitions;
 	}
 
+	/**
+	 * {@link PartialModuleCommandsBuilder} is an interface of a function that builds a set of (partial) commands of a
+	 * module, that update the effect class of a given action description.
+	 * 
+	 * @author rsukkerd
+	 *
+	 */
 	interface PartialModuleCommandsBuilder {
+
+		/**
+		 * Build partial commands of a module.
+		 * 
+		 * @param actionDescription
+		 *            : Action description of an effect class (possibly merged if there are multiple action types whose
+		 *            effect classes intersect)
+		 * @return Commands for updating the effect class of actionDescription
+		 * @throws XMDPException
+		 */
 		String buildPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException;
+	}
+
+	/**
+	 * {@link HelperModuleActionFilter} is an interface to a function that filters actions of the helper module. In the
+	 * case of DTMC, this function is to remove actions that are not present its corresponding policy from the helper
+	 * module.
+	 * 
+	 * @author rsukkerd
+	 *
+	 */
+	interface HelperModuleActionFilter {
+
+		/**
+		 * Filter actions that are present in the model.
+		 * 
+		 * @param action
+		 * @return True iff action is present in the model
+		 */
+		boolean filterAction(IAction action);
 	}
 
 }

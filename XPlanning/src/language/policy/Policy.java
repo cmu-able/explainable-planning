@@ -43,6 +43,10 @@ public class Policy implements Iterable<Decision> {
 		return mPolicy.get(state);
 	}
 
+	public boolean containsAction(IAction action) {
+		return mPolicy.containsValue(action);
+	}
+
 	@Override
 	public Iterator<Decision> iterator() {
 		return mDecisions.iterator();

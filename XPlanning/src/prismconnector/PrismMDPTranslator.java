@@ -11,6 +11,7 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
+import prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
 import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
@@ -63,11 +64,13 @@ public class PrismMDPTranslator {
 			}
 		};
 
+		HelperModuleActionFilter helperActionFilter = action -> mXMDP.getActionSpace().contains(action);
+
 		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
 		String actionsDecl = mHelper.buildConstsDecl(mXMDP.getActionSpace());
 		String goalDecl = mHelper.buildGoalDecl(mXMDP.getGoal());
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
-				mXMDP.getTransitionFunction(), partialCommandsBuilder);
+				mXMDP.getTransitionFunction(), partialCommandsBuilder, helperActionFilter);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
@@ -105,7 +108,7 @@ public class PrismMDPTranslator {
 	 * 
 	 * @param actionDescription
 	 *            : Action description of an effect class (possibly merged)
-	 * @return commands for updating a particular effect class of actionDescription
+	 * @return Commands for updating a particular effect class of actionDescription
 	 * @throws XMDPException
 	 */
 	private String buildMDPPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException {

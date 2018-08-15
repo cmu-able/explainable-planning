@@ -59,6 +59,6 @@ public class MobileRobotTestLoader {
 		MapTopology map = mMapReader.readMapTopology(mapJsonFile);
 		LocationNode startNode = map.lookUpLocationNode(mission.getStartNodeID());
 		LocationNode goalNode = map.lookUpLocationNode(mission.getGoalNodeID());
-		return mXMDPBuilder.buildXMDP(map, startNode, goalNode, mission.getMaxTravelTime());
+		return mXMDPBuilder.buildXMDP(map, startNode, goalNode, mission.getPreferenceInfo());
 	}
 }

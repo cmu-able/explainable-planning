@@ -7,6 +7,10 @@ import java.util.Set;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeAttributeNotFoundException;
+import examples.mobilerobot.metrics.CollisionDomain;
+import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.qfactors.Area;
@@ -29,9 +33,15 @@ import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
+import language.metrics.CountQFunction;
+import language.metrics.EventBasedMetric;
+import language.metrics.IQFunction;
+import language.metrics.ITransitionStructure;
+import language.metrics.NonStandardMetricQFunction;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.qfactors.ActionDefinition;
+import language.qfactors.IAction;
 import language.qfactors.StateVarDefinition;
 
 public class MobileRobotXMDPBuilder {
@@ -78,8 +88,21 @@ public class MobileRobotXMDPBuilder {
 	private StateVarDefinition<RobotBumped> rBumpedDef = new StateVarDefinition<>("rBumped", bumped, notBumped);
 	// ------ //
 
+	// --- QA functions --- //
+
 	// --- Travel time --- //
 	private TravelTimeQFunction timeQFunction;
+
+	// --- Collision --- //
+	private CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collisionQFunction;
+	private static final double SAFE_SPEED = 0.6;
+
+	// --- Intrusiveness --- //
+	private NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction;
+	private static final double NON_INTRUSIVE_PENALTY = 0;
+	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
+	private static final double VERY_INTRUSIVE_PENALTY = 3;
+
 	// ------ //
 
 	// Map location nodes to the corresponding location values
@@ -90,7 +113,7 @@ public class MobileRobotXMDPBuilder {
 		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, double maxTravelTime)
+	public XMDP buildXMDP(MapTopology map, LocationNode startNode, LocationNode goalNode, PreferenceInfo prefInfo)
 			throws XMDPException, MapTopologyException {
 		StateSpace stateSpace = buildStateSpace(map);
 		ActionSpace actionSpace = buildActionSpace(map);
@@ -98,7 +121,7 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple goal = buildGoal(goalNode);
 		TransitionFunction transFunction = buildTransitionFunction(map);
 		QSpace qSpace = buildQFunctions();
-		CostFunction costFunction = buildCostFunction(maxTravelTime);
+		CostFunction costFunction = buildCostFunction(prefInfo);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
@@ -228,16 +251,47 @@ public class MobileRobotXMDPBuilder {
 		TravelTimeDomain timeDomain = new TravelTimeDomain(rLocDef, rSpeedDef, moveToDef, rLocDef);
 		timeQFunction = new TravelTimeQFunction(timeDomain);
 
+		// Collision
+		CollisionDomain collDomain = new CollisionDomain(rSpeedDef, moveToDef, rBumpedDef);
+		CollisionEvent collEvent = new CollisionEvent(collDomain, SAFE_SPEED);
+		collisionQFunction = new CountQFunction<>(collEvent);
+
+		// Intrusiveness
+		IntrusivenessDomain intrusiveDomain = new IntrusivenessDomain(moveToDef, rLocDef);
+		IntrusiveMoveEvent nonIntrusive = new IntrusiveMoveEvent("non-intrusive", intrusiveDomain, Area.PUBLIC);
+		IntrusiveMoveEvent somewhatIntrusive = new IntrusiveMoveEvent("somewhat-intrusive", intrusiveDomain,
+				Area.SEMI_PRIVATE);
+		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent("very-intrusive", intrusiveDomain, Area.PRIVATE);
+		EventBasedMetric<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> metric = new EventBasedMetric<>(
+				IntrusiveMoveEvent.NAME, intrusiveDomain);
+		metric.put(nonIntrusive, NON_INTRUSIVE_PENALTY);
+		metric.put(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
+		metric.put(veryIntrusive, VERY_INTRUSIVE_PENALTY);
+		intrusiveQFunction = new NonStandardMetricQFunction<>(metric);
+
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
+		qSpace.addQFunction(collisionQFunction);
+		qSpace.addQFunction(intrusiveQFunction);
 		return qSpace;
 	}
 
-	private CostFunction buildCostFunction(double maxTravelTime) {
-		AttributeCostFunction<TravelTimeQFunction> timeCostFunction = new AttributeCostFunction<>(timeQFunction, 0,
-				1 / maxTravelTime);
+	private CostFunction buildCostFunction(PreferenceInfo prefInfo) {
 		CostFunction costFunction = new CostFunction();
-		costFunction.put(timeQFunction, timeCostFunction, 1.0);
+		IQFunction<?, ?>[] qFunctions = { timeQFunction, collisionQFunction, intrusiveQFunction };
+		for (IQFunction<?, ?> qFunction : qFunctions) {
+			addAttributeCostFunctions(qFunction, prefInfo, costFunction);
+		}
 		return costFunction;
+	}
+
+	private <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void addAttributeCostFunctions(
+			S qFunction, PreferenceInfo prefInfo, CostFunction costFunction) {
+		double minValue = prefInfo.getMinQAValue(qFunction.getName());
+		double maxValue = prefInfo.getMaxQAValue(qFunction.getName());
+		double aConst = minValue / (maxValue - minValue);
+		double bConst = 1 / (maxValue - minValue);
+		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
+		costFunction.put(qFunction, attrCostFunction, prefInfo.getScalingConst(qFunction.getName()));
 	}
 }

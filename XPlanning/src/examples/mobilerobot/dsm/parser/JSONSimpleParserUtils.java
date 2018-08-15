@@ -9,13 +9,17 @@ public class JSONSimpleParserUtils {
 	}
 
 	public static double parseDouble(JSONObject jsonObject, String key) {
-		// JSONSimple only uses "long" type for numbers
-		Long valueLong = (Long) jsonObject.get(key);
-		return valueLong.doubleValue();
+		Object obj = jsonObject.get(key);
+		if (obj instanceof Long) {
+			// JSONSimple uses "long" type for whole numbers
+			Long valueLong = (Long) obj;
+			return valueLong.doubleValue();
+		}
+		return (double) jsonObject.get(key);
 	}
 
 	public static int parseInt(JSONObject jsonObject, String key) {
-		// JSONSimple only uses "long" type for numbers
+		// JSONSimple uses "long" type for whole numbers
 		Long valueLong = (Long) jsonObject.get(key);
 		return valueLong.intValue();
 	}

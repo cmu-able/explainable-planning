@@ -9,14 +9,14 @@ public class Mission {
 
 	private String mStartNodeID;
 	private String mGoalNodeID;
-	private double mMaxTravelTime;
 	private String mMapJsonFilename;
+	private PreferenceInfo mPrefInfo;
 
-	public Mission(String startNodeID, String goalNodeID, double maxTravelTime, String mapJsonFilename) {
+	public Mission(String startNodeID, String goalNodeID, String mapJsonFilename, PreferenceInfo prefInfo) {
 		mStartNodeID = startNodeID;
 		mGoalNodeID = goalNodeID;
-		mMaxTravelTime = maxTravelTime;
 		mMapJsonFilename = mapJsonFilename;
+		mPrefInfo = prefInfo;
 	}
 
 	public String getStartNodeID() {
@@ -27,12 +27,12 @@ public class Mission {
 		return mGoalNodeID;
 	}
 
-	public double getMaxTravelTime() {
-		return mMaxTravelTime;
-	}
-
 	public String getMapJSONFilename() {
 		return mMapJsonFilename;
+	}
+
+	public PreferenceInfo getPreferenceInfo() {
+		return mPrefInfo;
 	}
 
 	@Override
@@ -45,8 +45,7 @@ public class Mission {
 		}
 		Mission mission = (Mission) obj;
 		return mission.mStartNodeID.equals(mStartNodeID) && mission.mGoalNodeID.equals(mGoalNodeID)
-				&& Double.compare(mission.mMaxTravelTime, mMaxTravelTime) == 0
-				&& mission.mMapJsonFilename.equals(mMapJsonFilename);
+				&& mission.mMapJsonFilename.equals(mMapJsonFilename) && mission.mPrefInfo.equals(mPrefInfo);
 	}
 
 	@Override
@@ -56,8 +55,8 @@ public class Mission {
 			result = 17;
 			result = 31 * result + mStartNodeID.hashCode();
 			result = 31 * result + mGoalNodeID.hashCode();
-			result = 31 * result + Double.hashCode(mMaxTravelTime);
 			result = 31 * result + mMapJsonFilename.hashCode();
+			result = 31 * result + mPrefInfo.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

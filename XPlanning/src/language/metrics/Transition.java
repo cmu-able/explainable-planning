@@ -1,7 +1,5 @@
 package language.metrics;
 
-import java.util.Set;
-
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
@@ -31,20 +29,20 @@ public class Transition<E extends IAction, T extends ITransitionStructure<E>> {
 	private StateVarTuple mSrcVarTuple = new StateVarTuple();
 	private StateVarTuple mDestVarTuple = new StateVarTuple();
 
-	public Transition(T transStructure, E action, Set<StateVar<IStateVarValue>> srcVars, Set<StateVar<IStateVarValue>> destVars)
+	public Transition(T transStructure, E action, StateVarTuple srcVars, StateVarTuple destVars)
 			throws IncompatibleActionException, IncompatibleVarException {
 		if (!sanityCheck(transStructure, action)) {
 			throw new IncompatibleActionException(action);
 		}
 		mTransStructure = transStructure;
 		mAction = action;
-		for (StateVar<? extends IStateVarValue> var : srcVars) {
+		for (StateVar<IStateVarValue> var : srcVars) {
 			if (!sanityCheckSrc(transStructure, var)) {
 				throw new IncompatibleVarException(var.getDefinition());
 			}
 			mSrcVarTuple.addStateVar(var);
 		}
-		for (StateVar<? extends IStateVarValue> var : destVars) {
+		for (StateVar<IStateVarValue> var : destVars) {
 			if (!sanityCheckDest(transStructure, var)) {
 				throw new IncompatibleVarException(var.getDefinition());
 			}
@@ -87,8 +85,8 @@ public class Transition<E extends IAction, T extends ITransitionStructure<E>> {
 			return false;
 		}
 		Transition<?, ?> trans = (Transition<?, ?>) obj;
-		return trans.mTransStructure.equals(mTransStructure) && trans.mAction.equals(mAction) && trans.mSrcVarTuple.equals(mSrcVarTuple)
-				&& trans.mDestVarTuple.equals(mDestVarTuple);
+		return trans.mTransStructure.equals(mTransStructure) && trans.mAction.equals(mAction)
+				&& trans.mSrcVarTuple.equals(mSrcVarTuple) && trans.mDestVarTuple.equals(mDestVarTuple);
 	}
 
 	@Override

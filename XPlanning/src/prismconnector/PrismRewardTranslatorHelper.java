@@ -15,6 +15,7 @@ import language.mdp.DiscriminantClass;
 import language.mdp.EffectClass;
 import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
+import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.metrics.IEvent;
 import language.metrics.IQFunction;
@@ -275,22 +276,20 @@ public class PrismRewardTranslatorHelper {
 		for (E action : actionDef.getActions()) {
 			Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
 
-			Set<Set<StateVar<IStateVarValue>>> srcCombinations = getApplicableSrcValuesCombinations(actionPSO, action,
-					srcStateVarDefs);
-			for (Set<StateVar<IStateVarValue>> srcVars : srcCombinations) {
+			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarDefs, action, actionPSO);
+			for (StateVarTuple srcVars : srcCombinations) {
 				// Separate variables of the source state into changed and unchanged variables
 				// This is to ease PRISM MDP model generation
-				Set<StateVar<IStateVarValue>> unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
-				Set<StateVar<IStateVarValue>> changedSrcVars = new HashSet<>(srcVars);
-				changedSrcVars.removeAll(unchangedSrcVars);
+				StateVarTuple unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
+				StateVarTuple changedSrcVars = getChangedStateVars(srcVars, unchangedSrcVars);
 
 				String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars,
 						PrismTranslatorHelper.SRC_SUFFIX);
 				String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
 
-				Set<Set<StateVar<IStateVarValue>>> destCombinations = getPossibleDestValuesCombination(actionPSO,
-						action, destStateVarDefs, srcVars);
-				for (Set<StateVar<IStateVarValue>> destVars : destCombinations) {
+				Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(destStateVarDefs, srcVars,
+						action, actionPSO);
+				for (StateVarTuple destVars : destCombinations) {
 					String destPartialGuard = buildPartialRewardGuard(destVars);
 
 					Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
@@ -308,10 +307,14 @@ public class PrismRewardTranslatorHelper {
 
 					builder.append("action=");
 					builder.append(encodedActionValue);
-					builder.append(" & ");
-					builder.append(changedSrcPartialGuard);
-					builder.append(" & ");
-					builder.append(unchangedSrcPartialGuard);
+					if (!changedSrcPartialGuard.isEmpty()) {
+						builder.append(" & ");
+						builder.append(changedSrcPartialGuard);
+					}
+					if (!unchangedSrcPartialGuard.isEmpty()) {
+						builder.append(" & ");
+						builder.append(unchangedSrcPartialGuard);
+					}
 					builder.append(" & ");
 					builder.append(destPartialGuard);
 					builder.append(" : ");
@@ -343,7 +346,7 @@ public class PrismRewardTranslatorHelper {
 	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildPartialRewardGuard(Set<StateVar<IStateVarValue>> stateVars) throws VarNotFoundException {
+	String buildPartialRewardGuard(StateVarTuple stateVars) throws VarNotFoundException {
 		return buildPartialRewardGuard(stateVars, "");
 	}
 
@@ -354,8 +357,7 @@ public class PrismRewardTranslatorHelper {
 	 * @return {varName_1{Suffix}}={value OR encoded int value} & ... & {varName_m{Suffix}}={value OR encoded int value}
 	 * @throws VarNotFoundException
 	 */
-	String buildPartialRewardGuard(Set<StateVar<IStateVarValue>> stateVars, String nameSuffix)
-			throws VarNotFoundException {
+	String buildPartialRewardGuard(StateVarTuple stateVars, String nameSuffix) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : stateVars) {
@@ -387,9 +389,8 @@ public class PrismRewardTranslatorHelper {
 	 * @param actionPSO
 	 * @return State variables in srcVars that are not affected by the given action
 	 */
-	private Set<StateVar<IStateVarValue>> getUnchangedStateVars(Set<StateVar<IStateVarValue>> srcVars,
-			FactoredPSO<? extends IAction> actionPSO) {
-		Set<StateVar<IStateVarValue>> unchangedVars = new HashSet<>();
+	private StateVarTuple getUnchangedStateVars(StateVarTuple srcVars, FactoredPSO<? extends IAction> actionPSO) {
+		StateVarTuple unchangedVars = new StateVarTuple();
 		for (StateVar<IStateVarValue> srcVar : srcVars) {
 			boolean affected = false;
 			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
@@ -400,14 +401,36 @@ public class PrismRewardTranslatorHelper {
 				}
 			}
 			if (!affected) {
-				unchangedVars.add(srcVar);
+				unchangedVars.addStateVar(srcVar);
 			}
 		}
 		return unchangedVars;
 	}
 
-	private <E extends IAction> Set<Set<StateVar<IStateVarValue>>> getApplicableSrcValuesCombinations(
-			FactoredPSO<E> actionPSO, E action, Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs)
+	private StateVarTuple getChangedStateVars(StateVarTuple srcVars, StateVarTuple unchangedSrcVars) {
+		StateVarTuple changedVars = new StateVarTuple();
+		for (StateVar<IStateVarValue> srcVar : srcVars) {
+			if (!unchangedSrcVars.contains(srcVar.getDefinition())) {
+				changedVars.addStateVar(srcVar);
+			}
+		}
+		return changedVars;
+	}
+
+	/**
+	 * Generate all applicable value combinations of a given set of source variables. The applicable combinations are
+	 * determined by action precondition.
+	 * 
+	 * @param srcStateVarDefs
+	 *            : Source variable definitions
+	 * @param action
+	 *            : Action
+	 * @param actionPSO
+	 * @return All applicable source value combinations
+	 * @throws ActionNotFoundException
+	 */
+	private <E extends IAction> Set<StateVarTuple> getApplicableSrcValuesCombinations(
+			Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs, E action, FactoredPSO<E> actionPSO)
 			throws ActionNotFoundException {
 		Precondition<E> precondition = actionPSO.getPrecondition();
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
@@ -418,13 +441,33 @@ public class PrismRewardTranslatorHelper {
 		return getCombinations(srcVarValues);
 	}
 
-	private <E extends IAction> Set<Set<StateVar<IStateVarValue>>> getPossibleDestValuesCombination(
-			FactoredPSO<E> actionPSO, E action, Set<StateVarDefinition<IStateVarValue>> destStateVarDefs,
-			Set<StateVar<IStateVarValue>> srcVars) throws XMDPException {
+	/**
+	 * Generate all possible value combinations of a given set of destination variables. The possible combinations are
+	 * determined by source variables (if any) and action precondition.
+	 * 
+	 * @param destStateVarDefs
+	 *            : Destination variable definitions
+	 * @param srcVars
+	 *            : Source variables
+	 * @param action
+	 *            : Action
+	 * @param actionPSO
+	 * @return All possible destination value combinations
+	 * @throws XMDPException
+	 */
+	private <E extends IAction> Set<StateVarTuple> getPossibleDestValuesCombinations(
+			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, StateVarTuple srcVars, E action,
+			FactoredPSO<E> actionPSO) throws XMDPException {
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
-			Discriminant discriminant = getDiscriminant(destVarDef, srcVars, actionPSO);
-			Set<IStateVarValue> possibleDestVals = actionPSO.getPossibleImpact(destVarDef, discriminant, action);
+			Set<Discriminant> applicableDiscriminants = getApplicableDiscriminants(destVarDef, srcVars, actionPSO,
+					action);
+			Set<IStateVarValue> possibleDestVals = new HashSet<>();
+			for (Discriminant discriminant : applicableDiscriminants) {
+				Set<IStateVarValue> possibleDestValsFromDiscr = actionPSO.getPossibleImpact(destVarDef, discriminant,
+						action);
+				possibleDestVals.addAll(possibleDestValsFromDiscr);
+			}
 			destVarValues.put(destVarDef, possibleDestVals);
 		}
 		return getCombinations(destVarValues);
@@ -443,10 +486,77 @@ public class PrismRewardTranslatorHelper {
 		return discriminant;
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getCombinations(
-			Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> varValues) {
-		Set<Set<StateVar<IStateVarValue>>> combinations = new HashSet<>();
-		Set<StateVar<IStateVarValue>> emptyCombination = new HashSet<>();
+	/**
+	 * Get all applicable discriminants of a given destination variable definition and source variables. That is, get
+	 * all possible discriminants of the destination variable, that contain the source variables and satisfy the
+	 * action's precondition.
+	 * 
+	 * This method may return more than 1 discriminant if the discriminant class has other variables than those in the
+	 * source variables.
+	 * 
+	 * @param destVarDef
+	 *            : Destination variable definition
+	 * @param srcVars
+	 *            : Source variables
+	 * @param actionPSO
+	 *            : Action PSO
+	 * @return All applicable discriminants
+	 * @throws XMDPException
+	 */
+	private <E extends IAction> Set<Discriminant> getApplicableDiscriminants(
+			StateVarDefinition<IStateVarValue> destVarDef, StateVarTuple srcVars, FactoredPSO<E> actionPSO, E action)
+			throws XMDPException {
+		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
+		Discriminant boundedDiscriminant = new Discriminant(discrClass);
+
+		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> freeDiscrVars = new HashMap<>();
+		for (StateVarDefinition<IStateVarValue> varDef : discrClass) {
+			if (srcVars.contains(varDef)) {
+				// This discriminant variable is in srcVars
+				// Add this variable to (each) discriminant generated
+				IStateVarValue value = srcVars.getStateVarValue(IStateVarValue.class, varDef);
+				StateVar<IStateVarValue> srcVar = varDef.getStateVar(value);
+				boundedDiscriminant.add(srcVar);
+			} else {
+				// Discriminant class has a variable that is not in srcVars
+				// Get all applicable values of that variable -- to find all applicable discriminants
+				Precondition<E> precond = actionPSO.getPrecondition();
+				Set<IStateVarValue> applicableValues = precond.getApplicableValues(action, varDef);
+				freeDiscrVars.put(varDef, applicableValues);
+			}
+		}
+
+		if (freeDiscrVars.isEmpty()) {
+			Set<Discriminant> singleton = new HashSet<>();
+			singleton.add(boundedDiscriminant);
+			return singleton;
+		}
+
+		// Get all value combinations of the "free" discriminant variables
+		Set<StateVarTuple> subDiscriminants = getCombinations(freeDiscrVars);
+
+		// Generate all applicable discriminants by combining the "bounded" discriminant with all combinations of the
+		// "free" discriminant variables
+		Set<Discriminant> discriminants = new HashSet<>();
+		for (StateVarTuple subDiscriminant : subDiscriminants) {
+			Discriminant fullDiscriminant = new Discriminant(discrClass);
+
+			// Add discriminant variables that are in srcVars
+			fullDiscriminant.addAll(boundedDiscriminant);
+
+			// Add other discriminant variables that are not in srcVars
+			for (StateVar<IStateVarValue> var : subDiscriminant) {
+				fullDiscriminant.add(var);
+			}
+
+			discriminants.add(fullDiscriminant);
+		}
+		return discriminants;
+	}
+
+	private Set<StateVarTuple> getCombinations(Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> varValues) {
+		Set<StateVarTuple> combinations = new HashSet<>();
+		StateVarTuple emptyCombination = new StateVarTuple();
 		combinations.add(emptyCombination);
 
 		// Base case: no variable
@@ -459,14 +569,14 @@ public class PrismRewardTranslatorHelper {
 
 		// Base case: 1 variable
 		if (varValues.size() == 1) {
-			return getCombinationsHelper(varDef, values, combinations);
+			return getCombinationsHelper2(varDef, values, combinations);
 		}
 
 		// Recursive case: >1 variables
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> partialVarValues = new HashMap<>(varValues);
 		partialVarValues.remove(varDef);
-		Set<Set<StateVar<IStateVarValue>>> partialCombinations = getCombinations(partialVarValues);
-		return getCombinationsHelper(varDef, values, partialCombinations);
+		Set<StateVarTuple> partialCombinations = getCombinations(partialVarValues);
+		return getCombinationsHelper2(varDef, values, partialCombinations);
 	}
 
 	private Set<Set<StateVar<IStateVarValue>>> getCombinationsHelper(StateVarDefinition<IStateVarValue> varDef,
@@ -478,6 +588,21 @@ public class PrismRewardTranslatorHelper {
 				Set<StateVar<IStateVarValue>> newCombination = new HashSet<>();
 				newCombination.addAll(prevCombination);
 				newCombination.add(newVar);
+				newCombinations.add(newCombination);
+			}
+		}
+		return newCombinations;
+	}
+
+	private Set<StateVarTuple> getCombinationsHelper2(StateVarDefinition<IStateVarValue> varDef,
+			Set<IStateVarValue> values, Set<StateVarTuple> partialCombinations) {
+		Set<StateVarTuple> newCombinations = new HashSet<>();
+		for (IStateVarValue value : values) {
+			StateVar<IStateVarValue> newVar = varDef.getStateVar(value);
+			for (StateVarTuple prevCombination : partialCombinations) {
+				StateVarTuple newCombination = new StateVarTuple();
+				newCombination.addStateVarTuple(prevCombination);
+				newCombination.addStateVar(newVar);
 				newCombinations.add(newCombination);
 			}
 		}

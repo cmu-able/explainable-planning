@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 
 import language.exceptions.EffectNotFoundException;
 import language.exceptions.IncompatibleEffectClassException;
-import language.exceptions.IncompatibleVarException;
 
 /**
  * {@link ProbabilisticEffect} is a distribution over the changed state variables as a result of an action.
@@ -37,15 +36,13 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 	}
 
 	public void putAll(ProbabilisticEffect probEffect) throws IncompatibleEffectClassException {
-		for (Entry<Effect, Double> e : probEffect) {
-			Effect effect = e.getKey();
-			Double prob = e.getValue();
-			put(effect, prob);
+		if (!sanityCheck(probEffect)) {
+			throw new IncompatibleEffectClassException(probEffect.getEffectClass());
 		}
+		mProbEffect.putAll(probEffect.mProbEffect);
 	}
 
-	public void putAll(ProbabilisticEffect... probEffects)
-			throws IncompatibleVarException, IncompatibleEffectClassException {
+	public void putAll(ProbabilisticEffect... probEffects) throws IncompatibleEffectClassException {
 		EffectClass emptyEffectClass = new EffectClass();
 		ProbabilisticEffect runningProbEffect = new ProbabilisticEffect(emptyEffectClass);
 		for (ProbabilisticEffect probEffect : probEffects) {
@@ -54,7 +51,7 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 	}
 
 	private ProbabilisticEffect putAllHelper(ProbabilisticEffect probEffectA, ProbabilisticEffect probEffectB)
-			throws IncompatibleVarException, IncompatibleEffectClassException {
+			throws IncompatibleEffectClassException {
 		EffectClass aggrEffectClass = new EffectClass();
 		aggrEffectClass.addAll(probEffectA.getEffectClass());
 		aggrEffectClass.addAll(probEffectB.getEffectClass());
@@ -79,6 +76,10 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 
 	private boolean sanityCheck(Effect effect) {
 		return effect.getEffectClass().equals(mEffectClass);
+	}
+
+	private boolean sanityCheck(ProbabilisticEffect probEffect) {
+		return probEffect.getEffectClass().equals(mEffectClass);
 	}
 
 	public double getProbability(Effect effect) throws EffectNotFoundException {

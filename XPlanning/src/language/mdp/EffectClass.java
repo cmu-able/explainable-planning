@@ -32,9 +32,7 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 	}
 
 	public void addAll(EffectClass effectClass) {
-		for (StateVarDefinition<IStateVarValue> stateVarDef : effectClass) {
-			mEffectClass.add(stateVarDef);
-		}
+		mEffectClass.addAll(effectClass.mEffectClass);
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

@@ -33,6 +33,10 @@ public class StateVarTuple implements IStateVarTuple {
 		mStateVarMap.put(stateVar.getDefinition(), stateVar);
 	}
 
+	public void addStateVarTuple(StateVarTuple stateVarTuple) {
+		mStateVarMap.putAll(stateVarTuple.mStateVarMap);
+	}
+
 	@Override
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mStateVarMap.containsKey(stateVarDef);

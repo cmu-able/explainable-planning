@@ -3,6 +3,7 @@ package language.mdp;
 import java.util.Iterator;
 
 import language.exceptions.IncompatibleVarException;
+import language.exceptions.IncompatibleVarsException;
 import language.exceptions.VarNotFoundException;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
@@ -39,14 +40,19 @@ public class Discriminant implements IStateVarTuple {
 		mVarTuple.addStateVar(stateVar);
 	}
 
+	public void addAll(Discriminant discriminant) throws IncompatibleVarsException {
+		if (!sanityCheck(discriminant)) {
+			throw new IncompatibleVarsException(discriminant);
+		}
+		mVarTuple.addStateVarTuple(discriminant.mVarTuple);
+	}
+
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mDiscriminantClass.contains(stateVar.getDefinition());
 	}
 
-	public void addAll(Discriminant discriminant) throws IncompatibleVarException {
-		for (StateVar<IStateVarValue> stateVar : discriminant) {
-			add(stateVar);
-		}
+	private boolean sanityCheck(Discriminant discriminant) {
+		return discriminant.getDiscriminantClass().equals(mDiscriminantClass);
 	}
 
 	public DiscriminantClass getDiscriminantClass() {

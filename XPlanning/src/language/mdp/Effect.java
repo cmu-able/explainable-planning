@@ -2,6 +2,7 @@ package language.mdp;
 
 import java.util.Iterator;
 
+import language.exceptions.IncompatibleEffectClassException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.qfactors.IStateVarValue;
@@ -14,7 +15,7 @@ import language.qfactors.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class Effect implements Iterable<StateVar<IStateVarValue>> {
+public class Effect implements IStateVarTuple {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -22,7 +23,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	private volatile int hashCode;
 
 	private EffectClass mEffectClass;
-	private StateVarTuple mState = new StateVarTuple();
+	private StateVarTuple mVarTuple = new StateVarTuple();
 
 	public Effect(EffectClass effectClass) {
 		mEffectClass = effectClass;
@@ -32,22 +33,22 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		if (!sanityCheck(stateVar)) {
 			throw new IncompatibleVarException(stateVar.getDefinition());
 		}
-		mState.addStateVar(stateVar);
+		mVarTuple.addStateVar(stateVar);
+	}
+
+	public void addAll(Effect effect) throws IncompatibleEffectClassException {
+		if (!sanityCheck(effect)) {
+			throw new IncompatibleEffectClassException(effect.getEffectClass());
+		}
+		mVarTuple.addStateVarTuple(effect.mVarTuple);
 	}
 
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {
 		return mEffectClass.contains(stateVar.getDefinition());
 	}
 
-	public void addAll(Effect effect) throws IncompatibleVarException {
-		for (StateVar<IStateVarValue> stateVar : effect) {
-			add(stateVar);
-		}
-	}
-
-	public <E extends IStateVarValue> E getEffectValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
-			throws VarNotFoundException {
-		return mState.getStateVarValue(valueType, stateVarDef);
+	private boolean sanityCheck(Effect effect) {
+		return effect.getEffectClass().equals(mEffectClass);
 	}
 
 	public EffectClass getEffectClass() {
@@ -55,8 +56,19 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 	}
 
 	@Override
+	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
+		return mVarTuple.contains(stateVarDef);
+	}
+
+	@Override
+	public <E extends IStateVarValue> E getStateVarValue(Class<E> valueType, StateVarDefinition<E> stateVarDef)
+			throws VarNotFoundException {
+		return mVarTuple.getStateVarValue(valueType, stateVarDef);
+	}
+
+	@Override
 	public Iterator<StateVar<IStateVarValue>> iterator() {
-		return mState.iterator();
+		return mVarTuple.iterator();
 	}
 
 	@Override
@@ -68,7 +80,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 			return false;
 		}
 		Effect effect = (Effect) obj;
-		return effect.mEffectClass.equals(mEffectClass) && effect.mState.equals(mState);
+		return effect.mEffectClass.equals(mEffectClass) && effect.mVarTuple.equals(mVarTuple);
 	}
 
 	@Override
@@ -77,7 +89,7 @@ public class Effect implements Iterable<StateVar<IStateVarValue>> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mEffectClass.hashCode();
-			result = 31 * result + mState.hashCode();
+			result = 31 * result + mVarTuple.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

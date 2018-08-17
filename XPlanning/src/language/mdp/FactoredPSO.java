@@ -95,7 +95,7 @@ public class FactoredPSO<E extends IAction> {
 				Set<IStateVarValue> possibleImpact = new HashSet<>();
 				for (Entry<Effect, Double> en : probEffect) {
 					Effect effect = en.getKey();
-					IStateVarValue value = effect.getEffectValue(IStateVarValue.class, stateVarDef);
+					IStateVarValue value = effect.getStateVarValue(IStateVarValue.class, stateVarDef);
 					possibleImpact.add(value);
 				}
 				return possibleImpact;

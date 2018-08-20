@@ -238,10 +238,11 @@ public class PrismAPIWrapper {
 		int numProperties = propertiesFile.getNumProperties();
 
 		Map<String, Double> results = new HashMap<>();
+		String[] propertiesArray = propertiesStr.split("\n");
 
 		// Query result of each property
 		for (int i = 0; i < numProperties; i++) {
-			String propertyStr = propertiesFile.getPropertyObject(i).toString();
+			String propertyStr = propertiesArray[i];
 			double result = queryPropertyHelper(propertiesFile, i);
 			results.put(propertyStr, result);
 		}

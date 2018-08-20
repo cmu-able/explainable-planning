@@ -84,7 +84,7 @@ public class PrismConnector {
 	 * @throws IOException
 	 */
 	public <E extends IAction, T extends ITransitionStructure<E>> Policy generateOptimalPolicy(
-			IAdditiveCostFunction objectiveFunction, AttributeConstraint<IQFunction<E, T>> constraint)
+			IAdditiveCostFunction objectiveFunction, AttributeConstraint<IQFunction<?, ?>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		// Use transition rewards for multi-objective adversary synthesis
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);

@@ -66,19 +66,23 @@ public class AlternativeExplorer {
 		CostFunction costFunction = xmdp.getCostFunction();
 
 		// QAs to be explored
-		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> frontierIter = xmdp.getQSpace().iterator();
+		Set<IQFunction<?, ?>> frontier = new HashSet<>();
+		for (IQFunction<?, ?> qFunction : xmdp.getQSpace()) {
+			frontier.add(qFunction);
+		}
+		Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 
 		// Generate alternatives by improving each QA (one at a time) to the next best value, if exists
 		while (frontierIter.hasNext()) {
-			IQFunction<IAction, ITransitionStructure<IAction>> qFunction = frontierIter.next();
+			IQFunction<?, ?> qFunction = frontierIter.next();
 			frontierIter.remove();
 
 			// QA value of the solution policy
 			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 
 			// Set a new aspirational level of the QA; use this as a constraint for an alternative
-			AttributeConstraint<IQFunction<IAction, ITransitionStructure<IAction>>> attrConstraint = new AttributeConstraint<>(
-					qFunction, currQAValue, true);
+			AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue,
+					true);
 
 			// Create a new objective function of n-1 attributes that excludes this QA
 			AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
@@ -106,10 +110,10 @@ public class AlternativeExplorer {
 		return alternatives;
 	}
 
-	private <E extends IAction, T extends ITransitionStructure<E>> void update(Iterator<IQFunction<E, T>> frontierIter,
-			Policy alternative) throws XMDPException, PrismException, ResultParsingException {
+	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy alternative)
+			throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
-			IQFunction<E, T> qFunction = frontierIter.next();
+			IQFunction<?, ?> qFunction = frontierIter.next();
 			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
 

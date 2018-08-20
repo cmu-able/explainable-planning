@@ -28,6 +28,7 @@ public class PrismExplicitModelReader {
 	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(
 			Arrays.asList("action", "readyToCopy", "barrier"));
 	private static final Set<String> HELPER_ACTIONS = new HashSet<>(Arrays.asList("compute", "next", "end"));
+	private static final Set<String> PRISM_ACTIONS = new HashSet<>(Arrays.asList("_ec"));
 	private static final String INT_REGEX = "[0-9]+";
 	private static final String BOOLEAN_REGEX = "(true|false)";
 
@@ -131,7 +132,7 @@ public class PrismExplicitModelReader {
 			String sourceStr = tokens[0];
 			String sanitizedActionName = tokens[3];
 
-			if (HELPER_ACTIONS.contains(sanitizedActionName)) {
+			if (HELPER_ACTIONS.contains(sanitizedActionName) || PRISM_ACTIONS.contains(sanitizedActionName)) {
 				// Skip -- this is a helper action
 				continue;
 			}

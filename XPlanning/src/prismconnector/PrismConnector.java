@@ -66,7 +66,7 @@ public class PrismConnector {
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
 		// Compute an optimal policy, and cache its total cost and QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, true);
+		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, mSettings.getOutputPath());
 	}
 
 	/**
@@ -83,8 +83,8 @@ public class PrismConnector {
 	 * @throws ResultParsingException
 	 * @throws IOException
 	 */
-	public <E extends IAction, T extends ITransitionStructure<E>> Policy generateOptimalPolicy(
-			IAdditiveCostFunction objectiveFunction, AttributeConstraint<IQFunction<?, ?>> constraint)
+	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+			AttributeConstraint<IQFunction<?, ?>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		// Use transition rewards for multi-objective adversary synthesis
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);
@@ -114,7 +114,8 @@ public class PrismConnector {
 		mPrismAPI.reconfigurePrism(PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
-		return computeOptimalPolicy(mdpTranslator, mdpStr, propertyStr, false);
+		String outputPath = mSettings.getOutputPath() + "_" + constraint.getQFunction().getName();
+		return computeOptimalPolicy(mdpTranslator, mdpStr, propertyStr, outputPath);
 	}
 
 	/**
@@ -123,20 +124,20 @@ public class PrismConnector {
 	 * @param mdpTranslator
 	 * @param mdpStr
 	 *            : MDP string with reward structure(s)
-	 * @param propertyString
+	 * @param propertyStr
 	 *            : Property string for either minimizing the cost function or other objective function
-	 * @param isCostMinProperty
-	 *            : Whether the property is minimizing the cost function
+	 * @param outputPath
+	 *            : Output path for PRISM explicit model files
 	 * @return An optimal policy, if exists.
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
 	 * @throws XMDPException
 	 */
-	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyString,
-			boolean isCostMinProperty) throws PrismException, ResultParsingException, IOException, XMDPException {
+	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyStr,
+			String outputPath) throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(mSettings.getOutputPath(),
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
 				ADVERSARY_FILENAME_PREFIX);
 
 		// Create explicit model reader of the output model
@@ -145,7 +146,7 @@ public class PrismConnector {
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function
-		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyString, outputExplicitModelPointer);
+		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyStr, outputExplicitModelPointer);
 
 		if (result == Double.NaN || result == Double.POSITIVE_INFINITY) {
 			// No solution policy found
@@ -158,7 +159,7 @@ public class PrismConnector {
 		// Map the explicit model pointer to the corresponding policy object
 		mExplicitModelPtrToPolicy.put(outputExplicitModelPointer, policy);
 
-		if (isCostMinProperty) {
+		if (isCostMinProperty(propertyStr)) {
 			// The objective function in the property is the cost function
 			// Cache the expected total cost of the policy
 			mCachedTotalCosts.put(policy, result);
@@ -182,6 +183,15 @@ public class PrismConnector {
 		}
 
 		return policy;
+	}
+
+	/**
+	 * 
+	 * @param propertyStr
+	 * @return Whether the property is minimizing the cost function
+	 */
+	private boolean isCostMinProperty(String propertyStr) {
+		return propertyStr.contains("R{\"cost\"}min=?");
 	}
 
 	/**

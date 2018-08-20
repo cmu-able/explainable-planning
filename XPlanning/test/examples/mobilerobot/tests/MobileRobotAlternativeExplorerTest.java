@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -92,7 +93,8 @@ public class MobileRobotAlternativeExplorerTest {
 			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
 
 			// PrismConnector
-			String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
+			String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+			String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
 			PrismConfiguration prismConfig = new PrismConfiguration();
 			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, outputPath, prismConfig);
 			PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);

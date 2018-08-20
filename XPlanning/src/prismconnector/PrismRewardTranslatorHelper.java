@@ -7,7 +7,6 @@ import java.util.Set;
 
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
-import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -274,56 +273,84 @@ public class PrismRewardTranslatorHelper {
 		StringBuilder builder = new StringBuilder();
 
 		for (E action : actionDef.getActions()) {
-			Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
-
 			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarDefs, action, actionPSO);
+
 			for (StateVarTuple srcVars : srcCombinations) {
-				// Separate variables of the source state into changed and unchanged variables
-				// This is to ease PRISM MDP model generation
-				StateVarTuple unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
-				StateVarTuple changedSrcVars = getChangedStateVars(srcVars, unchangedSrcVars);
-
-				String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars,
-						PrismTranslatorHelper.SRC_SUFFIX);
-				String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
-
 				Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(destStateVarDefs, srcVars,
 						action, actionPSO);
+
 				for (StateVarTuple destVars : destCombinations) {
-					String destPartialGuard = buildPartialRewardGuard(destVars);
-
-					Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
-					double value = evaluator.evaluate(transition);
-
-					builder.append(PrismTranslatorHelper.INDENT);
-
-					if (mPrismRewardType == PrismRewardType.STATE_REWARD) {
-						builder.append("compute_");
-						builder.append(rewardName);
-						builder.append(" & ");
-					} else if (mPrismRewardType == PrismRewardType.TRANSITION_REWARD) {
-						builder.append("[compute] ");
-					}
-
-					builder.append("action=");
-					builder.append(encodedActionValue);
-					if (!changedSrcPartialGuard.isEmpty()) {
-						builder.append(" & ");
-						builder.append(changedSrcPartialGuard);
-					}
-					if (!unchangedSrcPartialGuard.isEmpty()) {
-						builder.append(" & ");
-						builder.append(unchangedSrcPartialGuard);
-					}
-					builder.append(" & ");
-					builder.append(destPartialGuard);
-					builder.append(" : ");
-					builder.append(value);
-					builder.append(";");
+					String rewardItem = buildRewardItem(rewardName, transStructure, action, srcVars, destVars,
+							actionPSO, evaluator);
+					builder.append(rewardItem);
 					builder.append("\n");
 				}
 			}
 		}
+		return builder.toString();
+	}
+
+	/**
+	 * Build a reward item for a given evaluator.
+	 * 
+	 * @param rewardName
+	 * @param transStructure
+	 * @param action
+	 * @param srcCombinations
+	 *            : If there is no source variable definition, then this is a singleton set of an empty
+	 *            {@link StateVarTuple}
+	 * @param destCombinations:
+	 *            If there is no destination variable definition, then this is a singleton set of an empty
+	 *            {@link StateVarTuple}
+	 * @param actionPSO
+	 * @param evaluator
+	 * @return compute_{QA name} & action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ...
+	 *         : {transition value};
+	 * @throws ActionNotFoundException
+	 */
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItem(String rewardName, T transStructure,
+			E action, StateVarTuple srcVars, StateVarTuple destVars, FactoredPSO<E> actionPSO,
+			TransitionEvaluator<E, T> evaluator) throws XMDPException {
+		// Encoded int action value
+		Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
+
+		// Separate variables of the source state into changed and unchanged variables
+		// This is to ease PRISM MDP model generation
+		StateVarTuple unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
+		StateVarTuple changedSrcVars = getChangedStateVars(srcVars, unchangedSrcVars);
+
+		// Compute value of the transition
+		Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
+		double value = evaluator.evaluate(transition);
+
+		String srcPartialGuard = buildSrcPartialRewardGuard(changedSrcVars, unchangedSrcVars);
+		String destPartialGuard = buildDestPartialRewardGuard(destVars);
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(PrismTranslatorHelper.INDENT);
+
+		if (mPrismRewardType == PrismRewardType.STATE_REWARD) {
+			builder.append("compute_");
+			builder.append(rewardName);
+			builder.append(" & ");
+		} else if (mPrismRewardType == PrismRewardType.TRANSITION_REWARD) {
+			builder.append("[compute] ");
+		}
+
+		// "action={encoded action value}"
+		builder.append("action=");
+		builder.append(encodedActionValue);
+
+		// "" or "& {srcVarName}={value} ..."
+		builder.append(srcPartialGuard);
+
+		// "" or "& {destVarName}={value} ..."
+		builder.append(destPartialGuard);
+
+		// " : {transition value};"
+		builder.append(" : ");
+		builder.append(value);
+		builder.append(";");
 		return builder.toString();
 	}
 
@@ -384,6 +411,49 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
+	 * Returns an empty String if there is no source variable.
+	 * 
+	 * @param changedSrcVars
+	 * @param unchangedSrcVars
+	 * @return & {changedSrcVarName}={value} ... & {unchangedSrcVarName}={value} ...
+	 * @throws VarNotFoundException
+	 */
+	private String buildSrcPartialRewardGuard(StateVarTuple changedSrcVars, StateVarTuple unchangedSrcVars)
+			throws VarNotFoundException {
+		String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars, PrismTranslatorHelper.SRC_SUFFIX);
+		String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
+
+		StringBuilder builder = new StringBuilder();
+		if (!changedSrcPartialGuard.isEmpty()) {
+			builder.append(" & ");
+			builder.append(changedSrcPartialGuard);
+		}
+		if (!unchangedSrcPartialGuard.isEmpty()) {
+			builder.append(" & ");
+			builder.append(unchangedSrcPartialGuard);
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * Returns an empty String if there is no destination variable.
+	 * 
+	 * @param destVars
+	 * @return & {destVarName}={value} ...
+	 * @throws VarNotFoundException
+	 */
+	private String buildDestPartialRewardGuard(StateVarTuple destVars) throws VarNotFoundException {
+		String destPartialGuard = buildPartialRewardGuard(destVars);
+
+		StringBuilder builder = new StringBuilder();
+		if (!destPartialGuard.isEmpty()) {
+			builder.append(" & ");
+			builder.append(destPartialGuard);
+		}
+		return builder.toString();
+	}
+
+	/**
 	 * 
 	 * @param srcVars
 	 * @param actionPSO
@@ -421,6 +491,9 @@ public class PrismRewardTranslatorHelper {
 	 * Generate all applicable value combinations of a given set of source variables. The applicable combinations are
 	 * determined by action precondition.
 	 * 
+	 * If there is no source variable definition, then this method returns a singleton set of an empty
+	 * {@link StateVarTuple}.
+	 * 
 	 * @param srcStateVarDefs
 	 *            : Source variable definitions
 	 * @param action
@@ -444,6 +517,9 @@ public class PrismRewardTranslatorHelper {
 	/**
 	 * Generate all possible value combinations of a given set of destination variables. The possible combinations are
 	 * determined by source variables (if any) and action precondition.
+	 * 
+	 * If there is no destination variable definition, then this method returns a singleton set of an empty
+	 * {@link StateVarTuple}.
 	 * 
 	 * @param destStateVarDefs
 	 *            : Destination variable definitions
@@ -471,19 +547,6 @@ public class PrismRewardTranslatorHelper {
 			destVarValues.put(destVarDef, possibleDestVals);
 		}
 		return getCombinations(destVarValues);
-	}
-
-	private Discriminant getDiscriminant(StateVarDefinition<IStateVarValue> destVarDef,
-			Set<StateVar<IStateVarValue>> srcVars, FactoredPSO<? extends IAction> actionPSO)
-			throws IncompatibleVarException, VarNotFoundException {
-		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
-		Discriminant discriminant = new Discriminant(discrClass);
-		for (StateVar<IStateVarValue> var : srcVars) {
-			if (discrClass.contains(var.getDefinition())) {
-				discriminant.add(var);
-			}
-		}
-		return discriminant;
 	}
 
 	/**
@@ -554,6 +617,14 @@ public class PrismRewardTranslatorHelper {
 		return discriminants;
 	}
 
+	/**
+	 * Generate a set of all value combinations of a given set of state variable definitions and their allowable values.
+	 * 
+	 * If there is no variable definition, then this method returns a set of an empty {@link StateVarTuple}.
+	 * 
+	 * @param varValues
+	 * @return All value combinations of a given set of state variable definitions and their allowable values.
+	 */
 	private Set<StateVarTuple> getCombinations(Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> varValues) {
 		Set<StateVarTuple> combinations = new HashSet<>();
 		StateVarTuple emptyCombination = new StateVarTuple();
@@ -569,32 +640,17 @@ public class PrismRewardTranslatorHelper {
 
 		// Base case: 1 variable
 		if (varValues.size() == 1) {
-			return getCombinationsHelper2(varDef, values, combinations);
+			return getCombinationsHelper(varDef, values, combinations);
 		}
 
-		// Recursive case: >1 variables
+		// Recursive case: > 1 variables
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> partialVarValues = new HashMap<>(varValues);
 		partialVarValues.remove(varDef);
 		Set<StateVarTuple> partialCombinations = getCombinations(partialVarValues);
-		return getCombinationsHelper2(varDef, values, partialCombinations);
+		return getCombinationsHelper(varDef, values, partialCombinations);
 	}
 
-	private Set<Set<StateVar<IStateVarValue>>> getCombinationsHelper(StateVarDefinition<IStateVarValue> varDef,
-			Set<IStateVarValue> values, Set<Set<StateVar<IStateVarValue>>> partialCombinations) {
-		Set<Set<StateVar<IStateVarValue>>> newCombinations = new HashSet<>();
-		for (IStateVarValue value : values) {
-			StateVar<IStateVarValue> newVar = varDef.getStateVar(value);
-			for (Set<StateVar<IStateVarValue>> prevCombination : partialCombinations) {
-				Set<StateVar<IStateVarValue>> newCombination = new HashSet<>();
-				newCombination.addAll(prevCombination);
-				newCombination.add(newVar);
-				newCombinations.add(newCombination);
-			}
-		}
-		return newCombinations;
-	}
-
-	private Set<StateVarTuple> getCombinationsHelper2(StateVarDefinition<IStateVarValue> varDef,
+	private Set<StateVarTuple> getCombinationsHelper(StateVarDefinition<IStateVarValue> varDef,
 			Set<IStateVarValue> values, Set<StateVarTuple> partialCombinations) {
 		Set<StateVarTuple> newCombinations = new HashSet<>();
 		for (IStateVarValue value : values) {

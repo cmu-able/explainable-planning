@@ -32,7 +32,7 @@ import language.qfactors.StateVarDefinition;
 
 public class PrismRewardTranslatorHelper {
 
-	private static final double ARTIFICIAL_REWARD_VALUE = 0.01;
+	private static final double ARTIFICIAL_REWARD_VALUE = 1.0E-5;
 	private static final String BEGIN_REWARDS = "rewards \"%s\"";
 	private static final String END_REWARDS = "endrewards";
 

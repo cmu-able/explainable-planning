@@ -8,7 +8,6 @@ import java.util.Map.Entry;
 import explanation.analysis.EventBasedQAValue;
 import language.dtmc.XDTMC;
 import language.exceptions.QFunctionNotFoundException;
-import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IEvent;
@@ -29,6 +28,7 @@ public class PrismConnector {
 	public static final String ADVERSARY_FILENAME_PREFIX = "adv";
 
 	private XMDP mXMDP;
+	private PrismMDPTranslator mMDPTranslator;
 	private PrismConnectorSettings mSettings;
 	private PrismAPIWrapper mPrismAPI;
 	private Map<Policy, Double> mCachedTotalCosts = new HashMap<>();
@@ -37,6 +37,7 @@ public class PrismConnector {
 
 	public PrismConnector(XMDP xmdp, PrismConnectorSettings settings) throws PrismException {
 		mXMDP = xmdp;
+		mMDPTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper(settings.getPrismConfiguration());
 	}
@@ -56,17 +57,15 @@ public class PrismConnector {
 	 * @throws IOException
 	 */
 	public Policy generateOptimalPolicy() throws XMDPException, PrismException, ResultParsingException, IOException {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.STATE_REWARD);
-
 		// If we want to use the PRISM output explicit DTMC model to calculate QA values of the policy, then we need to
 		// include QA functions in the MDP translation.
-		String mdp = mdpTranslator.getMDPTranslation(mSettings.useExplicitModel());
+		String mdp = mMDPTranslator.getMDPTranslation(mSettings.useExplicitModel());
 
 		// Goal with cost-minimizing objective
-		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+		String goalProperty = mMDPTranslator.getGoalPropertyTranslation();
 
 		// Compute an optimal policy, and cache its total cost and QA values
-		return computeOptimalPolicy(mdpTranslator, mdp, goalProperty, mSettings.getOutputPath());
+		return computeOptimalPolicy(mdp, goalProperty, mSettings.getOutputPath());
 	}
 
 	/**
@@ -86,12 +85,14 @@ public class PrismConnector {
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<IQFunction<?, ?>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
-		// Use transition rewards for multi-objective adversary synthesis
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(mXMDP, true, PrismRewardType.TRANSITION_REWARD);
-		PrismRewardTranslator rewardTranslator = mdpTranslator.getPrismRewardTranslator();
-		PrismPropertyTranslator propTranslator = mdpTranslator.getPrismPropertyTransltor();
+		configureForMultiObjectiveStrategySynthesis();
+
+		PrismRewardTranslator rewardTranslator = mMDPTranslator.getPrismRewardTranslator();
+		PrismPropertyTranslator propTranslator = mMDPTranslator.getPrismPropertyTransltor();
+
 		StringBuilder mdpBuilder = new StringBuilder();
-		mdpBuilder.append(mdpTranslator.getMDPTranslation(mSettings.useExplicitModel()));
+		String originalMDPStr = mMDPTranslator.getMDPTranslation(mSettings.useExplicitModel());
+		mdpBuilder.append(originalMDPStr);
 
 		if (mSettings.useExplicitModel()) {
 			// MDP translation already includes all QA functions
@@ -109,19 +110,23 @@ public class PrismConnector {
 		String propertyStr = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
 				constraint);
 
+		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
+		String outputPath = mSettings.getOutputPath() + "_" + constraint.getQFunction().getName();
+		return computeOptimalPolicy(mdpStr, propertyStr, outputPath);
+	}
+
+	private void configureForMultiObjectiveStrategySynthesis() {
+		// Use transition rewards for multi-objective adversary synthesis
+		mMDPTranslator.setPrismRewardType(PrismRewardType.TRANSITION_REWARD);
+
 		// Use Sparse engine and linear-programming solution method for multi-objective adversary synthesis
 		mPrismAPI.reconfigurePrism(PrismEngine.SPARSE);
 		mPrismAPI.reconfigurePrism(PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
-
-		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
-		String outputPath = mSettings.getOutputPath() + "_" + constraint.getQFunction().getName();
-		return computeOptimalPolicy(mdpTranslator, mdpStr, propertyStr, outputPath);
 	}
 
 	/**
 	 * Helper method to compute an optimal policy. Cache the policy's expected total cost and QA values.
 	 * 
-	 * @param mdpTranslator
 	 * @param mdpStr
 	 *            : MDP string with reward structure(s)
 	 * @param propertyStr
@@ -134,15 +139,15 @@ public class PrismConnector {
 	 * @throws IOException
 	 * @throws XMDPException
 	 */
-	private Policy computeOptimalPolicy(PrismMDPTranslator mdpTranslator, String mdpStr, String propertyStr,
-			String outputPath) throws PrismException, ResultParsingException, IOException, XMDPException {
+	private Policy computeOptimalPolicy(String mdpStr, String propertyStr, String outputPath)
+			throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				ADVERSARY_FILENAME_PREFIX);
+				ADVERSARY_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
-				mdpTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
+				mMDPTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function
@@ -165,18 +170,13 @@ public class PrismConnector {
 			mCachedTotalCosts.put(policy, result);
 		} else {
 			// The objective function in the property is not the cost function
-			// Calculate the expected total cost of the policy from the explicit model, and cache it
-			int costStructIndex = mdpTranslator.getValueEncodingScheme().getCostStructureIndex();
-			String rawRewardQueryStr = mdpTranslator.getPrismPropertyTransltor()
-					.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
-			double totalCost = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQueryStr, outputExplicitModelPointer,
-					costStructIndex);
-			mCachedTotalCosts.put(policy, totalCost);
+			// Calculate the expected total cost of the policy, and cache it
+			computeExpectedTotalCost(policy);
 		}
 
 		if (mSettings.useExplicitModel()) {
 			// Compute and cache the QA values of the policy, using explicit DTMC model
-			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQSpace(), mdpTranslator);
+			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQSpace());
 		} else {
 			// Compute and cache the QA values of the policy
 			computeQAValues(policy, mXMDP.getQSpace());
@@ -272,10 +272,10 @@ public class PrismConnector {
 	}
 
 	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
-			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace, PrismMDPTranslator mdpTranslator)
-			throws VarNotFoundException, PrismException, ResultParsingException, QFunctionNotFoundException {
-		PrismPropertyTranslator propertyTranslator = mdpTranslator.getPrismPropertyTransltor();
-		ValueEncodingScheme encodings = mdpTranslator.getValueEncodingScheme();
+			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
+			throws XMDPException, PrismException, ResultParsingException {
+		PrismPropertyTranslator propertyTranslator = mMDPTranslator.getPrismPropertyTransltor();
+		ValueEncodingScheme encodings = mMDPTranslator.getValueEncodingScheme();
 		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
 
 		// Cache the QA values of the policy

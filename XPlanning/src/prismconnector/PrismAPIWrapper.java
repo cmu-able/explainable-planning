@@ -98,7 +98,7 @@ public class PrismAPIWrapper {
 		File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
 		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
 		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
-		File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
+		PrismRewardType prismRewardType = outputExplicitModelPointer.getPrismRewardType();
 
 		// Parse and load a PRISM MDP model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(mdpStr, ModelType.MDP);
@@ -117,9 +117,6 @@ public class PrismAPIWrapper {
 		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
 		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, labOutputFile);
 
-		// Export the reward structure to a file
-		mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
-
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, traOutputFile.getPath());
@@ -135,6 +132,18 @@ public class PrismAPIWrapper {
 		// Select PRISM MDP solution method for multi-objective properties
 		PrismMDPMultiSolutionMethod mdpMultiSolutionMethod = mPrismConfig.getMDPMultiSolutionMethod();
 		mPrism.getSettings().set(PrismSettings.PRISM_MDP_MULTI_SOLN_METHOD, mdpMultiSolutionMethod.toString());
+
+		// Export the reward structure to a file
+		// Note: This needs to be set after setting PRISM engine
+		if (prismRewardType == PrismRewardType.STATE_REWARD) {
+			File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
+			mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
+		} else if (prismRewardType == PrismRewardType.TRANSITION_REWARD
+				&& mPrismConfig.getEngine() != PrismEngine.EXPLICIT) {
+			// Export of transition rewards not yet supported by explicit engine
+			File trewOutputFile = outputExplicitModelPointer.getTransitionRewardsFile();
+			mPrism.exportTransRewardsToFile(true, Prism.EXPORT_PLAIN, trewOutputFile);
+		}
 
 		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
 		terminatePrism();

@@ -136,7 +136,8 @@ class MobileRobotTest {
 	@Test
 	public void testPrismMDPAdversaryGeneration() throws XMDPException {
 		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/output";
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv");
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv",
+				PrismRewardType.STATE_REWARD);
 
 		XMDP xmdp = mTestProblem.createXMDP();
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
@@ -162,7 +163,8 @@ class MobileRobotTest {
 	@Test
 	public void testPrismExplicitDTMCPropertyQuery() {
 		String modelPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/test_output";
-		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath);
+		PrismExplicitModelPointer explicitModelPointer = new PrismExplicitModelPointer(modelPath,
+				PrismRewardType.STATE_REWARD);
 		String propertyStr = "R=? [ F rLoc=0 & readyToCopy ]";
 
 		// Default PRISM configuration

@@ -95,6 +95,7 @@ public class PrismAPIWrapper {
 			PrismExplicitModelPointer outputExplicitModelPointer)
 			throws PrismException, FileNotFoundException, ResultParsingException {
 		File staOutputFile = outputExplicitModelPointer.getStatesFile();
+		File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
 		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
 		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
 		File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
@@ -105,6 +106,13 @@ public class PrismAPIWrapper {
 
 		// Export the states of the model to a file
 		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, staOutputFile);
+
+		if (isMultiObjectiveProperty(propertyStr)) {
+			// For multi-objective strategy synthesis
+			// Export the product states of the generated adversary to a file
+			mPrism.setExportProductStates(true);
+			mPrism.setExportProductStatesFilename(prodStaOutputFile.getPath());
+		}
 
 		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
 		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, labOutputFile);
@@ -286,5 +294,9 @@ public class PrismAPIWrapper {
 		}
 		throw new ResultParsingException(resultStr, FLOATING_POINT_RESULT_PATTERN, INFINITY_RESULT_PATTERN,
 				NAN_RESULT_PATTERN);
+	}
+
+	private boolean isMultiObjectiveProperty(String propertyStr) {
+		return propertyStr.startsWith("multi");
 	}
 }

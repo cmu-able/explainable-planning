@@ -27,6 +27,7 @@ public class PrismExplicitModelReader {
 
 	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(
 			Arrays.asList("action", "readyToCopy", "barrier"));
+	private static final Set<String> PRISM_VAR_NAMES = new HashSet<>(Arrays.asList("_da"));
 	private static final Set<String> HELPER_ACTIONS = new HashSet<>(Arrays.asList("compute", "next", "end"));
 	private static final Set<String> PRISM_ACTIONS = new HashSet<>(Arrays.asList("_ec"));
 	private static final String INT_REGEX = "[0-9]+";
@@ -49,14 +50,16 @@ public class PrismExplicitModelReader {
 	}
 
 	/**
-	 * Read states from a PRISM .sta file.
+	 * Read states from a PRISM product states file (prod.sta) if exists; otherwise, from .sta file.
 	 * 
 	 * @return Mapping from integer values indexing states to the corresponding states
 	 * @throws IOException
 	 * @throws VarNotFoundException
 	 */
 	public Map<Integer, StateVarTuple> readStatesFromFile() throws IOException, VarNotFoundException {
-		File staFile = mExplicitModelPtr.getStatesFile();
+		File staFile = mExplicitModelPtr.productStatesFileExists() ? mExplicitModelPtr.getProductStatesFile()
+				: mExplicitModelPtr.getStatesFile();
+
 		Map<Integer, StateVarTuple> indices = new HashMap<>();
 
 		List<String> allLines = readLinesFromFile(staFile);
@@ -174,6 +177,7 @@ public class PrismExplicitModelReader {
 	}
 
 	private boolean isSpecialVariable(String varName) {
-		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || HELPER_VAR_NAMES.contains(varName);
+		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || HELPER_VAR_NAMES.contains(varName)
+				|| PRISM_VAR_NAMES.contains(varName);
 	}
 }

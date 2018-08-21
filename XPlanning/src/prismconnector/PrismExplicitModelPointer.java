@@ -11,6 +11,7 @@ public class PrismExplicitModelPointer {
 	private static final String TRA_EXTENSION = ".tra";
 	private static final String LAB_EXTENSION = ".lab";
 	private static final String SREW_EXTENSION = ".srew";
+	private static final String PROD_STA_FILENAME = "prod.sta";
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -19,6 +20,7 @@ public class PrismExplicitModelPointer {
 
 	private File mModelDir;
 	private File mStaFile;
+	private File mProdStaFile;
 	private File mTraFile;
 	private File mLabFile;
 	private File mSrewFile;
@@ -37,6 +39,7 @@ public class PrismExplicitModelPointer {
 			mModelDir.mkdirs();
 		}
 		mStaFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
+		mProdStaFile = new File(modelPath, PROD_STA_FILENAME);
 		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
 		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
 		mSrewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
@@ -55,7 +58,9 @@ public class PrismExplicitModelPointer {
 
 		for (File prismFile : prismFiles) {
 			String filename = prismFile.getName().toLowerCase();
-			if (filename.endsWith(STA_EXTENSION)) {
+			if (filename.equals(PROD_STA_FILENAME)) {
+				mProdStaFile = prismFile;
+			} else if (filename.endsWith(STA_EXTENSION)) {
 				mStaFile = prismFile;
 			} else if (filename.endsWith(TRA_EXTENSION)) {
 				mTraFile = prismFile;
@@ -94,6 +99,14 @@ public class PrismExplicitModelPointer {
 		return mStaFile;
 	}
 
+	public boolean productStatesFileExists() {
+		return mProdStaFile.exists();
+	}
+
+	public File getProductStatesFile() {
+		return mProdStaFile;
+	}
+
 	public File getTransitionsFile() {
 		return mTraFile;
 	}
@@ -130,8 +143,9 @@ public class PrismExplicitModelPointer {
 		}
 		PrismExplicitModelPointer pointer = (PrismExplicitModelPointer) obj;
 		return pointer.mModelDir.equals(mModelDir) && pointer.mStaFile.equals(mStaFile)
-				&& pointer.mTraFile.equals(mTraFile) && pointer.mLabFile.equals(mLabFile)
-				&& pointer.mSrewFile.equals(mSrewFile) && pointer.mIndexedSrewFiles.equals(mIndexedSrewFiles);
+				&& pointer.mProdStaFile.equals(mProdStaFile) && pointer.mTraFile.equals(mTraFile)
+				&& pointer.mLabFile.equals(mLabFile) && pointer.mSrewFile.equals(mSrewFile)
+				&& pointer.mIndexedSrewFiles.equals(mIndexedSrewFiles);
 	}
 
 	@Override
@@ -141,6 +155,7 @@ public class PrismExplicitModelPointer {
 			result = 17;
 			result = 31 * result + mModelDir.hashCode();
 			result = 31 * result + mStaFile.hashCode();
+			result = 31 * result + mProdStaFile.hashCode();
 			result = 31 * result + mTraFile.hashCode();
 			result = 31 * result + mLabFile.hashCode();
 			result = 31 * result + mSrewFile.hashCode();

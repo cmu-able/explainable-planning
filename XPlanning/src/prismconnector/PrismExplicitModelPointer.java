@@ -11,7 +11,10 @@ public class PrismExplicitModelPointer {
 	private static final String TRA_EXTENSION = ".tra";
 	private static final String LAB_EXTENSION = ".lab";
 	private static final String SREW_EXTENSION = ".srew";
+	private static final String TREW_EXTENSION = ".trew";
 	private static final String PROD_STA_FILENAME = "prod.sta";
+	private static final String[] EXTENSIONS = { STA_EXTENSION, TRA_EXTENSION, LAB_EXTENSION, SREW_EXTENSION,
+			TREW_EXTENSION };
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -23,8 +26,9 @@ public class PrismExplicitModelPointer {
 	private File mProdStaFile;
 	private File mTraFile;
 	private File mLabFile;
-	private File mSrewFile;
-	private List<File> mIndexedSrewFiles = new ArrayList<>();
+	private PrismRewardType mRewardType;
+	private File mRewFile; // This is either .srew file or .trew file
+	private List<File> mIndexedRewFiles = new ArrayList<>();
 
 	/**
 	 * Use this constructor if the PRISM explicit model does not exist yet at modelPath. Create a modelPath directory if
@@ -32,8 +36,9 @@ public class PrismExplicitModelPointer {
 	 * 
 	 * @param modelPath
 	 * @param filenamePrefix
+	 * @param prismRewardType
 	 */
-	public PrismExplicitModelPointer(String modelPath, String filenamePrefix) {
+	public PrismExplicitModelPointer(String modelPath, String filenamePrefix, PrismRewardType prismRewardType) {
 		mModelDir = new File(modelPath);
 		if (!mModelDir.exists()) {
 			mModelDir.mkdirs();
@@ -42,8 +47,13 @@ public class PrismExplicitModelPointer {
 		mProdStaFile = new File(modelPath, PROD_STA_FILENAME);
 		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
 		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
-		mSrewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
-		// mIndexedSrewFiles will be created once the PRISM explicit model is created
+		mRewardType = prismRewardType;
+		if (prismRewardType == PrismRewardType.STATE_REWARD) {
+			mRewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
+		} else {
+			mRewFile = new File(modelPath, filenamePrefix + TREW_EXTENSION);
+		}
+		// mIndexedRewFiles will be created once the PRISM explicit model is created
 	}
 
 	/**
@@ -51,10 +61,11 @@ public class PrismExplicitModelPointer {
 	 * 
 	 * @param modelPath
 	 */
-	public PrismExplicitModelPointer(String modelPath) {
+	public PrismExplicitModelPointer(String modelPath, PrismRewardType prismRewardType) {
 		mModelDir = new File(modelPath);
-		File[] prismFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(STA_EXTENSION)
-				|| name.toLowerCase().endsWith(TRA_EXTENSION) || name.toLowerCase().endsWith(LAB_EXTENSION));
+		mRewardType = prismRewardType;
+
+		File[] prismFiles = mModelDir.listFiles((dir, filename) -> filterFilename(filename));
 
 		for (File prismFile : prismFiles) {
 			String filename = prismFile.getName().toLowerCase();
@@ -66,29 +77,46 @@ public class PrismExplicitModelPointer {
 				mTraFile = prismFile;
 			} else if (filename.endsWith(LAB_EXTENSION)) {
 				mLabFile = prismFile;
-			} else if (filename.endsWith(SREW_EXTENSION)) {
-				mIndexedSrewFiles.add(prismFile);
+			} else if ((mRewardType == PrismRewardType.STATE_REWARD && filename.endsWith(SREW_EXTENSION)
+					|| mRewardType == PrismRewardType.TRANSITION_REWARD && filename.endsWith(TREW_EXTENSION))) {
+				mIndexedRewFiles.add(prismFile);
 			}
 		}
-		mIndexedSrewFiles.sort((file1, file2) -> file1.compareTo(file2));
-
-		if (mIndexedSrewFiles.size() > 1) {
-			File srew1File = mIndexedSrewFiles.get(0);
-			String srew1Filename = srew1File.getName(); // <name>1.srew
-			String srewFilenamePrefix = srew1Filename.substring(0, srew1Filename.indexOf(SREW_EXTENSION) - 1); // <name>
-			mSrewFile = new File(modelPath, srewFilenamePrefix + SREW_EXTENSION); // <name>.srew
-		} else {
-			mSrewFile = mIndexedSrewFiles.get(0);
-		}
+		mIndexedRewFiles.sort((file1, file2) -> file1.compareTo(file2));
+		mRewFile = getRewardFile(modelPath, getRewardFileExtension(prismRewardType));
 	}
 
-	private List<File> getSortedStateRewardsFiles() {
-		File[] srewFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(SREW_EXTENSION));
+	private boolean filterFilename(String filename) {
+		for (String extension : EXTENSIONS) {
+			if (filename.toLowerCase().endsWith(extension)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-		// Sort .srew files lexicographically based on their abstract pathnames
-		// {name}1.srew, {name}2.srew, {name}3.srew, ...
-		Arrays.sort(srewFiles, (file1, file2) -> file1.compareTo(file2));
-		return Arrays.asList(srewFiles);
+	private List<File> getSortedRewardsFiles() {
+		String rewExtension = getRewardFileExtension(mRewardType);
+		File[] rewFiles = mModelDir.listFiles((dir, name) -> name.toLowerCase().endsWith(rewExtension));
+
+		// Sort .srew/trew files lexicographically based on their abstract pathnames
+		// {name}1.srew/trew, {name}2.srew/trew, {name}3.srew/trew, ...
+		Arrays.sort(rewFiles, (file1, file2) -> file1.compareTo(file2));
+		return Arrays.asList(rewFiles);
+	}
+
+	private File getRewardFile(String modelPath, String rewExtension) {
+		if (mIndexedRewFiles.size() > 1) {
+			File rew1File = mIndexedRewFiles.get(0);
+			String rew1Filename = rew1File.getName(); // <name>1.srew/trew
+			String rewFilenamePrefix = rew1Filename.substring(0, rew1Filename.indexOf(rewExtension) - 1); // <name>
+			return new File(modelPath, rewFilenamePrefix + rewExtension); // <name>.srew/trew
+		}
+		return mIndexedRewFiles.get(0);
+	}
+
+	private String getRewardFileExtension(PrismRewardType prismRewardType) {
+		return prismRewardType == PrismRewardType.STATE_REWARD ? SREW_EXTENSION : TREW_EXTENSION;
 	}
 
 	public File getExplicitModelDirectory() {
@@ -115,22 +143,39 @@ public class PrismExplicitModelPointer {
 		return mLabFile;
 	}
 
+	public PrismRewardType getPrismRewardType() {
+		return mRewardType;
+	}
+
 	public File getStateRewardsFile() {
-		return mSrewFile;
+		checkRewardType(PrismRewardType.STATE_REWARD);
+		return mRewFile;
+	}
+
+	public File getTransitionRewardsFile() {
+		checkRewardType(PrismRewardType.TRANSITION_REWARD);
+		return mRewFile;
 	}
 
 	public File getIndexedStateRewardsFile(int rewardStructIndex) {
-		if (mIndexedSrewFiles.isEmpty()) {
-			mIndexedSrewFiles.addAll(getSortedStateRewardsFiles());
+		if (mIndexedRewFiles.isEmpty()) {
+			mIndexedRewFiles.addAll(getSortedRewardsFiles());
 		}
-		return mIndexedSrewFiles.get(rewardStructIndex - 1);
+		return mIndexedRewFiles.get(rewardStructIndex - 1);
+	}
+
+	private void checkRewardType(PrismRewardType prismRewardType) {
+		if (mRewardType != prismRewardType) {
+			String rewExtension = getRewardFileExtension(prismRewardType);
+			throw new UnsupportedOperationException(String.format("No %s rewards file", rewExtension));
+		}
 	}
 
 	public int getNumRewardStructs() {
-		if (mIndexedSrewFiles.isEmpty()) {
-			mIndexedSrewFiles.addAll(getSortedStateRewardsFiles());
+		if (mIndexedRewFiles.isEmpty()) {
+			mIndexedRewFiles.addAll(getSortedRewardsFiles());
 		}
-		return mIndexedSrewFiles.size();
+		return mIndexedRewFiles.size();
 	}
 
 	@Override
@@ -144,8 +189,8 @@ public class PrismExplicitModelPointer {
 		PrismExplicitModelPointer pointer = (PrismExplicitModelPointer) obj;
 		return pointer.mModelDir.equals(mModelDir) && pointer.mStaFile.equals(mStaFile)
 				&& pointer.mProdStaFile.equals(mProdStaFile) && pointer.mTraFile.equals(mTraFile)
-				&& pointer.mLabFile.equals(mLabFile) && pointer.mSrewFile.equals(mSrewFile)
-				&& pointer.mIndexedSrewFiles.equals(mIndexedSrewFiles);
+				&& pointer.mLabFile.equals(mLabFile) && pointer.mRewardType.equals(mRewardType)
+				&& pointer.mRewFile.equals(mRewFile) && pointer.mIndexedRewFiles.equals(mIndexedRewFiles);
 	}
 
 	@Override
@@ -158,8 +203,9 @@ public class PrismExplicitModelPointer {
 			result = 31 * result + mProdStaFile.hashCode();
 			result = 31 * result + mTraFile.hashCode();
 			result = 31 * result + mLabFile.hashCode();
-			result = 31 * result + mSrewFile.hashCode();
-			result = 31 * result + mIndexedSrewFiles.hashCode();
+			result = 31 * result + mRewardType.hashCode();
+			result = 31 * result + mRewFile.hashCode();
+			result = 31 * result + mIndexedRewFiles.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

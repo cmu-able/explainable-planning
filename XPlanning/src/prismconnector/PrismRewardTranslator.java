@@ -20,6 +20,14 @@ public class PrismRewardTranslator {
 		mRewardHelper = new PrismRewardTranslatorHelper(encodings, prismRewardType);
 	}
 
+	public void setPrismRewardType(PrismRewardType prismRewardType) {
+		mRewardHelper.setPrismRewardType(prismRewardType);
+	}
+
+	public PrismRewardType getPrismRewardType() {
+		return mRewardHelper.getPrismRewardType();
+	}
+
 	/**
 	 * 
 	 * @param costFunction

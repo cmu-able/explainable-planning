@@ -44,6 +44,14 @@ public class PrismRewardTranslatorHelper {
 		mPrismRewardType = prismRewardType;
 	}
 
+	void setPrismRewardType(PrismRewardType prismRewardType) {
+		mPrismRewardType = prismRewardType;
+	}
+
+	PrismRewardType getPrismRewardType() {
+		return mPrismRewardType;
+	}
+
 	/**
 	 * Build a list of state-based reward structures for a given set of QA functions.
 	 * 

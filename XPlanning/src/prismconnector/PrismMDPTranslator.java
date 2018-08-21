@@ -34,6 +34,14 @@ public class PrismMDPTranslator {
 		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
 
+	public void setPrismRewardType(PrismRewardType prismRewardType) {
+		mRewardTranslator.setPrismRewardType(prismRewardType);
+	}
+
+	public PrismRewardType getPrismRewardType() {
+		return mRewardTranslator.getPrismRewardType();
+	}
+
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
 	}

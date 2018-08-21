@@ -122,7 +122,20 @@ public class Action implements IAction {
 
 	@Override
 	public String toString() {
-		return mActionNamePrefix;
+		StringBuilder builder = new StringBuilder();
+		builder.append(mActionNamePrefix);
+		builder.append("(");
+		boolean firstParam = true;
+		for (IStateVarValue param : mParameters) {
+			if (firstParam) {
+				firstParam = false;
+			} else {
+				builder.append(", ");
+			}
+			builder.append(param);
+		}
+		builder.append(")");
+		return builder.toString();
 	}
 
 }

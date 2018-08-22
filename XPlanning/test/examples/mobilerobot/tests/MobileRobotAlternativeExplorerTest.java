@@ -8,16 +8,19 @@ import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
 import explanation.analysis.AlternativeExplorer;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
+import language.objectives.CostFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConfiguration;
@@ -28,6 +31,27 @@ import prismconnector.PrismRewardType;
 import prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotAlternativeExplorerTest {
+
+	@Test(dataProvider = "xmdpProblems")
+	public void testGenerateTravelTimeAlternative(File missionJsonFile, PrismConnector prismConnector, Policy policy) {
+		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, policy);
+		IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
+				TravelTimeQFunction.NAME);
+		CostFunction costFunction = prismConnector.getXMDP().getCostFunction();
+		try {
+			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction, costFunction);
+
+			if (altPolicy == null) {
+				System.out.println(String.format("No alternative found that improves %s .", TravelTimeQFunction.NAME));
+			} else {
+				printPrismDTMCAndProperties(prismConnector, altPolicy);
+			}
+			System.out.println();
+		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
+			e.printStackTrace();
+			fail("Exception thrown while findign an alternative");
+		}
+	}
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testAlternativeExplorer(File missionJsonFile, PrismConnector prismConnector, Policy policy) {
@@ -42,9 +66,6 @@ public class MobileRobotAlternativeExplorerTest {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 				System.out.println();
 			}
-
-			// Close down PRISM
-			prismConnector.terminate();
 		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
 			e.printStackTrace();
 			fail("Exception thrown while finding alternative policies");
@@ -109,5 +130,12 @@ public class MobileRobotAlternativeExplorerTest {
 			data[i] = new Object[] { missionJsonFile, prismConn, policy };
 		}
 		return data;
+	}
+
+	@AfterMethod
+	private void terminatePrismConnector(Object[] data) {
+		PrismConnector prismConnector = (PrismConnector) data[1];
+		// Close down PRISM
+		prismConnector.terminate();
 	}
 }

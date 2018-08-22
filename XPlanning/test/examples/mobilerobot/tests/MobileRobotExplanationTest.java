@@ -49,7 +49,7 @@ public class MobileRobotExplanationTest {
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		Explainer explainer = new Explainer(prismConnSetttings, vocabulary, POLICY_JSON_PATH);
-		String explanation = explainer.explain(xmdp, policy);
+		String explanation = explainer.explain(missionName, xmdp, policy);
 
 		SimpleConsoleLogger.log("Explanation", explanation, false);
 	}

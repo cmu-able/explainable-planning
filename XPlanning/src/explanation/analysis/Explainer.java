@@ -28,7 +28,7 @@ public class Explainer {
 		mVerbalizer = new Verbalizer(vocabulary, policyJsonDir);
 	}
 
-	public String explain(XMDP xmdp, Policy policy)
+	public String explain(String missionName, XMDP xmdp, Policy policy)
 			throws PrismException, ResultParsingException, XMDPException, IOException {
 		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);
 		PolicyInfo solnPolicyInfo = buildPolicyInfo(policy, xmdp.getQSpace(), prismConnector);
@@ -42,7 +42,7 @@ public class Explainer {
 		}
 		// Close down PRISM
 		prismConnector.terminate();
-		return mVerbalizer.verbalize(solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
+		return mVerbalizer.verbalize(missionName, solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
 	}
 
 	private PolicyInfo buildPolicyInfo(Policy policy, QSpace qSpace, PrismConnector prismConnector)

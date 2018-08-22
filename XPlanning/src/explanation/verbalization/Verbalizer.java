@@ -29,8 +29,10 @@ public class Verbalizer {
 		mPolicyWriter = new PolicyWriter(policyJsonDir);
 	}
 
-	public String verbalize(PolicyInfo solnPolicyInfo, QSpace qSpace, Set<Tradeoff> tradeoffs) throws IOException {
-		File policyJsonFile = mPolicyWriter.writePolicy(solnPolicyInfo.getPolicy(), "solnPolicy.json");
+	public String verbalize(String missionName, PolicyInfo solnPolicyInfo, QSpace qSpace, Set<Tradeoff> tradeoffs)
+			throws IOException {
+		String policyJsonFilename = String.format("%s_policy.json", missionName);
+		File policyJsonFile = mPolicyWriter.writePolicy(solnPolicyInfo.getPolicy(), policyJsonFilename);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("I'm planning to follow this policy [");

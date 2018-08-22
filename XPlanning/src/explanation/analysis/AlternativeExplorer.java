@@ -32,10 +32,12 @@ import prismconnector.exceptions.ResultParsingException;
 public class AlternativeExplorer {
 
 	private PrismConnector mPrismConnector;
+	private CostFunction mCostFunction;
 	private Policy mPolicy;
 
 	public AlternativeExplorer(PrismConnector prismConnector, Policy policy) {
 		mPrismConnector = prismConnector;
+		mCostFunction = prismConnector.getXMDP().getCostFunction();
 		mPolicy = policy;
 	}
 
@@ -63,7 +65,6 @@ public class AlternativeExplorer {
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
-		CostFunction costFunction = xmdp.getCostFunction();
 
 		// QAs to be explored
 		Set<IQFunction<?, ?>> frontier = new HashSet<>();
@@ -76,8 +77,14 @@ public class AlternativeExplorer {
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
 
+			if (hasZeroAttributeCost(qFunction)) {
+				// Skip -- This QA already has its best value (0 attribute-cost) in the solution policy
+				frontierIter.remove();
+				continue;
+			}
+
 			// Find an alternative policy, if exists
-			Policy alternative = getParetoOptimalImmediateNeighbor(qFunction, costFunction);
+			Policy alternative = getParetoOptimalImmediateNeighbor(qFunction);
 
 			// Removed explored QA
 			frontierIter.remove();
@@ -93,7 +100,7 @@ public class AlternativeExplorer {
 		return alternatives;
 	}
 
-	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction, CostFunction costFunction)
+	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction)
 			throws ResultParsingException, XMDPException, PrismException, IOException {
 		// QA value of the solution policy
 		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
@@ -104,17 +111,25 @@ public class AlternativeExplorer {
 		// Create a new objective function of n-1 attributes that excludes this QA
 		AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
 
-		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
+		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : mCostFunction.getQFunctions()) {
 			if (!otherQFunction.equals(qFunction)) {
-				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
+				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = mCostFunction
 						.getAttributeCostFunction(otherQFunction);
-				double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
+				double scalingConst = mCostFunction.getScalingConstant(otherAttrCostFunc);
 				objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
 			}
 		}
 
 		// Find a constraint-satisfying, optimal policy, if exists
 		return mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+	}
+
+	private boolean hasZeroAttributeCost(IQFunction<?, ?> qFunction)
+			throws ResultParsingException, XMDPException, PrismException {
+		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+		AttributeCostFunction<?> attrCostFunc = mCostFunction.getAttributeCostFunction(qFunction);
+		double currQACost = attrCostFunc.getCost(currQAValue);
+		return currQACost == 0;
 	}
 
 	private void update(Set<IQFunction<?, ?>> frontier, Policy alternative)

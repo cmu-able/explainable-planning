@@ -20,7 +20,6 @@ import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
-import language.objectives.CostFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import prismconnector.PrismConfiguration;
@@ -37,9 +36,9 @@ public class MobileRobotAlternativeExplorerTest {
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, policy);
 		IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
 				TravelTimeQFunction.NAME);
-		CostFunction costFunction = prismConnector.getXMDP().getCostFunction();
+
 		try {
-			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction, costFunction);
+			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction);
 
 			if (altPolicy == null) {
 				System.out.println(String.format("No alternative found that improves %s .", TravelTimeQFunction.NAME));

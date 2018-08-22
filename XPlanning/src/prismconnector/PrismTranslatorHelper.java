@@ -66,7 +66,7 @@ public class PrismTranslatorHelper {
 				builder.append(varName);
 				builder.append("_");
 				String valueString = String.valueOf(value);
-				builder.append(sanitizeNameString(valueString));
+				builder.append(PrismTranslatorUtils.sanitizeNameString(valueString));
 				builder.append(" = ");
 				builder.append(encodedValue);
 				builder.append(";");
@@ -87,7 +87,7 @@ public class PrismTranslatorHelper {
 			for (IAction action : actionDef.getActions()) {
 				Integer encodedValue = mEncodings.getEncodedIntValue(action);
 				builder.append("const int ");
-				builder.append(sanitizeNameString(action.getName()));
+				builder.append(PrismTranslatorUtils.sanitizeNameString(action.getName()));
 				builder.append(" = ");
 				builder.append(encodedValue);
 				builder.append(";");
@@ -193,7 +193,7 @@ public class PrismTranslatorHelper {
 
 				builder.append(INDENT);
 				builder.append("[");
-				builder.append(sanitizeNameString(action.getName()));
+				builder.append(PrismTranslatorUtils.sanitizeNameString(action.getName()));
 				builder.append("]");
 				builder.append(" readyToCopy & !barrier -> ");
 
@@ -549,7 +549,7 @@ public class PrismTranslatorHelper {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("[");
-		String sanitizedActionName = sanitizeNameString(action.getName());
+		String sanitizedActionName = PrismTranslatorUtils.sanitizeNameString(action.getName());
 		builder.append(sanitizedActionName);
 		builder.append("] ");
 		builder.append(guard);
@@ -658,14 +658,6 @@ public class PrismTranslatorHelper {
 		}
 		builder.append(")");
 		return builder.toString();
-	}
-
-	public static String sanitizeNameString(String name) {
-		return name.replaceAll("[.]", "_DOT_").replaceAll("\\(", "_LP_").replaceAll("\\)", "_RP_");
-	}
-
-	public static String desanitizeNameString(String sanitizedName) {
-		return sanitizedName.replaceAll("_DOT_", ".").replaceAll("_LP_", "\\(").replaceAll("_RP_", "\\)");
 	}
 
 	private <E extends IStateVarValue> StateVarDefinition<E> castTypeStateVarDef(

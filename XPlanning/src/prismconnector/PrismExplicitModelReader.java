@@ -140,7 +140,7 @@ public class PrismExplicitModelReader {
 				continue;
 			}
 
-			String actionName = PrismTranslatorHelper.desanitizeNameString(sanitizedActionName);
+			String actionName = PrismTranslatorUtils.desanitizeNameString(sanitizedActionName);
 			Integer sourceIndex = Integer.parseInt(sourceStr);
 			ActionSpace actionSpace = mEncodings.getActionSpace();
 

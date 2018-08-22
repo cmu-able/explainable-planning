@@ -15,6 +15,10 @@ public class SimpleConsoleLogger {
 		System.out.println(message);
 	}
 
+	public static void logHeader(String header) {
+		System.out.println(header + ":");
+	}
+
 	public static void newLine() {
 		System.out.println();
 	}

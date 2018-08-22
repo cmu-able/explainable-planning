@@ -41,11 +41,12 @@ public class MobileRobotAlternativeExplorerTest {
 			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction);
 
 			if (altPolicy == null) {
-				System.out.println(String.format("No alternative found that improves %s .", TravelTimeQFunction.NAME));
+				SimpleConsoleLogger
+						.log(String.format("No alternative found that improves %s .", TravelTimeQFunction.NAME));
 			} else {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 			}
-			System.out.println();
+			SimpleConsoleLogger.newLine();
 		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
 			e.printStackTrace();
 			fail("Exception thrown while findign an alternative");
@@ -58,12 +59,20 @@ public class MobileRobotAlternativeExplorerTest {
 
 		try {
 			Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();
-			System.out.println("Alternatives:");
-			System.out.println();
+			String message;
+			if (altPolicies.isEmpty()) {
+				message = "There is no Pareto-optimal alternative.";
+			} else if (altPolicies.size() == 1) {
+				message = String.format("There is %d alternative.", altPolicies.size());
+			} else {
+				message = String.format("There are %d alternatives.", altPolicies.size());
+			}
+			SimpleConsoleLogger.log(message);
+			SimpleConsoleLogger.newLine();
 
 			for (Policy altPolicy : altPolicies) {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
-				System.out.println();
+				SimpleConsoleLogger.newLine();
 			}
 		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
 			e.printStackTrace();
@@ -76,15 +85,14 @@ public class MobileRobotAlternativeExplorerTest {
 		XDTMC xdtmc = new XDTMC(prismConnector.getXMDP(), policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.TRANSITION_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-		System.out.println("Transition-reward DTMC Translation (with QAs):");
-		System.out.println(dtmcWithQAs);
-		System.out.println();
+
+		SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
+		SimpleConsoleLogger.newLine();
 
 		for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 			double qaValue = prismConnector.getQAValue(policy, qFunction);
-			System.out.print("QA value of ");
-			System.out.print(qFunction.getName() + ": ");
-			System.out.println(qaValue);
+
+			SimpleConsoleLogger.log(String.format("QA value of %s", qFunction.getName()), qaValue, true);
 		}
 	}
 
@@ -93,10 +101,11 @@ public class MobileRobotAlternativeExplorerTest {
 		File missionJsonFile = (File) data[0];
 		PrismConnector prismConnector = (PrismConnector) data[1];
 		Policy policy = (Policy) data[2];
-		System.out.println("Mission: " + missionJsonFile.getName());
-		System.out.println("Solution Policy:");
+
+		SimpleConsoleLogger.log("Mission", missionJsonFile.getName(), true);
+		SimpleConsoleLogger.logHeader("Solution Policy");
 		printPrismDTMCAndProperties(prismConnector, policy);
-		System.out.println();
+		SimpleConsoleLogger.newLine();
 	}
 
 	@DataProvider(name = "xmdpProblems")

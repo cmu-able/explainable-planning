@@ -3,6 +3,7 @@ package examples.mobilerobot.tests;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
@@ -36,19 +37,21 @@ public class MobileRobotExplanationTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp)
 			throws PrismException, ResultParsingException, XMDPException, IOException {
-		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionJsonFile.getName();
+		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
 		PrismConfiguration prismConfig = new PrismConfiguration();
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, outputPath, prismConfig);
 		PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
+
+		// Close down PRISM -- before explainer creates a new PrismConnector
+		prismConn.terminate();
+
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		Explainer explainer = new Explainer(prismConnSetttings, vocabulary, POLICY_JSON_PATH);
 		String explanation = explainer.explain(xmdp, policy);
 
 		SimpleConsoleLogger.log("Explanation", explanation, false);
-
-		// Close down PRISM
-		prismConn.terminate();
 	}
 
 	@DataProvider(name = "xmdpProblems")

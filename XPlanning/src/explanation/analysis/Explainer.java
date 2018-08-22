@@ -40,6 +40,7 @@ public class Explainer {
 			Tradeoff tradeoff = new Tradeoff(solnPolicyInfo, altPolicyInfo, xmdp.getQSpace(), xmdp.getCostFunction());
 			tradeoffs.add(tradeoff);
 		}
+		// Close down PRISM
 		prismConnector.terminate();
 		return mVerbalizer.verbalize(solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
 	}

@@ -27,5 +27,15 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jhoafparser.jar"/>
+	<classpathentry kind="lib" path="lib/colt.jar"/>
+	<classpathentry kind="lib" path="lib/epsgraphics.jar"/>
+	<classpathentry kind="lib" path="lib/jas.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
+	<classpathentry kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="lib" path="lib/lpsolve55j.jar"/>
+	<classpathentry kind="lib" path="lib/nailgun-server.jar"/>
+	<classpathentry kind="lib" path="lib/prism.jar"/>
+	<classpathentry kind="lib" path="lib/pepa.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

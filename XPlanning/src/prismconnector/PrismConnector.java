@@ -336,4 +336,11 @@ public class PrismConnector {
 
 		return eventBasedQAValue;
 	}
+
+	/**
+	 * Closing down PRISM. Only invoke this method when finishing using this {@link PrismConnector}.
+	 */
+	public void terminate() {
+		mPrismAPI.terminatePrism();
+	}
 }

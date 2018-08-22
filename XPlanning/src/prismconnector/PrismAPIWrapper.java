@@ -55,10 +55,11 @@ public class PrismAPIWrapper {
 		mPrism.initialise();
 	}
 
-	private void terminatePrism() {
-		// Close down PRISM
-		// NoClassDefFoundError: edu/jas/kern/ComputerThreads
-		// mPrism.closeDown();
+	/**
+	 * Close down PRISM. Only invoke this method when finishing using this {@link PrismAPIWrapper}.
+	 */
+	public void terminatePrism() {
+		mPrism.closeDown();
 	}
 
 	public void reconfigurePrism(PrismEngine engine) {
@@ -145,9 +146,7 @@ public class PrismAPIWrapper {
 			mPrism.exportTransRewardsToFile(true, Prism.EXPORT_PLAIN, trewOutputFile);
 		}
 
-		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
-		terminatePrism();
-		return result;
+		return queryPropertyHelper(modulesFile, propertyStr, 0);
 	}
 
 	/**
@@ -176,9 +175,7 @@ public class PrismAPIWrapper {
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
 				ModelType.DTMC);
 
-		double result = queryPropertyHelper(modulesFile, rawRewardPropertyStr, 0);
-		terminatePrism();
-		return result;
+		return queryPropertyHelper(modulesFile, rawRewardPropertyStr, 0);
 	}
 
 	/**
@@ -219,9 +216,7 @@ public class PrismAPIWrapper {
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
 
-		double result = queryPropertyHelper(modulesFile, propertyStr, 0);
-		terminatePrism();
-		return result;
+		return queryPropertyHelper(modulesFile, propertyStr, 0);
 	}
 
 	/**
@@ -241,9 +236,7 @@ public class PrismAPIWrapper {
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
 
-		Map<String, Double> results = queryPropertiesHelper(modulesFile, propertiesStr);
-		terminatePrism();
-		return results;
+		return queryPropertiesHelper(modulesFile, propertiesStr);
 	}
 
 	private Map<String, Double> queryPropertiesHelper(ModulesFile modulesFile, String propertiesStr)

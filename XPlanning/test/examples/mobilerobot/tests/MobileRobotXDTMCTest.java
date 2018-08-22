@@ -98,6 +98,9 @@ public class MobileRobotXDTMCTest {
 				SimpleConsoleLogger.log("Expected total value " + rewIndex + " of adversary", totalValues.get(i), true);
 			}
 			SimpleConsoleLogger.newLine();
+
+			// Close down PRISM
+			prismAPI.terminatePrism();
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");
@@ -122,6 +125,9 @@ public class MobileRobotXDTMCTest {
 				SimpleConsoleLogger.log("Query Property", query, true);
 				SimpleConsoleLogger.log("Expected total " + qFunction.getName(), result, true);
 				SimpleConsoleLogger.newLine();
+
+				// Close down PRISM
+				prismAPI.terminatePrism();
 			}
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
@@ -171,6 +177,9 @@ public class MobileRobotXDTMCTest {
 
 		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(
 				mdpTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
+
+		// Close down PRISM
+		prismAPI.terminatePrism();
 		return explicitDTMCReader;
 	}
 

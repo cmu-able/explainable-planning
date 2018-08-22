@@ -46,6 +46,9 @@ public class MobileRobotExplanationTest {
 		String explanation = explainer.explain(xmdp, policy);
 		System.out.println("Explanation:");
 		System.out.println(explanation);
+
+		// Close down PRISM
+		prismConn.terminate();
 	}
 
 	@DataProvider(name = "xmdpProblems")

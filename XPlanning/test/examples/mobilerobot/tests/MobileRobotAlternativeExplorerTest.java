@@ -42,6 +42,9 @@ public class MobileRobotAlternativeExplorerTest {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 				System.out.println();
 			}
+
+			// Close down PRISM
+			prismConnector.terminate();
 		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
 			e.printStackTrace();
 			fail("Exception thrown while finding alternative policies");
@@ -102,6 +105,7 @@ public class MobileRobotAlternativeExplorerTest {
 			// Optimal policy
 			Policy policy = prismConn.generateOptimalPolicy();
 
+			// Pass mission.json, PRISM connector, and policy as data
 			data[i] = new Object[] { missionJsonFile, prismConn, policy };
 		}
 		return data;

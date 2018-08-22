@@ -154,6 +154,9 @@ class MobileRobotTest {
 			System.out.print("Expected total cost of adversary: ");
 			System.out.println(totalCost);
 			System.out.println();
+
+			// Close down PRISM
+			prismAPI.terminatePrism();
 		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM generating MDP adversary");
@@ -182,6 +185,9 @@ class MobileRobotTest {
 			System.out.print("Expected total time of adversary: ");
 			System.out.println(totalTime);
 			System.out.println();
+
+			// Close down PRISM
+			prismAPI.terminatePrism();
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");
@@ -207,6 +213,9 @@ class MobileRobotTest {
 			System.out.print("Expected total time: ");
 			System.out.println(result);
 			System.out.println();
+
+			// Close down PRISM
+			prismAPI.terminatePrism();
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");

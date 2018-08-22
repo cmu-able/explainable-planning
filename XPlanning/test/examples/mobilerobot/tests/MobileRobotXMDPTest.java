@@ -83,6 +83,9 @@ public class MobileRobotXMDPTest {
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 			SimpleConsoleLogger.log("Expected total cost of adversary", totalCost, true);
 			SimpleConsoleLogger.newLine();
+
+			// Close down PRISM
+			prismAPI.terminatePrism();
 		} catch (FileNotFoundException | PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM generating MDP adversary");

@@ -75,43 +75,51 @@ public class AlternativeExplorer {
 		// Generate alternatives by improving each QA (one at a time) to the next best value, if exists
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
-			frontierIter.remove();
-
-			// QA value of the solution policy
-			double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
-
-			// Set a new aspirational level of the QA; use this as a constraint for an alternative
-			AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue,
-					true);
-
-			// Create a new objective function of n-1 attributes that excludes this QA
-			AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
-
-			for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
-				if (!otherQFunction.equals(qFunction)) {
-					AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
-							.getAttributeCostFunction(otherQFunction);
-					double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
-					objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
-				}
-			}
 
 			// Find an alternative policy, if exists
-			Policy alternative = mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+			Policy alternative = getParetoOptimalImmediateNeighbor(qFunction, costFunction);
+
+			// Removed explored QA
+			frontierIter.remove();
 
 			if (alternative != null) {
 				alternatives.add(alternative);
 
 				// For other QAs that have been improved as a side effect, remove them from the set of QAs to be
 				// explored
-				update(frontierIter, alternative);
+				update(frontier, alternative);
 			}
 		}
 		return alternatives;
 	}
 
-	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy alternative)
+	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction, CostFunction costFunction)
+			throws ResultParsingException, XMDPException, PrismException, IOException {
+		// QA value of the solution policy
+		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+
+		// Set a new aspirational level of the QA; use this as a constraint for an alternative
+		AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue, true);
+
+		// Create a new objective function of n-1 attributes that excludes this QA
+		AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
+
+		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
+			if (!otherQFunction.equals(qFunction)) {
+				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
+						.getAttributeCostFunction(otherQFunction);
+				double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
+				objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
+			}
+		}
+
+		// Find a constraint-satisfying, optimal policy, if exists
+		return mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+	}
+
+	private void update(Set<IQFunction<?, ?>> frontier, Policy alternative)
 			throws XMDPException, PrismException, ResultParsingException {
+		Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
 			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);

@@ -153,7 +153,7 @@ public class PrismConnector {
 		// The objective function can be the cost function
 		double result = mPrismAPI.generateMDPAdversary(mdpStr, propertyStr, outputExplicitModelPointer);
 
-		if (result == Double.NaN || result == Double.POSITIVE_INFINITY) {
+		if (Double.isNaN(result) || Double.isInfinite(result)) {
 			// No solution policy found
 			return null;
 		}

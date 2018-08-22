@@ -2,6 +2,7 @@ package explanation.verbalization;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,12 @@ public class Verbalizer {
 		builder.append(policyJsonFile.getAbsolutePath());
 		builder.append("]. ");
 		builder.append(verbalizeQAs(solnPolicyInfo, qSpace));
+
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs = getOptimalQAs(qSpace, tradeoffs);
+		if (!optimalQAs.isEmpty()) {
+			builder.append(" ");
+			builder.append(verbalizeOptimalQAValues(optimalQAs));
+		}
 
 		int i = 1;
 		for (Tradeoff tradeoff : tradeoffs) {
@@ -112,6 +119,46 @@ public class Verbalizer {
 			builder.append(
 					expectedCount > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
 		}
+		return builder.toString();
+	}
+
+	private Set<IQFunction<IAction, ITransitionStructure<IAction>>> getOptimalQAs(QSpace qSpace,
+			Set<Tradeoff> tradeoffs) {
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs = new HashSet<>();
+		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
+			boolean isOptimal = true;
+			for (Tradeoff tradeoff : tradeoffs) {
+				if (tradeoff.getQAGains().containsKey(qFunction)) {
+					isOptimal = false;
+					break;
+				}
+			}
+			if (isOptimal) {
+				optimalQAs.add(qFunction);
+			}
+		}
+		return optimalQAs;
+	}
+
+	private String verbalizeOptimalQAValues(Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("It has the lowest expected ");
+
+		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = optimalQAs.iterator();
+		boolean firstQA = true;
+		while (iter.hasNext()) {
+			IQFunction<?, ?> qFunction = iter.next();
+
+			if (firstQA) {
+				firstQA = false;
+			} else if (!iter.hasNext()) {
+				builder.append(", and ");
+			} else {
+				builder.append(", ");
+			}
+			builder.append(mVocabulary.getNoun(qFunction));
+		}
+		builder.append(".");
 		return builder.toString();
 	}
 

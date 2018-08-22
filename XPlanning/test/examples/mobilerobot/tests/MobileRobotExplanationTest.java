@@ -44,8 +44,8 @@ public class MobileRobotExplanationTest {
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		Explainer explainer = new Explainer(prismConnSetttings, vocabulary, POLICY_JSON_PATH);
 		String explanation = explainer.explain(xmdp, policy);
-		System.out.println("Explanation:");
-		System.out.println(explanation);
+
+		SimpleConsoleLogger.log("Explanation", explanation, false);
 
 		// Close down PRISM
 		prismConn.terminate();
@@ -72,7 +72,7 @@ public class MobileRobotExplanationTest {
 	@BeforeMethod
 	public void printMissionFilename(Object[] data) {
 		File missionJsonFile = (File) data[0];
-		System.out.println("Mission: " + missionJsonFile.getName());
+		SimpleConsoleLogger.log("Mission", missionJsonFile.getName(), true);
 	}
 
 	public Vocabulary getVocabulary(XMDP xmdp) {

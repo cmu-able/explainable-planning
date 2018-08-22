@@ -223,7 +223,8 @@ public class PrismRewardTranslatorHelper {
 	 */
 	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructureForEventCount(
 			TransitionFunction transFunction, IEvent<E, T> event) throws XMDPException {
-		String rewardName = event.getName() + "_count";
+		String sanitizedEventName = PrismTranslatorUtils.sanitizeNameString(event.getName());
+		String rewardName = sanitizedEventName + "_count";
 		T eventStructure = event.getTransitionStructure();
 		FactoredPSO<E> actionPSO = transFunction.getActionPSO(eventStructure.getActionDef());
 		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {

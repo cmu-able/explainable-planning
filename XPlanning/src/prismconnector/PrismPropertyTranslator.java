@@ -133,9 +133,10 @@ public class PrismPropertyTranslator {
 	 * @throws VarNotFoundException
 	 */
 	public String buildDTMCEventCountProperty(StateVarTuple goal, IEvent<?, ?> event) throws VarNotFoundException {
+		String sanitizedEventName = PrismTranslatorUtils.sanitizeNameString(event.getName());
 		StringBuilder builder = new StringBuilder();
 		builder.append("R{\"");
-		builder.append(event.getName());
+		builder.append(sanitizedEventName);
 		builder.append("_count\"}=? [ F ");
 		String goalPredicate = buildGoalPredicate(goal);
 		builder.append(goalPredicate);

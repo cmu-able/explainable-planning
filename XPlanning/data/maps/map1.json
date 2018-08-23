@@ -1,0 +1,71 @@
+{
+  "mpr" : 20,
+  "map" : [
+    {
+      "node-id" : "l0",
+      "coords" : {
+        "x" : 0,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l1", "l2"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l1",
+      "coords" : {
+        "x" : 20,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l0", "l3"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l2",
+      "coords" : {
+        "x" : 0,
+        "y" : 10
+      },
+      "connected-to" : [
+        "l0", "l3"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l3",
+      "coords" : {
+        "x" : 20,
+        "y" : 10
+      },
+      "connected-to" : [
+        "l1", "l2"
+      ],
+      "area" : "PUBLIC"
+    }
+  ],
+  "obstacles" : [
+    {
+      "from-id" : "l0",
+      "to-id" : "l1",
+      "occlusion" : "PARTIALLY_OCCLUDED"
+    },
+    {
+      "from-id" : "l0",
+      "to-id" : "l2",
+      "occlusion" : "CLEAR"
+    },
+    {
+      "from-id" : "l1",
+      "to-id" : "l3",
+      "occlusion" : "CLEAR"
+    },
+    {
+      "from-id" : "l2",
+      "to-id" : "l3",
+      "occlusion" : "CLEAR"
+    }
+  ]
+}

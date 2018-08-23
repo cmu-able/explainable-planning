@@ -109,6 +109,7 @@ public class MobileRobotXMDPTest {
 		for (File missionJsonFile : missionJsonFiles) {
 			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
 			data[i] = new Object[] { missionJsonFile, xmdp };
+			i++;
 		}
 		return data;
 	}

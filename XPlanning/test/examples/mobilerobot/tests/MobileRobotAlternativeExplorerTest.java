@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
-import org.testng.annotations.AfterMethod;
+import org.junit.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -136,11 +136,12 @@ public class MobileRobotAlternativeExplorerTest {
 
 			// Pass mission.json, PRISM connector, and policy as data
 			data[i] = new Object[] { missionJsonFile, prismConn, policy };
+			i++;
 		}
 		return data;
 	}
 
-	@AfterMethod
+	@AfterClass
 	private void terminatePrismConnector(Object[] data) {
 		PrismConnector prismConnector = (PrismConnector) data[1];
 		// Close down PRISM

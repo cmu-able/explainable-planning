@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.io.File;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.util.HashSet;
 import java.util.Map.Entry;
@@ -24,8 +24,8 @@ import language.qfactors.IAction;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
-import prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
-import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
+import solver.prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
+import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
 

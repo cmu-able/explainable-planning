@@ -16,12 +16,12 @@ import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import prism.PrismException;
-import prismconnector.PrismAPIWrapper;
-import prismconnector.PrismConfiguration;
-import prismconnector.PrismExplicitModelPointer;
-import prismconnector.PrismMDPTranslator;
-import prismconnector.PrismRewardType;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismAPIWrapper;
+import solver.prismconnector.PrismConfiguration;
+import solver.prismconnector.PrismExplicitModelPointer;
+import solver.prismconnector.PrismMDPTranslator;
+import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotXMDPTest {
 

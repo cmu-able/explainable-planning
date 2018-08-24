@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,10 +19,10 @@ import prism.PrismFileLog;
 import prism.PrismLog;
 import prism.PrismSettings;
 import prism.Result;
-import prismconnector.PrismConfiguration.PrismEngine;
-import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
-import prismconnector.PrismConfiguration.PrismMDPSolutionMethod;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismConfiguration.PrismEngine;
+import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
+import solver.prismconnector.PrismConfiguration.PrismMDPSolutionMethod;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 /**
  * References: https://github.com/prismmodelchecker/prism-api/blob/master/src/demos/MDPAdversaryGeneration.java,

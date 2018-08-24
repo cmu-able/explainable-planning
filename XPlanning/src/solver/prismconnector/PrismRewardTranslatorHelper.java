@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.util.HashMap;
 import java.util.HashSet;

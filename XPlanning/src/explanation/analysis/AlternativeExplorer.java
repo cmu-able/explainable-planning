@@ -26,8 +26,8 @@ import language.objectives.CostFunction;
 import language.policy.Policy;
 import language.qfactors.IAction;
 import prism.PrismException;
-import prismconnector.PrismConnector;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class AlternativeExplorer {
 

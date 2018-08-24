@@ -22,12 +22,12 @@ import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.policy.Policy;
 import prism.PrismException;
-import prismconnector.PrismConfiguration;
-import prismconnector.PrismConnector;
-import prismconnector.PrismConnectorSettings;
-import prismconnector.PrismDTMCTranslator;
-import prismconnector.PrismRewardType;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismConfiguration;
+import solver.prismconnector.PrismConnector;
+import solver.prismconnector.PrismConnectorSettings;
+import solver.prismconnector.PrismDTMCTranslator;
+import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotAlternativeExplorerTest {
 

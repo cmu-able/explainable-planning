@@ -14,9 +14,9 @@ import language.metrics.IQFunction;
 import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 import prism.PrismException;
-import prismconnector.PrismConnector;
-import prismconnector.PrismConnectorSettings;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismConnector;
+import solver.prismconnector.PrismConnectorSettings;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class Explainer {
 

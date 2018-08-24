@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import language.exceptions.XMDPException;
 import language.mdp.TransitionFunction;

@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.util.Set;
 
@@ -11,8 +11,8 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
-import prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
-import prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
+import solver.prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
+import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
 

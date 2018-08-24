@@ -15,13 +15,13 @@ import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import prism.PrismException;
-import prismconnector.PrismAPIWrapper;
-import prismconnector.PrismConfiguration;
-import prismconnector.PrismDTMCTranslator;
-import prismconnector.PrismExplicitModelPointer;
-import prismconnector.PrismMDPTranslator;
-import prismconnector.PrismRewardType;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismAPIWrapper;
+import solver.prismconnector.PrismConfiguration;
+import solver.prismconnector.PrismDTMCTranslator;
+import solver.prismconnector.PrismExplicitModelPointer;
+import solver.prismconnector.PrismMDPTranslator;
+import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 class MobileRobotTest {
 

@@ -1,4 +1,4 @@
-package prismconnector.exceptions;
+package solver.prismconnector.exceptions;
 
 import java.util.Arrays;
 

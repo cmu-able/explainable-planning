@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 public class PrismTranslatorUtils {
 

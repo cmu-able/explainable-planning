@@ -20,16 +20,16 @@ import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.policy.Policy;
 import prism.PrismException;
-import prismconnector.PrismAPIWrapper;
-import prismconnector.PrismConfiguration;
-import prismconnector.PrismDTMCTranslator;
-import prismconnector.PrismExplicitModelPointer;
-import prismconnector.PrismExplicitModelReader;
-import prismconnector.PrismMDPTranslator;
-import prismconnector.PrismPropertyTranslator;
-import prismconnector.PrismRewardType;
-import prismconnector.ValueEncodingScheme;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismAPIWrapper;
+import solver.prismconnector.PrismConfiguration;
+import solver.prismconnector.PrismDTMCTranslator;
+import solver.prismconnector.PrismExplicitModelPointer;
+import solver.prismconnector.PrismExplicitModelReader;
+import solver.prismconnector.PrismMDPTranslator;
+import solver.prismconnector.PrismPropertyTranslator;
+import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.ValueEncodingScheme;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotXDTMCTest {
 

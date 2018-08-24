@@ -1,4 +1,4 @@
-package prismconnector;
+package solver.prismconnector;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -19,9 +19,9 @@ import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import language.qfactors.IAction;
 import prism.PrismException;
-import prismconnector.PrismConfiguration.PrismEngine;
-import prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
-import prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.PrismConfiguration.PrismEngine;
+import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class PrismConnector {
 

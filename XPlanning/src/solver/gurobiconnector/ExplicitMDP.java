@@ -100,6 +100,21 @@ public class ExplicitMDP {
 		return mTransProbs[srcState][actionIndex][destState];
 	}
 
+	public double getTransitionCost(int srcState, String actionName) {
+		if (mCostType != CostType.TRANSITION_COST) {
+			throw new UnsupportedOperationException();
+		}
+		int actionIndex = getActionIndex(actionName);
+		return mTransCosts[srcState][actionIndex];
+	}
+
+	public double getStateCost(int state) {
+		if (mCostType != CostType.STATE_COST) {
+			throw new UnsupportedOperationException();
+		}
+		return mStateCosts[state];
+	}
+
 	private int getActionIndex(String actionName) {
 		return mIndexedActions.indexOf(actionName);
 	}

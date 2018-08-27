@@ -25,7 +25,7 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class PrismConnector {
 
-	public static final String ADVERSARY_FILENAME_PREFIX = "adv";
+	public static final String DEFAULT_MODEL_FILENAME_PREFIX = "model";
 
 	private XMDP mXMDP;
 	private PrismMDPTranslator mMDPTranslator;
@@ -143,7 +143,7 @@ public class PrismConnector {
 			throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
-				ADVERSARY_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
+				DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(

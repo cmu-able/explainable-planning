@@ -76,7 +76,8 @@ public class PrismAPIWrapper {
 
 	/**
 	 * Generate an optimal adversary of a MDP in the form of an explicit model of DTMC. The output explicit model files
-	 * include: states file (.sta), transitions file (.tra), labels file (.lab), and state rewards file (.srew).
+	 * include: states file (.sta), transitions file (.tra), labels file (.lab), state rewards file (.srew), and
+	 * adversary file (adv.tra).
 	 * 
 	 * @param mdpStr
 	 *            : MDP translation
@@ -98,6 +99,7 @@ public class PrismAPIWrapper {
 		File staOutputFile = outputExplicitModelPointer.getStatesFile();
 		File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
 		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
+		File advOutputFile = outputExplicitModelPointer.getAdversaryFile();
 		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
 		PrismRewardType prismRewardType = outputExplicitModelPointer.getPrismRewardType();
 
@@ -107,6 +109,9 @@ public class PrismAPIWrapper {
 
 		// Export the states of the model to a file
 		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, staOutputFile);
+
+		// Export the transitions of the model to a file, in a row form
+		mPrism.exportTransToFile(true, Prism.EXPORT_ROWS, traOutputFile);
 
 		if (isMultiObjectiveProperty(propertyStr)) {
 			// For multi-objective strategy synthesis
@@ -120,7 +125,7 @@ public class PrismAPIWrapper {
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
-		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, traOutputFile.getPath());
+		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV_FILENAME, advOutputFile.getPath());
 
 		// Select PRISM engine
 		PrismEngine engine = mPrismConfig.getEngine();
@@ -166,13 +171,14 @@ public class PrismAPIWrapper {
 			PrismExplicitModelPointer explicitModelPointer, int rewardStructIndex)
 			throws PrismException, ResultParsingException {
 		File staFile = explicitModelPointer.getStatesFile();
-		File traFile = explicitModelPointer.getTransitionsFile();
+		File advFile = explicitModelPointer.getAdversaryFile();
 		File labFile = explicitModelPointer.getLabelsFile();
 		File srewFile = explicitModelPointer.getIndexedStateRewardsFile(rewardStructIndex);
 
-		// Load modules from .sta, .tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock" labels
+		// Load modules from .sta, adv.tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock"
+		// labels
 		// -- important!)
-		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, traFile, labFile, srewFile,
+		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, advFile, labFile, srewFile,
 				ModelType.DTMC);
 
 		return queryPropertyHelper(modulesFile, rawRewardPropertyStr, 0);

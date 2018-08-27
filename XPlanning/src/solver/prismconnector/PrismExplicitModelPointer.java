@@ -12,7 +12,8 @@ public class PrismExplicitModelPointer {
 	private static final String LAB_EXTENSION = ".lab";
 	private static final String SREW_EXTENSION = ".srew";
 	private static final String TREW_EXTENSION = ".trew";
-	private static final String PROD_STA_FILENAME = "prod.sta";
+	private static final String PROD_STA_FILENAME_SUFFIX = "_prod.sta";
+	private static final String ADV_FILENAME_SUFFIX = "_adv.tra";
 	private static final String[] EXTENSIONS = { STA_EXTENSION, TRA_EXTENSION, LAB_EXTENSION, SREW_EXTENSION,
 			TREW_EXTENSION };
 
@@ -25,6 +26,7 @@ public class PrismExplicitModelPointer {
 	private File mStaFile;
 	private File mProdStaFile;
 	private File mTraFile;
+	private File mAdvFile;
 	private File mLabFile;
 	private PrismRewardType mRewardType;
 	private File mRewFile; // This is either .srew file or .trew file
@@ -35,23 +37,24 @@ public class PrismExplicitModelPointer {
 	 * it doesn't already exist.
 	 * 
 	 * @param modelPath
-	 * @param filenamePrefix
+	 * @param modelFilenamePrefix
 	 * @param prismRewardType
 	 */
-	public PrismExplicitModelPointer(String modelPath, String filenamePrefix, PrismRewardType prismRewardType) {
+	public PrismExplicitModelPointer(String modelPath, String modelFilenamePrefix, PrismRewardType prismRewardType) {
 		mModelDir = new File(modelPath);
 		if (!mModelDir.exists()) {
 			mModelDir.mkdirs();
 		}
-		mStaFile = new File(modelPath, filenamePrefix + STA_EXTENSION);
-		mProdStaFile = new File(modelPath, PROD_STA_FILENAME);
-		mTraFile = new File(modelPath, filenamePrefix + TRA_EXTENSION);
-		mLabFile = new File(modelPath, filenamePrefix + LAB_EXTENSION);
+		mStaFile = new File(modelPath, modelFilenamePrefix + STA_EXTENSION);
+		mProdStaFile = new File(modelPath, modelFilenamePrefix + PROD_STA_FILENAME_SUFFIX);
+		mTraFile = new File(modelPath, modelFilenamePrefix + TRA_EXTENSION);
+		mAdvFile = new File(modelPath, modelFilenamePrefix + ADV_FILENAME_SUFFIX);
+		mLabFile = new File(modelPath, modelFilenamePrefix + LAB_EXTENSION);
 		mRewardType = prismRewardType;
 		if (prismRewardType == PrismRewardType.STATE_REWARD) {
-			mRewFile = new File(modelPath, filenamePrefix + SREW_EXTENSION);
+			mRewFile = new File(modelPath, modelFilenamePrefix + SREW_EXTENSION);
 		} else {
-			mRewFile = new File(modelPath, filenamePrefix + TREW_EXTENSION);
+			mRewFile = new File(modelPath, modelFilenamePrefix + TREW_EXTENSION);
 		}
 		// mIndexedRewFiles will be created once the PRISM explicit model is created
 	}
@@ -69,16 +72,20 @@ public class PrismExplicitModelPointer {
 
 		for (File prismFile : prismFiles) {
 			String filename = prismFile.getName().toLowerCase();
-			if (filename.equals(PROD_STA_FILENAME)) {
+			if (filename.endsWith(PROD_STA_FILENAME_SUFFIX)) { // "{filename}_prod.sta"
 				mProdStaFile = prismFile;
-			} else if (filename.endsWith(STA_EXTENSION)) {
+			} else if (filename.endsWith(STA_EXTENSION)) { // "{filename}.sta"
 				mStaFile = prismFile;
-			} else if (filename.endsWith(TRA_EXTENSION)) {
+			} else if (filename.endsWith(ADV_FILENAME_SUFFIX)) { // "{filename}_adv.tra"
+				mAdvFile = prismFile;
+			} else if (filename.endsWith(TRA_EXTENSION)) { // "{filename}.tra"
 				mTraFile = prismFile;
-			} else if (filename.endsWith(LAB_EXTENSION)) {
+			} else if (filename.endsWith(LAB_EXTENSION)) { // "{filename}.lab"
 				mLabFile = prismFile;
 			} else if ((mRewardType == PrismRewardType.STATE_REWARD && filename.endsWith(SREW_EXTENSION)
-					|| mRewardType == PrismRewardType.TRANSITION_REWARD && filename.endsWith(TREW_EXTENSION))) {
+					|| mRewardType == PrismRewardType.TRANSITION_REWARD && filename.endsWith(TREW_EXTENSION))) { // "{filename}.srew
+																													// or
+																													// .trew
 				mIndexedRewFiles.add(prismFile);
 			}
 		}
@@ -139,6 +146,10 @@ public class PrismExplicitModelPointer {
 		return mTraFile;
 	}
 
+	public File getAdversaryFile() {
+		return mAdvFile;
+	}
+
 	public File getLabelsFile() {
 		return mLabFile;
 	}
@@ -189,8 +200,9 @@ public class PrismExplicitModelPointer {
 		PrismExplicitModelPointer pointer = (PrismExplicitModelPointer) obj;
 		return pointer.mModelDir.equals(mModelDir) && pointer.mStaFile.equals(mStaFile)
 				&& pointer.mProdStaFile.equals(mProdStaFile) && pointer.mTraFile.equals(mTraFile)
-				&& pointer.mLabFile.equals(mLabFile) && pointer.mRewardType.equals(mRewardType)
-				&& pointer.mRewFile.equals(mRewFile) && pointer.mIndexedRewFiles.equals(mIndexedRewFiles);
+				&& pointer.mAdvFile.equals(mAdvFile) && pointer.mLabFile.equals(mLabFile)
+				&& pointer.mRewardType.equals(mRewardType) && pointer.mRewFile.equals(mRewFile)
+				&& pointer.mIndexedRewFiles.equals(mIndexedRewFiles);
 	}
 
 	@Override
@@ -202,6 +214,7 @@ public class PrismExplicitModelPointer {
 			result = 31 * result + mStaFile.hashCode();
 			result = 31 * result + mProdStaFile.hashCode();
 			result = 31 * result + mTraFile.hashCode();
+			result = 31 * result + mAdvFile.hashCode();
 			result = 31 * result + mLabFile.hashCode();
 			result = 31 * result + mRewardType.hashCode();
 			result = 31 * result + mRewFile.hashCode();

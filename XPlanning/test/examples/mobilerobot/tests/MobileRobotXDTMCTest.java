@@ -162,7 +162,7 @@ public class MobileRobotXDTMCTest {
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv",
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);

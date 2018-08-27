@@ -136,7 +136,7 @@ class MobileRobotTest {
 	@Test
 	public void testPrismMDPAdversaryGeneration() throws XMDPException {
 		String outputPath = "/Users/rsukkerd/Projects/explainable-planning/models/test0/output";
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "adv",
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 
 		XMDP xmdp = mTestProblem.createXMDP();

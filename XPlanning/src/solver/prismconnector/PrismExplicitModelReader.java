@@ -115,7 +115,7 @@ public class PrismExplicitModelReader {
 	}
 
 	/**
-	 * Read a policy from a PRISM .tra file, given a index-state mapping.
+	 * Read a policy from a PRISM adversary output file (adv.tra), given a index-state mapping.
 	 * 
 	 * @param stateIndices
 	 *            : Mapping from integer values indexing states to the corresponding states
@@ -123,10 +123,10 @@ public class PrismExplicitModelReader {
 	 * @throws IOException
 	 */
 	public Policy readPolicyFromFile(Map<Integer, StateVarTuple> stateIndices) throws IOException {
-		File traFile = mExplicitModelPtr.getTransitionsFile();
+		File advFile = mExplicitModelPtr.getAdversaryFile();
 		Policy policy = new Policy();
 
-		List<String> allLines = readLinesFromFile(traFile);
+		List<String> allLines = readLinesFromFile(advFile);
 		List<String> body = allLines.subList(1, allLines.size());
 
 		// Pattern: *source* {destination} {probability} *action name*
@@ -152,7 +152,7 @@ public class PrismExplicitModelReader {
 	}
 
 	/**
-	 * Read a policy from PRISM .sta and .tra files.
+	 * Read a policy from PRISM .sta and adv.tra files.
 	 * 
 	 * @return A policy extracted from the "adversary" file and the "states" file
 	 * @throws IOException

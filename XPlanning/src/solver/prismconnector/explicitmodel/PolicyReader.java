@@ -26,7 +26,7 @@ import solver.prismconnector.PrismTranslatorHelper;
 import solver.prismconnector.PrismTranslatorUtils;
 import solver.prismconnector.ValueEncodingScheme;
 
-public class PrismExplicitModelReader {
+public class PolicyReader {
 
 	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(
 			Arrays.asList("action", "readyToCopy", "barrier"));
@@ -39,7 +39,7 @@ public class PrismExplicitModelReader {
 	private ValueEncodingScheme mEncodings;
 	private PrismExplicitModelPointer mExplicitModelPtr;
 
-	public PrismExplicitModelReader(ValueEncodingScheme encodings, PrismExplicitModelPointer explicitModelPtr) {
+	public PolicyReader(ValueEncodingScheme encodings, PrismExplicitModelPointer explicitModelPtr) {
 		mEncodings = encodings;
 		mExplicitModelPtr = explicitModelPtr;
 	}

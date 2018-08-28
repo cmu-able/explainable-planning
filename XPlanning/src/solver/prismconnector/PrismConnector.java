@@ -23,7 +23,7 @@ import solver.prismconnector.PrismConfiguration.PrismEngine;
 import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
-import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
+import solver.prismconnector.explicitmodel.PolicyReader;
 
 public class PrismConnector {
 
@@ -148,7 +148,7 @@ public class PrismConnector {
 				DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
 
 		// Create explicit model reader of the output model
-		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
+		PolicyReader explicitModelReader = new PolicyReader(
 				mMDPTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
 
 		// Expected total objective value of the policy -- the objective function is specified in the property

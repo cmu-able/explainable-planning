@@ -29,12 +29,12 @@ import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
-import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
+import solver.prismconnector.explicitmodel.PolicyReader;
 
 public class MobileRobotXDTMCTest {
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCTranslatorStateReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
+	public void testPrismDTMCTranslatorStateReward(PolicyReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
@@ -54,7 +54,7 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
+	public void testPrismDTMCTranslatorTransitionReward(PolicyReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
 					PrismRewardType.TRANSITION_REWARD);
@@ -75,7 +75,7 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismExplicitDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
+	public void testPrismExplicitDTMCPropertyQuery(PolicyReader explicitDTMCReader, XDTMC xdtmc)
 			throws VarNotFoundException {
 		ValueEncodingScheme encodings = explicitDTMCReader.getValueEncodingScheme();
 		PrismPropertyTranslator propTranslator = new PrismPropertyTranslator(encodings);
@@ -108,7 +108,7 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
+	public void testPrismDTMCPropertyQuery(PolicyReader explicitDTMCReader, XDTMC xdtmc)
 			throws XMDPException {
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
@@ -149,7 +149,7 @@ public class MobileRobotXDTMCTest {
 		int i = 0;
 		for (File missionJsonFile : missionJsonFiles) {
 			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
-			PrismExplicitModelReader explicitDTMCReader = generateAdverary(missionJsonFile, xmdp);
+			PolicyReader explicitDTMCReader = generateAdverary(missionJsonFile, xmdp);
 			Policy policy = explicitDTMCReader.readPolicyFromFiles();
 			XDTMC xdtmc = new XDTMC(xmdp, policy);
 			data[i] = new Object[] { explicitDTMCReader, xdtmc };
@@ -158,7 +158,7 @@ public class MobileRobotXDTMCTest {
 		return data;
 	}
 
-	private PrismExplicitModelReader generateAdverary(File missionJsonFile, XMDP xmdp)
+	private PolicyReader generateAdverary(File missionJsonFile, XMDP xmdp)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
@@ -175,7 +175,7 @@ public class MobileRobotXDTMCTest {
 		PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
-		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(
+		PolicyReader explicitDTMCReader = new PolicyReader(
 				mdpTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
 
 		// Close down PRISM
@@ -185,7 +185,7 @@ public class MobileRobotXDTMCTest {
 
 	@BeforeMethod
 	public void printExplicitModelDirName(Object[] data) {
-		PrismExplicitModelReader explicitDTMCReader = (PrismExplicitModelReader) data[0];
+		PolicyReader explicitDTMCReader = (PolicyReader) data[0];
 		PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
 		SimpleConsoleLogger.log("Adversary", explicitDTMCPointer.getExplicitModelDirectory().getName(), true);
 	}

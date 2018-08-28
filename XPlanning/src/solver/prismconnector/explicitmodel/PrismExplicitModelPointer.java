@@ -160,11 +160,23 @@ public class PrismExplicitModelPointer {
 		return mRewardType;
 	}
 
+	/**
+	 * If there are multiple reward structures, this file "pointer" doesn't correspond to any actual file. It is only
+	 * used as an input parameter to PRISM's explicit reward export.
+	 * 
+	 * @return State rewards (.srew) file
+	 */
 	public File getStateRewardsFile() {
 		checkRewardType(PrismRewardType.STATE_REWARD);
 		return mRewFile;
 	}
 
+	/**
+	 * If there are multiple reward structures, this file "pointer" doesn't correspond to any actual file. It is only
+	 * used as input parameter to PRISM's explicit reward export.
+	 * 
+	 * @return Transition rewards (.trew) file
+	 */
 	public File getTransitionRewardsFile() {
 		checkRewardType(PrismRewardType.TRANSITION_REWARD);
 		return mRewFile;

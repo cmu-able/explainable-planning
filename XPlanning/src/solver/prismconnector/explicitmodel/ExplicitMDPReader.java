@@ -1,4 +1,4 @@
-package solver.gurobiconnector;
+package solver.prismconnector.explicitmodel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,8 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import solver.gurobiconnector.CostType;
+import solver.gurobiconnector.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;
-import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class ExplicitMDPReader {
 

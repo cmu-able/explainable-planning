@@ -41,7 +41,7 @@ public class ExplicitMDPReader {
 				? CostType.STATE_COST
 				: CostType.TRANSITION_COST;
 
-		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, numActions, actionNames, costType);
+		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, actionNames, costType, 1); // FIXME
 		explicitMDP.setInitialState(iniState);
 		readTransitionProbabilities(traAllLines, explicitMDP);
 
@@ -49,11 +49,11 @@ public class ExplicitMDPReader {
 			String[][] choicesToActions = readChoicesToActions(traAllLines, numStates, numActions);
 			File trewFile = mPrismModelPointer.getTransitionRewardsFile();
 			List<String> trewAllLines = readLinesFromFile(trewFile);
-			readTransitionCosts(trewAllLines, choicesToActions, explicitMDP);
+			readTransitionCosts(0, trewAllLines, choicesToActions, explicitMDP); // FIXME
 		} else if (costType == CostType.STATE_COST) {
 			File srewFile = mPrismModelPointer.getStateRewardsFile();
 			List<String> srewAllLines = readLinesFromFile(srewFile);
-			readStateCosts(srewAllLines, explicitMDP);
+			readStateCosts(0, srewAllLines, explicitMDP); // FIXME
 		}
 		return explicitMDP;
 	}
@@ -152,12 +152,14 @@ public class ExplicitMDPReader {
 	/**
 	 * Read transition costs from .trew file.
 	 * 
+	 * @param costFuncIndex
 	 * @param trewAllLines
 	 *            : All lines from .trew file.
 	 * @param choicesToActions
 	 * @param explicitMDP
 	 */
-	private void readTransitionCosts(List<String> trewAllLines, String[][] choicesToActions, ExplicitMDP explicitMDP) {
+	private void readTransitionCosts(int costFuncIndex, List<String> trewAllLines, String[][] choicesToActions,
+			ExplicitMDP explicitMDP) {
 		List<String> body = trewAllLines.subList(1, trewAllLines.size());
 		for (String line : body) {
 			// Line format: "{src} {choice} {dest} {cost}"
@@ -166,7 +168,7 @@ public class ExplicitMDPReader {
 			int choiceIndex = Integer.parseInt(tokens[1]);
 			double cost = Double.parseDouble(tokens[3]);
 			String actionName = choicesToActions[srcState][choiceIndex];
-			explicitMDP.addTransitionCost(srcState, actionName, cost);
+			explicitMDP.addTransitionCost(costFuncIndex, srcState, actionName, cost);
 		}
 	}
 
@@ -212,18 +214,19 @@ public class ExplicitMDPReader {
 	/**
 	 * Read state costs from .srew file.
 	 * 
+	 * @param costFuncIndex
 	 * @param srewAllLines
 	 *            : All lines from .srew file
 	 * @param explicitMDP
 	 */
-	private void readStateCosts(List<String> srewAllLines, ExplicitMDP explicitMDP) {
+	private void readStateCosts(int costFuncIndex, List<String> srewAllLines, ExplicitMDP explicitMDP) {
 		List<String> body = srewAllLines.subList(1, srewAllLines.size());
 		for (String line : body) {
 			// Line format: "{src} {cost}"
 			String[] tokens = line.split(" ");
 			int state = Integer.parseInt(tokens[0]);
 			double cost = Double.parseDouble(tokens[1]);
-			explicitMDP.addStateCost(state, cost);
+			explicitMDP.addStateCost(costFuncIndex, state, cost);
 		}
 	}
 

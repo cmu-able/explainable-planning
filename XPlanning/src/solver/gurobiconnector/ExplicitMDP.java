@@ -15,24 +15,23 @@ public class ExplicitMDP {
 	private volatile int hashCode;
 
 	private int mNumStates;
-	private int mNumActions;
 	private List<String> mIndexedActions;
 	private CostType mCostType;
 	private int mIniState;
 	private double[][][] mTransProbs;
-	private double[][] mTransCosts;
-	private double[] mStateCosts;
+	private double[][][] mTransCosts;
+	private double[][] mStateCosts;
 
-	public ExplicitMDP(int numStates, int numActions, Set<String> actionNames, CostType costType) {
+	public ExplicitMDP(int numStates, Set<String> actionNames, CostType costType, int numCostFunctions) {
+		int numActions = actionNames.size();
 		mNumStates = numStates;
-		mNumActions = numActions;
 		mIndexedActions = sortActions(actionNames);
 		mCostType = costType;
 		mTransProbs = new double[numStates][numActions][numStates];
 		if (costType == CostType.TRANSITION_COST) {
-			mTransCosts = new double[numStates][numActions];
+			mTransCosts = new double[numCostFunctions][numStates][numActions];
 		} else if (costType == CostType.STATE_COST) {
-			mStateCosts = new double[numStates];
+			mStateCosts = new double[numCostFunctions][numStates];
 		}
 	}
 
@@ -67,31 +66,29 @@ public class ExplicitMDP {
 	}
 
 	/**
-	 * Add a transition cost: C(s,a) = c.
+	 * Add a transition cost of the cost function k: C_k(s,a) = c.
 	 * 
+	 * @param costFuncIndex
 	 * @param srcState
 	 * @param actionName
 	 * @param cost
 	 */
-	public void addTransitionCost(int srcState, String actionName, double cost) {
-		if (mCostType != CostType.TRANSITION_COST) {
-			throw new UnsupportedOperationException();
-		}
+	public void addTransitionCost(int costFuncIndex, int srcState, String actionName, double cost) {
+		checkTransitionCost();
 		int actionIndex = getActionIndex(actionName);
-		mTransCosts[srcState][actionIndex] = cost;
+		mTransCosts[costFuncIndex][srcState][actionIndex] = cost;
 	}
 
 	/**
-	 * Add a state cost: C(s) = c.
+	 * Add a state cost of the cost function k: C_k(s) = c.
 	 * 
+	 * @param costFuncIndex
 	 * @param state
 	 * @param cost
 	 */
-	public void addStateCost(int state, double cost) {
-		if (mCostType != CostType.STATE_COST) {
-			throw new UnsupportedOperationException();
-		}
-		mStateCosts[state] = cost;
+	public void addStateCost(int costFuncIndex, int state, double cost) {
+		checkStateCost();
+		mStateCosts[costFuncIndex][state] = cost;
 	}
 
 	public int getNumStates() {
@@ -99,7 +96,7 @@ public class ExplicitMDP {
 	}
 
 	public int getNumActions() {
-		return mNumActions;
+		return mIndexedActions.size();
 	}
 
 	public String getActionNameAtIndex(int actionIndex) {
@@ -115,23 +112,31 @@ public class ExplicitMDP {
 		return mTransProbs[srcState][actionIndex][destState];
 	}
 
-	public double getTransitionCost(int srcState, String actionName) {
-		if (mCostType != CostType.TRANSITION_COST) {
-			throw new UnsupportedOperationException();
-		}
+	public double getTransitionCost(int costFuncIndex, int srcState, String actionName) {
+		checkTransitionCost();
 		int actionIndex = getActionIndex(actionName);
-		return mTransCosts[srcState][actionIndex];
+		return mTransCosts[costFuncIndex][srcState][actionIndex];
 	}
 
-	public double getStateCost(int state) {
-		if (mCostType != CostType.STATE_COST) {
-			throw new UnsupportedOperationException();
-		}
-		return mStateCosts[state];
+	public double getStateCost(int costFuncIndex, int state) {
+		checkStateCost();
+		return mStateCosts[costFuncIndex][state];
 	}
 
 	private int getActionIndex(String actionName) {
 		return mIndexedActions.indexOf(actionName);
+	}
+
+	private void checkTransitionCost() {
+		if (mCostType != CostType.TRANSITION_COST) {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	private void checkStateCost() {
+		if (mCostType != CostType.STATE_COST) {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	@Override
@@ -143,8 +148,7 @@ public class ExplicitMDP {
 			return false;
 		}
 		ExplicitMDP mdp = (ExplicitMDP) obj;
-		return mdp.mNumStates == mNumStates && mdp.mNumActions == mNumActions
-				&& mdp.mIndexedActions.equals(mIndexedActions) && mdp.mCostType == mCostType
+		return mdp.mNumStates == mNumStates && mdp.mIndexedActions.equals(mIndexedActions) && mdp.mCostType == mCostType
 				&& mdp.mIniState == mIniState && Arrays.equals(mdp.mTransProbs, mTransProbs)
 				&& Arrays.equals(mdp.mTransCosts, mTransCosts) && Arrays.equals(mdp.mStateCosts, mStateCosts);
 	}
@@ -155,7 +159,6 @@ public class ExplicitMDP {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mNumStates;
-			result = 31 * result + mNumActions;
 			result = 31 * result + mIndexedActions.hashCode();
 			result = 31 * result + mCostType.hashCode();
 			result = 31 * result + mIniState;

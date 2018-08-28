@@ -7,6 +7,8 @@ import java.util.Set;
 
 public class ExplicitMDP {
 
+	static final double DEFAULT_DISCOUNT_FACTOR = 1.0;
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -16,6 +18,7 @@ public class ExplicitMDP {
 	private int mNumActions;
 	private List<String> mIndexedActions;
 	private CostType mCostType;
+	private int mIniState;
 	private double[][][] mTransProbs;
 	private double[][] mTransCosts;
 	private double[] mStateCosts;
@@ -44,6 +47,10 @@ public class ExplicitMDP {
 		List<String> sortedActionNames = new ArrayList<>(actionNames);
 		sortedActionNames.sort((actionName1, actionName2) -> actionName1.compareToIgnoreCase(actionName2));
 		return sortedActionNames;
+	}
+
+	public void setInitialState(int iniState) {
+		mIniState = iniState;
 	}
 
 	/**
@@ -95,6 +102,14 @@ public class ExplicitMDP {
 		return mNumActions;
 	}
 
+	public String getActionNameAtIndex(int actionIndex) {
+		return mIndexedActions.get(actionIndex);
+	}
+
+	public int getInitialState() {
+		return mIniState;
+	}
+
 	public double getTransitionProbability(int srcState, String actionName, int destState) {
 		int actionIndex = getActionIndex(actionName);
 		return mTransProbs[srcState][actionIndex][destState];
@@ -130,8 +145,8 @@ public class ExplicitMDP {
 		ExplicitMDP mdp = (ExplicitMDP) obj;
 		return mdp.mNumStates == mNumStates && mdp.mNumActions == mNumActions
 				&& mdp.mIndexedActions.equals(mIndexedActions) && mdp.mCostType == mCostType
-				&& Arrays.equals(mdp.mTransProbs, mTransProbs) && Arrays.equals(mdp.mTransCosts, mTransCosts)
-				&& Arrays.equals(mdp.mStateCosts, mStateCosts);
+				&& mdp.mIniState == mIniState && Arrays.equals(mdp.mTransProbs, mTransProbs)
+				&& Arrays.equals(mdp.mTransCosts, mTransCosts) && Arrays.equals(mdp.mStateCosts, mStateCosts);
 	}
 
 	@Override
@@ -143,6 +158,7 @@ public class ExplicitMDP {
 			result = 31 * result + mNumActions;
 			result = 31 * result + mIndexedActions.hashCode();
 			result = 31 * result + mCostType.hashCode();
+			result = 31 * result + mIniState;
 			result = 31 * result + Arrays.hashCode(mTransProbs);
 			result = 31 * result + (mCostType == CostType.TRANSITION_COST ? Arrays.hashCode(mTransCosts) : 0);
 			result = 31 * result + (mCostType == CostType.STATE_COST ? Arrays.hashCode(mStateCosts) : 0);

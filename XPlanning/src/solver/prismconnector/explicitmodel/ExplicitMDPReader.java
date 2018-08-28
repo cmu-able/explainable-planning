@@ -8,12 +8,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import solver.gurobiconnector.CostType;
 import solver.gurobiconnector.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.exceptions.InitialStateParsingException;
 
 public class ExplicitMDPReader {
+
+	private static final String INIT_LAB_HEADER_PATTERN = "([0-9]+)=\"init\"";
 
 	private PrismExplicitModelPointer mPrismModelPointer;
 
@@ -21,18 +26,23 @@ public class ExplicitMDPReader {
 		mPrismModelPointer = prismExplicitModelPointer;
 	}
 
-	public ExplicitMDP readExplicitMDP() throws IOException {
+	public ExplicitMDP readExplicitMDP() throws IOException, InitialStateParsingException {
 		File traFile = mPrismModelPointer.getTransitionsFile();
+		File labFile = mPrismModelPointer.getLabelsFile();
 		List<String> traAllLines = readLinesFromFile(traFile);
+		List<String> labAllLines = readLinesFromFile(labFile);
 		String traHeader = readFirstLineFromFile(traFile);
 
 		int numStates = readNumStates(traHeader);
+		int iniState = readInitialState(labAllLines);
 		Set<String> actionNames = readActionNames(traAllLines);
 		int numActions = actionNames.size();
 		CostType costType = mPrismModelPointer.getPrismRewardType() == PrismRewardType.STATE_REWARD
 				? CostType.STATE_COST
 				: CostType.TRANSITION_COST;
+
 		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, numActions, actionNames, costType);
+		explicitMDP.setInitialState(iniState);
 		readTransitionProbabilities(traAllLines, explicitMDP);
 
 		if (costType == CostType.TRANSITION_COST) {
@@ -58,6 +68,35 @@ public class ExplicitMDPReader {
 	private int readNumStates(String traHeader) {
 		String[] headerArray = traHeader.split(" ");
 		return Integer.parseInt(headerArray[0]);
+	}
+
+	/**
+	 * Read the initial state from .lab file.
+	 * 
+	 * @param labAllLines
+	 *            : All lines from .lab file
+	 * @return Initial state
+	 * @throws InitialStateParsingException
+	 */
+	private int readInitialState(List<String> labAllLines) throws InitialStateParsingException {
+		// Header format: 0="init" 1="deadlock"
+		String labHeader = labAllLines.get(0);
+		Pattern pattern = Pattern.compile(INIT_LAB_HEADER_PATTERN);
+		Matcher matcher = pattern.matcher(labHeader);
+		if (!matcher.find()) {
+			throw new InitialStateParsingException(labHeader);
+		}
+		String initLabel = matcher.group(1);
+		List<String> labBody = labAllLines.subList(1, labAllLines.size());
+		for (String line : labBody) {
+			// Line format: "{state}: {label}"
+			String[] pair = line.split(":");
+			String label = pair[1].trim();
+			if (label.equals(initLabel)) {
+				return Integer.parseInt(pair[0]);
+			}
+		}
+		throw new InitialStateParsingException(labHeader, labBody);
 	}
 
 	/**

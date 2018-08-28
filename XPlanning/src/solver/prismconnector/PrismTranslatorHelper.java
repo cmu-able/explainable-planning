@@ -35,7 +35,7 @@ import language.qfactors.StateVarDefinition;
 public class PrismTranslatorHelper {
 
 	static final String INDENT = "  ";
-	static final String SRC_SUFFIX = "Src";
+	public static final String SRC_SUFFIX = "Src";
 
 	private ValueEncodingScheme mEncodings;
 

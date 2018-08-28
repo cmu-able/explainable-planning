@@ -23,13 +23,13 @@ import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
 import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismDTMCTranslator;
-import solver.prismconnector.PrismExplicitModelPointer;
-import solver.prismconnector.PrismExplicitModelReader;
 import solver.prismconnector.PrismMDPTranslator;
 import solver.prismconnector.PrismPropertyTranslator;
 import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
+import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class MobileRobotXDTMCTest {
 

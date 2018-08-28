@@ -23,6 +23,7 @@ import solver.prismconnector.PrismConfiguration.PrismEngine;
 import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 import solver.prismconnector.PrismConfiguration.PrismMDPSolutionMethod;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 /**
  * References: https://github.com/prismmodelchecker/prism-api/blob/master/src/demos/MDPAdversaryGeneration.java,

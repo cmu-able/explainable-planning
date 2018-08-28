@@ -1,4 +1,4 @@
-package solver.prismconnector;
+package solver.prismconnector.explicitmodel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,6 +22,9 @@ import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
+import solver.prismconnector.PrismTranslatorHelper;
+import solver.prismconnector.PrismTranslatorUtils;
+import solver.prismconnector.ValueEncodingScheme;
 
 public class PrismExplicitModelReader {
 

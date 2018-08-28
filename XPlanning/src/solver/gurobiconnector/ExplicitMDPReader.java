@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import solver.prismconnector.PrismExplicitModelPointer;
 import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class ExplicitMDPReader {
 

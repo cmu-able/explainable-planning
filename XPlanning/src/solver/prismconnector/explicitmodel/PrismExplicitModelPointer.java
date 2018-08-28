@@ -1,9 +1,11 @@
-package solver.prismconnector;
+package solver.prismconnector.explicitmodel;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import solver.prismconnector.PrismRewardType;
 
 public class PrismExplicitModelPointer {
 

@@ -18,10 +18,10 @@ import language.mdp.XMDP;
 import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
 import solver.prismconnector.PrismConfiguration;
-import solver.prismconnector.PrismExplicitModelPointer;
 import solver.prismconnector.PrismMDPTranslator;
 import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class MobileRobotXMDPTest {
 

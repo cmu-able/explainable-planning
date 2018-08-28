@@ -22,6 +22,8 @@ import prism.PrismException;
 import solver.prismconnector.PrismConfiguration.PrismEngine;
 import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
+import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class PrismConnector {
 

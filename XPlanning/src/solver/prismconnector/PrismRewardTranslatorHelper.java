@@ -138,6 +138,12 @@ public class PrismRewardTranslatorHelper {
 		builder.append(artificialReward);
 		builder.append("\n");
 		builder.append(END_REWARDS);
+
+		// Record the order of which the reward structures representing the objective (cost) functions are written to
+		// the model
+		// To keep track of the reward-structure-index corresponding to each objective function
+		mEncodings.appendCostFunction(objectiveFunction);
+
 		return builder.toString();
 	}
 

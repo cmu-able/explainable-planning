@@ -5,6 +5,7 @@ import java.util.List;
 
 import language.exceptions.QFunctionNotFoundException;
 import language.metrics.IQFunction;
+import language.objectives.IAdditiveCostFunction;
 
 public class QFunctionEncodingScheme {
 
@@ -13,16 +14,21 @@ public class QFunctionEncodingScheme {
 	 */
 	private volatile int hashCode;
 
-	// Reward structure "cost" always has index 1
-	private static final int REW_STRUCT_COST_INDEX = 1;
+	// Index of .srew/.trew file starts at 1
+	private static final int START_REW_STRUCT_INDEX = 1;
 
-	// Starting index of reward structures representing QA functions (if any) of an unconstrained MDP
-	private static final int START_REW_STRUCT_QA_INDEX = 2;
+	private List<Object> mIndexedRewardStructs = new ArrayList<>();
 
-	private List<IQFunction<?, ?>> mIndexedQFunctions = new ArrayList<>();
+	public void appendCostFunction(IAdditiveCostFunction objectiveFunction) {
+		mIndexedRewardStructs.add(objectiveFunction);
+	}
 
 	public void appendQFunction(IQFunction<?, ?> qFunction) {
-		mIndexedQFunctions.add(qFunction);
+		mIndexedRewardStructs.add(qFunction);
+	}
+
+	public int getNumRewardStructures() {
+		return mIndexedRewardStructs.size();
 	}
 
 	/**
@@ -33,18 +39,23 @@ public class QFunctionEncodingScheme {
 	 * @throws QFunctionNotFoundException
 	 */
 	public int getRewardStructureIndex(IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
-		if (!mIndexedQFunctions.contains(qFunction)) {
+		if (!mIndexedRewardStructs.contains(qFunction)) {
 			throw new QFunctionNotFoundException(qFunction);
 		}
-		return mIndexedQFunctions.indexOf(qFunction) + START_REW_STRUCT_QA_INDEX;
+		return mIndexedRewardStructs.indexOf(qFunction) + START_REW_STRUCT_INDEX;
 	}
 
 	/**
 	 * 
-	 * @return Index of the reward structure "cost"
+	 * @param objectiveFunction
+	 *            : Objective function
+	 * @return Index of the reward structure representing the given objective function
 	 */
-	public int getCostStructureIndex() {
-		return REW_STRUCT_COST_INDEX;
+	public int getRewardStructureIndex(IAdditiveCostFunction objectiveFunction) {
+		if (!mIndexedRewardStructs.contains(objectiveFunction)) {
+			throw new IllegalArgumentException("Objective function: " + objectiveFunction.getName() + " is not found.");
+		}
+		return mIndexedRewardStructs.indexOf(objectiveFunction) + START_REW_STRUCT_INDEX;
 	}
 
 	@Override
@@ -56,7 +67,7 @@ public class QFunctionEncodingScheme {
 			return false;
 		}
 		QFunctionEncodingScheme scheme = (QFunctionEncodingScheme) obj;
-		return scheme.mIndexedQFunctions.equals(mIndexedQFunctions);
+		return scheme.mIndexedRewardStructs.equals(mIndexedRewardStructs);
 	}
 
 	@Override
@@ -64,7 +75,7 @@ public class QFunctionEncodingScheme {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mIndexedQFunctions.hashCode();
+			result = 31 * result + mIndexedRewardStructs.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

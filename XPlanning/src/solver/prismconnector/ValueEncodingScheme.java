@@ -12,6 +12,7 @@ import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
 import language.mdp.StateSpace;
 import language.metrics.IQFunction;
+import language.objectives.IAdditiveCostFunction;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
 import language.qfactors.IStateVarBoolean;
@@ -120,6 +121,10 @@ public class ValueEncodingScheme {
 		return mapping;
 	}
 
+	void appendCostFunction(IAdditiveCostFunction objectiveFunction) {
+		mQFunctionEncoding.appendCostFunction(objectiveFunction);
+	}
+
 	void appendQFunction(IQFunction<?, ?> qFunction) {
 		mQFunctionEncoding.appendQFunction(qFunction);
 	}
@@ -201,8 +206,8 @@ public class ValueEncodingScheme {
 		return mQFunctionEncoding.getRewardStructureIndex(qFunction);
 	}
 
-	public int getCostStructureIndex() {
-		return mQFunctionEncoding.getCostStructureIndex();
+	public int getRewardStructureIndex(IAdditiveCostFunction objectiveFunction) {
+		return mQFunctionEncoding.getRewardStructureIndex(objectiveFunction);
 	}
 
 	public QFunctionEncodingScheme getQFunctionEncodingScheme() {

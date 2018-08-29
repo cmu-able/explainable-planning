@@ -149,7 +149,7 @@ public class PrismConnector {
 
 		// Create explicit model reader of the output model
 		PolicyReader explicitModelReader = new PolicyReader(
-				mMDPTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
+				outputExplicitModelPointer, mMDPTranslator.getValueEncodingScheme());
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function

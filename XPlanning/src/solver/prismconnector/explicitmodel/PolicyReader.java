@@ -39,7 +39,7 @@ public class PolicyReader {
 	private ValueEncodingScheme mEncodings;
 	private PrismExplicitModelPointer mExplicitModelPtr;
 
-	public PolicyReader(ValueEncodingScheme encodings, PrismExplicitModelPointer explicitModelPtr) {
+	public PolicyReader(PrismExplicitModelPointer explicitModelPtr, ValueEncodingScheme encodings) {
 		mEncodings = encodings;
 		mExplicitModelPtr = explicitModelPtr;
 	}

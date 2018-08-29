@@ -176,7 +176,7 @@ public class MobileRobotXDTMCTest {
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
 		PolicyReader explicitDTMCReader = new PolicyReader(
-				mdpTranslator.getValueEncodingScheme(), outputExplicitModelPointer);
+				outputExplicitModelPointer, mdpTranslator.getValueEncodingScheme());
 
 		// Close down PRISM
 		prismAPI.terminatePrism();

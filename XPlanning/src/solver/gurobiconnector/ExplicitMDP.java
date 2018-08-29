@@ -7,6 +7,7 @@ import java.util.Set;
 
 public class ExplicitMDP {
 
+	public static final int OBJECTIVE_FUNCTION_INDEX = 0;
 	static final double DEFAULT_DISCOUNT_FACTOR = 1.0;
 
 	/*
@@ -74,8 +75,12 @@ public class ExplicitMDP {
 	 * @param cost
 	 */
 	public void addTransitionCost(int costFuncIndex, int srcState, String actionName, double cost) {
-		checkTransitionCost();
 		int actionIndex = getActionIndex(actionName);
+		addTransitionCost(costFuncIndex, srcState, actionIndex, cost);
+	}
+
+	public void addTransitionCost(int costFuncIndex, int srcState, int actionIndex, double cost) {
+		checkTransitionCost();
 		mTransCosts[costFuncIndex][srcState][actionIndex] = cost;
 	}
 
@@ -99,22 +104,26 @@ public class ExplicitMDP {
 		return mIndexedActions.size();
 	}
 
-	public String getActionNameAtIndex(int actionIndex) {
-		return mIndexedActions.get(actionIndex);
-	}
-
 	public int getInitialState() {
 		return mIniState;
 	}
 
 	public double getTransitionProbability(int srcState, String actionName, int destState) {
 		int actionIndex = getActionIndex(actionName);
+		return getTransitionProbability(srcState, actionIndex, destState);
+	}
+
+	public double getTransitionProbability(int srcState, int actionIndex, int destState) {
 		return mTransProbs[srcState][actionIndex][destState];
 	}
 
 	public double getTransitionCost(int costFuncIndex, int srcState, String actionName) {
-		checkTransitionCost();
 		int actionIndex = getActionIndex(actionName);
+		return getTransitionCost(costFuncIndex, srcState, actionIndex);
+	}
+
+	public double getTransitionCost(int costFuncIndex, int srcState, int actionIndex) {
+		checkTransitionCost();
 		return mTransCosts[costFuncIndex][srcState][actionIndex];
 	}
 

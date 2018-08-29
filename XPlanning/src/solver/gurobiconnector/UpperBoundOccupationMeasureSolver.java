@@ -87,8 +87,7 @@ public class UpperBoundOccupationMeasureSolver {
 			double coeff = -1 * gamma;
 			for (int i = 0; i < n; i++) {
 				for (int a = 0; a < m; a++) {
-					String actionName = explicitMDP.getActionNameAtIndex(a);
-					double p = explicitMDP.getTransitionProbability(i, actionName, j);
+					double p = explicitMDP.getTransitionProbability(i, a, j);
 					double termCoeff = coeff * p;
 					constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
 				}

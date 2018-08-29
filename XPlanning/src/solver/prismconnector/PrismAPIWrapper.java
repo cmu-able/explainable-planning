@@ -174,6 +174,7 @@ public class PrismAPIWrapper {
 		File staFile = explicitModelPointer.getStatesFile();
 		File advFile = explicitModelPointer.getAdversaryFile();
 		File labFile = explicitModelPointer.getLabelsFile();
+		// Only .srew are allowed to be loaded from explicit files
 		File srewFile = explicitModelPointer.getIndexedStateRewardsFile(rewardStructIndex);
 
 		// Load modules from .sta, adv.tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock"

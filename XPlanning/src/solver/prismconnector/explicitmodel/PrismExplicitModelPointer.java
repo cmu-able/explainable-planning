@@ -182,7 +182,29 @@ public class PrismExplicitModelPointer {
 		return mRewFile;
 	}
 
+	/**
+	 * If there are multiple reward structures, this method returns an actual .srew file of a given index.
+	 * 
+	 * @param rewardStructIndex
+	 * @return State rewards ({i}.srew) file of a given index
+	 */
 	public File getIndexedStateRewardsFile(int rewardStructIndex) {
+		checkRewardType(PrismRewardType.STATE_REWARD);
+		return getIndexRewardsFile(rewardStructIndex);
+	}
+
+	/**
+	 * If there are multiple reward structures, this method returns an actual .trew file of a given index.
+	 * 
+	 * @param rewardStructIndex
+	 * @return Transition rewards ({i}.trew) file of a given index
+	 */
+	public File getIndexTransitionRewardsFile(int rewardStructIndex) {
+		checkRewardType(PrismRewardType.TRANSITION_REWARD);
+		return getIndexRewardsFile(rewardStructIndex);
+	}
+
+	private File getIndexRewardsFile(int rewardStructIndex) {
 		if (mIndexedRewFiles.isEmpty()) {
 			mIndexedRewFiles.addAll(getSortedRewardsFiles());
 		}

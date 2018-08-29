@@ -1,9 +1,7 @@
 package solver.prismconnector;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -30,12 +28,6 @@ import language.qfactors.StateVarDefinition;
  */
 public class ValueEncodingScheme {
 
-	// Reward structure "cost" always has index 1
-	private static final int REW_STRUCT_COST_INDEX = 1;
-
-	// Starting index of reward structures representing QA functions (if any)
-	private static final int START_REW_STRUCT_QA_INDEX = 2;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -45,7 +37,7 @@ public class ValueEncodingScheme {
 	private Map<String, Map<Boolean, ? extends IStateVarBoolean>> mBooleanVarLookups = new HashMap<>();
 	private Map<String, Map<Integer, ? extends IStateVarInt>> mIntVarLookups = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
-	private List<IQFunction<?, ?>> mIndexedQFunctions = new ArrayList<>();
+	private QFunctionEncodingScheme mQFunctionEncoding = new QFunctionEncodingScheme();
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
 	private boolean mThreeParamRewards;
@@ -129,7 +121,7 @@ public class ValueEncodingScheme {
 	}
 
 	void appendQFunction(IQFunction<?, ?> qFunction) {
-		mIndexedQFunctions.add(qFunction);
+		mQFunctionEncoding.appendQFunction(qFunction);
 	}
 
 	public boolean isThreeParamRewards() {
@@ -206,14 +198,15 @@ public class ValueEncodingScheme {
 	}
 
 	public int getRewardStructureIndex(IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
-		if (!mIndexedQFunctions.contains(qFunction)) {
-			throw new QFunctionNotFoundException(qFunction);
-		}
-		return mIndexedQFunctions.indexOf(qFunction) + START_REW_STRUCT_QA_INDEX;
+		return mQFunctionEncoding.getRewardStructureIndex(qFunction);
 	}
 
 	public int getCostStructureIndex() {
-		return REW_STRUCT_COST_INDEX;
+		return mQFunctionEncoding.getCostStructureIndex();
+	}
+
+	public QFunctionEncodingScheme getQFunctionEncodingScheme() {
+		return mQFunctionEncoding;
 	}
 
 	@Override
@@ -225,7 +218,11 @@ public class ValueEncodingScheme {
 			return false;
 		}
 		ValueEncodingScheme scheme = (ValueEncodingScheme) obj;
-		return scheme.mStateVarEncodings.equals(mStateVarEncodings) && scheme.mActionEncoding.equals(mActionEncoding);
+		return scheme.mStateVarEncodings.equals(mStateVarEncodings)
+				&& scheme.mBooleanVarLookups.equals(mBooleanVarLookups) && scheme.mIntVarLookups.equals(mIntVarLookups)
+				&& scheme.mActionEncoding.equals(mActionEncoding)
+				&& scheme.mQFunctionEncoding.equals(mQFunctionEncoding) && scheme.mStateSpace.equals(mStateSpace)
+				&& scheme.mActionSpace.equals(mActionSpace) && scheme.mThreeParamRewards == mThreeParamRewards;
 	}
 
 	@Override
@@ -234,7 +231,13 @@ public class ValueEncodingScheme {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mStateVarEncodings.hashCode();
+			result = 31 * result + mBooleanVarLookups.hashCode();
+			result = 31 * result + mIntVarLookups.hashCode();
 			result = 31 * result + mActionEncoding.hashCode();
+			result = 31 * result + mQFunctionEncoding.hashCode();
+			result = 31 * result + mStateSpace.hashCode();
+			result = 31 * result + mActionSpace.hashCode();
+			result = 31 * result + Boolean.hashCode(mThreeParamRewards);
 			hashCode = result;
 		}
 		return hashCode;

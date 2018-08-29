@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import solver.gurobiconnector.CostType;
 import solver.gurobiconnector.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 
 public class ExplicitMDPReader {
@@ -21,9 +22,12 @@ public class ExplicitMDPReader {
 	private static final String INIT_LAB_HEADER_PATTERN = "([0-9]+)=\"init\"";
 
 	private PrismExplicitModelPointer mPrismModelPointer;
+	private QFunctionEncodingScheme mQFunctionEncoding;
 
-	public ExplicitMDPReader(PrismExplicitModelPointer prismExplicitModelPointer) {
+	public ExplicitMDPReader(PrismExplicitModelPointer prismExplicitModelPointer,
+			QFunctionEncodingScheme qFunctionEncoding) {
 		mPrismModelPointer = prismExplicitModelPointer;
+		mQFunctionEncoding = qFunctionEncoding;
 	}
 
 	public ExplicitMDP readExplicitMDP() throws IOException, InitialStateParsingException {
@@ -36,24 +40,24 @@ public class ExplicitMDPReader {
 		int numStates = readNumStates(traHeader);
 		int iniState = readInitialState(labAllLines);
 		Set<String> actionNames = readActionNames(traAllLines);
-		int numActions = actionNames.size();
+
+		// Create an additional slot for cost function to:
+		// (1) Align the indices of the cost functions (starts at 0) to the PRISM reward indices (starts at 1), and
+		// (2) Reserve the first slot for the optimization objective function
+		int numCostFunctions = mQFunctionEncoding.getNumRewardStructures() + 1;
+
 		CostType costType = mPrismModelPointer.getPrismRewardType() == PrismRewardType.STATE_REWARD
 				? CostType.STATE_COST
 				: CostType.TRANSITION_COST;
 
-		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, actionNames, costType, 1); // FIXME
+		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, actionNames, costType, numCostFunctions);
 		explicitMDP.setInitialState(iniState);
 		readTransitionProbabilities(traAllLines, explicitMDP);
 
 		if (costType == CostType.TRANSITION_COST) {
-			String[][] choicesToActions = readChoicesToActions(traAllLines, numStates, numActions);
-			File trewFile = mPrismModelPointer.getTransitionRewardsFile();
-			List<String> trewAllLines = readLinesFromFile(trewFile);
-			readTransitionCosts(0, trewAllLines, choicesToActions, explicitMDP); // FIXME
+			readAllTransitionCosts(traAllLines, explicitMDP);
 		} else if (costType == CostType.STATE_COST) {
-			File srewFile = mPrismModelPointer.getStateRewardsFile();
-			List<String> srewAllLines = readLinesFromFile(srewFile);
-			readStateCosts(0, srewAllLines, explicitMDP); // FIXME
+			readAllStateCosts(explicitMDP);
 		}
 		return explicitMDP;
 	}
@@ -150,9 +154,33 @@ public class ExplicitMDPReader {
 	}
 
 	/**
-	 * Read transition costs from .trew file.
+	 * Read transition costs from all .trew files into all cost function indices -- except the 0th index, which is
+	 * reserved for the optimization objective function.
+	 * 
+	 * @param traAllLines
+	 *            : All lines from .tra file
+	 * @param explicitMDP
+	 * @throws IOException
+	 */
+	private void readAllTransitionCosts(List<String> traAllLines, ExplicitMDP explicitMDP) throws IOException {
+		int numStates = explicitMDP.getNumStates();
+		int numActions = explicitMDP.getNumActions();
+		String[][] choicesToActions = readChoicesToActions(traAllLines, numStates, numActions);
+		int numRewardStructs = mQFunctionEncoding.getNumRewardStructures();
+
+		// Reserve 0-slot for the optimization objective function
+		for (int k = 1; k < numRewardStructs; k++) {
+			File trewFile = mPrismModelPointer.getIndexedTransitionRewardsFile(k);
+			List<String> trewAllLines = readLinesFromFile(trewFile);
+			readTransitionCosts(k, trewAllLines, choicesToActions, explicitMDP);
+		}
+	}
+
+	/**
+	 * Read transition costs from .trew file into a specific cost function index.
 	 * 
 	 * @param costFuncIndex
+	 *            : Cost function index
 	 * @param trewAllLines
 	 *            : All lines from .trew file.
 	 * @param choicesToActions
@@ -212,9 +240,28 @@ public class ExplicitMDPReader {
 	}
 
 	/**
-	 * Read state costs from .srew file.
+	 * Read state costs from all .srew files into all cost function indices -- except the 0th index, which is reserved
+	 * for the optimization objective function.
+	 * 
+	 * @param explicitMDP
+	 * @throws IOException
+	 */
+	private void readAllStateCosts(ExplicitMDP explicitMDP) throws IOException {
+		int numRewardStructs = mQFunctionEncoding.getNumRewardStructures();
+
+		// Reserve 0-slot for the optimization objective function
+		for (int k = 1; k < numRewardStructs; k++) {
+			File srewFile = mPrismModelPointer.getIndexedStateRewardsFile(k);
+			List<String> srewAllLines = readLinesFromFile(srewFile);
+			readStateCosts(k, srewAllLines, explicitMDP);
+		}
+	}
+
+	/**
+	 * Read state costs from .srew file into a specific cost function index.
 	 * 
 	 * @param costFuncIndex
+	 *            : Cost function index
 	 * @param srewAllLines
 	 *            : All lines from .srew file
 	 * @param explicitMDP

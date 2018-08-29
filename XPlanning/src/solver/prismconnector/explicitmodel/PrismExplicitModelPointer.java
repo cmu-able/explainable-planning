@@ -199,7 +199,7 @@ public class PrismExplicitModelPointer {
 	 * @param rewardStructIndex
 	 * @return Transition rewards ({i}.trew) file of a given index
 	 */
-	public File getIndexTransitionRewardsFile(int rewardStructIndex) {
+	public File getIndexedTransitionRewardsFile(int rewardStructIndex) {
 		checkRewardType(PrismRewardType.TRANSITION_REWARD);
 		return getIndexRewardsFile(rewardStructIndex);
 	}

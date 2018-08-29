@@ -1,5 +1,7 @@
 package solver.gurobiconnector;
 
+import java.nio.channels.IllegalSelectorException;
+
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
@@ -9,6 +11,10 @@ import gurobi.GRBVar;
 
 public class UpperBoundOccupationMeasureSolver {
 
+	private UpperBoundOccupationMeasureSolver() {
+		throw new IllegalSelectorException();
+	}
+
 	/**
 	 * Solve for X >= x_ia for all i, a, where x_ia is the occupation measure corresponding to a policy of a given MDP.
 	 * 
@@ -16,7 +22,7 @@ public class UpperBoundOccupationMeasureSolver {
 	 * @return Upper bound of occupation measure
 	 * @throws GRBException
 	 */
-	public double getUpperBoundOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
+	public static double getUpperBoundOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
 		double[][] xResults = solveOccupationMeasure(explicitMDP);
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
@@ -38,7 +44,7 @@ public class UpperBoundOccupationMeasureSolver {
 	 * @return Occupation measure
 	 * @throws GRBException
 	 */
-	private double[][] solveOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
+	private static double[][] solveOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
@@ -89,6 +95,8 @@ public class UpperBoundOccupationMeasureSolver {
 				for (int a = 0; a < m; a++) {
 					double p = explicitMDP.getTransitionProbability(i, a, j);
 					double termCoeff = coeff * p;
+
+					// - gamma * p_iaj * x_ia
 					constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
 				}
 			}

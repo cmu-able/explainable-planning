@@ -28,19 +28,35 @@ public class ConstrainedMDPSolver {
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints, QFunctionEncodingScheme qFunctionEncoding)
 			throws QFunctionNotFoundException {
 		mExplicitMDP = explicitMDP;
-		setObjectiveFunction(objectiveFunction, qFunctionEncoding);
+		setObjectiveFunctionOfExplicitMDP(objectiveFunction, qFunctionEncoding);
 		mUpperBoundConstraints = getUpperBoundConstraints(attrConstraints, qFunctionEncoding);
 	}
 
-	private void setObjectiveFunction(AdditiveCostFunction objectiveFunction, QFunctionEncodingScheme qFunctionEncoding)
-			throws QFunctionNotFoundException {
+	/**
+	 * Set the objective function of the ExplicitMDP.
+	 * 
+	 * If the cost type is transition, objective cost of a transition is: c_0[i][a] = sum_k(scaling const * attribute
+	 * cost of c_k[i][a]).
+	 * 
+	 * If the cost type is state, objective cost of a state is: c_0[i] = sum_k(scaling const * attribute cost of
+	 * c_k[i]).
+	 * 
+	 * @param objectiveFunction
+	 * @param qFunctionEncoding
+	 * @throws QFunctionNotFoundException
+	 */
+	private void setObjectiveFunctionOfExplicitMDP(AdditiveCostFunction objectiveFunction,
+			QFunctionEncodingScheme qFunctionEncoding) throws QFunctionNotFoundException {
 		int numStates = mExplicitMDP.getNumStates();
 		int numActions = mExplicitMDP.getNumActions();
+
 		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
 
 		for (int i = 0; i < numStates; i++) {
 			for (int a = 0; a < numActions; a++) {
-				// Objective cost of a transition: c_0[i][a] = sum_k(scaling const * Attribute cost of c_k[i][a])
+				// Objective cost of a transition: c_0[i][a] = sum_k(scaling const * attribute cost of c_k[i][a])
+				// OR
+				// Objective cost of a state: c_0[i] = sum_k(scaling const * attribute cost of c_k[i])
 				double objectiveCost = 0;
 
 				for (IQFunction<?, ?> qFunction : qFunctions) {
@@ -48,21 +64,31 @@ public class ConstrainedMDPSolver {
 					double scalingConst = objectiveFunction.getScalingConstant(attrCostFunc);
 
 					// When constructing ExplicitMDP, we ensure that the indices of the cost functions of ExplicitMDP
-					// are
-					// aligned with the indices of the PRISM reward structures
+					// are aligned with the indices of the PRISM reward structures
 					int costFuncIndex = qFunctionEncoding.getRewardStructureIndex(qFunction);
 
 					// QA value of a single transition
-					double transQValue = mExplicitMDP.getTransitionCost(costFuncIndex, i, a);
+					// OR
+					// QA value of a single state
+					double stepQValue = isTransitionCost() ? mExplicitMDP.getTransitionCost(costFuncIndex, i, a)
+							: mExplicitMDP.getStateCost(costFuncIndex, i);
 
 					// Attribute cost of the transition value
-					double transAttrCost = attrCostFunc.getCost(transQValue);
+					// OR
+					// Attribute cost of the state value
+					double stepAttrCost = attrCostFunc.getCost(stepQValue);
 
-					objectiveCost += scalingConst * transAttrCost;
+					objectiveCost += scalingConst * stepAttrCost;
 				}
 
 				// Set objective cost at c_0[i][a]
-				mExplicitMDP.addTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a, objectiveCost);
+				// OR
+				// Set objective cost at c_0[i]
+				if (isTransitionCost()) {
+					mExplicitMDP.addTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a, objectiveCost);
+				} else {
+					mExplicitMDP.addStateCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, objectiveCost);
+				}
 			}
 		}
 
@@ -166,7 +192,11 @@ public class ConstrainedMDPSolver {
 	}
 
 	/**
-	 * Set optimization objective: minimize sum_i,a(x_ia * c_ia).
+	 * Set the optimization objective.
+	 * 
+	 * For transition costs: minimize sum_i,a(x_ia * c_ia).
+	 * 
+	 * For state costs: minimize sum_i,a(x_ia * c_i).
 	 * 
 	 * @param n
 	 * @param m
@@ -176,12 +206,21 @@ public class ConstrainedMDPSolver {
 	 */
 	private void setOptimizationObjective(int n, int m, GRBVar[][] xVars, GRBModel model) throws GRBException {
 		// Objective: minimize sum_i,a(x_ia * c_ia)
+		// OR
+		// minimize sum_i,a(x_ia * c_i)
+
 		// In this case, c_ia is an objective cost: c_0[i][a]
+		// OR
+		// c_i is an objective cost: c_0[i]
 		GRBLinExpr objectiveLinExpr = new GRBLinExpr();
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
 				// Objective cost: c_ia
-				double objectiveCost = mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a);
+				// OR
+				// c_i
+				double objectiveCost = isTransitionCost()
+						? mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a)
+						: mExplicitMDP.getStateCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i);
 				objectiveLinExpr.addTerm(objectiveCost, xVars[i][a]);
 			}
 		}
@@ -236,7 +275,11 @@ public class ConstrainedMDPSolver {
 	}
 
 	/**
-	 * Add constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k.
+	 * Add constraints.
+	 * 
+	 * For transition costs: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k.
+	 * 
+	 * For state costs: sum_i,a(c^k_i * x_ia) <= upper bound of c^k, for all k.
 	 * 
 	 * @param n
 	 * @param m
@@ -246,6 +289,9 @@ public class ConstrainedMDPSolver {
 	 */
 	private void addConstraintsB(int n, int m, GRBVar[][] xVars, GRBModel model) throws GRBException {
 		// Constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k
+		// OR
+		// sum_i,a(c^k_i * x_ia) <= upper bound of c^k, for all k
+
 		// Non-objective cost functions start at index 1 in ExplicitMDP
 		for (int k = 1; k < mUpperBoundConstraints.length; k++) {
 			String constraintName = "constraintB_" + k;
@@ -254,10 +300,15 @@ public class ConstrainedMDPSolver {
 			for (int i = 0; i < n; i++) {
 				for (int a = 0; a < m; a++) {
 					// Transition k-cost: c^k_ia
-					double transCost = mExplicitMDP.getTransitionCost(k, i, a);
+					// OR
+					// State k-cost: c^k_i
+					double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
+							: mExplicitMDP.getStateCost(k, i);
 
 					// c^k_ia * x_ia
-					constraintLinExpr.addTerm(transCost, xVars[i][a]);
+					// OR
+					// c^k_i * x_ia
+					constraintLinExpr.addTerm(stepCost, xVars[i][a]);
 				}
 			}
 
@@ -361,5 +412,9 @@ public class ConstrainedMDPSolver {
 			}
 		}
 		return true;
+	}
+
+	private boolean isTransitionCost() {
+		return mExplicitMDP.getCostType() == CostType.TRANSITION_COST;
 	}
 }

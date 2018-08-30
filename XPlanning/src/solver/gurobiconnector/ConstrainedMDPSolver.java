@@ -11,9 +11,9 @@ import gurobi.GRBVar;
 import language.exceptions.QFunctionNotFoundException;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
-import language.objectives.AdditiveCostFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
+import language.objectives.IAdditiveCostFunction;
 import language.qfactors.IAction;
 import solver.prismconnector.QFunctionEncodingScheme;
 
@@ -24,7 +24,7 @@ public class ConstrainedMDPSolver {
 	private ExplicitMDP mExplicitMDP;
 	private double[] mUpperBoundConstraints;
 
-	public ConstrainedMDPSolver(ExplicitMDP explicitMDP, AdditiveCostFunction objectiveFunction,
+	public ConstrainedMDPSolver(ExplicitMDP explicitMDP, IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints, QFunctionEncodingScheme qFunctionEncoding)
 			throws QFunctionNotFoundException {
 		mExplicitMDP = explicitMDP;
@@ -45,7 +45,7 @@ public class ConstrainedMDPSolver {
 	 * @param qFunctionEncoding
 	 * @throws QFunctionNotFoundException
 	 */
-	private void setObjectiveFunctionOfExplicitMDP(AdditiveCostFunction objectiveFunction,
+	private void setObjectiveFunctionOfExplicitMDP(IAdditiveCostFunction objectiveFunction,
 			QFunctionEncodingScheme qFunctionEncoding) throws QFunctionNotFoundException {
 		int numStates = mExplicitMDP.getNumStates();
 		int numActions = mExplicitMDP.getNumActions();

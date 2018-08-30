@@ -23,7 +23,7 @@ public class UpperBoundOccupationMeasureSolver {
 	 * @throws GRBException
 	 */
 	public static double getUpperBoundOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
-		double[][] xResults = solveOccupationMeasure(explicitMDP);
+		double[][] xResults = solveMaximumOccupationMeasure(explicitMDP);
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		// From the constraint: x_ia >=0 for all i, a
@@ -44,7 +44,7 @@ public class UpperBoundOccupationMeasureSolver {
 	 * @return Occupation measure
 	 * @throws GRBException
 	 */
-	private static double[][] solveOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
+	public static double[][] solveMaximumOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 

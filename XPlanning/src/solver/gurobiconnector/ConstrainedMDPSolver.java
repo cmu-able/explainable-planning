@@ -89,6 +89,31 @@ public class ConstrainedMDPSolver {
 		return constraints;
 	}
 
+	public double[][] solveOptimalPolicy() throws GRBException {
+		int n = mExplicitMDP.getNumStates();
+		int m = mExplicitMDP.getNumActions();
+		double[][] policy = new double[n][m];
+		double[][] occupationMeasure = solveOccupationMeasure();
+
+		for (int i = 0; i < n; i++) {
+			// sum_a(x_ia)
+			int denom = 0;
+			for (int a = 0; a < m; a++) {
+				denom += occupationMeasure[i][a];
+			}
+
+			assert denom > 0;
+
+			for (int a = 0; a < m; a++) {
+				// pi_ia = x_ia / sum_a(x_ia)
+				policy[i][a] = occupationMeasure[i][a] / denom;
+			}
+		}
+
+		assert sanityCheckDeterministicPolicy(policy);
+		return policy;
+	}
+
 	public double[][] solveOccupationMeasure() throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
@@ -115,19 +140,8 @@ public class ConstrainedMDPSolver {
 			}
 		}
 
-		// Objective: minimize sum_i,a(x_ia * c_ia)
-		// In this case, c_ia is an objective cost: c_0[i][a]
-		GRBLinExpr objectiveLinExpr = new GRBLinExpr();
-		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Objective cost: c_ia
-				double objectiveCost = mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a);
-				objectiveLinExpr.addTerm(objectiveCost, xVars[i][a]);
-			}
-		}
-
-		// Set objective
-		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
+		// Set optimization objective
+		setOptimizationObjective(n, m, xVars, model);
 
 		// Add constraints
 		addConstraintsA(n, m, xVars, model);
@@ -149,6 +163,31 @@ public class ConstrainedMDPSolver {
 		assert sanityCheckResults(xResults, deltaResults);
 
 		return xResults;
+	}
+
+	/**
+	 * Set optimization objective: minimize sum_i,a(x_ia * c_ia).
+	 * 
+	 * @param n
+	 * @param m
+	 * @param xVars
+	 * @param model
+	 * @throws GRBException
+	 */
+	private void setOptimizationObjective(int n, int m, GRBVar[][] xVars, GRBModel model) throws GRBException {
+		// Objective: minimize sum_i,a(x_ia * c_ia)
+		// In this case, c_ia is an objective cost: c_0[i][a]
+		GRBLinExpr objectiveLinExpr = new GRBLinExpr();
+		for (int i = 0; i < n; i++) {
+			for (int a = 0; a < m; a++) {
+				// Objective cost: c_ia
+				double objectiveCost = mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a);
+				objectiveLinExpr.addTerm(objectiveCost, xVars[i][a]);
+			}
+		}
+
+		// Set objective
+		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
 	}
 
 	/**
@@ -300,6 +339,23 @@ public class ConstrainedMDPSolver {
 						|| (deltaResults[i][a] == 0 && xResults[i][a] == 0);
 
 				if (!property) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param policy
+	 * @return Check whether the policy is deterministic
+	 */
+	private boolean sanityCheckDeterministicPolicy(double[][] policy) {
+		for (int i = 0; i < policy.length; i++) {
+			for (int a = 0; a < policy[0].length; a++) {
+				// Check for any randomized decision
+				if (policy[i][a] > 0 && policy[i][a] < 1) {
 					return false;
 				}
 			}

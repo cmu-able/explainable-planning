@@ -104,6 +104,10 @@ public class ExplicitMDP {
 		return mIndexedActions.size();
 	}
 
+	public CostType getCostType() {
+		return mCostType;
+	}
+
 	public int getInitialState() {
 		return mIniState;
 	}

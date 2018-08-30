@@ -6,6 +6,7 @@ import java.util.Set;
 
 import explanation.verbalization.Verbalizer;
 import explanation.verbalization.Vocabulary;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
@@ -14,9 +15,13 @@ import language.metrics.IQFunction;
 import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 import prism.PrismException;
+import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
+import solver.prismconnector.ValueEncodingScheme;
+import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class Explainer {
 
@@ -28,11 +33,18 @@ public class Explainer {
 		mVerbalizer = new Verbalizer(vocabulary, policyJsonDir);
 	}
 
-	public String explain(String missionName, XMDP xmdp, Policy policy)
-			throws PrismException, ResultParsingException, XMDPException, IOException {
+	public String explain(String missionName, XMDP xmdp, Policy policy) throws PrismException, ResultParsingException,
+			XMDPException, IOException, InitialStateParsingException, GRBException {
+		// PrismConnector
 		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);
 		PolicyInfo solnPolicyInfo = buildPolicyInfo(policy, xmdp.getQSpace(), prismConnector);
-		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, policy);
+
+		// GRBConnector
+		PrismExplicitModelPointer prismExplicitModelPtr = null; // TODO
+		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+		GRBConnector grbConnector = new GRBConnector(prismExplicitModelPtr, encodings);
+
+		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
 		Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();
 		Set<Tradeoff> tradeoffs = new HashSet<>();
 		for (Policy altPolicy : altPolicies) {

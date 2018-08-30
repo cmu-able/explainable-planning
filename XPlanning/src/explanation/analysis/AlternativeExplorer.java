@@ -5,16 +5,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import language.exceptions.ActionDefinitionNotFoundException;
-import language.exceptions.ActionNotFoundException;
-import language.exceptions.AttributeNameNotFoundException;
-import language.exceptions.DiscriminantNotFoundException;
-import language.exceptions.EffectClassNotFoundException;
-import language.exceptions.IncompatibleActionException;
-import language.exceptions.IncompatibleEffectClassException;
-import language.exceptions.IncompatibleVarException;
-import language.exceptions.QFunctionNotFoundException;
-import language.exceptions.VarNotFoundException;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
@@ -26,17 +17,21 @@ import language.objectives.CostFunction;
 import language.policy.Policy;
 import language.qfactors.IAction;
 import prism.PrismException;
+import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class AlternativeExplorer {
 
 	private PrismConnector mPrismConnector;
+	private GRBConnector mGRBConnector;
 	private CostFunction mCostFunction;
 	private Policy mPolicy;
 
-	public AlternativeExplorer(PrismConnector prismConnector, Policy policy) {
+	public AlternativeExplorer(PrismConnector prismConnector, GRBConnector grbConnector, Policy policy) {
 		mPrismConnector = prismConnector;
+		mGRBConnector = grbConnector;
 		mCostFunction = prismConnector.getXMDP().getCostFunction();
 		mPolicy = policy;
 	}
@@ -46,23 +41,15 @@ public class AlternativeExplorer {
 	 * policy. This kind of alternatives indicates the "inflection points" of the decision.
 	 * 
 	 * @return Pareto-optimal alternative policies that are immediately next to the original solution policy.
-	 * @throws QFunctionNotFoundException
-	 * @throws ActionDefinitionNotFoundException
-	 * @throws EffectClassNotFoundException
-	 * @throws VarNotFoundException
-	 * @throws IncompatibleVarException
-	 * @throws ActionNotFoundException
-	 * @throws DiscriminantNotFoundException
-	 * @throws IncompatibleActionException
-	 * @throws IncompatibleEffectClassException
-	 * @throws IncompatibleDiscriminantClassException
-	 * @throws AttributeNameNotFoundException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
+	 * @throws GRBException
+	 * @throws InitialStateParsingException
 	 */
-	public Set<Policy> getParetoOptimalImmediateNeighbors()
-			throws XMDPException, PrismException, ResultParsingException, IOException {
+	public Set<Policy> getParetoOptimalImmediateNeighbors() throws XMDPException, PrismException,
+			ResultParsingException, IOException, InitialStateParsingException, GRBException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
 
@@ -100,8 +87,8 @@ public class AlternativeExplorer {
 		return alternatives;
 	}
 
-	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction)
-			throws ResultParsingException, XMDPException, PrismException, IOException {
+	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction) throws ResultParsingException,
+			XMDPException, PrismException, IOException, InitialStateParsingException, GRBException {
 		// QA value of the solution policy
 		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 
@@ -121,7 +108,8 @@ public class AlternativeExplorer {
 		}
 
 		// Find a constraint-satisfying, optimal policy, if exists
-		return mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+		return mGRBConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+		// mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
 	}
 
 	private boolean hasZeroAttributeCost(IQFunction<?, ?> qFunction)

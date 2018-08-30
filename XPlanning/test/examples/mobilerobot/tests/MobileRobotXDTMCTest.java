@@ -161,7 +161,7 @@ public class MobileRobotXDTMCTest {
 	private PrismExplicitModelReader generateAdverary(File missionJsonFile, XMDP xmdp)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = MobileRobotXMDPTest.PRISM_OUTPUT_PATH + "/" + missionName;
+		String outputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 

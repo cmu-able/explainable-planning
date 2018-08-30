@@ -27,7 +27,8 @@ public class MobileRobotXMDPTest {
 
 	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
 	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
-	static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism";
+	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism/models";
+	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism/advs";
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPTranslatorStateReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
@@ -66,7 +67,7 @@ public class MobileRobotXMDPTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = PRISM_OUTPUT_PATH + "/" + missionName;
+		String outputPath = PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 

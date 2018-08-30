@@ -48,6 +48,10 @@ public class PrismConnector {
 		return mXMDP;
 	}
 
+	public PrismMDPTranslator getPrismMDPTranslator() {
+		return mMDPTranslator;
+	}
+
 	/**
 	 * Generate an optimal policy (the objective is the cost function only). Compute its QA values. Cache its expected
 	 * total cost and QA values.
@@ -67,7 +71,7 @@ public class PrismConnector {
 		String goalProperty = mMDPTranslator.getGoalPropertyTranslation();
 
 		// Compute an optimal policy, and cache its total cost and QA values
-		return computeOptimalPolicy(mdp, goalProperty, mSettings.getOutputPath());
+		return computeOptimalPolicy(mdp, goalProperty, mSettings.getAdversaryOutputPath());
 	}
 
 	/**
@@ -113,8 +117,8 @@ public class PrismConnector {
 				constraint);
 
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
-		String outputPath = mSettings.getOutputPath() + "_" + constraint.getQFunction().getName();
-		return computeOptimalPolicy(mdpStr, propertyStr, outputPath);
+		String advOutputPath = mSettings.getAdversaryOutputPath() + "_" + constraint.getQFunction().getName();
+		return computeOptimalPolicy(mdpStr, propertyStr, advOutputPath);
 	}
 
 	private void configureForMultiObjectiveStrategySynthesis() {
@@ -133,23 +137,23 @@ public class PrismConnector {
 	 *            : MDP string with reward structure(s)
 	 * @param propertyStr
 	 *            : Property string for either minimizing the cost function or other objective function
-	 * @param outputPath
-	 *            : Output path for PRISM explicit model files
+	 * @param advOutputPath
+	 *            : Output path for PRISM explicit model files, including adversary (.adv) file
 	 * @return An optimal policy, if exists.
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 * @throws IOException
 	 * @throws XMDPException
 	 */
-	private Policy computeOptimalPolicy(String mdpStr, String propertyStr, String outputPath)
+	private Policy computeOptimalPolicy(String mdpStr, String propertyStr, String advOutputPath)
 			throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory
-		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath,
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(advOutputPath,
 				DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
 
 		// Create explicit model reader of the output model
-		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(
-				outputExplicitModelPointer, mMDPTranslator.getValueEncodingScheme());
+		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(outputExplicitModelPointer,
+				mMDPTranslator.getValueEncodingScheme());
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function

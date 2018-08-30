@@ -104,6 +104,10 @@ public class ExplicitMDP {
 		return mIndexedActions.size();
 	}
 
+	public String getActionNameAtIndex(int actionIndex) {
+		return mIndexedActions.get(actionIndex);
+	}
+
 	public CostType getCostType() {
 		return mCostType;
 	}

@@ -88,7 +88,7 @@ public class PrismExplicitModelReader {
 				String varName = varNames[i];
 				String valueStr = values[i];
 
-				if (isSpecialVariable(varName)) {
+				if (isAuxiliaryVariable(varName)) {
 					// Skip -- this is a helper variable
 					continue;
 				}
@@ -138,7 +138,7 @@ public class PrismExplicitModelReader {
 			String sourceStr = tokens[0];
 			String sanitizedActionName = tokens[3];
 
-			if (HELPER_ACTIONS.contains(sanitizedActionName) || PRISM_ACTIONS.contains(sanitizedActionName)) {
+			if (isAuxiliaryAction(sanitizedActionName)) {
 				// Skip -- this is a helper action
 				continue;
 			}
@@ -179,8 +179,12 @@ public class PrismExplicitModelReader {
 		return lines;
 	}
 
-	private boolean isSpecialVariable(String varName) {
+	public static boolean isAuxiliaryVariable(String varName) {
 		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || HELPER_VAR_NAMES.contains(varName)
 				|| PRISM_VAR_NAMES.contains(varName);
+	}
+
+	public static boolean isAuxiliaryAction(String actionName) {
+		return HELPER_ACTIONS.contains(actionName) || PRISM_ACTIONS.contains(actionName);
 	}
 }

@@ -1,5 +1,6 @@
 package solver.prismconnector;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,27 @@ public class PrismConnector {
 
 	public PrismMDPTranslator getPrismMDPTranslator() {
 		return mMDPTranslator;
+	}
+
+	/**
+	 * Export the PRISM explicit model files from this XMDP. The explicit model files include: states file (.sta),
+	 * transitions file (.tra), labels file (.lab), and either state rewards file (.srew) or transition rewards file
+	 * (.trew).
+	 * 
+	 * @throws XMDPException
+	 * @throws FileNotFoundException
+	 * @throws PrismException
+	 */
+	public void exportExplicitModelFiles() throws XMDPException, FileNotFoundException, PrismException {
+		// Get MDP translation with QAs as the reward structures -- so that we can export the reward files
+		String mdpStr = mMDPTranslator.getMDPTranslation(true);
+
+		// Create explicit model pointer to output directory **for models**
+		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(
+				mSettings.getModelOutputPath(), DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
+
+		// Export .sta, .tra, .lab, and .srew/.trew files
+		mPrismAPI.exportExplicitModelFiles(mdpStr, outputExplicitModelPointer);
 	}
 
 	/**
@@ -147,7 +169,7 @@ public class PrismConnector {
 	 */
 	private Policy computeOptimalPolicy(String mdpStr, String propertyStr, String advOutputPath)
 			throws PrismException, ResultParsingException, IOException, XMDPException {
-		// Create explicit model pointer to output directory
+		// Create explicit model pointer to output directory **for adversary**
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(advOutputPath,
 				DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
 

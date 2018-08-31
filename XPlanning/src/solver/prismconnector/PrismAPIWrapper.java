@@ -76,6 +76,53 @@ public class PrismAPIWrapper {
 	}
 
 	/**
+	 * Export the explicit model files from a given PRISM MDP String. The explicit model files include: states file
+	 * (.sta), transitions file (.tra), labels file (.lab), and either state rewards file (.srew) or transition rewards
+	 * file (.trew).
+	 * 
+	 * @param mdpStr
+	 *            : PRISM MDP String
+	 * @param outputExplicitModelPointer
+	 *            : Pointer to the directory to which to export the explicit model files
+	 * @throws PrismException
+	 * @throws FileNotFoundException
+	 */
+	public void exportExplicitModelFiles(String mdpStr, PrismExplicitModelPointer outputExplicitModelPointer)
+			throws PrismException, FileNotFoundException {
+		File staOutputFile = outputExplicitModelPointer.getStatesFile();
+		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
+		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
+		PrismRewardType prismRewardType = outputExplicitModelPointer.getPrismRewardType();
+
+		// Parse and load a PRISM MDP model from a model string
+		ModulesFile modulesFile = mPrism.parseModelString(mdpStr, ModelType.MDP);
+		mPrism.loadPRISMModel(modulesFile);
+
+		// Export the states of the model to a file (.sta)
+		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, staOutputFile);
+
+		// Export the transitions of the model to a file, in a row form (.tra)
+		mPrism.exportTransToFile(true, Prism.EXPORT_ROWS, traOutputFile);
+
+		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file (.lab)
+		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, labOutputFile);
+
+		// Export the reward structure to a file
+		// Note: This needs to be set after setting PRISM engine
+		if (prismRewardType == PrismRewardType.STATE_REWARD) {
+			// Export the state rewards to a file (.srew)
+			File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
+			mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
+		} else if (prismRewardType == PrismRewardType.TRANSITION_REWARD
+				&& mPrismConfig.getEngine() != PrismEngine.EXPLICIT) {
+			// Export of transition rewards not yet supported by explicit engine
+			// Export the transition rewards to a file (.trew)
+			File trewOutputFile = outputExplicitModelPointer.getTransitionRewardsFile();
+			mPrism.exportTransRewardsToFile(true, Prism.EXPORT_PLAIN, trewOutputFile);
+		}
+	}
+
+	/**
 	 * Generate an optimal adversary of a MDP in the form of an explicit model of DTMC. The output explicit model files
 	 * include: states file (.sta), transitions file (.tra), labels file (.lab), state rewards file (.srew), and
 	 * adversary file (adv.tra).

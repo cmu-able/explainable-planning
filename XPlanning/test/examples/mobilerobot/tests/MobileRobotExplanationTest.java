@@ -18,6 +18,7 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.qfactors.MoveToAction;
 import explanation.analysis.Explainer;
 import explanation.verbalization.Vocabulary;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
@@ -28,6 +29,8 @@ import prism.PrismException;
 import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
+import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotExplanationTest {
@@ -35,14 +38,14 @@ public class MobileRobotExplanationTest {
 	static final String POLICY_JSON_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/policies";
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp)
-			throws PrismException, ResultParsingException, XMDPException, IOException {
+	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
+			ResultParsingException, XMDPException, IOException, InitialStateParsingException, GRBException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismConfiguration prismConfig = new PrismConfiguration();
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath, advOutputPath,
-				prismConfig);
+				prismConfig, PrismRewardType.TRANSITION_REWARD);
 		PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
 

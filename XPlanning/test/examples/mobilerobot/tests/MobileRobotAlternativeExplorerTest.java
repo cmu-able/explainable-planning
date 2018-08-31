@@ -142,7 +142,7 @@ public class MobileRobotAlternativeExplorerTest {
 			String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 			PrismConfiguration prismConfig = new PrismConfiguration();
 			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath,
-					advOutputPath, prismConfig, PrismRewardType.TRANSITION_REWARD);
+					advOutputPath, prismConfig, PrismRewardType.STATE_REWARD);
 			PrismConnector prismConnector = new PrismConnector(xmdp, prismConnSetttings);
 
 			// GRBConnector

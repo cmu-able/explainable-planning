@@ -8,7 +8,7 @@ import java.util.Set;
 public class ExplicitMDP {
 
 	public static final int OBJECTIVE_FUNCTION_INDEX = 0;
-	static final double DEFAULT_DISCOUNT_FACTOR = 1.0;
+	static final double DEFAULT_DISCOUNT_FACTOR = 0.9;
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -110,6 +110,10 @@ public class ExplicitMDP {
 
 	public CostType getCostType() {
 		return mCostType;
+	}
+
+	public int getNumCostFunctions() {
+		return mCostType == CostType.TRANSITION_COST ? mTransCosts.length : mStateCosts.length;
 	}
 
 	public int getInitialState() {

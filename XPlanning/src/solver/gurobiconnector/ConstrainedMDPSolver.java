@@ -1,5 +1,6 @@
 package solver.gurobiconnector;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import gurobi.GRB;
@@ -22,14 +23,14 @@ public class ConstrainedMDPSolver {
 	private static final double TOLERANCE_FACTOR = 0.99;
 
 	private ExplicitMDP mExplicitMDP;
-	private double[] mUpperBoundConstraints;
+	private Double[] mUpperBoundConstraints;
 
 	public ConstrainedMDPSolver(ExplicitMDP explicitMDP, IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints, QFunctionEncodingScheme qFunctionEncoding)
 			throws QFunctionNotFoundException {
 		mExplicitMDP = explicitMDP;
 		setObjectiveFunctionOfExplicitMDP(objectiveFunction, qFunctionEncoding);
-		mUpperBoundConstraints = getUpperBoundConstraints(attrConstraints, qFunctionEncoding);
+		setUpperBoundConstraints(attrConstraints, qFunctionEncoding);
 	}
 
 	/**
@@ -94,11 +95,14 @@ public class ConstrainedMDPSolver {
 
 	}
 
-	private double[] getUpperBoundConstraints(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
+	private void setUpperBoundConstraints(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
 			QFunctionEncodingScheme qFunctionEncoding) throws QFunctionNotFoundException {
 		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
 		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		double[] constraints = new double[attrConstraints.size() + 1];
+		mUpperBoundConstraints = new Double[mExplicitMDP.getNumCostFunctions()];
+
+		// Set upper bound to null for all cost-function indices that don't have constraints
+		Arrays.fill(mUpperBoundConstraints, null);
 
 		for (AttributeConstraint<IQFunction<?, ?>> attrConstraint : attrConstraints) {
 			IQFunction<?, ?> qFunction = attrConstraint.getQFunction();
@@ -106,13 +110,11 @@ public class ConstrainedMDPSolver {
 			int costFuncIndex = qFunctionEncoding.getRewardStructureIndex(qFunction);
 
 			if (attrConstraint.isStrictBound()) {
-				constraints[costFuncIndex] = TOLERANCE_FACTOR * upperBound;
+				mUpperBoundConstraints[costFuncIndex] = TOLERANCE_FACTOR * upperBound;
 			} else {
-				constraints[costFuncIndex] = upperBound;
+				mUpperBoundConstraints[costFuncIndex] = upperBound;
 			}
 		}
-
-		return constraints;
 	}
 
 	public double[][] solveOptimalPolicy() throws GRBException {
@@ -123,16 +125,20 @@ public class ConstrainedMDPSolver {
 
 		for (int i = 0; i < n; i++) {
 			// sum_a(x_ia)
-			int denom = 0;
+			double denom = 0;
 			for (int a = 0; a < m; a++) {
 				denom += occupationMeasure[i][a];
 			}
 
-			assert denom > 0;
+			if (denom > 0) {
+				// Interpret occupation measure x_ia as the total expected discounted number of times action a is
+				// executed in state i.
+				// When sum_a(x_ia) > 0, it means state i is reachable.
 
-			for (int a = 0; a < m; a++) {
-				// pi_ia = x_ia / sum_a(x_ia)
-				policy[i][a] = occupationMeasure[i][a] / denom;
+				for (int a = 0; a < m; a++) {
+					// pi_ia = x_ia / sum_a(x_ia)
+					policy[i][a] = occupationMeasure[i][a] / denom;
+				}
 			}
 		}
 
@@ -226,7 +232,7 @@ public class ConstrainedMDPSolver {
 		}
 
 		// Set objective
-		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
+		model.setObjective(objectiveLinExpr, GRB.MINIMIZE);
 	}
 
 	/**
@@ -294,6 +300,11 @@ public class ConstrainedMDPSolver {
 
 		// Non-objective cost functions start at index 1 in ExplicitMDP
 		for (int k = 1; k < mUpperBoundConstraints.length; k++) {
+			if (mUpperBoundConstraints[k] == null) {
+				// Skip -- there is no constraint on this cost function k
+				continue;
+			}
+
 			String constraintName = "constraintB_" + k;
 			GRBLinExpr constraintLinExpr = new GRBLinExpr();
 

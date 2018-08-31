@@ -225,8 +225,7 @@ public class PrismAPIWrapper {
 		File srewFile = explicitModelPointer.getIndexedStateRewardsFile(rewardStructIndex);
 
 		// Load modules from .sta, adv.tra, .lab, and .srew files (.lab file contains at least "init" and "deadlock"
-		// labels
-		// -- important!)
+		// labels -- important!)
 		ModulesFile modulesFile = mPrism.loadModelFromExplicitFiles(staFile, advFile, labFile, srewFile,
 				ModelType.DTMC);
 

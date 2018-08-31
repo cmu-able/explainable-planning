@@ -40,13 +40,17 @@ public class PrismConnector {
 
 	public PrismConnector(XMDP xmdp, PrismConnectorSettings settings) throws PrismException {
 		mXMDP = xmdp;
-		mMDPTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+		mMDPTranslator = new PrismMDPTranslator(xmdp, true, settings.getPrismRewardType());
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper(settings.getPrismConfiguration());
 	}
 
 	public XMDP getXMDP() {
 		return mXMDP;
+	}
+
+	public PrismConnectorSettings getSettings() {
+		return mSettings;
 	}
 
 	public PrismMDPTranslator getPrismMDPTranslator() {
@@ -245,7 +249,7 @@ public class PrismConnector {
 
 	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
 		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
 		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
@@ -278,7 +282,7 @@ public class PrismConnector {
 	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
@@ -337,7 +341,7 @@ public class PrismConnector {
 			NonStandardMetricQFunction<?, ?, E> qFunction)
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
 		String eventCounterRewards = dtmcTranslator.getEventCounterRewardsTranslation(qFunction.getEventBasedMetric());
 

@@ -36,11 +36,13 @@ public class Explainer {
 	public String explain(String missionName, XMDP xmdp, Policy policy) throws PrismException, ResultParsingException,
 			XMDPException, IOException, InitialStateParsingException, GRBException {
 		// PrismConnector
+		// Create a new PrismConnector for calculating the QA values of a given policy
 		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);
 		PolicyInfo solnPolicyInfo = buildPolicyInfo(policy, xmdp.getQSpace(), prismConnector);
 
 		// GRBConnector
-		PrismExplicitModelPointer prismExplicitModelPtr = null; // TODO
+		// Export PRISM explicit model files from the XMDP so that GRBConnector can create the corresponding ExplicitMDP
+		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		GRBConnector grbConnector = new GRBConnector(prismExplicitModelPtr, encodings);
 

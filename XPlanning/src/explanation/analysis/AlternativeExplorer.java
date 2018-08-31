@@ -109,7 +109,6 @@ public class AlternativeExplorer {
 
 		// Find a constraint-satisfying, optimal policy, if exists
 		return mGRBConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
-		// mPrismConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
 	}
 
 	private boolean hasZeroAttributeCost(IQFunction<?, ?> qFunction)

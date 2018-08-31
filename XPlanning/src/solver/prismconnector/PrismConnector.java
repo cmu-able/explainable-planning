@@ -58,11 +58,13 @@ public class PrismConnector {
 	 * transitions file (.tra), labels file (.lab), and either state rewards file (.srew) or transition rewards file
 	 * (.trew).
 	 * 
+	 * @return Pointer to the output explicit model files.
 	 * @throws XMDPException
 	 * @throws FileNotFoundException
 	 * @throws PrismException
 	 */
-	public void exportExplicitModelFiles() throws XMDPException, FileNotFoundException, PrismException {
+	public PrismExplicitModelPointer exportExplicitModelFiles()
+			throws XMDPException, FileNotFoundException, PrismException {
 		// Get MDP translation with QAs as the reward structures -- so that we can export the reward files
 		String mdpStr = mMDPTranslator.getMDPTranslation(true);
 
@@ -72,6 +74,8 @@ public class PrismConnector {
 
 		// Export .sta, .tra, .lab, and .srew/.trew files
 		mPrismAPI.exportExplicitModelFiles(mdpStr, outputExplicitModelPointer);
+
+		return outputExplicitModelPointer;
 	}
 
 	/**

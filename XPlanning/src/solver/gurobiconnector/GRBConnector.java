@@ -18,13 +18,13 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class GRBConnector {
 
-	private PrismExplicitModelPointer mPrismExplicitModelPtr;
-	private ValueEncodingScheme mEncodings;
+	private QFunctionEncodingScheme mQFunctionEncoding;
+	private ExplicitMDPReader mExplicitMDPReader;
 	private GRBPolicyReader mPolicyReader;
 
 	public GRBConnector(PrismExplicitModelPointer prismExplicitModelPtr, ValueEncodingScheme encodings) {
-		mPrismExplicitModelPtr = prismExplicitModelPtr;
-		mEncodings = encodings;
+		mQFunctionEncoding = encodings.getQFunctionEncodingScheme();
+		mExplicitMDPReader = new ExplicitMDPReader(prismExplicitModelPtr, encodings.getQFunctionEncodingScheme());
 		mPolicyReader = new GRBPolicyReader(prismExplicitModelPtr, encodings);
 	}
 
@@ -39,12 +39,11 @@ public class GRBConnector {
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints)
 			throws IOException, InitialStateParsingException, XMDPException, GRBException {
-		QFunctionEncodingScheme qFunctionEncoding = mEncodings.getQFunctionEncodingScheme();
-		ExplicitMDPReader explicitMDPReader = new ExplicitMDPReader(mPrismExplicitModelPtr, qFunctionEncoding);
-		ExplicitMDP explicitMDP = explicitMDPReader.readExplicitMDP();
-
+		// Create a new ExplicitMDP for every new objective function, because ConstrainedMDPSolver will fill in the
+		// ExplicitMDP with the objective costs
+		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP();
 		ConstrainedMDPSolver solver = new ConstrainedMDPSolver(explicitMDP, objectiveFunction, attrConstraints,
-				qFunctionEncoding);
+				mQFunctionEncoding);
 		double[][] explicitPolicy = solver.solveOptimalPolicy();
 		return mPolicyReader.readPolicyFromExplicitPolicy(explicitPolicy, explicitMDP);
 	}

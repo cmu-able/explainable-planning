@@ -16,28 +16,35 @@ import org.testng.annotations.Test;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import explanation.analysis.AlternativeExplorer;
+import gurobi.GRBException;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
 import language.policy.Policy;
 import prism.PrismException;
+import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.PrismDTMCTranslator;
 import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.ValueEncodingScheme;
+import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 
 public class MobileRobotAlternativeExplorerTest {
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testGenerateTravelTimeAlternative(File missionJsonFile, PrismConnector prismConnector, Policy policy) {
-		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, policy);
-		IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
-				TravelTimeQFunction.NAME);
+	public void testGenerateTravelTimeAlternative(File missionJsonFile, PrismConnector prismConnector,
+			GRBConnector grbConnector, Policy policy) {
 
 		try {
+			AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
+			IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
+					TravelTimeQFunction.NAME);
+
 			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction);
 
 			if (altPolicy == null) {
@@ -46,16 +53,19 @@ public class MobileRobotAlternativeExplorerTest {
 			} else {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 			}
+
 			SimpleConsoleLogger.newLine();
-		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
+		} catch (XMDPException | PrismException | ResultParsingException | IOException | InitialStateParsingException
+				| GRBException e) {
 			e.printStackTrace();
 			fail("Exception thrown while findign an alternative");
 		}
 	}
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testAlternativeExplorer(File missionJsonFile, PrismConnector prismConnector, Policy policy) {
-		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, policy);
+	public void testAlternativeExplorer(File missionJsonFile, PrismConnector prismConnector, GRBConnector grbConnector,
+			Policy policy) {
+		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
 
 		try {
 			Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();
@@ -74,7 +84,8 @@ public class MobileRobotAlternativeExplorerTest {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 				SimpleConsoleLogger.newLine();
 			}
-		} catch (ResultParsingException | XMDPException | PrismException | IOException e) {
+		} catch (ResultParsingException | XMDPException | PrismException | IOException | InitialStateParsingException
+				| GRBException e) {
 			e.printStackTrace();
 			fail("Exception thrown while finding alternative policies");
 		}
@@ -83,7 +94,8 @@ public class MobileRobotAlternativeExplorerTest {
 	private void printPrismDTMCAndProperties(PrismConnector prismConnector, Policy policy)
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(prismConnector.getXMDP(), policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.TRANSITION_REWARD);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
+				prismConnector.getSettings().getPrismRewardType());
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
@@ -100,7 +112,7 @@ public class MobileRobotAlternativeExplorerTest {
 	public void printMissionFilename(Object[] data) throws ResultParsingException, XMDPException, PrismException {
 		File missionJsonFile = (File) data[0];
 		PrismConnector prismConnector = (PrismConnector) data[1];
-		Policy policy = (Policy) data[2];
+		Policy policy = (Policy) data[3];
 
 		SimpleConsoleLogger.log("Mission", missionJsonFile.getName(), true);
 		SimpleConsoleLogger.logHeader("Solution Policy");
@@ -117,7 +129,7 @@ public class MobileRobotAlternativeExplorerTest {
 		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
-		Object[][] data = new Object[missionJsonFiles.length][3];
+		Object[][] data = new Object[missionJsonFiles.length][4];
 
 		int i = 0;
 		for (File missionJsonFile : missionJsonFiles) {
@@ -129,15 +141,20 @@ public class MobileRobotAlternativeExplorerTest {
 			String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 			String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 			PrismConfiguration prismConfig = new PrismConfiguration();
-			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath, advOutputPath,
-					prismConfig);
-			PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);
+			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath,
+					advOutputPath, prismConfig, PrismRewardType.TRANSITION_REWARD);
+			PrismConnector prismConnector = new PrismConnector(xmdp, prismConnSetttings);
+
+			// GRBConnector
+			PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
+			ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+			GRBConnector grbConnector = new GRBConnector(prismExplicitModelPtr, encodings);
 
 			// Optimal policy
-			Policy policy = prismConn.generateOptimalPolicy();
+			Policy policy = prismConnector.generateOptimalPolicy();
 
-			// Pass mission.json, PRISM connector, and policy as data
-			data[i] = new Object[] { missionJsonFile, prismConn, policy };
+			// Pass mission.json, PRISM connector, GRB connector, and policy as data
+			data[i] = new Object[] { missionJsonFile, prismConnector, grbConnector, policy };
 			i++;
 		}
 		return data;

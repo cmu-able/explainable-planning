@@ -8,7 +8,7 @@ import java.util.Set;
 public class ExplicitMDP {
 
 	public static final int OBJECTIVE_FUNCTION_INDEX = 0;
-	static final double DEFAULT_DISCOUNT_FACTOR = 0.9;
+	static final double DEFAULT_DISCOUNT_FACTOR = 0.2;
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -118,6 +118,23 @@ public class ExplicitMDP {
 
 	public int getInitialState() {
 		return mIniState;
+	}
+
+	/**
+	 * Action a is NOT applicable in state i iff p[i][a][j] = 0 for all j.
+	 * 
+	 * @param srcState
+	 * @param actionIndex
+	 * @return Whether the action at a given index is applicable in a given state.
+	 */
+	public boolean isActionApplicable(int srcState, int actionIndex) {
+		double[] transProbs = mTransProbs[srcState][actionIndex];
+		for (int j = 0; j < transProbs.length; j++) {
+			if (transProbs[j] > 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public double getTransitionProbability(int srcState, String actionName, int destState) {

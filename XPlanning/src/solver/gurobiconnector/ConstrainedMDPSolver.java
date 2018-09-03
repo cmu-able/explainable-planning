@@ -127,7 +127,10 @@ public class ConstrainedMDPSolver {
 			// sum_a(x_ia)
 			double denom = 0;
 			for (int a = 0; a < m; a++) {
-				denom += occupationMeasure[i][a];
+				// Exclude any x_ia value when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					denom += occupationMeasure[i][a];
+				}
 			}
 
 			if (denom > 0) {
@@ -136,8 +139,11 @@ public class ConstrainedMDPSolver {
 				// When sum_a(x_ia) > 0, it means state i is reachable.
 
 				for (int a = 0; a < m; a++) {
-					// pi_ia = x_ia / sum_a(x_ia)
-					policy[i][a] = occupationMeasure[i][a] / denom;
+					// Exclude any x_ia value when action a is not applicable in state i
+					if (mExplicitMDP.isActionApplicable(i, a)) {
+						// pi_ia = x_ia / sum_a(x_ia)
+						policy[i][a] = occupationMeasure[i][a] / denom;
+					}
 				}
 			}
 		}
@@ -158,6 +164,8 @@ public class ConstrainedMDPSolver {
 		GRBVar[][] xVars = new GRBVar[n][m];
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
+				// Add all variables x_ia to the model, but for action a that is not applicable in state i, the variable
+				// x_ia will be excluded from the objective and constraints
 				String xVarName = "x_" + i + a;
 				xVars[i][a] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, xVarName);
 			}
@@ -167,6 +175,8 @@ public class ConstrainedMDPSolver {
 		GRBVar[][] deltaVars = new GRBVar[n][m];
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
+				// Add all variables Delta_ia to the model, but for action a that is not applicable in state i, the
+				// variable Delta_ia will be excluded from the objective and constraints
 				String deltaVarName = "Delta_" + i + a;
 				deltaVars[i][a] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, deltaVarName);
 			}
@@ -221,13 +231,16 @@ public class ConstrainedMDPSolver {
 		GRBLinExpr objectiveLinExpr = new GRBLinExpr();
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
-				// Objective cost: c_ia
-				// OR
-				// c_i
-				double objectiveCost = isTransitionCost()
-						? mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a)
-						: mExplicitMDP.getStateCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i);
-				objectiveLinExpr.addTerm(objectiveCost, xVars[i][a]);
+				// Exclude any x_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					// Objective cost: c_ia
+					// OR
+					// c_i
+					double objectiveCost = isTransitionCost()
+							? mExplicitMDP.getTransitionCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i, a)
+							: mExplicitMDP.getStateCost(ExplicitMDP.OBJECTIVE_FUNCTION_INDEX, i);
+					objectiveLinExpr.addTerm(objectiveCost, xVars[i][a]);
+				}
 			}
 		}
 
@@ -260,18 +273,24 @@ public class ConstrainedMDPSolver {
 
 			// sum_a(x_ja)
 			for (int a = 0; a < m; a++) {
-				constraintLinExpr.addTerm(1.0, xVars[j][a]);
+				// Exclude any x_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(j, a)) {
+					constraintLinExpr.addTerm(1.0, xVars[j][a]);
+				}
 			}
 
 			// - gamma * sum_i,a(x_ia * p_iaj)
 			double coeff = -1 * gamma;
 			for (int i = 0; i < n; i++) {
 				for (int a = 0; a < m; a++) {
-					double p = mExplicitMDP.getTransitionProbability(i, a, j);
-					double termCoeff = coeff * p;
+					// Exclude any x_ia term when action a is not applicable in state i
+					if (mExplicitMDP.isActionApplicable(i, a)) {
+						double p = mExplicitMDP.getTransitionProbability(i, a, j);
+						double termCoeff = coeff * p;
 
-					// - gamma * p_iaj * x_ia
-					constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
+						// - gamma * p_iaj * x_ia
+						constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
+					}
 				}
 			}
 
@@ -310,16 +329,19 @@ public class ConstrainedMDPSolver {
 
 			for (int i = 0; i < n; i++) {
 				for (int a = 0; a < m; a++) {
-					// Transition k-cost: c^k_ia
-					// OR
-					// State k-cost: c^k_i
-					double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
-							: mExplicitMDP.getStateCost(k, i);
+					// Exclude any x_ia term when action a is not applicable in state i
+					if (mExplicitMDP.isActionApplicable(i, a)) {
+						// Transition k-cost: c^k_ia
+						// OR
+						// State k-cost: c^k_i
+						double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
+								: mExplicitMDP.getStateCost(k, i);
 
-					// c^k_ia * x_ia
-					// OR
-					// c^k_i * x_ia
-					constraintLinExpr.addTerm(stepCost, xVars[i][a]);
+						// c^k_ia * x_ia
+						// OR
+						// c^k_i * x_ia
+						constraintLinExpr.addTerm(stepCost, xVars[i][a]);
+					}
 				}
 			}
 
@@ -345,7 +367,10 @@ public class ConstrainedMDPSolver {
 
 			// sum_a(Delta_ia)
 			for (int a = 0; a < m; a++) {
-				constraintLinExpr.addTerm(1.0, deltaVars[i][a]);
+				// Exclude any Delta_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					constraintLinExpr.addTerm(1.0, deltaVars[i][a]);
+				}
 			}
 
 			// Add constraint: [...] <= 1
@@ -369,18 +394,21 @@ public class ConstrainedMDPSolver {
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
-				String constaintName = "constraintC_" + i + a;
+				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					String constaintName = "constraintC_" + i + a;
 
-				// x_ia / X
-				GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();
-				lhsConstraintLinExpr.addTerm(1 / upperBoundOM, xVars[i][a]);
+					// x_ia / X
+					GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();
+					lhsConstraintLinExpr.addTerm(1.0 / upperBoundOM, xVars[i][a]);
 
-				// Delta_ia
-				GRBLinExpr rhsConstraintLinExpr = new GRBLinExpr();
-				rhsConstraintLinExpr.addTerm(1.0, deltaVars[i][a]);
+					// Delta_ia
+					GRBLinExpr rhsConstraintLinExpr = new GRBLinExpr();
+					rhsConstraintLinExpr.addTerm(1.0, deltaVars[i][a]);
 
-				// Add constraint
-				model.addConstr(lhsConstraintLinExpr, GRB.LESS_EQUAL, rhsConstraintLinExpr, constaintName);
+					// Add constraint
+					model.addConstr(lhsConstraintLinExpr, GRB.LESS_EQUAL, rhsConstraintLinExpr, constaintName);
+				}
 			}
 		}
 	}
@@ -397,11 +425,16 @@ public class ConstrainedMDPSolver {
 
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
-				boolean property = (deltaResults[i][a] == 1 && xResults[i][a] > 0)
-						|| (deltaResults[i][a] == 0 && xResults[i][a] == 0);
+				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					boolean property = (deltaResults[i][a] == 1 && xResults[i][a] > 0)
+							|| (deltaResults[i][a] == 0 && xResults[i][a] == 0);
 
-				if (!property) {
-					return false;
+					if (!property) {
+						double deltaResult = deltaResults[i][a];
+						double xResult = xResults[i][a];
+						return false;
+					}
 				}
 			}
 		}
@@ -416,9 +449,13 @@ public class ConstrainedMDPSolver {
 	private boolean sanityCheckDeterministicPolicy(double[][] policy) {
 		for (int i = 0; i < policy.length; i++) {
 			for (int a = 0; a < policy[0].length; a++) {
-				// Check for any randomized decision
-				if (policy[i][a] > 0 && policy[i][a] < 1) {
-					return false;
+				// Exclude any pi_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					// Check for any randomized decision
+					if (policy[i][a] > 0 && policy[i][a] < 1) {
+						double p = policy[i][a];
+						return false;
+					}
 				}
 			}
 		}

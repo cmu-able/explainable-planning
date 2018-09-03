@@ -206,7 +206,7 @@ class MobileRobotTest {
 
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
-			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery);
+			double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, timeQuery, PrismRewardType.STATE_REWARD);
 			System.out.println("Query value from DTMC...");
 			System.out.print("Query property: ");
 			System.out.println(timeQuery);

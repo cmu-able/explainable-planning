@@ -87,7 +87,7 @@ public class PrismAPIWrapper {
 	 * @throws PrismException
 	 * @throws FileNotFoundException
 	 */
-	public void exportExplicitModelFiles(String mdpStr, PrismExplicitModelPointer outputExplicitModelPointer)
+	public ModulesFile exportExplicitModelFiles(String mdpStr, PrismExplicitModelPointer outputExplicitModelPointer)
 			throws PrismException, FileNotFoundException {
 		File staOutputFile = outputExplicitModelPointer.getStatesFile();
 		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
@@ -113,13 +113,16 @@ public class PrismAPIWrapper {
 			// Export the state rewards to a file (.srew)
 			File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
 			mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
-		} else if (prismRewardType == PrismRewardType.TRANSITION_REWARD
-				&& mPrismConfig.getEngine() != PrismEngine.EXPLICIT) {
+		} else if (prismRewardType == PrismRewardType.TRANSITION_REWARD) {
 			// Export of transition rewards not yet supported by explicit engine
+			switchEngineFromExplicitToSparse();
+
 			// Export the transition rewards to a file (.trew)
 			File trewOutputFile = outputExplicitModelPointer.getTransitionRewardsFile();
 			mPrism.exportTransRewardsToFile(true, Prism.EXPORT_PLAIN, trewOutputFile);
 		}
+
+		return modulesFile;
 	}
 
 	/**
@@ -144,22 +147,11 @@ public class PrismAPIWrapper {
 	public double generateMDPAdversary(String mdpStr, String propertyStr,
 			PrismExplicitModelPointer outputExplicitModelPointer)
 			throws PrismException, FileNotFoundException, ResultParsingException {
-		File staOutputFile = outputExplicitModelPointer.getStatesFile();
 		File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
-		File traOutputFile = outputExplicitModelPointer.getTransitionsFile();
 		File advOutputFile = outputExplicitModelPointer.getAdversaryFile();
-		File labOutputFile = outputExplicitModelPointer.getLabelsFile();
-		PrismRewardType prismRewardType = outputExplicitModelPointer.getPrismRewardType();
 
-		// Parse and load a PRISM MDP model from a model string
-		ModulesFile modulesFile = mPrism.parseModelString(mdpStr, ModelType.MDP);
-		mPrism.loadPRISMModel(modulesFile);
-
-		// Export the states of the model to a file
-		mPrism.exportStatesToFile(Prism.EXPORT_PLAIN, staOutputFile);
-
-		// Export the transitions of the model to a file, in a row form
-		mPrism.exportTransToFile(true, Prism.EXPORT_ROWS, traOutputFile);
+		// Export explicit model files: .sta, .tra, .lab, and .srew/.trew
+		ModulesFile modulesFile = exportExplicitModelFiles(mdpStr, outputExplicitModelPointer);
 
 		if (isMultiObjectiveProperty(propertyStr)) {
 			// For multi-objective strategy synthesis
@@ -167,9 +159,6 @@ public class PrismAPIWrapper {
 			mPrism.setExportProductStates(true);
 			mPrism.setExportProductStatesFilename(prodStaOutputFile.getPath());
 		}
-
-		// Export the labels (including "init" and "deadlock" -- these are important!) of the model to a file
-		mPrism.exportLabelsToFile(null, Prism.EXPORT_PLAIN, labOutputFile);
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
@@ -186,18 +175,6 @@ public class PrismAPIWrapper {
 		// Select PRISM MDP solution method for multi-objective properties
 		PrismMDPMultiSolutionMethod mdpMultiSolutionMethod = mPrismConfig.getMDPMultiSolutionMethod();
 		mPrism.getSettings().set(PrismSettings.PRISM_MDP_MULTI_SOLN_METHOD, mdpMultiSolutionMethod.toString());
-
-		// Export the reward structure to a file
-		// Note: This needs to be set after setting PRISM engine
-		if (prismRewardType == PrismRewardType.STATE_REWARD) {
-			File srewOutputFile = outputExplicitModelPointer.getStateRewardsFile();
-			mPrism.exportStateRewardsToFile(Prism.EXPORT_PLAIN, srewOutputFile);
-		} else if (prismRewardType == PrismRewardType.TRANSITION_REWARD
-				&& mPrismConfig.getEngine() != PrismEngine.EXPLICIT) {
-			// Export of transition rewards not yet supported by explicit engine
-			File trewOutputFile = outputExplicitModelPointer.getTransitionRewardsFile();
-			mPrism.exportTransRewardsToFile(true, Prism.EXPORT_PLAIN, trewOutputFile);
-		}
 
 		return queryPropertyHelper(modulesFile, propertyStr, 0);
 	}
@@ -264,11 +241,16 @@ public class PrismAPIWrapper {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr)
+	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr, PrismRewardType prismRewardType)
 			throws PrismException, ResultParsingException {
 		// Parse and load a PRISM DTMC model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
+
+		if (prismRewardType == PrismRewardType.TRANSITION_REWARD) {
+			// Explicit engine does not yet handle transition rewards for D/CTMCs
+			switchEngineFromExplicitToSparse();
+		}
 
 		return queryPropertyHelper(modulesFile, propertyStr, 0);
 	}
@@ -284,11 +266,16 @@ public class PrismAPIWrapper {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public Map<String, Double> queryPropertiesFromDTMC(String dtmcModelStr, String propertiesStr)
-			throws PrismException, ResultParsingException {
+	public Map<String, Double> queryPropertiesFromDTMC(String dtmcModelStr, String propertiesStr,
+			PrismRewardType prismRewardType) throws PrismException, ResultParsingException {
 		// Parse and load a PRISM DTMC model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
+
+		if (prismRewardType == PrismRewardType.TRANSITION_REWARD) {
+			// Explicit engine does not yet handle transition rewards for D/CTMCs
+			switchEngineFromExplicitToSparse();
+		}
 
 		return queryPropertiesHelper(modulesFile, propertiesStr);
 	}
@@ -354,5 +341,13 @@ public class PrismAPIWrapper {
 
 	private boolean isMultiObjectiveProperty(String propertyStr) {
 		return propertyStr.startsWith("multi");
+	}
+
+	private void switchEngineFromExplicitToSparse() throws PrismException {
+		if (mPrismConfig.getEngine() == PrismEngine.EXPLICIT) {
+			// Switch to sparse engine
+			PrismEngine sparseEngine = PrismEngine.SPARSE;
+			mPrism.getSettings().set(PrismSettings.PRISM_ENGINE, sparseEngine.toString());
+		}
 	}
 }

@@ -252,7 +252,7 @@ public class PrismConnector {
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
 		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
-		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
+		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty, mSettings.getPrismRewardType());
 		mCachedTotalCosts.put(policy, totalCost);
 	}
 
@@ -295,7 +295,8 @@ public class PrismConnector {
 		}
 		String propertiesStr = builder.toString();
 
-		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr);
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr,
+				mSettings.getPrismRewardType());
 
 		// Cache the QA values of the policy
 		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
@@ -361,7 +362,8 @@ public class PrismConnector {
 		}
 		String propsStr = propsStrBuilder.toString();
 
-		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithEventCounters, propsStr);
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithEventCounters, propsStr,
+				mSettings.getPrismRewardType());
 
 		EventBasedQAValue<E> eventBasedQAValue = new EventBasedQAValue<>();
 		for (Entry<E, String> entry : eventQueryProps.entrySet()) {

@@ -120,7 +120,7 @@ public class MobileRobotXDTMCTest {
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
 				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
-				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
+				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query, PrismRewardType.STATE_REWARD);
 
 				SimpleConsoleLogger.log("Query Property", query, true);
 				SimpleConsoleLogger.log("Expected total " + qFunction.getName(), result, true);
@@ -175,8 +175,8 @@ public class MobileRobotXDTMCTest {
 		PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
-		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(
-				outputExplicitModelPointer, mdpTranslator.getValueEncodingScheme());
+		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(outputExplicitModelPointer,
+				mdpTranslator.getValueEncodingScheme());
 
 		// Close down PRISM
 		prismAPI.terminatePrism();

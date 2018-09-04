@@ -148,7 +148,7 @@ public class ConstrainedMDPSolver {
 			}
 		}
 
-		assert sanityCheckDeterministicPolicy(policy);
+		assert consistencyCheckDeterministicPolicy(policy);
 		return policy;
 	}
 
@@ -189,7 +189,7 @@ public class ConstrainedMDPSolver {
 		addConstraintsA(n, m, xVars, model);
 		addConstraintsB(n, m, xVars, model);
 		addConstraintsC(n, m, deltaVars, model);
-		addConstraintsD(n, m, xVars, deltaVars, model);
+		double upperBoundOM = addConstraintsD(n, m, xVars, deltaVars, model);
 
 		// Solve optimization problem for x_ia and Delta_ia
 		model.optimize();
@@ -202,7 +202,12 @@ public class ConstrainedMDPSolver {
 		model.dispose();
 		env.dispose();
 
-		assert sanityCheckResults(xResults, deltaResults);
+		assert consistencyCheckConstraintsA(n, m, xResults);
+		assert consistencyCheckConstraintsB(n, m, xResults);
+		assert consistencyCheckConstraintsC(n, m, deltaResults);
+		assert consistencyCheckConstraintsD(n, m, xResults, deltaResults, upperBoundOM);
+
+		assert consistencyCheckResults(xResults, deltaResults);
 
 		return xResults;
 	}
@@ -388,7 +393,7 @@ public class ConstrainedMDPSolver {
 	 * @param model
 	 * @throws GRBException
 	 */
-	private void addConstraintsD(int n, int m, GRBVar[][] xVars, GRBVar[][] deltaVars, GRBModel model)
+	private double addConstraintsD(int n, int m, GRBVar[][] xVars, GRBVar[][] deltaVars, GRBModel model)
 			throws GRBException {
 		// Constraints: x_ia / X <= Delta_ia, for all i, a
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
@@ -411,34 +416,42 @@ public class ConstrainedMDPSolver {
 				}
 			}
 		}
+
+		return upperBoundOM;
 	}
 
 	/**
 	 * 
 	 * @param xResults
 	 * @param deltaResults
-	 * @return Check whether the property Delta_ia = 1 <=> x_ia > 0 holds
+	 * @return Check, for all states i such that sum_a(x_ia) > 0, whether the property Delta_ia = 1 <=> x_ia > 0 holds
 	 */
-	private boolean sanityCheckResults(double[][] xResults, double[][] deltaResults) {
+	private boolean consistencyCheckResults(double[][] xResults, double[][] deltaResults) {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
 		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
-				if (mExplicitMDP.isActionApplicable(i, a)) {
-					boolean property = (deltaResults[i][a] == 1 && xResults[i][a] > 0)
-							|| (deltaResults[i][a] == 0 && xResults[i][a] == 0);
+			if (hasNonZeroProbVisited(i, xResults)) {
+				// sum_a(x_ia) > 0
 
-					if (!property) {
+				for (int a = 0; a < m; a++) {
+					// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+					if (mExplicitMDP.isActionApplicable(i, a)) {
 						double deltaResult = deltaResults[i][a];
 						double xResult = xResults[i][a];
-						return false;
+
+						if (!checkResultsConsistency(deltaResult, xResult)) {
+							return false;
+						}
 					}
 				}
 			}
 		}
 		return true;
+	}
+
+	private boolean checkResultsConsistency(double deltaResult, double xResult) {
+		return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0);
 	}
 
 	/**
@@ -446,14 +459,15 @@ public class ConstrainedMDPSolver {
 	 * @param policy
 	 * @return Check whether the policy is deterministic
 	 */
-	private boolean sanityCheckDeterministicPolicy(double[][] policy) {
+	private boolean consistencyCheckDeterministicPolicy(double[][] policy) {
 		for (int i = 0; i < policy.length; i++) {
 			for (int a = 0; a < policy[0].length; a++) {
 				// Exclude any pi_ia term when action a is not applicable in state i
 				if (mExplicitMDP.isActionApplicable(i, a)) {
+					double pi = policy[i][a];
+
 					// Check for any randomized decision
-					if (policy[i][a] > 0 && policy[i][a] < 1) {
-						double p = policy[i][a];
+					if (pi > 0 && pi < 1) {
 						return false;
 					}
 				}
@@ -462,7 +476,162 @@ public class ConstrainedMDPSolver {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param i
+	 * @param xResults
+	 * @return Whether the state i has non-zero probability of being visited
+	 */
+	private boolean hasNonZeroProbVisited(int i, double[][] xResults) {
+		int m = mExplicitMDP.getNumActions();
+
+		// sum_a(x_ia)
+		double probVisited = 0;
+		for (int a = 0; a < m; a++) {
+			if (mExplicitMDP.isActionApplicable(i, a)) {
+				probVisited += xResults[i][a];
+			}
+		}
+
+		// Check whether sum_a(x_ia) > 0
+		return probVisited > 0;
+	}
+
 	private boolean isTransitionCost() {
 		return mExplicitMDP.getCostType() == CostType.TRANSITION_COST;
+	}
+
+	private boolean consistencyCheckConstraintsA(int n, int m, double[][] xResults) {
+		// Initial state distribution
+		double[] alpha = new double[n];
+		int iniState = mExplicitMDP.getInitialState();
+		alpha[iniState] = 1.0;
+
+		double gamma = ExplicitMDP.DEFAULT_DISCOUNT_FACTOR;
+
+		// Constraints: sum_a(x_ja) - gamma * sum_i,a(x_ia * p_iaj) = alpha_j, for all j
+		for (int j = 0; j < n; j++) {
+			double sum = 0;
+
+			// sum_a(x_ja)
+			for (int a = 0; a < m; a++) {
+				// Exclude any x_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(j, a)) {
+					sum += xResults[j][a];
+				}
+			}
+
+			// - gamma * sum_i,a(x_ia * p_iaj)
+			double coeff = -1 * gamma;
+			for (int i = 0; i < n; i++) {
+				for (int a = 0; a < m; a++) {
+					// Exclude any x_ia term when action a is not applicable in state i
+					if (mExplicitMDP.isActionApplicable(i, a)) {
+						double p = mExplicitMDP.getTransitionProbability(i, a, j);
+						double termCoeff = coeff * p;
+
+						// - gamma * p_iaj * x_ia
+						sum += termCoeff * xResults[i][a];
+					}
+				}
+			}
+
+			// GRB FeasibilityTol
+			if (Math.abs(sum - alpha[j]) > 1e-6) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the results of x_ia satisfy the constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all
+	 * k.
+	 * 
+	 * @param n
+	 * @param m
+	 * @param xResults
+	 * @return Whether the results of x_ia satisfy: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k
+	 */
+	private boolean consistencyCheckConstraintsB(int n, int m, double[][] xResults) {
+		// Non-objective cost functions start at index 1 in ExplicitMDP
+		for (int k = 1; k < mUpperBoundConstraints.length; k++) {
+			if (mUpperBoundConstraints[k] == null) {
+				// Skip -- there is no constraint on this cost function k
+				continue;
+			}
+
+			double sum = 0;
+			for (int i = 0; i < n; i++) {
+				for (int a = 0; a < m; a++) {
+					if (mExplicitMDP.isActionApplicable(i, a)) {
+						// Transition k-cost: c^k_ia
+						// OR
+						// State k-cost: c^k_i
+						double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
+								: mExplicitMDP.getStateCost(k, i);
+
+						// c^k_ia * x_ia
+						// OR
+						// c^k_i * x_ia
+						sum += stepCost * xResults[i][a];
+					}
+				}
+			}
+
+			if (sum > mUpperBoundConstraints[k]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the results of Delta_ia satisfy the constraints: sum_a(Delta_ia) <= 1, for all i.
+	 * 
+	 * @param n
+	 * @param m
+	 * @param deltaResults
+	 * @return Whether the results of Delta_ia satisfy: sum_a(Delta_ia) <= 1, for all i
+	 */
+	private boolean consistencyCheckConstraintsC(int n, int m, double[][] deltaResults) {
+		for (int i = 0; i < n; i++) {
+			double sum = 0;
+			for (int a = 0; a < m; a++) {
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					sum += deltaResults[i][a];
+				}
+			}
+			if (sum > 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the results of x_ia and Delta_ia satisfy the constraints: x_ia / X <= Delta_ia, for all i, a.
+	 * 
+	 * @param n
+	 * @param m
+	 * @param xResults
+	 * @param deltaResults
+	 * @param upperBoundOM
+	 * @return Whether the results of x_ia and Delta_ia satisfy: x_ia / X <= Delta_ia, for all i, a
+	 */
+	private boolean consistencyCheckConstraintsD(int n, int m, double[][] xResults, double[][] deltaResults,
+			double upperBoundOM) {
+		for (int i = 0; i < n; i++) {
+			for (int a = 0; a < m; a++) {
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					double xResult = xResults[i][a];
+					double deltaResult = deltaResults[i][a];
+					if (xResult / upperBoundOM > deltaResult) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
 	}
 }

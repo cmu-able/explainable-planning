@@ -8,7 +8,7 @@ import java.util.Set;
 public class ExplicitMDP {
 
 	public static final int OBJECTIVE_FUNCTION_INDEX = 0;
-	static final double DEFAULT_DISCOUNT_FACTOR = 0.2;
+	static final double DEFAULT_DISCOUNT_FACTOR = 0.9;
 
 	/*
 	 * Cached hashCode -- Effective Java

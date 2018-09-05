@@ -37,13 +37,14 @@ public class PrismDTMCTranslator {
 
 	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards, PrismRewardType prismRewardType) {
 		mXDTMC = xdtmc;
+		XMDP xmdp = xdtmc.getXMDP();
 		if (threeParamRewards) {
-			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace(), xdtmc.getXMDP().getActionSpace());
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
+					xmdp.getCostFunction());
 		} else {
-			mEncodings = new ValueEncodingScheme(xdtmc.getXMDP().getStateSpace());
+			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
 		}
-		mRewardTranslator = new PrismRewardTranslator(xdtmc.getXMDP().getTransitionFunction(), mEncodings,
-				prismRewardType);
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, prismRewardType);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mHelper = new PrismTranslatorHelper(mEncodings);
 	}

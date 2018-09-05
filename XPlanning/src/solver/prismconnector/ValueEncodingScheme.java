@@ -10,6 +10,7 @@ import language.exceptions.ActionNotFoundException;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
+import language.mdp.QSpace;
 import language.mdp.StateSpace;
 import language.metrics.IQFunction;
 import language.objectives.IAdditiveCostFunction;
@@ -38,21 +39,24 @@ public class ValueEncodingScheme {
 	private Map<String, Map<Boolean, ? extends IStateVarBoolean>> mBooleanVarLookups = new HashMap<>();
 	private Map<String, Map<Integer, ? extends IStateVarInt>> mIntVarLookups = new HashMap<>();
 	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
-	private QFunctionEncodingScheme mQFunctionEncoding = new QFunctionEncodingScheme();
+	private QFunctionEncodingScheme mQFunctionEncoding;
 	private StateSpace mStateSpace;
 	private ActionSpace mActionSpace;
 	private boolean mThreeParamRewards;
 
-	public ValueEncodingScheme(StateSpace stateSpace) {
+	public ValueEncodingScheme(StateSpace stateSpace, QSpace qSpace, IAdditiveCostFunction objectiveFunction) {
 		mStateSpace = stateSpace;
 		mThreeParamRewards = false;
+		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
 		encodeStates(stateSpace);
 	}
 
-	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace) {
+	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace, QSpace qSpace,
+			IAdditiveCostFunction objectiveFunction) {
 		mStateSpace = stateSpace;
 		mActionSpace = actionSpace;
 		mThreeParamRewards = true;
+		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
 		encodeStates(stateSpace);
 		encodeActions(actionSpace);
 	}
@@ -119,14 +123,6 @@ public class ValueEncodingScheme {
 			mapping.put(value.getValue(), value);
 		}
 		return mapping;
-	}
-
-	void appendCostFunction(IAdditiveCostFunction objectiveFunction) {
-		mQFunctionEncoding.appendCostFunction(objectiveFunction);
-	}
-
-	void appendQFunction(IQFunction<?, ?> qFunction) {
-		mQFunctionEncoding.appendQFunction(qFunction);
 	}
 
 	public boolean isThreeParamRewards() {

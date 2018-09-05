@@ -2,6 +2,7 @@ package solver.prismconnector;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,10 +65,17 @@ public class PrismRewardTranslatorHelper {
 	 */
 	String buildRewardStructures(TransitionFunction transFunction,
 			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions) throws XMDPException {
+		// Assume that the input QFunctions are all of the QFunctions in XMDP
+
+		// This is to ensure that: the order of which the reward structures representing the QA functions are written to
+		// the model correspond to the predefined reward-structure-index of each QA function
+		List<IQFunction<IAction, ITransitionStructure<IAction>>> orderedQFunctions = mEncodings
+				.getQFunctionEncodingScheme().getOrderedQFunctions();
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Quality-Attribute Functions\n\n");
 		boolean first = true;
-		for (IQFunction<?, ?> qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : orderedQFunctions) {
 			if (!first) {
 				builder.append("\n\n");
 			} else {
@@ -78,10 +86,6 @@ public class PrismRewardTranslatorHelper {
 			builder.append("\n\n");
 			String rewards = buildRewardStructure(transFunction, qFunction);
 			builder.append(rewards);
-
-			// Record the order of which the reward structures representing the QA functions are written to the model
-			// To keep track of the reward-structure-index corresponding to each QA function
-			mEncodings.appendQFunction(qFunction);
 		}
 		return builder.toString();
 	}
@@ -89,6 +93,8 @@ public class PrismRewardTranslatorHelper {
 	/**
 	 * Build a state-based reward structure for a given objective function. This can be the cost function of MDP or an
 	 * arbitrary objective function.
+	 * 
+	 * The objective function must be the first reward structure in any PRISM MDP translation.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
@@ -138,12 +144,6 @@ public class PrismRewardTranslatorHelper {
 		builder.append(artificialReward);
 		builder.append("\n");
 		builder.append(END_REWARDS);
-
-		// Record the order of which the reward structures representing the objective (cost) functions are written to
-		// the model
-		// To keep track of the reward-structure-index corresponding to each objective function
-		mEncodings.appendCostFunction(objectiveFunction);
-
 		return builder.toString();
 	}
 

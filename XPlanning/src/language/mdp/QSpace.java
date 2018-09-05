@@ -40,6 +40,10 @@ public class QSpace implements Iterable<IQFunction<IAction, ITransitionStructure
 		return qFunctionType.cast(qFunction);
 	}
 
+	public int getNumQFunctions() {
+		return mQFunctions.size();
+	}
+
 	@Override
 	public Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iterator() {
 		return new Iterator<IQFunction<IAction, ITransitionStructure<IAction>>>() {

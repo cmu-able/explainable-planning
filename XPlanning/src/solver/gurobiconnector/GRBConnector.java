@@ -10,6 +10,7 @@ import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
+import solver.common.ExplicitMDP;
 import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.InitialStateParsingException;

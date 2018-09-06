@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import solver.gurobiconnector.CostType;
-import solver.gurobiconnector.ExplicitMDP;
+import solver.common.CostType;
+import solver.common.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.exceptions.InitialStateParsingException;

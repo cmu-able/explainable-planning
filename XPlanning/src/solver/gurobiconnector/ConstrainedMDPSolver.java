@@ -16,6 +16,8 @@ import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
 import language.qfactors.IAction;
+import solver.common.CostType;
+import solver.common.ExplicitMDP;
 import solver.prismconnector.QFunctionEncodingScheme;
 
 public class ConstrainedMDPSolver {

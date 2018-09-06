@@ -22,6 +22,11 @@ public class PrismConnectorSettings {
 		mPrismRewardType = prismRewardType;
 	}
 
+	/**
+	 * 
+	 * @return Whether to use PRISM explicit model (.sta, .tra, .lab, .srew/.trew files) to perform numerical query
+	 *         (e.g., for QA values)
+	 */
 	public boolean useExplicitModel() {
 		return mUseExplicitModel;
 	}

@@ -7,11 +7,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
-import language.mdp.ActionSpace;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
 import language.mdp.Effect;
@@ -35,7 +33,6 @@ import language.qfactors.StateVarDefinition;
 public class PrismTranslatorHelper {
 
 	static final String INDENT = "  ";
-	public static final String SRC_SUFFIX = "Src";
 
 	private ValueEncodingScheme mEncodings;
 
@@ -77,27 +74,6 @@ public class PrismTranslatorHelper {
 		return builder.toString();
 	}
 
-	String buildConstsDecl(ActionSpace actionSpace) throws ActionNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		for (ActionDefinition<IAction> actionDef : actionSpace) {
-			String actionTypeName = actionDef.getName();
-			builder.append("// Possible instances of action ");
-			builder.append(actionTypeName);
-			builder.append("\n");
-			for (IAction action : actionDef.getActions()) {
-				Integer encodedValue = mEncodings.getEncodedIntValue(action);
-				builder.append("const int ");
-				builder.append(PrismTranslatorUtils.sanitizeNameString(action.getName()));
-				builder.append(" = ");
-				builder.append(encodedValue);
-				builder.append(";");
-				builder.append("\n");
-			}
-			builder.append("\n");
-		}
-		return builder.toString();
-	}
-
 	/**
 	 * 
 	 * @param goal
@@ -105,7 +81,7 @@ public class PrismTranslatorHelper {
 	 * @throws VarNotFoundException
 	 */
 	String buildGoalDecl(StateVarTuple goal) throws VarNotFoundException {
-		String goalExpr = buildExpression(goal);
+		String goalExpr = PrismTranslatorUtils.buildExpression(goal, mEncodings);
 		StringBuilder builder = new StringBuilder();
 		builder.append("formula goal = ");
 		builder.append(goalExpr);
@@ -114,162 +90,56 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
+	 * Build a helper module that handles cycles of choosing action, reward computation, checking if the goal is reached
+	 * for termination.
 	 * 
-	 * @param stateSpace
-	 * @param iniState
 	 * @param actionPSOs
 	 * @param helperActionFilter
-	 * @return A helper module that copies values of the variables in the source state when an action is taken, and
-	 *         saves the value of that action
-	 * @throws VarNotFoundException
-	 * @throws ActionNotFoundException
+	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
+	 *         reached for termination
 	 */
-	String buildHelperModule(StateSpace stateSpace, StateVarTuple iniState, Iterable<FactoredPSO<IAction>> actionPSOs,
-			HelperModuleActionFilter helperActionFilter) throws VarNotFoundException, ActionNotFoundException {
-		String helperVarsDecl = buildHelperModuleVarsDecl(stateSpace, iniState);
-		String copyCmds = buildHelperCopyCommands(actionPSOs, helperActionFilter, SRC_SUFFIX);
-		String synchCmds = buildHelperSynchCommands();
-
+	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, HelperModuleActionFilter helperActionFilter) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
-		builder.append(helperVarsDecl);
+		builder.append(INDENT);
+		builder.append("barrier : bool init false;");
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append("computeGo : bool init false;");
 		builder.append("\n\n");
-		builder.append(copyCmds);
-		builder.append("\n\n");
-		builder.append(synchCmds);
-		builder.append("\n");
-		builder.append("endmodule");
-		return builder.toString();
-	}
 
-	/**
-	 * 
-	 * @param stateSpace
-	 * @param iniState
-	 * @return Declarations of all helper variables of the helper module
-	 * @throws VarNotFoundException
-	 */
-	String buildHelperModuleVarsDecl(StateSpace stateSpace, StateVarTuple iniState) throws VarNotFoundException {
-		String srcVarsDecl = buildModuleVarsDecl(stateSpace, iniState, SRC_SUFFIX);
-		String actionDecl = "action : [-1.." + mEncodings.getMaximumEncodedIntAction() + "] init -1;";
-		String readyToCopyDecl = "readyToCopy : bool init true;";
-		String barrierDecl = "barrier : bool init false;";
-
-		StringBuilder builder = new StringBuilder();
-		builder.append(srcVarsDecl);
-		builder.append("\n");
-		builder.append(INDENT);
-		builder.append(actionDecl);
-		builder.append("\n");
-		builder.append(INDENT);
-		builder.append(readyToCopyDecl);
-		builder.append("\n");
-		builder.append(INDENT);
-		builder.append(barrierDecl);
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param actionPSOs
-	 * @param helperActionFilter
-	 * @param nameSuffix
-	 * @return [{actionName}] readyToCopy & !barrier -> ({varName{Suffix}}'={varName}) & ... & (action'={encoded action
-	 *         value}) & (readyToCopy'=false) & (barrier'=true); ...
-	 * @throws ActionNotFoundException
-	 */
-	String buildHelperCopyCommands(Iterable<FactoredPSO<IAction>> actionPSOs,
-			HelperModuleActionFilter helperActionFilter, String nameSuffix) throws ActionNotFoundException {
-		StringBuilder builder = new StringBuilder();
 		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
-			for (IAction action : actionDef.getActions()) {
 
+			for (IAction action : actionDef.getActions()) {
 				if (!helperActionFilter.filterAction(action)) {
 					// Skip actions that are not present in the model (in the case of DTMC)
 					continue;
 				}
 
+				String sanitizedActionName = PrismTranslatorUtils.sanitizeNameString(action.getName());
 				builder.append(INDENT);
 				builder.append("[");
-				builder.append(PrismTranslatorUtils.sanitizeNameString(action.getName()));
+				builder.append(sanitizedActionName);
 				builder.append("]");
-				builder.append(" readyToCopy & !barrier -> ");
-
-				Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
-				boolean firstClass = true;
-				for (EffectClass effectClass : effectClasses) {
-					String effectCopyUpdate = buildPreEffectCopyUpdate(effectClass, nameSuffix);
-					if (!firstClass) {
-						builder.append(" & ");
-					} else {
-						firstClass = false;
-					}
-					builder.append(effectCopyUpdate);
-				}
-				builder.append(" & ");
-				String actionCopyUpdate = "(action'=" + mEncodings.getEncodedIntValue(action) + ")";
-				builder.append(actionCopyUpdate);
-				builder.append(" & (readyToCopy'=false) & (barrier'=true);");
+				builder.append(" !computeGo & !barrier -> (computeGo'=true) & (barrier'=true);");
 				builder.append("\n");
 			}
 		}
-		String computeCmd = "[compute] !readyToCopy & barrier -> (readyToCopy'=true);";
+
 		builder.append("\n");
 		builder.append(INDENT);
-		builder.append(computeCmd);
-		return builder.toString();
-	}
-
-	String buildHelperSynchCommands() {
-		StringBuilder builder = new StringBuilder();
-		String nextCmd = "[next] readyToCopy & barrier & !goal -> (barrier'=false);";
-		String endCmd = "[end] readyToCopy & barrier & goal -> true;";
-		builder.append(INDENT);
-		builder.append(nextCmd);
+		builder.append("[compute] computeGo & barrier -> (computeGo'=false);");
 		builder.append("\n");
 		builder.append(INDENT);
-		builder.append(endCmd);
+		builder.append("[next] !computeGo & barrier & !goal -> (barrier'=false);");
+		builder.append("\n");
+		builder.append(INDENT);
+		builder.append("[end] !computeGo & barrier & goal -> true;");
+		builder.append("\n");
+		builder.append("endmodule");
 		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param effectClass
-	 * @param nameSuffix
-	 * @return ({varName{Suffix}}'={varName}) & ...
-	 */
-	String buildPreEffectCopyUpdate(EffectClass effectClass, String nameSuffix) {
-		StringBuilder builder = new StringBuilder();
-		boolean firstVar = true;
-		for (StateVarDefinition<IStateVarValue> varDef : effectClass) {
-			if (!firstVar) {
-				builder.append(" & ");
-			} else {
-				firstVar = false;
-			}
-			builder.append("(");
-			builder.append(varDef.getName());
-			builder.append(nameSuffix);
-			builder.append("'");
-			builder.append("=");
-			builder.append(varDef.getName());
-			builder.append(")");
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param moduleVarSpace
-	 *            : Variables of the module
-	 * @param
-	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value}; ...
-	 * @throws VarNotFoundException
-	 */
-	String buildModuleVarsDecl(StateSpace moduleVarSpace, StateVarTuple iniState) throws VarNotFoundException {
-		return buildModuleVarsDecl(moduleVarSpace, iniState, "");
 	}
 
 	/**
@@ -278,13 +148,10 @@ public class PrismTranslatorHelper {
 	 *            : Variables of the module
 	 * @param iniState
 	 *            : Initial state
-	 * @param nameSuffix
-	 *            : Suffix for each variable's name
-	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value}; ...
+	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value}; ...
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleVarsDecl(StateSpace moduleVarSpace, StateVarTuple iniState, String nameSuffix)
-			throws VarNotFoundException {
+	String buildModuleVarsDecl(StateSpace moduleVarSpace, StateVarTuple iniState) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVarDefinition<IStateVarValue> stateVarDef : moduleVarSpace) {
@@ -293,12 +160,12 @@ public class PrismTranslatorHelper {
 			if (iniValue instanceof IStateVarBoolean) {
 				StateVarDefinition<IStateVarBoolean> boolVarDef = castTypeStateVarDef(stateVarDef,
 						IStateVarBoolean.class);
-				varDecl = buildBooleanModuleVarDecl(boolVarDef, nameSuffix, (IStateVarBoolean) iniValue);
+				varDecl = buildBooleanModuleVarDecl(boolVarDef, (IStateVarBoolean) iniValue);
 			} else if (iniValue instanceof IStateVarInt) {
 				StateVarDefinition<IStateVarInt> intVarDef = castTypeStateVarDef(stateVarDef, IStateVarInt.class);
-				varDecl = buildIntModuleVarDecl(intVarDef, nameSuffix, (IStateVarInt) iniValue);
+				varDecl = buildIntModuleVarDecl(intVarDef, (IStateVarInt) iniValue);
 			} else {
-				varDecl = buildModuleVarDecl(stateVarDef, nameSuffix, iniValue);
+				varDecl = buildModuleVarDecl(stateVarDef, iniValue);
 			}
 
 			if (!first) {
@@ -316,18 +183,16 @@ public class PrismTranslatorHelper {
 	 * Build a variable declaration of a module, where the variable type is unsupported by PRISM language.
 	 * 
 	 * @param varDef
-	 * @param nameSuffix
 	 * @param iniValue
-	 * @return {varName{Suffix}} : [0..{maximum encoded int}] init {encoded int initial value};
+	 * @return {varName} : [0..{maximum encoded int}] init {encoded int initial value};
 	 * @throws VarNotFoundException
 	 */
-	String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, String nameSuffix, IStateVarValue iniValue)
+	String buildModuleVarDecl(StateVarDefinition<IStateVarValue> varDef, IStateVarValue iniValue)
 			throws VarNotFoundException {
 		Integer maxEncodedValue = mEncodings.getMaximumEncodedIntValue(varDef);
 		Integer encodedIniValue = mEncodings.getEncodedIntValue(varDef, iniValue);
 		StringBuilder builder = new StringBuilder();
 		builder.append(varDef.getName());
-		builder.append(nameSuffix);
 		builder.append(" : [0..");
 		builder.append(maxEncodedValue);
 		builder.append("] init ");
@@ -339,15 +204,12 @@ public class PrismTranslatorHelper {
 	/**
 	 * 
 	 * @param boolVarDef
-	 * @param nameSuffix
 	 * @param iniValBoolean
-	 * @return {varName{Suffix}} : bool init {initial value};
+	 * @return {varName} : bool init {initial value};
 	 */
-	String buildBooleanModuleVarDecl(StateVarDefinition<IStateVarBoolean> boolVarDef, String nameSuffix,
-			IStateVarBoolean iniValBoolean) {
+	String buildBooleanModuleVarDecl(StateVarDefinition<IStateVarBoolean> boolVarDef, IStateVarBoolean iniValBoolean) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(boolVarDef.getName());
-		builder.append(nameSuffix);
 		builder.append(" : bool init ");
 		builder.append(iniValBoolean.getValue() ? "true" : "false");
 		builder.append(";");
@@ -357,15 +219,12 @@ public class PrismTranslatorHelper {
 	/**
 	 * 
 	 * @param intVarDef
-	 * @param nameSuffix
 	 * @param iniValInt
-	 * @return {varName{Suffix}} : [{min}..{max}] init {initial value};
+	 * @return {varName} : [{min}..{max}] init {initial value};
 	 */
-	String buildIntModuleVarDecl(StateVarDefinition<IStateVarInt> intVarDef, String nameSuffix,
-			IStateVarInt iniValInt) {
+	String buildIntModuleVarDecl(StateVarDefinition<IStateVarInt> intVarDef, IStateVarInt iniValInt) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(intVarDef.getName());
-		builder.append(nameSuffix);
 		IStateVarInt lowerBound = Collections.max(intVarDef.getPossibleValues());
 		IStateVarInt uppberBound = Collections.max(intVarDef.getPossibleValues());
 		builder.append(" : [");
@@ -449,12 +308,9 @@ public class PrismTranslatorHelper {
 			builder.append(noCommandModule);
 		}
 
-		if (mEncodings.isThreeParamRewards()) {
-			String helperModule = buildHelperModule(stateSpace, iniState, actionPSOs, helperActionFilter);
-			builder.append("\n\n");
-			builder.append(helperModule);
-		}
-
+		String helperModule = buildHelperModule(actionPSOs, helperActionFilter);
+		builder.append("\n\n");
+		builder.append(helperModule);
 		return builder.toString();
 	}
 
@@ -544,7 +400,7 @@ public class PrismTranslatorHelper {
 	 */
 	String buildModuleCommand(IAction action, IStateVarTuple predicate, ProbabilisticEffect probEffect)
 			throws VarNotFoundException {
-		String guard = buildExpression(predicate);
+		String guard = PrismTranslatorUtils.buildExpression(predicate, mEncodings);
 		String updates = buildUpdates(probEffect);
 
 		StringBuilder builder = new StringBuilder();
@@ -556,37 +412,6 @@ public class PrismTranslatorHelper {
 		builder.append(" -> ");
 		builder.append(updates);
 		builder.append(";");
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param predicate
-	 * @return {varName_1}={value OR encoded int value} & ... & {varName_m}={value OR encoded int value}
-	 * @throws VarNotFoundException
-	 */
-	String buildExpression(IStateVarTuple predicate) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		boolean first = true;
-		for (StateVar<IStateVarValue> var : predicate) {
-			String varName = var.getName();
-			IStateVarValue value = var.getValue();
-
-			if (!first) {
-				builder.append(" & ");
-			} else {
-				first = false;
-			}
-			builder.append(varName);
-			builder.append("=");
-
-			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
-				builder.append(value);
-			} else {
-				Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), value);
-				builder.append(encodedValue);
-			}
-		}
 		return builder.toString();
 	}
 

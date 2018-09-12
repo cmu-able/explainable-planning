@@ -261,6 +261,7 @@ public class PrismRewardTranslatorHelper {
 					double expectedValue = computeExpectedTransitionValue(transStructure, actionPSO, evaluator, srcVars,
 							applicableDiscrVars, action);
 					String rewardItem = buildRewardItem(srcVars, applicableDiscrVars, action, expectedValue);
+					builder.append(PrismTranslatorUtils.INDENT);
 					builder.append(rewardItem);
 					builder.append("\n");
 				}
@@ -344,7 +345,7 @@ public class PrismRewardTranslatorHelper {
 	 * @return [compute] true : {value};
 	 */
 	String buildArtificialRewardItem(double value) {
-		return PrismTranslatorHelper.INDENT + "[compute] true : " + value + ";";
+		return PrismTranslatorUtils.INDENT + "[compute] true : " + value + ";";
 	}
 
 	/**

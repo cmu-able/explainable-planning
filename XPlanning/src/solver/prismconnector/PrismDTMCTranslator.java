@@ -187,7 +187,7 @@ public class PrismDTMCTranslator {
 			} else {
 				first = false;
 			}
-			builder.append(PrismTranslatorHelper.INDENT);
+			builder.append(PrismTranslatorUtils.INDENT);
 			builder.append(command);
 		}
 		return builder.toString();

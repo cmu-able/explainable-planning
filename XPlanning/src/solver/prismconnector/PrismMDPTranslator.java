@@ -122,7 +122,7 @@ public class PrismMDPTranslator {
 				} else {
 					first = false;
 				}
-				builder.append(PrismTranslatorHelper.INDENT);
+				builder.append(PrismTranslatorUtils.INDENT);
 				builder.append(command);
 			}
 		}

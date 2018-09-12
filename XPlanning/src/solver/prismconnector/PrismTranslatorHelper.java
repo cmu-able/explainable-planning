@@ -31,9 +31,6 @@ import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
 
 public class PrismTranslatorHelper {
-
-	static final String INDENT = "  ";
-
 	private ValueEncodingScheme mEncodings;
 
 	public PrismTranslatorHelper(ValueEncodingScheme encodings) {
@@ -102,10 +99,10 @@ public class PrismTranslatorHelper {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
-		builder.append(INDENT);
+		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("barrier : bool init false;");
 		builder.append("\n");
-		builder.append(INDENT);
+		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("computeGo : bool init false;");
 		builder.append("\n\n");
 
@@ -119,7 +116,7 @@ public class PrismTranslatorHelper {
 				}
 
 				String sanitizedActionName = PrismTranslatorUtils.sanitizeNameString(action.getName());
-				builder.append(INDENT);
+				builder.append(PrismTranslatorUtils.INDENT);
 				builder.append("[");
 				builder.append(sanitizedActionName);
 				builder.append("]");
@@ -129,13 +126,13 @@ public class PrismTranslatorHelper {
 		}
 
 		builder.append("\n");
-		builder.append(INDENT);
+		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("[compute] computeGo & barrier -> (computeGo'=false);");
 		builder.append("\n");
-		builder.append(INDENT);
+		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("[next] !computeGo & barrier & !goal -> (barrier'=false);");
 		builder.append("\n");
-		builder.append(INDENT);
+		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("[end] !computeGo & barrier & goal -> true;");
 		builder.append("\n");
 		builder.append("endmodule");
@@ -173,7 +170,7 @@ public class PrismTranslatorHelper {
 			} else {
 				first = false;
 			}
-			builder.append(INDENT);
+			builder.append(PrismTranslatorUtils.INDENT);
 			builder.append(varDecl);
 		}
 		return builder.toString();
@@ -381,7 +378,7 @@ public class PrismTranslatorHelper {
 			} else {
 				first = false;
 			}
-			builder.append(INDENT);
+			builder.append(PrismTranslatorUtils.INDENT);
 			builder.append("// ");
 			builder.append(actionDefName);
 			builder.append("\n");

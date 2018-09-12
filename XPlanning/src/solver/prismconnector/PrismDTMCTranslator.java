@@ -35,16 +35,11 @@ public class PrismDTMCTranslator {
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorHelper mHelper;
 
-	public PrismDTMCTranslator(XDTMC xdtmc, boolean threeParamRewards, PrismRewardType prismRewardType) {
+	public PrismDTMCTranslator(XDTMC xdtmc) {
 		mXDTMC = xdtmc;
 		XMDP xmdp = xdtmc.getXMDP();
-		if (threeParamRewards) {
-			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
-					xmdp.getCostFunction());
-		} else {
-			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
-		}
-		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, prismRewardType);
+		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
@@ -90,7 +85,6 @@ public class PrismDTMCTranslator {
 		HelperModuleActionFilter helperModuleActionFilter = action -> mXDTMC.getPolicy().containsAction(action);
 
 		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
-		String actionsDecl = mHelper.buildConstsDecl(xmdp.getActionSpace());
 		String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
 		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder, helperModuleActionFilter);
@@ -100,7 +94,6 @@ public class PrismDTMCTranslator {
 		builder.append("dtmc");
 		builder.append("\n\n");
 		builder.append(constsDecl);
-		builder.append(actionsDecl);
 		builder.append("\n");
 		builder.append(goalDecl);
 		builder.append("\n\n");

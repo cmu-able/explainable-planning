@@ -7,10 +7,6 @@ import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.IStateVarBoolean;
-import language.qfactors.IStateVarInt;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
 
 public class PrismPropertyTranslator {
 
@@ -26,7 +22,7 @@ public class PrismPropertyTranslator {
 	 *            : Goal of MDP
 	 * @param costFunction
 	 *            : Cost function of MDP
-	 * @return R{"cost"}min=? [ F {goal predicate} ]
+	 * @return R{"cost"}min=? [ F {end predicate} ]
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPCostMinProperty(StateVarTuple goal, CostFunction costFunction) throws VarNotFoundException {
@@ -34,8 +30,8 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(costFunction.getName());
 		builder.append("\"}min=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -48,7 +44,7 @@ public class PrismPropertyTranslator {
 	 *            : Objective function to be minimized, which does not contain the constrained QA function
 	 * @param constraint
 	 *            : Constraint on the expected total QA value
-	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {goal predicate} ])
+	 * @return multi(R{"{objective name}"}min=? [ C ], R{"{QA name}"}<={QA bound} [ C ], P>=1 [ F {end predicate} ])
 	 * @throws VarNotFoundException
 	 */
 	public String buildMDPConstrainedMinProperty(StateVarTuple goal, IAdditiveCostFunction objectiveFunction,
@@ -74,8 +70,8 @@ public class PrismPropertyTranslator {
 		}
 		builder.append(" [ C ], ");
 		builder.append("P>=1 [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		builder.append(")");
 		return builder.toString();
@@ -87,7 +83,7 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param costFunction
 	 *            : Cost function of the corresponding MDP
-	 * @return R{"cost"}=? [ F {goal predicate} ]
+	 * @return R{"cost"}=? [ F {end predicate} ]
 	 * @throws VarNotFoundException
 	 */
 	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction)
@@ -96,8 +92,8 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(costFunction.getName());
 		builder.append("\"}=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -108,7 +104,7 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param qFunction
 	 *            : QA function of the value to be queried
-	 * @return R{"{QA name}"}=? [ F {goal predicate} ]
+	 * @return R{"{QA name}"}=? [ F {end predicate} ]
 	 * @throws VarNotFoundException
 	 */
 	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction<?, ?> qFunction)
@@ -117,8 +113,8 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -129,7 +125,7 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param event
 	 *            : Event to be counted
-	 * @return R{"{event name}_count"}=? [ F {goal predicate} ]
+	 * @return R{"{event name}_count"}=? [ F {end predicate} ]
 	 * @throws VarNotFoundException
 	 */
 	public String buildDTMCEventCountProperty(StateVarTuple goal, IEvent<?, ?> event) throws VarNotFoundException {
@@ -138,8 +134,8 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(sanitizedEventName);
 		builder.append("_count\"}=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -148,14 +144,14 @@ public class PrismPropertyTranslator {
 	 * 
 	 * @param goal
 	 *            : Goal of the corresponding MDP
-	 * @return R=? [ F {goal predicate} ]
+	 * @return R=? [ F {end predicate} ]
 	 * @throws VarNotFoundException
 	 */
 	public String buildDTMCRawRewardQueryProperty(StateVarTuple goal) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("R=? [ F ");
-		String goalPredicate = buildGoalPredicate(goal);
-		builder.append(goalPredicate);
+		String endPredicate = buildEndPredicate(goal);
+		builder.append(endPredicate);
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -164,36 +160,15 @@ public class PrismPropertyTranslator {
 	 * 
 	 * @param goal
 	 *            : Goal of MDP
-	 * @return {varName}={value OR encoded int value} & ... & readyToCopy & barrier
+	 * @return {varName}={value OR encoded int value} & ... & !computeGo & barrier
 	 * @throws VarNotFoundException
 	 */
-	private String buildGoalPredicate(StateVarTuple goal) throws VarNotFoundException {
+	private String buildEndPredicate(StateVarTuple goal) throws VarNotFoundException {
+		String goalExpr = PrismTranslatorUtils.buildExpression(goal, mEncodings);
+
 		StringBuilder builder = new StringBuilder();
-		boolean firstVar = true;
-		for (StateVar<IStateVarValue> goalVar : goal) {
-			IStateVarValue value = goalVar.getValue();
-
-			if (!firstVar) {
-				builder.append(" & ");
-			} else {
-				firstVar = false;
-			}
-			builder.append(goalVar.getName());
-			builder.append("=");
-
-			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
-				builder.append(value);
-			} else {
-				Integer encodedValue = mEncodings.getEncodedIntValue(goalVar.getDefinition(), value);
-				builder.append(encodedValue);
-			}
-		}
-
-		if (mEncodings.isThreeParamRewards()) {
-			builder.append(" & readyToCopy");
-		}
-
-		builder.append(" & barrier");
+		builder.append(goalExpr);
+		builder.append(" & !computeGo & barrier");
 		return builder.toString();
 	}
 }

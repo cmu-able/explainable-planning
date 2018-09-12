@@ -14,18 +14,9 @@ public class PrismRewardTranslator {
 	private TransitionFunction mTransFunction;
 	private PrismRewardTranslatorHelper mRewardHelper;
 
-	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings,
-			PrismRewardType prismRewardType) {
+	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings) {
 		mTransFunction = transFunction;
-		mRewardHelper = new PrismRewardTranslatorHelper(encodings, prismRewardType);
-	}
-
-	public void setPrismRewardType(PrismRewardType prismRewardType) {
-		mRewardHelper.setPrismRewardType(prismRewardType);
-	}
-
-	public PrismRewardType getPrismRewardType() {
-		return mRewardHelper.getPrismRewardType();
+		mRewardHelper = new PrismRewardTranslatorHelper(encodings);
 	}
 
 	/**

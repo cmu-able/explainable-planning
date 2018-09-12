@@ -22,25 +22,12 @@ public class PrismMDPTranslator {
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorHelper mHelper;
 
-	public PrismMDPTranslator(XMDP xmdp, boolean threeParamRewards, PrismRewardType prismRewardType) {
+	public PrismMDPTranslator(XMDP xmdp) {
 		mXMDP = xmdp;
-		if (threeParamRewards) {
-			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
-					xmdp.getCostFunction());
-		} else {
-			mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
-		}
-		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, prismRewardType);
+		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mHelper = new PrismTranslatorHelper(mEncodings);
-	}
-
-	public void setPrismRewardType(PrismRewardType prismRewardType) {
-		mRewardTranslator.setPrismRewardType(prismRewardType);
-	}
-
-	public PrismRewardType getPrismRewardType() {
-		return mRewardTranslator.getPrismRewardType();
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
@@ -76,7 +63,6 @@ public class PrismMDPTranslator {
 		HelperModuleActionFilter helperActionFilter = action -> mXMDP.getActionSpace().contains(action);
 
 		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
-		String actionsDecl = mHelper.buildConstsDecl(mXMDP.getActionSpace());
 		String goalDecl = mHelper.buildGoalDecl(mXMDP.getGoal());
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder, helperActionFilter);
@@ -86,7 +72,6 @@ public class PrismMDPTranslator {
 		builder.append("mdp");
 		builder.append("\n\n");
 		builder.append(constsDecl);
-		builder.append(actionsDecl);
 		builder.append("\n");
 		builder.append(goalDecl);
 		builder.append("\n\n");

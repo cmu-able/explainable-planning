@@ -22,34 +22,39 @@ import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
-import solver.prismconnector.PrismTranslatorHelper;
 import solver.prismconnector.PrismTranslatorUtils;
 import solver.prismconnector.ValueEncodingScheme;
 
 public class PrismExplicitModelReader {
 
-	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(
-			Arrays.asList("action", "readyToCopy", "barrier"));
+	private static final Set<String> HELPER_VAR_NAMES = new HashSet<>(Arrays.asList("barrier", "computeGo"));
 	private static final Set<String> PRISM_VAR_NAMES = new HashSet<>(Arrays.asList("_da"));
 	private static final Set<String> HELPER_ACTIONS = new HashSet<>(Arrays.asList("compute", "next", "end"));
 	private static final Set<String> PRISM_ACTIONS = new HashSet<>(Arrays.asList("_ec"));
 	private static final String INT_REGEX = "[0-9]+";
 	private static final String BOOLEAN_REGEX = "(true|false)";
 
-	private ValueEncodingScheme mEncodings;
 	private PrismExplicitModelPointer mExplicitModelPtr;
+	private ValueEncodingScheme mEncodings;
+	private ActionSpace mActionSpace;
 
-	public PrismExplicitModelReader(PrismExplicitModelPointer explicitModelPtr, ValueEncodingScheme encodings) {
+	public PrismExplicitModelReader(PrismExplicitModelPointer explicitModelPtr, ValueEncodingScheme encodings,
+			ActionSpace actionSpace) {
 		mEncodings = encodings;
 		mExplicitModelPtr = explicitModelPtr;
+		mActionSpace = actionSpace;
+	}
+
+	public PrismExplicitModelPointer getPrismExplicitModelPointer() {
+		return mExplicitModelPtr;
 	}
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
 	}
 
-	public PrismExplicitModelPointer getPrismExplicitModelPointer() {
-		return mExplicitModelPtr;
+	public ActionSpace getActionSpace() {
+		return mActionSpace;
 	}
 
 	/**
@@ -145,10 +150,9 @@ public class PrismExplicitModelReader {
 
 			String actionName = PrismTranslatorUtils.desanitizeNameString(sanitizedActionName);
 			Integer sourceIndex = Integer.parseInt(sourceStr);
-			ActionSpace actionSpace = mEncodings.getActionSpace();
 
 			StateVarTuple sourceState = stateIndices.get(sourceIndex);
-			IAction action = actionSpace.getAction(actionName);
+			IAction action = mActionSpace.getAction(actionName);
 			policy.put(sourceState, action);
 		}
 		return policy;
@@ -180,8 +184,7 @@ public class PrismExplicitModelReader {
 	}
 
 	public static boolean isAuxiliaryVariable(String varName) {
-		return varName.endsWith(PrismTranslatorHelper.SRC_SUFFIX) || HELPER_VAR_NAMES.contains(varName)
-				|| PRISM_VAR_NAMES.contains(varName);
+		return HELPER_VAR_NAMES.contains(varName) || PRISM_VAR_NAMES.contains(varName);
 	}
 
 	public static boolean isAuxiliaryAction(String actionName) {

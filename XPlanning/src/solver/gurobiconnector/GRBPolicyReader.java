@@ -4,28 +4,24 @@ import java.io.IOException;
 import java.util.Map;
 
 import language.exceptions.VarNotFoundException;
-import language.mdp.ActionSpace;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
 import language.qfactors.IAction;
 import solver.common.ExplicitMDP;
 import solver.prismconnector.PrismTranslatorUtils;
-import solver.prismconnector.ValueEncodingScheme;
-import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class GRBPolicyReader {
 
 	private PrismExplicitModelReader mPrismExplicitModelReader;
 
-	public GRBPolicyReader(PrismExplicitModelPointer prismExplicitModelPtr, ValueEncodingScheme encodings) {
-		mPrismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr, encodings);
+	public GRBPolicyReader(PrismExplicitModelReader prismExplicitModelReader) {
+		mPrismExplicitModelReader = prismExplicitModelReader;
 	}
 
 	public Policy readPolicyFromExplicitPolicy(double[][] explicitPolicy, ExplicitMDP explicitMDP)
 			throws VarNotFoundException, IOException {
 		Map<Integer, StateVarTuple> stateIndices = mPrismExplicitModelReader.readStatesFromFile();
-		ActionSpace actionSpace = mPrismExplicitModelReader.getValueEncodingScheme().getActionSpace();
 
 		Policy policy = new Policy();
 
@@ -40,7 +36,7 @@ public class GRBPolicyReader {
 					String actionName = PrismTranslatorUtils.desanitizeNameString(sanitizedActionName);
 
 					StateVarTuple sourceState = stateIndices.get(i);
-					IAction action = actionSpace.getAction(actionName);
+					IAction action = mPrismExplicitModelReader.getActionSpace().getAction(actionName);
 					policy.put(sourceState, action);
 
 					// Move on to the next state

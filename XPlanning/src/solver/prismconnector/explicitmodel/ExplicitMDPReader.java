@@ -24,10 +24,9 @@ public class ExplicitMDPReader {
 	private PrismExplicitModelPointer mPrismModelPointer;
 	private QFunctionEncodingScheme mQFunctionEncoding;
 
-	public ExplicitMDPReader(PrismExplicitModelPointer prismExplicitModelPointer,
-			QFunctionEncodingScheme qFunctionEncoding) {
-		mPrismModelPointer = prismExplicitModelPointer;
-		mQFunctionEncoding = qFunctionEncoding;
+	public ExplicitMDPReader(PrismExplicitModelReader prismExplicitModelReader) {
+		mPrismModelPointer = prismExplicitModelReader.getPrismExplicitModelPointer();
+		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
 	}
 
 	public ExplicitMDP readExplicitMDP() throws IOException, InitialStateParsingException {

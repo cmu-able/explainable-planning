@@ -38,6 +38,16 @@ public class StateVarTuple implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean contains(IStateVarTuple stateVarTuple) {
+		for (StateVar<IStateVarValue> stateVar : stateVarTuple) {
+			if (!mStateVarMap.containsValue(stateVar)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mStateVarMap.containsKey(stateVarDef);
 	}

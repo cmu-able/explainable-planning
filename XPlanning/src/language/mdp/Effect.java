@@ -56,6 +56,11 @@ public class Effect implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean contains(IStateVarTuple stateVarTuple) {
+		return mVarTuple.contains(stateVarTuple);
+	}
+
+	@Override
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		return mVarTuple.contains(stateVarDef);
 	}

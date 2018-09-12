@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import language.exceptions.ActionNotFoundException;
@@ -14,7 +15,9 @@ import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
 import language.mdp.EffectClass;
 import language.mdp.FactoredPSO;
+import language.mdp.IActionDescription;
 import language.mdp.Precondition;
+import language.mdp.ProbabilisticEffect;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.metrics.IEvent;
@@ -25,8 +28,6 @@ import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
-import language.qfactors.IStateVarBoolean;
-import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
@@ -38,23 +39,13 @@ public class PrismRewardTranslatorHelper {
 	private static final String END_REWARDS = "endrewards";
 
 	private ValueEncodingScheme mEncodings;
-	private PrismRewardType mPrismRewardType;
 
-	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings, PrismRewardType prismRewardType) {
+	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings) {
 		mEncodings = encodings;
-		mPrismRewardType = prismRewardType;
-	}
-
-	void setPrismRewardType(PrismRewardType prismRewardType) {
-		mPrismRewardType = prismRewardType;
-	}
-
-	PrismRewardType getPrismRewardType() {
-		return mPrismRewardType;
 	}
 
 	/**
-	 * Build a list of state-based reward structures for a given set of QA functions.
+	 * Build a list of transition-reward structures for a given set of QA functions.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
@@ -91,7 +82,7 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
-	 * Build a state-based reward structure for a given objective function. This can be the cost function of MDP or an
+	 * Build a transition-reward structure for a given objective function. This can be the cost function of MDP or an
 	 * arbitrary objective function.
 	 * 
 	 * The objective function must be the first reward structure in any PRISM MDP translation.
@@ -100,19 +91,12 @@ public class PrismRewardTranslatorHelper {
 	 *            : Transition function of MDP
 	 * @param objectiveFunction
 	 *            : Objective function that this reward structure represents
-	 * @return formula compute_{objective name} = !readyToCopy; rewards "{objective name}" ... endrewards
+	 * @return rewards "{objective name}" ... endrewards
 	 * @throws XMDPException
 	 */
 	String buildRewardStructure(TransitionFunction transFunction, IAdditiveCostFunction objectiveFunction)
 			throws XMDPException {
 		StringBuilder builder = new StringBuilder();
-
-		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
-			String computeCostFormula = buildComputeRewardFormula(objectiveFunction.getName());
-			builder.append(computeCostFormula);
-			builder.append("\n\n");
-		}
-
 		builder.append(String.format(BEGIN_REWARDS, objectiveFunction.getName()));
 		builder.append("\n");
 
@@ -136,7 +120,7 @@ public class PrismRewardTranslatorHelper {
 				}
 			};
 
-			String rewardItems = buildRewardItems(objectiveFunction.getName(), domain, actionPSO, evaluator);
+			String rewardItems = buildRewardItems(domain, actionPSO, evaluator);
 			builder.append(rewardItems);
 		}
 
@@ -148,13 +132,13 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
-	 * Build a state-based reward structure for a given QA function.
+	 * Build a transition-reward structure for a given QA function.
 	 * 
 	 * @param transFunction
 	 *            : Transition function of MDP
 	 * @param qFunction
 	 *            : QA function
-	 * @return formula compute_{QA name} = !readyToCopy; rewards "{QA name}" ... endrewards
+	 * @return rewards "{QA name}" ... endrewards
 	 * @throws XMDPException
 	 */
 	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(TransitionFunction transFunction,
@@ -172,16 +156,9 @@ public class PrismRewardTranslatorHelper {
 		};
 
 		StringBuilder builder = new StringBuilder();
-
-		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
-			String computeQAFormula = buildComputeRewardFormula(rewardName);
-			builder.append(computeQAFormula);
-			builder.append("\n\n");
-		}
-
 		builder.append(String.format(BEGIN_REWARDS, rewardName));
 		builder.append("\n");
-		String rewardItems = buildRewardItems(rewardName, domain, actionPSO, evaluator);
+		String rewardItems = buildRewardItems(domain, actionPSO, evaluator);
 		builder.append(rewardItems);
 		builder.append(END_REWARDS);
 		return builder.toString();
@@ -243,43 +220,29 @@ public class PrismRewardTranslatorHelper {
 		};
 
 		StringBuilder builder = new StringBuilder();
-
-		if (mEncodings.isThreeParamRewards() && mPrismRewardType == PrismRewardType.STATE_REWARD) {
-			String computeEventCountFormula = buildComputeRewardFormula(rewardName);
-			builder.append(computeEventCountFormula);
-			builder.append("\n\n");
-		}
-
 		builder.append(String.format(BEGIN_REWARDS, rewardName));
 		builder.append("\n");
-		String rewardItems = buildRewardItems(rewardName, eventStructure, actionPSO, evaluator);
+		String rewardItems = buildRewardItems(eventStructure, actionPSO, evaluator);
 		builder.append(rewardItems);
 		builder.append(END_REWARDS);
 		return builder.toString();
 	}
 
-	String buildComputeRewardFormula(String rewardName) {
-		return "formula compute_" + rewardName + " = !readyToCopy;";
-	}
-
 	/**
-	 * Build reward items for a given evaluator. The reward values may represent either: (1)~a scaled cost of the QA of
-	 * each transition, (2)~an actual value of the QA of each transition, or (3)~occurrence of a particular event,
-	 * depending on the given evaluator.
+	 * Build transition-reward items for a given evaluator. The reward values may represent either: (1)~a scaled cost of
+	 * the QA of each transition, (2)~an actual value of the QA of each transition, or (3)~occurrence of a particular
+	 * event, depending on the given evaluator.
 	 * 
-	 * @param rewardName
-	 *            : Name of the reward structure
 	 * @param transStructure
 	 *            : Transition structure -- this may be the domain of a QA function
 	 * @param actionPSO
 	 *            : PSO of the corresponding action type
 	 * @param evaluator
 	 *            : A function that assigns a value to a transition
-	 * @return compute_{QA name} & action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ...
-	 *         : {transition value}; ...
+	 * @return [{actionName}] {srcVarName}={value} & ... {discrVarName}={value} & ... : {expected value}; ...
 	 * @throws XMDPException
 	 */
-	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItems(String rewardName, T transStructure,
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItems(T transStructure,
 			FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator) throws XMDPException {
 		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transStructure.getSrcStateVarDefs();
 		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transStructure.getDestStateVarDefs();
@@ -291,12 +254,13 @@ public class PrismRewardTranslatorHelper {
 			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarDefs, action, actionPSO);
 
 			for (StateVarTuple srcVars : srcCombinations) {
-				Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(destStateVarDefs, srcVars,
-						action, actionPSO);
+				Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarDefs, srcVars,
+						actionPSO, action);
 
-				for (StateVarTuple destVars : destCombinations) {
-					String rewardItem = buildRewardItem(rewardName, transStructure, action, srcVars, destVars,
-							actionPSO, evaluator);
+				for (StateVarTuple applicableDiscrVars : discrCombinations) {
+					double expectedValue = computeExpectedTransitionValue(transStructure, actionPSO, evaluator, srcVars,
+							applicableDiscrVars, action);
+					String rewardItem = buildRewardItem(srcVars, applicableDiscrVars, action, expectedValue);
 					builder.append(rewardItem);
 					builder.append("\n");
 				}
@@ -306,63 +270,65 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
-	 * Build a reward item for a given evaluator.
+	 * Build a transition-reward item for a QA function of the form Q_i(s,a,s'). The reward value may represent either a
+	 * QA value or a QA cost of a transition.
 	 * 
-	 * @param rewardName
-	 * @param transStructure
+	 * @param srcVars
+	 *            : Source variables of the QA function
+	 * @param applicableDiscrVars
+	 *            : Discriminant variables of the destination variables of the QA function (that are applicable given
+	 *            the source variables and the action)
 	 * @param action
-	 * @param srcCombinations
-	 *            : If there is no source variable definition, then this is a singleton set of an empty
-	 *            {@link StateVarTuple}
-	 * @param destCombinations:
-	 *            If there is no destination variable definition, then this is a singleton set of an empty
-	 *            {@link StateVarTuple}
-	 * @param actionPSO
-	 * @param evaluator
-	 * @return compute_{QA name} & action={encoded action value} & {srcVarName}={value} ... & {destVarName}={value} ...
-	 *         : {transition value};
-	 * @throws ActionNotFoundException
+	 *            : Action of the QA function
+	 * @param expectedValue
+	 *            : Reward value, which is the expected value of C/Q_i(s,a) = sum_s'(Pr(s'|s,a) * C/Q_i(s,a,s'))
+	 * @return [{actionName}] {srcVarName}={value} & ... {discrVarName}={value} & ... : {expected value};
+	 * @throws VarNotFoundException
 	 */
-	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItem(String rewardName, T transStructure,
-			E action, StateVarTuple srcVars, StateVarTuple destVars, FactoredPSO<E> actionPSO,
-			TransitionEvaluator<E, T> evaluator) throws XMDPException {
-		// Encoded int action value
-		Integer encodedActionValue = mEncodings.getEncodedIntValue(action);
-
-		// Separate variables of the source state into changed and unchanged variables
-		// This is to ease PRISM MDP model generation
-		StateVarTuple unchangedSrcVars = getUnchangedStateVars(srcVars, actionPSO);
-		StateVarTuple changedSrcVars = getChangedStateVars(srcVars, unchangedSrcVars);
-
-		// Compute value of the transition
-		Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
-		double value = evaluator.evaluate(transition);
-
-		String srcPartialGuard = buildSrcPartialRewardGuard(changedSrcVars, unchangedSrcVars);
-		String destPartialGuard = buildDestPartialRewardGuard(destVars);
+	String buildRewardItem(StateVarTuple srcVars, StateVarTuple applicableDiscrVars, IAction action,
+			double expectedValue) throws VarNotFoundException {
+		StateVarTuple combinedVars = new StateVarTuple();
+		combinedVars.addStateVarTuple(srcVars);
+		combinedVars.addStateVarTuple(applicableDiscrVars);
+		String sanitizedActionName = PrismTranslatorUtils.sanitizeNameString(action.getName());
+		String combinedVarsExpr = PrismTranslatorUtils.buildExpression(combinedVars, mEncodings);
 
 		StringBuilder builder = new StringBuilder();
-		builder.append(PrismTranslatorHelper.INDENT);
-
-		if (mPrismRewardType == PrismRewardType.STATE_REWARD) {
-			builder.append("compute_");
-			builder.append(rewardName);
-			builder.append(" & ");
-		} else if (mPrismRewardType == PrismRewardType.TRANSITION_REWARD) {
-			builder.append("[compute] ");
+		builder.append("[");
+		builder.append(sanitizedActionName);
+		builder.append("] ");
+		if (!combinedVarsExpr.isEmpty()) {
+			builder.append(combinedVarsExpr);
+		} else {
+			builder.append("true");
 		}
+		builder.append(" : ");
+		builder.append(expectedValue);
+		builder.append(";");
+		return builder.toString();
+	}
 
-		// "action={encoded action value}"
-		builder.append("action=");
-		builder.append(encodedActionValue);
+	/**
+	 * Build a transition-reward item for a QA function of the form Q_i(s). The reward value may represent either a QA
+	 * value or a QA cost of a state.
+	 * 
+	 * @param srcVars
+	 *            : Source variables of the QA function
+	 * @param value
+	 *            : Reward value of C/Q_i(s)
+	 * @return [compute] {srcVarName}={value} & ... : {value};
+	 * @throws VarNotFoundException
+	 */
+	String buildRewardItem(StateVarTuple srcVars, double value) throws VarNotFoundException {
+		String srcVarsExpr = PrismTranslatorUtils.buildExpression(srcVars, mEncodings);
 
-		// "" or "& {srcVarName}={value} ..."
-		builder.append(srcPartialGuard);
-
-		// "" or "& {destVarName}={value} ..."
-		builder.append(destPartialGuard);
-
-		// " : {transition value};"
+		StringBuilder builder = new StringBuilder();
+		builder.append("[compute] ");
+		if (!srcVarsExpr.isEmpty()) {
+			builder.append(srcVarsExpr);
+		} else {
+			builder.append("true");
+		}
 		builder.append(" : ");
 		builder.append(value);
 		builder.append(";");
@@ -375,131 +341,10 @@ public class PrismRewardTranslatorHelper {
 	 * 
 	 * @param value
 	 *            : Artificial reward value assigned to every "compute" transition
-	 * @return compute_cost : {value};
+	 * @return [compute] true : {value};
 	 */
 	String buildArtificialRewardItem(double value) {
-		String synchStr = mPrismRewardType == PrismRewardType.STATE_REWARD ? "compute_cost" : "[compute] true";
-		return PrismTranslatorHelper.INDENT + synchStr + " : " + value + ";";
-	}
-
-	/**
-	 * 
-	 * @param stateVars
-	 * @return {varName_1}={encoded int value} & ... & {varName_m}={encoded int value}
-	 * @throws VarNotFoundException
-	 */
-	String buildPartialRewardGuard(StateVarTuple stateVars) throws VarNotFoundException {
-		return buildPartialRewardGuard(stateVars, "");
-	}
-
-	/**
-	 * 
-	 * @param stateVars
-	 * @param nameSuffix
-	 * @return {varName_1{Suffix}}={value OR encoded int value} & ... & {varName_m{Suffix}}={value OR encoded int value}
-	 * @throws VarNotFoundException
-	 */
-	String buildPartialRewardGuard(StateVarTuple stateVars, String nameSuffix) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		boolean first = true;
-		for (StateVar<IStateVarValue> var : stateVars) {
-			String varName = var.getName();
-			IStateVarValue value = var.getValue();
-
-			if (!first) {
-				builder.append(" & ");
-			} else {
-				first = false;
-			}
-			builder.append(varName);
-			builder.append(nameSuffix);
-			builder.append("=");
-
-			if (value instanceof IStateVarInt || value instanceof IStateVarBoolean) {
-				builder.append(value);
-			} else {
-				Integer encodedValue = mEncodings.getEncodedIntValue(var.getDefinition(), value);
-				builder.append(encodedValue);
-			}
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * Returns an empty String if there is no source variable.
-	 * 
-	 * @param changedSrcVars
-	 * @param unchangedSrcVars
-	 * @return & {changedSrcVarName}={value} ... & {unchangedSrcVarName}={value} ...
-	 * @throws VarNotFoundException
-	 */
-	private String buildSrcPartialRewardGuard(StateVarTuple changedSrcVars, StateVarTuple unchangedSrcVars)
-			throws VarNotFoundException {
-		String changedSrcPartialGuard = buildPartialRewardGuard(changedSrcVars, PrismTranslatorHelper.SRC_SUFFIX);
-		String unchangedSrcPartialGuard = buildPartialRewardGuard(unchangedSrcVars);
-
-		StringBuilder builder = new StringBuilder();
-		if (!changedSrcPartialGuard.isEmpty()) {
-			builder.append(" & ");
-			builder.append(changedSrcPartialGuard);
-		}
-		if (!unchangedSrcPartialGuard.isEmpty()) {
-			builder.append(" & ");
-			builder.append(unchangedSrcPartialGuard);
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * Returns an empty String if there is no destination variable.
-	 * 
-	 * @param destVars
-	 * @return & {destVarName}={value} ...
-	 * @throws VarNotFoundException
-	 */
-	private String buildDestPartialRewardGuard(StateVarTuple destVars) throws VarNotFoundException {
-		String destPartialGuard = buildPartialRewardGuard(destVars);
-
-		StringBuilder builder = new StringBuilder();
-		if (!destPartialGuard.isEmpty()) {
-			builder.append(" & ");
-			builder.append(destPartialGuard);
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * 
-	 * @param srcVars
-	 * @param actionPSO
-	 * @return State variables in srcVars that are not affected by the given action
-	 */
-	private StateVarTuple getUnchangedStateVars(StateVarTuple srcVars, FactoredPSO<? extends IAction> actionPSO) {
-		StateVarTuple unchangedVars = new StateVarTuple();
-		for (StateVar<IStateVarValue> srcVar : srcVars) {
-			boolean affected = false;
-			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
-			for (EffectClass effectClass : effectClasses) {
-				if (effectClass.contains(srcVar.getDefinition())) {
-					affected = true;
-					break;
-				}
-			}
-			if (!affected) {
-				unchangedVars.addStateVar(srcVar);
-			}
-		}
-		return unchangedVars;
-	}
-
-	private StateVarTuple getChangedStateVars(StateVarTuple srcVars, StateVarTuple unchangedSrcVars) {
-		StateVarTuple changedVars = new StateVarTuple();
-		for (StateVar<IStateVarValue> srcVar : srcVars) {
-			if (!unchangedSrcVars.contains(srcVar.getDefinition())) {
-				changedVars.addStateVar(srcVar);
-			}
-		}
-		return changedVars;
+		return PrismTranslatorHelper.INDENT + "[compute] true : " + value + ";";
 	}
 
 	/**
@@ -633,6 +478,43 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
+	 * Get all combinations of discriminants of a set of destination variables, given source values and action.
+	 * 
+	 * @param destStateVarDefs
+	 * @param srcVars
+	 * @param actionPSO
+	 * @param action
+	 * @return All combinations of applicable discriminants of all destination variables, given source values and action
+	 * @throws XMDPException
+	 */
+	private <E extends IAction> Set<StateVarTuple> getApplicableDiscriminantCombinations(
+			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, StateVarTuple srcVars, FactoredPSO<E> actionPSO,
+			E action) throws XMDPException {
+		// All applicable discriminants of all destination variables, given srcVars and action
+		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> allApplicableDiscriminants = new HashMap<>();
+
+		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+			Set<Discriminant> applicableDiscriminants = getApplicableDiscriminants(destVarDef, srcVars, actionPSO,
+					action);
+
+			for (Discriminant applicableDiscriminant : applicableDiscriminants) {
+				for (StateVar<IStateVarValue> discriminantVar : applicableDiscriminant) {
+					StateVarDefinition<IStateVarValue> discriminantVarDef = discriminantVar.getDefinition();
+					IStateVarValue discriminantValue = discriminantVar.getValue();
+
+					if (!allApplicableDiscriminants.containsKey(discriminantVarDef)) {
+						allApplicableDiscriminants.put(discriminantVarDef, new HashSet<>());
+					}
+
+					allApplicableDiscriminants.get(discriminantVarDef).add(discriminantValue);
+				}
+			}
+		}
+
+		return getCombinations(allApplicableDiscriminants);
+	}
+
+	/**
 	 * Generate a set of all value combinations of a given set of state variable definitions and their allowable values.
 	 * 
 	 * If there is no variable definition, then this method returns a set of an empty {@link StateVarTuple}.
@@ -678,6 +560,87 @@ public class PrismRewardTranslatorHelper {
 			}
 		}
 		return newCombinations;
+	}
+
+	/**
+	 * Partition destination variables into groups, where each group is affected by a given action type independently of
+	 * other groups.
+	 * 
+	 * @param destVars
+	 * @param actionPSO
+	 * @return Independently-affected groups of destination variables, given an action type
+	 * @throws VarNotFoundException
+	 */
+	private Map<EffectClass, StateVarTuple> partitionIndependentDestVars(StateVarTuple destVars,
+			FactoredPSO<? extends IAction> actionPSO) throws VarNotFoundException {
+		Map<EffectClass, StateVarTuple> partitionedDestVars = new HashMap<>();
+		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+		for (EffectClass effectClass : effectClasses) {
+			StateVarTuple group = new StateVarTuple();
+			for (StateVarDefinition<IStateVarValue> varDef : effectClass) {
+				if (destVars.contains(varDef)) {
+					IStateVarValue value = destVars.getStateVarValue(IStateVarValue.class, varDef);
+					group.addStateVar(varDef.getStateVar(value));
+				}
+			}
+			partitionedDestVars.put(effectClass, group);
+		}
+		return partitionedDestVars;
+	}
+
+	/**
+	 * Compute the expected value of taking an action in a source state.
+	 * 
+	 * @param transStructure
+	 * @param actionPSO
+	 * @param evaluator
+	 *            : Transition evaluator
+	 * @param srcVars
+	 *            : Source variables
+	 * @param applicableDiscrVars
+	 *            : Applicable discriminant variables of all destination variables of transStructure
+	 * @param action
+	 *            : Action
+	 * @return Expected value of taking an action in a source state
+	 * @throws XMDPException
+	 */
+	private <E extends IAction, T extends ITransitionStructure<E>> double computeExpectedTransitionValue(
+			T transStructure, FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator, StateVarTuple srcVars,
+			StateVarTuple applicableDiscrVars, E action) throws XMDPException {
+		double expectedTransValue = 0;
+
+		Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(transStructure.getDestStateVarDefs(),
+				srcVars, action, actionPSO);
+
+		// Assume: all destination variables of any TransitionStructure are affected by its action
+		for (StateVarTuple destVars : destCombinations) {
+			Map<EffectClass, StateVarTuple> indepDestVarGroups = partitionIndependentDestVars(destVars, actionPSO);
+			double destVarsProb = 1;
+
+			for (Entry<EffectClass, StateVarTuple> e : indepDestVarGroups.entrySet()) {
+				EffectClass effectClass = e.getKey();
+				StateVarTuple indepDestVarGroup = e.getValue();
+
+				// Filter discriminants of the effect class from applicableDiscrVars
+				IActionDescription<E> actionDesc = actionPSO.getActionDescription(effectClass);
+				DiscriminantClass discriminantClass = actionDesc.getDiscriminantClass();
+				Discriminant discriminant = new Discriminant(discriminantClass);
+				for (StateVarDefinition<IStateVarValue> varDef : discriminantClass) {
+					IStateVarValue value = applicableDiscrVars.getStateVarValue(IStateVarValue.class, varDef);
+					StateVar<IStateVarValue> discrVar = varDef.getStateVar(value);
+					discriminant.add(discrVar);
+				}
+				ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, action);
+				double indepDestVarGroupProb = probEffect.getMarginalProbability(indepDestVarGroup);
+				destVarsProb *= indepDestVarGroupProb;
+			}
+
+			Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, destVars);
+			double transValue = evaluator.evaluate(transition);
+			expectedTransValue += destVarsProb * transValue;
+		}
+
+		return expectedTransValue;
 	}
 
 	/**

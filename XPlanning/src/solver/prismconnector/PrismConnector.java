@@ -40,7 +40,7 @@ public class PrismConnector {
 
 	public PrismConnector(XMDP xmdp, PrismConnectorSettings settings) throws PrismException {
 		mXMDP = xmdp;
-		mMDPTranslator = new PrismMDPTranslator(xmdp, true, settings.getPrismRewardType());
+		mMDPTranslator = new PrismMDPTranslator(xmdp);
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper(settings.getPrismConfiguration());
 	}
@@ -59,8 +59,7 @@ public class PrismConnector {
 
 	/**
 	 * Export the PRISM explicit model files from this XMDP. The explicit model files include: states file (.sta),
-	 * transitions file (.tra), labels file (.lab), and either state rewards file (.srew) or transition rewards file
-	 * (.trew).
+	 * transitions file (.tra), labels file (.lab), and transition rewards file (.trew).
 	 * 
 	 * @return Pointer to the output explicit model files.
 	 * @throws XMDPException
@@ -73,10 +72,11 @@ public class PrismConnector {
 		String mdpStr = mMDPTranslator.getMDPTranslation(true);
 
 		// Create explicit model pointer to output directory **for models**
+		// PrismRewardTranslator only uses transition rewards
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(
-				mSettings.getModelOutputPath(), DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
+				mSettings.getModelOutputPath(), DEFAULT_MODEL_FILENAME_PREFIX, PrismRewardType.TRANSITION_REWARD);
 
-		// Export .sta, .tra, .lab, and .srew/.trew files
+		// Export .sta, .tra, .lab, and .trew files
 		mPrismAPI.exportExplicitModelFiles(mdpStr, outputExplicitModelPointer);
 
 		return outputExplicitModelPointer;
@@ -93,9 +93,7 @@ public class PrismConnector {
 	 * @throws IOException
 	 */
 	public Policy generateOptimalPolicy() throws XMDPException, PrismException, ResultParsingException, IOException {
-		// If we want to use the PRISM output explicit DTMC model to calculate QA values of the policy, then we need to
-		// include QA functions in the MDP translation.
-		String mdp = mMDPTranslator.getMDPTranslation(mSettings.useExplicitModel());
+		String mdp = mMDPTranslator.getMDPTranslation(false);
 
 		// Goal with cost-minimizing objective
 		String goalProperty = mMDPTranslator.getGoalPropertyTranslation();
@@ -127,20 +125,18 @@ public class PrismConnector {
 		PrismPropertyTranslator propTranslator = mMDPTranslator.getPrismPropertyTransltor();
 
 		StringBuilder mdpBuilder = new StringBuilder();
-		String originalMDPStr = mMDPTranslator.getMDPTranslation(mSettings.useExplicitModel());
+		String originalMDPStr = mMDPTranslator.getMDPTranslation(false);
 		mdpBuilder.append(originalMDPStr);
 
-		if (mSettings.useExplicitModel()) {
-			// MDP translation already includes all QA functions
-		} else {
-			// MDP translation includes only the QA function of the value to be constrained
-			mdpBuilder.append("\n\n");
-			mdpBuilder.append(rewardTranslator.getQAFunctionTranslation(constraint.getQFunction()));
-		}
-
-		String objectiveReward = rewardTranslator.getObjectiveFunctionTranslation(objectiveFunction);
+		// Include the QA function of the value to be constrained
+		String constrainedQARewards = rewardTranslator.getQAFunctionTranslation(constraint.getQFunction());
 		mdpBuilder.append("\n\n");
-		mdpBuilder.append(objectiveReward);
+		mdpBuilder.append(constrainedQARewards);
+
+		// Include the objective function
+		String objectiveRewards = rewardTranslator.getObjectiveFunctionTranslation(objectiveFunction);
+		mdpBuilder.append("\n\n");
+		mdpBuilder.append(objectiveRewards);
 
 		String mdpStr = mdpBuilder.toString();
 		String propertyStr = propTranslator.buildMDPConstrainedMinProperty(mXMDP.getGoal(), objectiveFunction,
@@ -153,7 +149,7 @@ public class PrismConnector {
 
 	private void configureForMultiObjectiveStrategySynthesis() {
 		// Use transition rewards for multi-objective adversary synthesis
-		mMDPTranslator.setPrismRewardType(PrismRewardType.TRANSITION_REWARD);
+		// PrismRewardTranslator already uses transition rewards
 
 		// Use Sparse engine and linear-programming solution method for multi-objective adversary synthesis
 		mPrismAPI.reconfigurePrism(PrismEngine.SPARSE);
@@ -178,8 +174,9 @@ public class PrismConnector {
 	private Policy computeOptimalPolicy(String mdpStr, String propertyStr, String advOutputPath)
 			throws PrismException, ResultParsingException, IOException, XMDPException {
 		// Create explicit model pointer to output directory **for adversary**
+		// PrismRewardTranslator only uses transition rewards
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(advOutputPath,
-				DEFAULT_MODEL_FILENAME_PREFIX, mMDPTranslator.getPrismRewardType());
+				DEFAULT_MODEL_FILENAME_PREFIX, PrismRewardType.TRANSITION_REWARD);
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(outputExplicitModelPointer,
@@ -210,13 +207,8 @@ public class PrismConnector {
 			computeExpectedTotalCost(policy);
 		}
 
-		if (mSettings.useExplicitModel()) {
-			// Compute and cache the QA values of the policy, using explicit DTMC model
-			computeQAValuesFromExplicitDTMC(outputExplicitModelPointer, mXMDP.getQSpace());
-		} else {
-			// Compute and cache the QA values of the policy
-			computeQAValues(policy, mXMDP.getQSpace());
-		}
+		// Compute and cache the QA values of the policy
+		computeQAValues(policy, mXMDP.getQSpace());
 
 		return policy;
 	}
@@ -249,10 +241,10 @@ public class PrismConnector {
 
 	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
 		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
-		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty, mSettings.getPrismRewardType());
+		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
 		mCachedTotalCosts.put(policy, totalCost);
 	}
 
@@ -282,7 +274,7 @@ public class PrismConnector {
 	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
@@ -295,8 +287,7 @@ public class PrismConnector {
 		}
 		String propertiesStr = builder.toString();
 
-		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr,
-				mSettings.getPrismRewardType());
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr);
 
 		// Cache the QA values of the policy
 		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
@@ -308,8 +299,8 @@ public class PrismConnector {
 		mCachedQAValues.put(policy, qaValues);
 	}
 
-	private void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
-			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
+	public void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,
+			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions)
 			throws XMDPException, PrismException, ResultParsingException {
 		PrismPropertyTranslator propertyTranslator = mMDPTranslator.getPrismPropertyTransltor();
 		ValueEncodingScheme encodings = mMDPTranslator.getValueEncodingScheme();
@@ -317,7 +308,7 @@ public class PrismConnector {
 
 		// Cache the QA values of the policy
 		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
-		for (IQFunction<?, ?> qFunction : qSpace) {
+		for (IQFunction<?, ?> qFunction : qFunctions) {
 			Integer rewardStructIndex = encodings.getRewardStructureIndex(qFunction);
 			double qaValue = mPrismAPI.queryPropertyFromExplicitDTMC(rawRewardQuery, explicitDTMCPointer,
 					rewardStructIndex);
@@ -342,7 +333,7 @@ public class PrismConnector {
 			NonStandardMetricQFunction<?, ?, E> qFunction)
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, mSettings.getPrismRewardType());
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
 		String eventCounterRewards = dtmcTranslator.getEventCounterRewardsTranslation(qFunction.getEventBasedMetric());
 
@@ -362,8 +353,7 @@ public class PrismConnector {
 		}
 		String propsStr = propsStrBuilder.toString();
 
-		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithEventCounters, propsStr,
-				mSettings.getPrismRewardType());
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithEventCounters, propsStr);
 
 		EventBasedQAValue<E> eventBasedQAValue = new EventBasedQAValue<>();
 		for (Entry<E, String> entry : eventQueryProps.entrySet()) {

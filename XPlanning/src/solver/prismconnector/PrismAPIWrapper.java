@@ -241,16 +241,15 @@ public class PrismAPIWrapper {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr, PrismRewardType prismRewardType)
+	public double queryPropertyFromDTMC(String dtmcModelStr, String propertyStr)
 			throws PrismException, ResultParsingException {
 		// Parse and load a PRISM DTMC model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
 
-		if (prismRewardType == PrismRewardType.TRANSITION_REWARD) {
-			// Explicit engine does not yet handle transition rewards for D/CTMCs
-			switchEngineFromExplicitToSparse();
-		}
+		// PrismRewardTranslator only uses transition rewards
+		// Explicit engine does not yet handle transition rewards for D/CTMCs
+		switchEngineFromExplicitToSparse();
 
 		return queryPropertyHelper(modulesFile, propertyStr, 0);
 	}
@@ -266,16 +265,15 @@ public class PrismAPIWrapper {
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public Map<String, Double> queryPropertiesFromDTMC(String dtmcModelStr, String propertiesStr,
-			PrismRewardType prismRewardType) throws PrismException, ResultParsingException {
+	public Map<String, Double> queryPropertiesFromDTMC(String dtmcModelStr, String propertiesStr)
+			throws PrismException, ResultParsingException {
 		// Parse and load a PRISM DTMC model from a model string
 		ModulesFile modulesFile = mPrism.parseModelString(dtmcModelStr, ModelType.DTMC);
 		mPrism.loadPRISMModel(modulesFile);
 
-		if (prismRewardType == PrismRewardType.TRANSITION_REWARD) {
-			// Explicit engine does not yet handle transition rewards for D/CTMCs
-			switchEngineFromExplicitToSparse();
-		}
+		// PrismRewardTranslator only uses transition rewards
+		// Explicit engine does not yet handle transition rewards for D/CTMCs
+		switchEngineFromExplicitToSparse();
 
 		return queryPropertiesHelper(modulesFile, propertiesStr);
 	}

@@ -6,16 +6,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import language.exceptions.ActionNotFoundException;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
-import language.mdp.ActionSpace;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
 import language.metrics.IQFunction;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
 import language.qfactors.IStateVarBoolean;
 import language.qfactors.IStateVarInt;
 import language.qfactors.IStateVarValue;
@@ -38,27 +34,13 @@ public class ValueEncodingScheme {
 	private Map<StateVarDefinition<IStateVarValue>, Map<IStateVarValue, Integer>> mStateVarEncodings = new HashMap<>();
 	private Map<String, Map<Boolean, ? extends IStateVarBoolean>> mBooleanVarLookups = new HashMap<>();
 	private Map<String, Map<Integer, ? extends IStateVarInt>> mIntVarLookups = new HashMap<>();
-	private Map<IAction, Integer> mActionEncoding = new HashMap<>();
 	private QFunctionEncodingScheme mQFunctionEncoding;
 	private StateSpace mStateSpace;
-	private ActionSpace mActionSpace;
-	private boolean mThreeParamRewards;
 
 	public ValueEncodingScheme(StateSpace stateSpace, QSpace qSpace, IAdditiveCostFunction objectiveFunction) {
 		mStateSpace = stateSpace;
-		mThreeParamRewards = false;
 		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
 		encodeStates(stateSpace);
-	}
-
-	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace, QSpace qSpace,
-			IAdditiveCostFunction objectiveFunction) {
-		mStateSpace = stateSpace;
-		mActionSpace = actionSpace;
-		mThreeParamRewards = true;
-		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
-		encodeStates(stateSpace);
-		encodeActions(actionSpace);
 	}
 
 	private void encodeStates(StateSpace stateSpace) {
@@ -91,14 +73,6 @@ public class ValueEncodingScheme {
 		return resultSet;
 	}
 
-	private void encodeActions(ActionSpace actionSpace) {
-		Set<IAction> allActions = new HashSet<>();
-		for (ActionDefinition<IAction> actionDef : actionSpace) {
-			allActions.addAll(actionDef.getActions());
-		}
-		mActionEncoding.putAll(buildIntEncoding(allActions));
-	}
-
 	private <E> Map<E, Integer> buildIntEncoding(Set<E> possibleValues) {
 		Map<E, Integer> encoding = new HashMap<>();
 		int e = 0;
@@ -125,16 +99,8 @@ public class ValueEncodingScheme {
 		return mapping;
 	}
 
-	public boolean isThreeParamRewards() {
-		return mThreeParamRewards;
-	}
-
 	public StateSpace getStateSpace() {
 		return mStateSpace;
-	}
-
-	public ActionSpace getActionSpace() {
-		return mActionSpace;
 	}
 
 	public IStateVarBoolean lookupStateVarBoolean(String stateVarName, Boolean boolValue) {
@@ -157,13 +123,6 @@ public class ValueEncodingScheme {
 		return mStateVarEncodings.get(stateVarDef).get(value);
 	}
 
-	public Integer getEncodedIntValue(IAction action) throws ActionNotFoundException {
-		if (!mActionEncoding.containsKey(action)) {
-			throw new ActionNotFoundException(action);
-		}
-		return mActionEncoding.get(action);
-	}
-
 	public Integer getMaximumEncodedIntValue(StateVarDefinition<? extends IStateVarValue> stateVarDef)
 			throws VarNotFoundException {
 		if (!mStateVarEncodings.containsKey(stateVarDef)) {
@@ -171,10 +130,6 @@ public class ValueEncodingScheme {
 		}
 		Map<IStateVarValue, Integer> encoding = mStateVarEncodings.get(stateVarDef);
 		return encoding.size() - 1;
-	}
-
-	public Integer getMaximumEncodedIntAction() {
-		return mActionEncoding.size() - 1;
 	}
 
 	public <E extends IStateVarValue> E decodeStateVarValue(Class<E> valueType, String stateVarName,
@@ -221,9 +176,7 @@ public class ValueEncodingScheme {
 		ValueEncodingScheme scheme = (ValueEncodingScheme) obj;
 		return scheme.mStateVarEncodings.equals(mStateVarEncodings)
 				&& scheme.mBooleanVarLookups.equals(mBooleanVarLookups) && scheme.mIntVarLookups.equals(mIntVarLookups)
-				&& scheme.mActionEncoding.equals(mActionEncoding)
-				&& scheme.mQFunctionEncoding.equals(mQFunctionEncoding) && scheme.mStateSpace.equals(mStateSpace)
-				&& scheme.mActionSpace.equals(mActionSpace) && scheme.mThreeParamRewards == mThreeParamRewards;
+				&& scheme.mQFunctionEncoding.equals(mQFunctionEncoding) && scheme.mStateSpace.equals(mStateSpace);
 	}
 
 	@Override
@@ -234,11 +187,8 @@ public class ValueEncodingScheme {
 			result = 31 * result + mStateVarEncodings.hashCode();
 			result = 31 * result + mBooleanVarLookups.hashCode();
 			result = 31 * result + mIntVarLookups.hashCode();
-			result = 31 * result + mActionEncoding.hashCode();
 			result = 31 * result + mQFunctionEncoding.hashCode();
 			result = 31 * result + mStateSpace.hashCode();
-			result = 31 * result + mActionSpace.hashCode();
-			result = 31 * result + Boolean.hashCode(mThreeParamRewards);
 			hashCode = result;
 		}
 		return hashCode;

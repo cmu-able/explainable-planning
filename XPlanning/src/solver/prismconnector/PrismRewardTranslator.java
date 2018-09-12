@@ -8,15 +8,17 @@ import language.metrics.ITransitionStructure;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 import language.qfactors.IAction;
+import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslator {
 
 	private TransitionFunction mTransFunction;
 	private PrismRewardTranslatorHelper mRewardHelper;
 
-	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings) {
+	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings,
+			ActionFilter actionFilter) {
 		mTransFunction = transFunction;
-		mRewardHelper = new PrismRewardTranslatorHelper(encodings);
+		mRewardHelper = new PrismRewardTranslatorHelper(encodings, actionFilter);
 	}
 
 	/**

@@ -31,6 +31,7 @@ import language.qfactors.IAction;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
+import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslatorHelper {
 
@@ -39,9 +40,11 @@ public class PrismRewardTranslatorHelper {
 	private static final String END_REWARDS = "endrewards";
 
 	private ValueEncodingScheme mEncodings;
+	private ActionFilter mActionFilter;
 
-	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings) {
+	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings, ActionFilter actionFilter) {
 		mEncodings = encodings;
+		mActionFilter = actionFilter;
 	}
 
 	/**
@@ -251,6 +254,11 @@ public class PrismRewardTranslatorHelper {
 		StringBuilder builder = new StringBuilder();
 
 		for (E action : actionDef.getActions()) {
+			if (!mActionFilter.filterAction(action)) {
+				// Skip actions that are not present in the model (in the case of DTMC)
+				continue;
+			}
+
 			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarDefs, action, actionPSO);
 
 			for (StateVarTuple srcVars : srcCombinations) {

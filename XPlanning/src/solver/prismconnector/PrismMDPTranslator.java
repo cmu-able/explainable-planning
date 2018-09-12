@@ -11,13 +11,14 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
-import solver.prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
+import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismMDPTranslator {
 
 	private XMDP mXMDP;
 	private ValueEncodingScheme mEncodings;
+	private ActionFilter mActionFilter;
 	private PrismRewardTranslator mRewardTranslator;
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorHelper mHelper;
@@ -25,7 +26,8 @@ public class PrismMDPTranslator {
 	public PrismMDPTranslator(XMDP xmdp) {
 		mXMDP = xmdp;
 		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
-		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings);
+		mActionFilter = action -> mXMDP.getActionSpace().contains(action);
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, mActionFilter);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
@@ -60,12 +62,10 @@ public class PrismMDPTranslator {
 			}
 		};
 
-		HelperModuleActionFilter helperActionFilter = action -> mXMDP.getActionSpace().contains(action);
-
 		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
 		String goalDecl = mHelper.buildGoalDecl(mXMDP.getGoal());
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
-				mXMDP.getTransitionFunction(), partialCommandsBuilder, helperActionFilter);
+				mXMDP.getTransitionFunction(), partialCommandsBuilder, mActionFilter);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();

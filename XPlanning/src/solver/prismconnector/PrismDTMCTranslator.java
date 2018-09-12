@@ -24,13 +24,14 @@ import language.qfactors.IAction;
 import language.qfactors.IStateVarValue;
 import language.qfactors.StateVar;
 import language.qfactors.StateVarDefinition;
-import solver.prismconnector.PrismTranslatorHelper.HelperModuleActionFilter;
+import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 
 public class PrismDTMCTranslator {
 
 	private XDTMC mXDTMC;
 	private ValueEncodingScheme mEncodings;
+	private ActionFilter mActionFilter;
 	private PrismRewardTranslator mRewardTranslator;
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorHelper mHelper;
@@ -39,7 +40,8 @@ public class PrismDTMCTranslator {
 		mXDTMC = xdtmc;
 		XMDP xmdp = xdtmc.getXMDP();
 		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
-		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings);
+		mActionFilter = action -> mXDTMC.getPolicy().containsAction(action);
+		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, mActionFilter);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);
 		mHelper = new PrismTranslatorHelper(mEncodings);
 	}
@@ -82,12 +84,10 @@ public class PrismDTMCTranslator {
 			}
 		};
 
-		HelperModuleActionFilter helperModuleActionFilter = action -> mXDTMC.getPolicy().containsAction(action);
-
 		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
 		String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
 		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
-				partialCommandsBuilder, helperModuleActionFilter);
+				partialCommandsBuilder, mActionFilter);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();

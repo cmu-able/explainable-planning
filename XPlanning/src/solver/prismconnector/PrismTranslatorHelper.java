@@ -95,7 +95,7 @@ public class PrismTranslatorHelper {
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
 	 */
-	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, HelperModuleActionFilter helperActionFilter) {
+	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, ActionFilter helperActionFilter) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
@@ -253,7 +253,7 @@ public class PrismTranslatorHelper {
 	 */
 	String buildModules(StateSpace stateSpace, StateVarTuple iniState, Iterable<ActionDefinition<IAction>> actionDefs,
 			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
-			HelperModuleActionFilter helperActionFilter) throws XMDPException {
+			ActionFilter helperActionFilter) throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -646,14 +646,14 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
-	 * {@link HelperModuleActionFilter} is an interface to a function that filters actions of the helper module. In the
-	 * case of DTMC, this function is to remove actions that are not present its corresponding policy from the helper
-	 * module.
+	 * {@link ActionFilter} is an interface to a function that filters actions of the helper module and any reward
+	 * structure. In the case of DTMC, this function is to remove actions that are not present its corresponding policy
+	 * from the helper module and from any reward structure.
 	 * 
 	 * @author rsukkerd
 	 *
 	 */
-	interface HelperModuleActionFilter {
+	interface ActionFilter {
 
 		/**
 		 * Filter actions that are present in the model.

@@ -31,25 +31,8 @@ public class MobileRobotXMDPTest {
 	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism/advs";
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testPrismMDPTranslatorStateReward(File missionJsonFile, XMDP xmdp) throws XMDPException {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
-
-		try {
-			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
-			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
-			SimpleConsoleLogger.log("State-reward MDP Translation (with QAs)", mdpWithQAs, false);
-			SimpleConsoleLogger.newLine();
-			SimpleConsoleLogger.log("Goal Property Translation", goalProperty, false);
-			SimpleConsoleLogger.newLine();
-		} catch (XMDPException e) {
-			e.printStackTrace();
-			fail("Exception thrown while translating XMDP to PRISM MDP");
-		}
-	}
-
-	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPTranslatorTransitionReward(File missionJsonFile, XMDP xmdp) {
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.TRANSITION_REWARD);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
@@ -71,7 +54,7 @@ public class MobileRobotXMDPTest {
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 

@@ -34,30 +34,9 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 public class MobileRobotXDTMCTest {
 
 	@Test(dataProvider = "xdtmcSolutions")
-	public void testPrismDTMCTranslatorStateReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
-		try {
-			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
-			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
-			SimpleConsoleLogger.log("State-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
-			SimpleConsoleLogger.newLine();
-
-			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
-				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
-				SimpleConsoleLogger.log("Query Property Translation of " + qFunction.getName(), queryTranslation,
-						false);
-				SimpleConsoleLogger.newLine();
-			}
-		} catch (XMDPException e) {
-			e.printStackTrace();
-			fail("Exception thrown while translating XDTMC to PRISM DTMC");
-		}
-	}
-
-	@Test(dataProvider = "xdtmcSolutions")
 	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
-			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
-					PrismRewardType.TRANSITION_REWARD);
+			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 			SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
 			SimpleConsoleLogger.newLine();
@@ -110,7 +89,7 @@ public class MobileRobotXDTMCTest {
 	@Test(dataProvider = "xdtmcSolutions")
 	public void testPrismDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
 			throws XMDPException {
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true, PrismRewardType.STATE_REWARD);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		// Default PRISM configuration
@@ -120,7 +99,7 @@ public class MobileRobotXDTMCTest {
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
 				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
-				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query, PrismRewardType.STATE_REWARD);
+				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
 
 				SimpleConsoleLogger.log("Query Property", query, true);
 				SimpleConsoleLogger.log("Expected total " + qFunction.getName(), result, true);
@@ -165,7 +144,7 @@ public class MobileRobotXDTMCTest {
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.STATE_REWARD);
 
-		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp, true, PrismRewardType.STATE_REWARD);
+		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
 
@@ -176,7 +155,7 @@ public class MobileRobotXDTMCTest {
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
 		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(outputExplicitModelPointer,
-				mdpTranslator.getValueEncodingScheme());
+				mdpTranslator.getValueEncodingScheme(), xmdp.getActionSpace());
 
 		// Close down PRISM
 		prismAPI.terminatePrism();

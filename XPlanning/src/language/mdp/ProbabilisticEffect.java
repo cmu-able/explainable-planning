@@ -89,6 +89,19 @@ public class ProbabilisticEffect implements Iterable<Entry<Effect, Double>> {
 		return mProbEffect.get(effect);
 	}
 
+	public double getMarginalProbability(StateVarTuple subEffect) {
+		double marginalProb = 0;
+		for (Entry<Effect, Double> e : mProbEffect.entrySet()) {
+			Effect effect = e.getKey();
+			double jointProb = e.getValue();
+
+			if (effect.contains(subEffect)) {
+				marginalProb += jointProb;
+			}
+		}
+		return marginalProb;
+	}
+
 	public EffectClass getEffectClass() {
 		return mEffectClass;
 	}

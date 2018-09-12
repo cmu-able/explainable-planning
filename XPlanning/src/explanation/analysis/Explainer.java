@@ -22,6 +22,7 @@ import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
+import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class Explainer {
 
@@ -44,7 +45,9 @@ public class Explainer {
 		// Export PRISM explicit model files from the XMDP so that GRBConnector can create the corresponding ExplicitMDP
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
-		GRBConnector grbConnector = new GRBConnector(prismExplicitModelPtr, encodings);
+		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
+				encodings, xmdp.getActionSpace());
+		GRBConnector grbConnector = new GRBConnector(prismExplicitModelReader);
 
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
 		Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();

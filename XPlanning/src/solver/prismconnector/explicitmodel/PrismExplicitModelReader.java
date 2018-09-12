@@ -38,10 +38,10 @@ public class PrismExplicitModelReader {
 	private ValueEncodingScheme mEncodings;
 	private ActionSpace mActionSpace;
 
-	public PrismExplicitModelReader(PrismExplicitModelPointer explicitModelPtr, ValueEncodingScheme encodings,
+	public PrismExplicitModelReader(PrismExplicitModelPointer prismExplicitModelPtr, ValueEncodingScheme encodings,
 			ActionSpace actionSpace) {
 		mEncodings = encodings;
-		mExplicitModelPtr = explicitModelPtr;
+		mExplicitModelPtr = prismExplicitModelPtr;
 		mActionSpace = actionSpace;
 	}
 

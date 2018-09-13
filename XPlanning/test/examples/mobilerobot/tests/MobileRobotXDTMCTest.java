@@ -83,6 +83,8 @@ public class MobileRobotXDTMCTest {
 		} catch (PrismException | ResultParsingException e) {
 			e.printStackTrace();
 			fail("Exception thrown while PRISM model checking DTCM property");
+		} catch (UnsupportedOperationException e) {
+			SimpleConsoleLogger.log("Numerical query from explicit model not supported");
 		}
 	}
 

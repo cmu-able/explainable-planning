@@ -29,7 +29,6 @@ import prism.PrismException;
 import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
-import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
@@ -44,8 +43,8 @@ public class MobileRobotExplanationTest {
 		String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismConfiguration prismConfig = new PrismConfiguration();
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath, advOutputPath,
-				prismConfig, PrismRewardType.TRANSITION_REWARD);
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
+				prismConfig);
 		PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
 

@@ -28,11 +28,11 @@ import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.PrismDTMCTranslator;
-import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
+import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class MobileRobotAlternativeExplorerTest {
 
@@ -94,8 +94,7 @@ public class MobileRobotAlternativeExplorerTest {
 	private void printPrismDTMCAndProperties(PrismConnector prismConnector, Policy policy)
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(prismConnector.getXMDP(), policy);
-		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc, true,
-				prismConnector.getSettings().getPrismRewardType());
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
 		SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
@@ -141,14 +140,16 @@ public class MobileRobotAlternativeExplorerTest {
 			String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 			String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 			PrismConfiguration prismConfig = new PrismConfiguration();
-			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(false, modelOutputPath,
-					advOutputPath, prismConfig, PrismRewardType.STATE_REWARD);
+			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
+					prismConfig);
 			PrismConnector prismConnector = new PrismConnector(xmdp, prismConnSetttings);
 
 			// GRBConnector
 			PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 			ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
-			GRBConnector grbConnector = new GRBConnector(prismExplicitModelPtr, encodings);
+			PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
+					encodings, xmdp.getActionSpace());
+			GRBConnector grbConnector = new GRBConnector(prismExplicitModelReader);
 
 			// Optimal policy
 			Policy policy = prismConnector.generateOptimalPolicy();

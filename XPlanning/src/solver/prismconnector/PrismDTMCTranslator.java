@@ -86,6 +86,7 @@ public class PrismDTMCTranslator {
 
 		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
 		String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
+		String endDecl = mHelper.buildEndDecl(xmdp.getGoal());
 		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
 				partialCommandsBuilder, mActionFilter);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
@@ -96,6 +97,8 @@ public class PrismDTMCTranslator {
 		builder.append(constsDecl);
 		builder.append("\n");
 		builder.append(goalDecl);
+		builder.append("\n");
+		builder.append(endDecl);
 		builder.append("\n\n");
 		builder.append(modules);
 		builder.append("\n\n");

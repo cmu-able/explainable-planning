@@ -72,6 +72,7 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
+	 * Build a goal formula.
 	 * 
 	 * @param goal
 	 * @return formula goal = {goal expression};
@@ -83,6 +84,22 @@ public class PrismTranslatorHelper {
 		builder.append("formula goal = ");
 		builder.append(goalExpr);
 		builder.append(";");
+		return builder.toString();
+	}
+
+	/**
+	 * Build an "end" label.
+	 * 
+	 * @param goal
+	 * @return label "end" = {goal expression} & !computeGo & barrier;
+	 * @throws VarNotFoundException
+	 */
+	String buildEndDecl(StateVarTuple goal) throws VarNotFoundException {
+		String goalExpr = PrismTranslatorUtils.buildExpression(goal, mEncodings);
+		StringBuilder builder = new StringBuilder();
+		builder.append("label \"end\" = ");
+		builder.append(goalExpr);
+		builder.append(" & !computeGo & barrier;");
 		return builder.toString();
 	}
 

@@ -12,7 +12,7 @@ import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import solver.common.ExplicitMDP;
 import solver.prismconnector.QFunctionEncodingScheme;
-import solver.prismconnector.exceptions.InitialStateParsingException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.explicitmodel.ExplicitMDPReader;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
@@ -30,7 +30,7 @@ public class GRBConnector {
 
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<IQFunction<?, ?>> attrConstraint)
-			throws XMDPException, IOException, InitialStateParsingException, GRBException {
+			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints = new HashSet<>();
 		attrConstraints.add(attrConstraint);
 		return generateOptimalPolicy(objectiveFunction, attrConstraints);
@@ -38,7 +38,7 @@ public class GRBConnector {
 
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints)
-			throws IOException, InitialStateParsingException, XMDPException, GRBException {
+			throws IOException, ExplicitModelParsingException, XMDPException, GRBException {
 		// Create a new ExplicitMDP for every new objective function, because ConstrainedMDPSolver will fill in the
 		// ExplicitMDP with the objective costs
 		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP();

@@ -15,11 +15,14 @@ import solver.common.CostType;
 import solver.common.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.QFunctionEncodingScheme;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
+import solver.prismconnector.exceptions.GoalStatesParsingException;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 
 public class ExplicitMDPReader {
 
 	private static final String INIT_LAB_HEADER_PATTERN = "([0-9]+)=\"init\"";
+	private static final String END_LAB_HEADER_PATTERN = "([0-9]+)=\"end\"";
 
 	private PrismExplicitModelPointer mPrismModelPointer;
 	private QFunctionEncodingScheme mQFunctionEncoding;
@@ -29,7 +32,7 @@ public class ExplicitMDPReader {
 		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
 	}
 
-	public ExplicitMDP readExplicitMDP() throws IOException, InitialStateParsingException {
+	public ExplicitMDP readExplicitMDP() throws IOException, ExplicitModelParsingException {
 		File traFile = mPrismModelPointer.getTransitionsFile();
 		File labFile = mPrismModelPointer.getLabelsFile();
 		List<String> traAllLines = readLinesFromFile(traFile);
@@ -38,6 +41,7 @@ public class ExplicitMDPReader {
 
 		int numStates = readNumStates(traHeader);
 		int iniState = readInitialState(labAllLines);
+		Set<Integer> goalStates = readGoalStates(labAllLines);
 		Set<String> actionNames = readActionNames(traAllLines);
 
 		// Create an additional slot for cost function to:
@@ -49,8 +53,8 @@ public class ExplicitMDPReader {
 				? CostType.STATE_COST
 				: CostType.TRANSITION_COST;
 
-		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, actionNames, costType, numCostFunctions);
-		explicitMDP.setInitialState(iniState);
+		ExplicitMDP explicitMDP = new ExplicitMDP(numStates, actionNames, costType, numCostFunctions, iniState,
+				goalStates);
 		readTransitionProbabilities(traAllLines, explicitMDP);
 
 		if (costType == CostType.TRANSITION_COST) {
@@ -82,7 +86,7 @@ public class ExplicitMDPReader {
 	 * @throws InitialStateParsingException
 	 */
 	private int readInitialState(List<String> labAllLines) throws InitialStateParsingException {
-		// Header format: 0="init" 1="deadlock"
+		// Header format: 0="init" 1="deadlock" ... {n}="end" ...
 		String labHeader = labAllLines.get(0);
 		Pattern pattern = Pattern.compile(INIT_LAB_HEADER_PATTERN);
 		Matcher matcher = pattern.matcher(labHeader);
@@ -92,14 +96,51 @@ public class ExplicitMDPReader {
 		String initLabel = matcher.group(1);
 		List<String> labBody = labAllLines.subList(1, labAllLines.size());
 		for (String line : labBody) {
-			// Line format: "{state}: {label}"
+			// Line format: "{state}: {label} {label} ..."
 			String[] pair = line.split(":");
-			String label = pair[1].trim();
-			if (label.equals(initLabel)) {
+			String[] labels = pair[1].trim().split(" ");
+			if (labels[0].equals(initLabel)) {
 				return Integer.parseInt(pair[0]);
 			}
 		}
 		throw new InitialStateParsingException(labHeader, labBody);
+	}
+
+	/**
+	 * Read the goal states (labeled "end") from .lab file.
+	 * 
+	 * @param labAllLines
+	 *            : All lines from .lab file
+	 * @return Goal states
+	 * @throws GoalStatesParsingException
+	 */
+	private Set<Integer> readGoalStates(List<String> labAllLines) throws GoalStatesParsingException {
+		Set<Integer> goalStates = new HashSet<>();
+		// Header format: 0="init" 1="deadlock" ... {n}="end" ...
+		String labHeader = labAllLines.get(0);
+		Pattern pattern = Pattern.compile(END_LAB_HEADER_PATTERN);
+		Matcher matcher = pattern.matcher(labHeader);
+		if (!matcher.find()) {
+			throw new GoalStatesParsingException(labHeader);
+		}
+		String endLabel = matcher.group(1);
+		List<String> labBody = labAllLines.subList(1, labAllLines.size());
+		for (String line : labBody) {
+			// Line format: "{state}: {label} {label} ..."
+			String[] pair = line.split(":");
+			String[] labels = pair[1].trim().split(" ");
+			for (String label : labels) {
+				if (label.equals(endLabel)) {
+					Integer goalState = Integer.parseInt(pair[0]);
+					goalStates.add(goalState);
+					break;
+				}
+			}
+		}
+		if (goalStates.isEmpty()) {
+			throw new GoalStatesParsingException(labHeader, labBody);
+		}
+		return goalStates;
 	}
 
 	/**

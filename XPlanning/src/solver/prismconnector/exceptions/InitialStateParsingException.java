@@ -2,7 +2,7 @@ package solver.prismconnector.exceptions;
 
 import java.util.List;
 
-public class InitialStateParsingException extends Exception {
+public class InitialStateParsingException extends ExplicitModelParsingException {
 
 	/**
 	 * 

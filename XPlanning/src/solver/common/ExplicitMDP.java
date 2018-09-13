@@ -19,11 +19,13 @@ public class ExplicitMDP {
 	private List<String> mIndexedActions;
 	private CostType mCostType;
 	private int mIniState;
+	private Set<Integer> mGoalStates;
 	private double[][][] mTransProbs;
 	private double[][][] mTransCosts;
 	private double[][] mStateCosts;
 
-	public ExplicitMDP(int numStates, Set<String> actionNames, CostType costType, int numCostFunctions) {
+	public ExplicitMDP(int numStates, Set<String> actionNames, CostType costType, int numCostFunctions, int iniState,
+			Set<Integer> goalStates) {
 		int numActions = actionNames.size();
 		mNumStates = numStates;
 		mIndexedActions = sortActions(actionNames);
@@ -34,6 +36,8 @@ public class ExplicitMDP {
 		} else if (costType == CostType.STATE_COST) {
 			mStateCosts = new double[numCostFunctions][numStates];
 		}
+		mIniState = iniState;
+		mGoalStates = goalStates;
 	}
 
 	/**
@@ -47,10 +51,6 @@ public class ExplicitMDP {
 		List<String> sortedActionNames = new ArrayList<>(actionNames);
 		sortedActionNames.sort((actionName1, actionName2) -> actionName1.compareToIgnoreCase(actionName2));
 		return sortedActionNames;
-	}
-
-	public void setInitialState(int iniState) {
-		mIniState = iniState;
 	}
 
 	/**
@@ -120,6 +120,10 @@ public class ExplicitMDP {
 		return mIniState;
 	}
 
+	public Set<Integer> getGoalStates() {
+		return mGoalStates;
+	}
+
 	/**
 	 * Action a is NOT applicable in state i iff p[i][a][j] = 0 for all j.
 	 * 
@@ -187,8 +191,9 @@ public class ExplicitMDP {
 		}
 		ExplicitMDP mdp = (ExplicitMDP) obj;
 		return mdp.mNumStates == mNumStates && mdp.mIndexedActions.equals(mIndexedActions) && mdp.mCostType == mCostType
-				&& mdp.mIniState == mIniState && Arrays.equals(mdp.mTransProbs, mTransProbs)
-				&& Arrays.equals(mdp.mTransCosts, mTransCosts) && Arrays.equals(mdp.mStateCosts, mStateCosts);
+				&& mdp.mIniState == mIniState && mdp.mGoalStates.equals(mGoalStates)
+				&& Arrays.equals(mdp.mTransProbs, mTransProbs) && Arrays.equals(mdp.mTransCosts, mTransCosts)
+				&& Arrays.equals(mdp.mStateCosts, mStateCosts);
 	}
 
 	@Override
@@ -200,6 +205,7 @@ public class ExplicitMDP {
 			result = 31 * result + mIndexedActions.hashCode();
 			result = 31 * result + mCostType.hashCode();
 			result = 31 * result + mIniState;
+			result = 31 * result + mGoalStates.hashCode();
 			result = 31 * result + Arrays.hashCode(mTransProbs);
 			result = 31 * result + (mCostType == CostType.TRANSITION_COST ? Arrays.hashCode(mTransCosts) : 0);
 			result = 31 * result + (mCostType == CostType.STATE_COST ? Arrays.hashCode(mStateCosts) : 0);

@@ -52,7 +52,7 @@ public class MobileRobotXMDPTest {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String outputPath = PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
-				PrismRewardType.STATE_REWARD);
+				PrismRewardType.TRANSITION_REWARD);
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
@@ -63,7 +63,7 @@ public class MobileRobotXMDPTest {
 
 		try {
 			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
-			SimpleConsoleLogger.log("Generate adverary from state-reward MDP...");
+			SimpleConsoleLogger.log("Generate adverary from transition-reward MDP...");
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 			SimpleConsoleLogger.log("Expected total cost of adversary", totalCost, true);
 			SimpleConsoleLogger.newLine();

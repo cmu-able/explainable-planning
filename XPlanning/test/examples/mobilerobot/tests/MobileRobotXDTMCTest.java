@@ -142,7 +142,7 @@ public class MobileRobotXDTMCTest {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String outputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
-				PrismRewardType.STATE_REWARD);
+				PrismRewardType.TRANSITION_REWARD);
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);

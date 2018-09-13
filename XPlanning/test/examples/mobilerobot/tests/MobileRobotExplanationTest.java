@@ -29,7 +29,7 @@ import prism.PrismException;
 import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
-import solver.prismconnector.exceptions.InitialStateParsingException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotExplanationTest {
@@ -38,7 +38,7 @@ public class MobileRobotExplanationTest {
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
-			ResultParsingException, XMDPException, IOException, InitialStateParsingException, GRBException {
+			ResultParsingException, XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;

@@ -19,7 +19,7 @@ import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
-import solver.prismconnector.exceptions.InitialStateParsingException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
@@ -35,7 +35,7 @@ public class Explainer {
 	}
 
 	public String explain(String missionName, XMDP xmdp, Policy policy) throws PrismException, ResultParsingException,
-			XMDPException, IOException, InitialStateParsingException, GRBException {
+			XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		// PrismConnector
 		// Create a new PrismConnector for calculating the QA values of a given policy
 		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);

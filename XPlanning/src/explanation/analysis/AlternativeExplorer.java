@@ -19,6 +19,7 @@ import language.qfactors.IAction;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.InitialStateParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
@@ -49,7 +50,7 @@ public class AlternativeExplorer {
 	 * @throws InitialStateParsingException
 	 */
 	public Set<Policy> getParetoOptimalImmediateNeighbors() throws XMDPException, PrismException,
-			ResultParsingException, IOException, InitialStateParsingException, GRBException {
+			ResultParsingException, IOException, ExplicitModelParsingException, GRBException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
 
@@ -88,7 +89,7 @@ public class AlternativeExplorer {
 	}
 
 	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction) throws ResultParsingException,
-			XMDPException, PrismException, IOException, InitialStateParsingException, GRBException {
+			XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
 		// QA value of the solution policy
 		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
 

@@ -29,7 +29,7 @@ import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.PrismDTMCTranslator;
 import solver.prismconnector.ValueEncodingScheme;
-import solver.prismconnector.exceptions.InitialStateParsingException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
@@ -55,7 +55,7 @@ public class MobileRobotAlternativeExplorerTest {
 			}
 
 			SimpleConsoleLogger.newLine();
-		} catch (XMDPException | PrismException | ResultParsingException | IOException | InitialStateParsingException
+		} catch (XMDPException | PrismException | ResultParsingException | IOException | ExplicitModelParsingException
 				| GRBException e) {
 			e.printStackTrace();
 			fail("Exception thrown while findign an alternative");
@@ -84,7 +84,7 @@ public class MobileRobotAlternativeExplorerTest {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 				SimpleConsoleLogger.newLine();
 			}
-		} catch (ResultParsingException | XMDPException | PrismException | IOException | InitialStateParsingException
+		} catch (ResultParsingException | XMDPException | PrismException | IOException | ExplicitModelParsingException
 				| GRBException e) {
 			e.printStackTrace();
 			fail("Exception thrown while finding alternative policies");

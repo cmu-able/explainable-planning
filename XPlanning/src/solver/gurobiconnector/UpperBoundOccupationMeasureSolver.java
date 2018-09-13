@@ -141,4 +141,21 @@ public class UpperBoundOccupationMeasureSolver {
 			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[j], constraintName);
 		}
 	}
+
+	/**
+	 * Assume that there is no path from the initial state that reaches any of the goal states probabilistically -- any
+	 * path either reaches a goal with probability 1 or does not reach a goal. Then, when sum_g(x_g,end) > 0, the
+	 * corresponding policy reaches one of the goal states with probability 1.
+	 * 
+	 * Add the constraint: sum_g(x_{g}{end}) > 0, where g is a goal in G and "end" is the only applicable action in g.
+	 * 
+	 * @param n
+	 * @param m
+	 * @param xVars
+	 * @param model
+	 * @param explicitMDP
+	 */
+	private static void addGoalConstraint(int n, int m, GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP) {
+		// TODO
+	}
 }

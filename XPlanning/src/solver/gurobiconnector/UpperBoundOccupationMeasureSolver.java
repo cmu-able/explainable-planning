@@ -1,7 +1,6 @@
 package solver.gurobiconnector;
 
 import java.nio.channels.IllegalSelectorException;
-import java.util.Set;
 
 import gurobi.GRB;
 import gurobi.GRBEnv;
@@ -66,25 +65,17 @@ public class UpperBoundOccupationMeasureSolver {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-
-		// Variables: x_ia
+		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
-		GRBVar[][] xVars = new GRBVar[n][m];
-		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Add all variables x_ia to the model, but for action a that is not applicable in state i, the variable
-				// x_ia will be excluded from the objective and constraints
-				String xVarName = "x_" + i + a;
-				xVars[i][a] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, xVarName);
-			}
-		}
+		GRBVar[][] xVars = GRBSolverUtils.createOccupationMeasureVars(explicitMDP, model);
 
+		// Set optimization objective
 		setOptimizationObjective(xVars, model, explicitMDP);
-		addConstraintsC2(xVars, model, explicitMDP);
-		addConstraintC3(xVars, model, explicitMDP);
-		addConstraintC4(xVars, model, explicitMDP);
+
+		// Add constraints
+		GRBSolverUtils.addFlowConservationConstraints(explicitMDP, xVars, model);
+		GRBSolverUtils.addSourceFlowConstraint(explicitMDP, xVars, model);
+		GRBSolverUtils.addSinksFlowConstraint(explicitMDP, xVars, model);
 
 		// Solve optimization problem for x_ia
 		model.optimize();
@@ -124,135 +115,6 @@ public class UpperBoundOccupationMeasureSolver {
 
 		// Set objective
 		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
-	}
-
-	/**
-	 * Add constraints C2: out(i) - in(i) = 0, for all i in S \ (G and s0).
-	 * 
-	 * @param xVars
-	 * @param model
-	 * @param explicitMDP
-	 * @throws GRBException
-	 */
-	private static void addConstraintsC2(GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP)
-			throws GRBException {
-		int n = explicitMDP.getNumStates();
-		Set<Integer> goals = explicitMDP.getGoalStates();
-		int initialState = explicitMDP.getInitialState();
-
-		for (int i = 0; i < n; i++) {
-			if (goals.contains(i) || initialState == i) {
-				// Exclude goal states G and initial state s0
-				continue;
-			}
-
-			String constraintName = "constraintC2_" + i;
-			// out(i) - in(i) = 0
-			GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-			// Expression += out(i)
-			addOutTerm(i, 1, constraintLinExpr, xVars, explicitMDP);
-
-			// Expression -= in(i)
-			addInTerm(i, -1, constraintLinExpr, xVars, explicitMDP);
-
-			// Add constraint
-			model.addConstr(constraintLinExpr, GRB.EQUAL, 0, constraintName);
-		}
-	}
-
-	/**
-	 * Add a constraint C3: out(s0) - in(s0) = 1.
-	 * 
-	 * @param xVars
-	 * @param model
-	 * @param explicitMDP
-	 * @throws GRBException
-	 */
-	private static void addConstraintC3(GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP) throws GRBException {
-		int initialState = explicitMDP.getInitialState();
-		String constraintName = "constraintC3";
-		// out(s0) - in(s0) = 1
-		GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-		// Expression += out(s0)
-		addOutTerm(initialState, 1, constraintLinExpr, xVars, explicitMDP);
-
-		// Expression -= in(s0)
-		addInTerm(initialState, -1, constraintLinExpr, xVars, explicitMDP);
-
-		// Add constraint
-		model.addConstr(constraintLinExpr, GRB.EQUAL, 1, constraintName);
-	}
-
-	/**
-	 * Add a constraint C4: sum_{sg in G} (in(sg)) = 1.
-	 * 
-	 * @param xVars
-	 * @param model
-	 * @param explicitMDP
-	 * @throws GRBException
-	 */
-	private static void addConstraintC4(GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP) throws GRBException {
-		String constraintName = "constraintC4";
-		// sum_{sg in G} (in(sg)) = 1
-		GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-		for (Integer goal : explicitMDP.getGoalStates()) {
-			// Expression += in(sg)
-			addInTerm(goal, 1, constraintLinExpr, xVars, explicitMDP);
-		}
-
-		// Add constraint
-		model.addConstr(constraintLinExpr, GRB.EQUAL, 1, constraintName);
-	}
-
-	/**
-	 * Add coeff * in(i) term to a given linear expression, where in(i) = sum_j,a (x_ja * P(i|j,a)).
-	 * 
-	 * @param i
-	 * @param coeff
-	 * @param linExpr
-	 * @param xVars
-	 * @param explicitMDP
-	 */
-	private static void addInTerm(int i, double coeff, GRBLinExpr linExpr, GRBVar[][] xVars, ExplicitMDP explicitMDP) {
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-
-		// in(i) = sum_j,a (x_ja * P(i|j,a))
-		// Expression += coeff * in(i)
-		for (int j = 0; j < n; j++) {
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ja term when action a is not applicable in state j
-				if (explicitMDP.isActionApplicable(j, a)) {
-					double prob = explicitMDP.getTransitionProbability(j, a, i);
-					linExpr.addTerm(coeff * prob, xVars[j][a]);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Add coeff * out(i) term to a given linear expression, where out(i) = sum_a (x_ia).
-	 * 
-	 * @param i
-	 * @param coeff
-	 * @param linExpr
-	 * @param xVars
-	 * @param explicitMDP
-	 */
-	private static void addOutTerm(int i, double coeff, GRBLinExpr linExpr, GRBVar[][] xVars, ExplicitMDP explicitMDP) {
-		int m = explicitMDP.getNumActions();
-
-		// out(i) = sum_a (x_ia)
-		// Expression += coeff * out(i)
-		for (int a = 0; a < m; a++) {
-			// Exclude any x_ia term when action a is not applicable in state i
-			if (explicitMDP.isActionApplicable(i, a)) {
-				linExpr.addTerm(coeff, xVars[i][a]);
-			}
-		}
 	}
 
 	private static void addConstraints(int n, int m, GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP)

@@ -161,37 +161,23 @@ public class ConstrainedMDPSolver {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
-		// Variables: x_ia
+		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
-		GRBVar[][] xVars = new GRBVar[n][m];
-		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Add all variables x_ia to the model, but for action a that is not applicable in state i, the variable
-				// x_ia will be excluded from the objective and constraints
-				String xVarName = "x_" + i + a;
-				xVars[i][a] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, xVarName);
-			}
-		}
+		GRBVar[][] xVars = GRBSolverUtils.createOccupationMeasureVars(mExplicitMDP, model);
 
-		// Variables: Delta_ia (binary)
-		GRBVar[][] deltaVars = new GRBVar[n][m];
-		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Add all variables Delta_ia to the model, but for action a that is not applicable in state i, the
-				// variable Delta_ia will be excluded from the objective and constraints
-				String deltaVarName = "Delta_" + i + a;
-				deltaVars[i][a] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, deltaVarName);
-			}
-		}
+		// Create variables: Delta_ia (binary)
+		GRBVar[][] deltaVars = createDeltaVars(n, m, model);
 
 		// Set optimization objective
 		setOptimizationObjective(n, m, xVars, model);
 
 		// Add constraints
-		addConstraintsA(n, m, xVars, model);
-		addConstraintsB(n, m, xVars, model);
-		addConstraintsC(n, m, deltaVars, model);
-		double upperBoundOM = addConstraintsD(n, m, xVars, deltaVars, model);
+		GRBSolverUtils.addFlowConservationConstraints(mExplicitMDP, xVars, model);
+		GRBSolverUtils.addSourceFlowConstraint(mExplicitMDP, xVars, model);
+		GRBSolverUtils.addSinksFlowConstraint(mExplicitMDP, xVars, model);
+		addCostConstraints(xVars, model);
+		addDeltaConstraints(n, m, deltaVars, model);
+		double upperBoundOM = addOMDeltaConstraints(n, m, xVars, deltaVars, model);
 
 		// Solve optimization problem for x_ia and Delta_ia
 		model.optimize();
@@ -204,14 +190,35 @@ public class ConstrainedMDPSolver {
 		model.dispose();
 		env.dispose();
 
-		assert consistencyCheckConstraintsA(n, m, xResults);
-		assert consistencyCheckConstraintsB(n, m, xResults);
-		assert consistencyCheckConstraintsC(n, m, deltaResults);
-		assert consistencyCheckConstraintsD(n, m, xResults, deltaResults, upperBoundOM);
-
+		consistencyCheckConstraints(n, m, upperBoundOM, xResults, deltaResults);
 		assert consistencyCheckResults(xResults, deltaResults);
 
 		return xResults;
+	}
+
+	/**
+	 * Create n x m matrix of binary optimization variables: Delta_ia.
+	 * 
+	 * @param n
+	 *            : Number of states
+	 * @param m
+	 *            : Number of actions
+	 * @param model
+	 *            : GRB model to which to add the variables Delta_ia
+	 * @return n x m matrix of binary optimization variables: Delta_ia
+	 * @throws GRBException
+	 */
+	private GRBVar[][] createDeltaVars(int n, int m, GRBModel model) throws GRBException {
+		GRBVar[][] deltaVars = new GRBVar[n][m];
+		for (int i = 0; i < n; i++) {
+			for (int a = 0; a < m; a++) {
+				// Add all variables Delta_ia to the model, but for action a that is not applicable in state i, the
+				// variable Delta_ia will be excluded from the objective and constraints
+				String deltaVarName = "Delta_" + i + a;
+				deltaVars[i][a] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, deltaVarName);
+			}
+		}
+		return deltaVars;
 	}
 
 	/**
@@ -307,19 +314,17 @@ public class ConstrainedMDPSolver {
 	}
 
 	/**
-	 * Add constraints.
+	 * Add cost constraints.
 	 * 
 	 * For transition costs: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k.
 	 * 
 	 * For state costs: sum_i,a(c^k_i * x_ia) <= upper bound of c^k, for all k.
 	 * 
-	 * @param n
-	 * @param m
 	 * @param xVars
 	 * @param model
 	 * @throws GRBException
 	 */
-	private void addConstraintsB(int n, int m, GRBVar[][] xVars, GRBModel model) throws GRBException {
+	private void addCostConstraints(GRBVar[][] xVars, GRBModel model) throws GRBException {
 		// Constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k
 		// OR
 		// sum_i,a(c^k_i * x_ia) <= upper bound of c^k, for all k
@@ -331,34 +336,12 @@ public class ConstrainedMDPSolver {
 				continue;
 			}
 
-			String constraintName = "constraintB_" + k;
-			GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-			for (int i = 0; i < n; i++) {
-				for (int a = 0; a < m; a++) {
-					// Exclude any x_ia term when action a is not applicable in state i
-					if (mExplicitMDP.isActionApplicable(i, a)) {
-						// Transition k-cost: c^k_ia
-						// OR
-						// State k-cost: c^k_i
-						double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
-								: mExplicitMDP.getStateCost(k, i);
-
-						// c^k_ia * x_ia
-						// OR
-						// c^k_i * x_ia
-						constraintLinExpr.addTerm(stepCost, xVars[i][a]);
-					}
-				}
-			}
-
-			// Add constraint: [...] <= upper bound of c^k
-			model.addConstr(constraintLinExpr, GRB.LESS_EQUAL, mUpperBoundConstraints[k], constraintName);
+			GRBSolverUtils.addCostConstraint(k, mUpperBoundConstraints[k], mExplicitMDP, xVars, model);
 		}
 	}
 
 	/**
-	 * Add constraints: sum_a(Delta_ia) <= 1, for all i.
+	 * Add Delta constraints (from Eq. 8): sum_a(Delta_ia) <= 1, for all i.
 	 * 
 	 * @param n
 	 * @param m
@@ -366,10 +349,10 @@ public class ConstrainedMDPSolver {
 	 * @param model
 	 * @throws GRBException
 	 */
-	private void addConstraintsC(int n, int m, GRBVar[][] deltaVars, GRBModel model) throws GRBException {
+	private void addDeltaConstraints(int n, int m, GRBVar[][] deltaVars, GRBModel model) throws GRBException {
 		// Constraints: sum_a(Delta_ia) <= 1, for all i
 		for (int i = 0; i < n; i++) {
-			String constraintName = "constraintC_" + i;
+			String constraintName = "constraintEq8_" + i;
 			GRBLinExpr constraintLinExpr = new GRBLinExpr();
 
 			// sum_a(Delta_ia)
@@ -386,7 +369,7 @@ public class ConstrainedMDPSolver {
 	}
 
 	/**
-	 * Add constraints: x_ia / X <= Delta_ia, for all i, a.
+	 * Add constraints (from Eq. 9): x_ia / X <= Delta_ia, for all i, a.
 	 * 
 	 * @param n
 	 * @param m
@@ -395,7 +378,7 @@ public class ConstrainedMDPSolver {
 	 * @param model
 	 * @throws GRBException
 	 */
-	private double addConstraintsD(int n, int m, GRBVar[][] xVars, GRBVar[][] deltaVars, GRBModel model)
+	private double addOMDeltaConstraints(int n, int m, GRBVar[][] xVars, GRBVar[][] deltaVars, GRBModel model)
 			throws GRBException {
 		// Constraints: x_ia / X <= Delta_ia, for all i, a
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
@@ -403,7 +386,7 @@ public class ConstrainedMDPSolver {
 			for (int a = 0; a < m; a++) {
 				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
 				if (mExplicitMDP.isActionApplicable(i, a)) {
-					String constaintName = "constraintC_" + i + a;
+					String constaintName = "constraintEq9_" + i + a;
 
 					// x_ia / X
 					GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();
@@ -420,6 +403,10 @@ public class ConstrainedMDPSolver {
 		}
 
 		return upperBoundOM;
+	}
+
+	private boolean isTransitionCost() {
+		return mExplicitMDP.getCostType() == CostType.TRANSITION_COST;
 	}
 
 	/**
@@ -452,32 +439,6 @@ public class ConstrainedMDPSolver {
 		return true;
 	}
 
-	private boolean checkResultsConsistency(double deltaResult, double xResult) {
-		return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0);
-	}
-
-	/**
-	 * 
-	 * @param policy
-	 * @return Check whether the policy is deterministic
-	 */
-	private boolean consistencyCheckDeterministicPolicy(double[][] policy) {
-		for (int i = 0; i < policy.length; i++) {
-			for (int a = 0; a < policy[0].length; a++) {
-				// Exclude any pi_ia term when action a is not applicable in state i
-				if (mExplicitMDP.isActionApplicable(i, a)) {
-					double pi = policy[i][a];
-
-					// Check for any randomized decision
-					if (pi > 0 && pi < 1) {
-						return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
-
 	/**
 	 * 
 	 * @param i
@@ -486,7 +447,7 @@ public class ConstrainedMDPSolver {
 	 */
 	private boolean hasNonZeroProbVisited(int i, double[][] xResults) {
 		int m = mExplicitMDP.getNumActions();
-
+	
 		// sum_a(x_ia)
 		double probVisited = 0;
 		for (int a = 0; a < m; a++) {
@@ -494,13 +455,30 @@ public class ConstrainedMDPSolver {
 				probVisited += xResults[i][a];
 			}
 		}
-
+	
 		// Check whether sum_a(x_ia) > 0
 		return probVisited > 0;
 	}
 
-	private boolean isTransitionCost() {
-		return mExplicitMDP.getCostType() == CostType.TRANSITION_COST;
+	private boolean checkResultsConsistency(double deltaResult, double xResult) {
+		return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0);
+	}
+
+	private void consistencyCheckConstraints(int n, int m, double upperBoundOM, double[][] xResults,
+			double[][] deltaResults) {
+		assert GRBSolverUtils.consistencyCheckFlowConservationConstraints(xResults, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckSourceFlowConstraint(xResults, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckSinksFlowConstraint(xResults, mExplicitMDP);
+		for (int k = 1; k < mUpperBoundConstraints.length; k++) {
+			if (mUpperBoundConstraints[k] == null) {
+				// Skip -- there is no constraint on this cost function k
+				continue;
+			}
+
+			assert GRBSolverUtils.consistencyCheckCostConstraint(xResults, mExplicitMDP, k, mUpperBoundConstraints[k]);
+		}
+		assert consistencyCheckDeltaConstraints(n, m, deltaResults);
+		assert consistencyCheckOMDeltaConstraints(n, m, xResults, deltaResults, upperBoundOM);
 	}
 
 	private boolean consistencyCheckConstraintsA(int n, int m, double[][] xResults) {
@@ -596,7 +574,7 @@ public class ConstrainedMDPSolver {
 	 * @param deltaResults
 	 * @return Whether the results of Delta_ia satisfy: sum_a(Delta_ia) <= 1, for all i
 	 */
-	private boolean consistencyCheckConstraintsC(int n, int m, double[][] deltaResults) {
+	private boolean consistencyCheckDeltaConstraints(int n, int m, double[][] deltaResults) {
 		for (int i = 0; i < n; i++) {
 			double sum = 0;
 			for (int a = 0; a < m; a++) {
@@ -621,7 +599,7 @@ public class ConstrainedMDPSolver {
 	 * @param upperBoundOM
 	 * @return Whether the results of x_ia and Delta_ia satisfy: x_ia / X <= Delta_ia, for all i, a
 	 */
-	private boolean consistencyCheckConstraintsD(int n, int m, double[][] xResults, double[][] deltaResults,
+	private boolean consistencyCheckOMDeltaConstraints(int n, int m, double[][] xResults, double[][] deltaResults,
 			double upperBoundOM) {
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
@@ -629,6 +607,28 @@ public class ConstrainedMDPSolver {
 					double xResult = xResults[i][a];
 					double deltaResult = deltaResults[i][a];
 					if (xResult / upperBoundOM > deltaResult) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * 
+	 * @param policy
+	 * @return Check whether the policy is deterministic
+	 */
+	private boolean consistencyCheckDeterministicPolicy(double[][] policy) {
+		for (int i = 0; i < policy.length; i++) {
+			for (int a = 0; a < policy[0].length; a++) {
+				// Exclude any pi_ia term when action a is not applicable in state i
+				if (mExplicitMDP.isActionApplicable(i, a)) {
+					double pi = policy[i][a];
+	
+					// Check for any randomized decision
+					if (pi > 0 && pi < 1) {
 						return false;
 					}
 				}

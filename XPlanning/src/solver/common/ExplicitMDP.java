@@ -10,11 +10,6 @@ public class ExplicitMDP {
 	public static final int OBJECTIVE_FUNCTION_INDEX = 0;
 
 	/*
-	 * When the discount factor is 1.0, GRB throws exception "Infeasible or unbounded model".
-	 */
-	public static final double DEFAULT_DISCOUNT_FACTOR = 0.99;
-
-	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;

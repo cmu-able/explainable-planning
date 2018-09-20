@@ -45,11 +45,7 @@ public class UpperBoundOccupationMeasureSolver {
 	 * 
 	 * (C1) x_ia >= 0, for all i, a
 	 * 
-	 * (C2) out(i) - in(i) = 0, for all i in S \ (G and s0)
-	 * 
-	 * (C3) out(s0) - in(s0) = 1
-	 * 
-	 * (C4) sum_{sg in G} (in(sg)) = 1,
+	 * (C2) out(i) - gamma * in(i) = alpha_i, for all i in S
 	 * 
 	 * where:
 	 * 
@@ -73,9 +69,7 @@ public class UpperBoundOccupationMeasureSolver {
 		setOptimizationObjective(xVars, model, explicitMDP);
 
 		// Add constraints
-		GRBSolverUtils.addFlowConservationConstraints(explicitMDP, xVars, model);
-		GRBSolverUtils.addSourceFlowConstraint(explicitMDP, xVars, model);
-		GRBSolverUtils.addSinksFlowConstraint(explicitMDP, xVars, model);
+		GRBSolverUtils.addDiscountedFlowConservationConstraints(explicitMDP, xVars, model);
 
 		// Solve optimization problem for x_ia
 		model.optimize();
@@ -85,6 +79,10 @@ public class UpperBoundOccupationMeasureSolver {
 		// Dispose of model and environment
 		model.dispose();
 		env.dispose();
+
+		if (GRBSolverUtils.consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP)) {
+			throw new IllegalStateException("Discounted flow-conservation constraints violated");
+		}
 
 		return xResults;
 	}
@@ -115,47 +113,5 @@ public class UpperBoundOccupationMeasureSolver {
 
 		// Set objective
 		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
-	}
-
-	private static void addConstraints(int n, int m, GRBVar[][] xVars, GRBModel model, ExplicitMDP explicitMDP)
-			throws GRBException {
-		// Initial state distribution
-		double[] alpha = new double[n];
-		int iniState = explicitMDP.getInitialState();
-		alpha[iniState] = 1.0;
-
-		double gamma = ExplicitMDP.DEFAULT_DISCOUNT_FACTOR;
-
-		// Constraints: sum_a(x_ja) - gamma * sum_i,a(x_ia * p_iaj) = alpha_j, for all j
-		for (int j = 0; j < n; j++) {
-			String constraintName = "constraint_" + j;
-			GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-			// sum_a(x_ja)
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia term when action a is not applicable in state i
-				if (explicitMDP.isActionApplicable(j, a)) {
-					constraintLinExpr.addTerm(1.0, xVars[j][a]);
-				}
-			}
-
-			// - gamma * sum_i,a(x_ia * p_iaj)
-			double coeff = -1 * gamma;
-			for (int i = 0; i < n; i++) {
-				for (int a = 0; a < m; a++) {
-					// Exclude any x_ia term when action a is not applicable in state i
-					if (explicitMDP.isActionApplicable(i, a)) {
-						double p = explicitMDP.getTransitionProbability(i, a, j);
-						double termCoeff = coeff * p;
-
-						// - gamma * p_iaj * x_ia
-						constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
-					}
-				}
-			}
-
-			// Add constraint
-			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[j], constraintName);
-		}
 	}
 }

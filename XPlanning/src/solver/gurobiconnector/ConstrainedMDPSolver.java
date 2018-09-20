@@ -154,6 +154,26 @@ public class ConstrainedMDPSolver {
 		return policy;
 	}
 
+	/**
+	 * Solve: minimize_x sum_i,a (x_ia * c_ia) subject to:
+	 * 
+	 * (C1) x_ia >= 0, for all i, a
+	 * 
+	 * (C2) out(i) - in(i) = 0, for all i in S \ (G and s0)
+	 * 
+	 * (C3) out(s0) - in(s0) = 1
+	 * 
+	 * (C4) sum_{sg in G} (in(sg)) = 1,
+	 * 
+	 * where:
+	 * 
+	 * in(i) = sum_j,a (x_ja * P(i|j,a)) and
+	 * 
+	 * out(i) = sum_a (x_ia).
+	 * 
+	 * @return
+	 * @throws GRBException
+	 */
 	public double[][] solveOccupationMeasure() throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
@@ -260,57 +280,6 @@ public class ConstrainedMDPSolver {
 
 		// Set objective
 		model.setObjective(objectiveLinExpr, GRB.MINIMIZE);
-	}
-
-	/**
-	 * Add constraints: sum_a(x_ja) - gamma * sum_i,a(x_ia * p_iaj) = alpha_j, for all j.
-	 * 
-	 * @param n
-	 * @param m
-	 * @param xVars
-	 * @param deltaVars
-	 * @param model
-	 * @throws GRBException
-	 */
-	private void addConstraintsA(int n, int m, GRBVar[][] xVars, GRBModel model) throws GRBException {
-		// Initial state distribution
-		double[] alpha = new double[n];
-		int iniState = mExplicitMDP.getInitialState();
-		alpha[iniState] = 1.0;
-
-		double gamma = ExplicitMDP.DEFAULT_DISCOUNT_FACTOR;
-
-		// Constraints: sum_a(x_ja) - gamma * sum_i,a(x_ia * p_iaj) = alpha_j, for all j
-		for (int j = 0; j < n; j++) {
-			String constraintName = "constraintA_" + j;
-			GRBLinExpr constraintLinExpr = new GRBLinExpr();
-
-			// sum_a(x_ja)
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia term when action a is not applicable in state i
-				if (mExplicitMDP.isActionApplicable(j, a)) {
-					constraintLinExpr.addTerm(1.0, xVars[j][a]);
-				}
-			}
-
-			// - gamma * sum_i,a(x_ia * p_iaj)
-			double coeff = -1 * gamma;
-			for (int i = 0; i < n; i++) {
-				for (int a = 0; a < m; a++) {
-					// Exclude any x_ia term when action a is not applicable in state i
-					if (mExplicitMDP.isActionApplicable(i, a)) {
-						double p = mExplicitMDP.getTransitionProbability(i, a, j);
-						double termCoeff = coeff * p;
-
-						// - gamma * p_iaj * x_ia
-						constraintLinExpr.addTerm(termCoeff, xVars[i][a]);
-					}
-				}
-			}
-
-			// Add constraint: [...] = alpha_j
-			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[j], constraintName);
-		}
 	}
 
 	/**
@@ -447,7 +416,7 @@ public class ConstrainedMDPSolver {
 	 */
 	private boolean hasNonZeroProbVisited(int i, double[][] xResults) {
 		int m = mExplicitMDP.getNumActions();
-	
+
 		// sum_a(x_ia)
 		double probVisited = 0;
 		for (int a = 0; a < m; a++) {
@@ -455,7 +424,7 @@ public class ConstrainedMDPSolver {
 				probVisited += xResults[i][a];
 			}
 		}
-	
+
 		// Check whether sum_a(x_ia) > 0
 		return probVisited > 0;
 	}
@@ -479,91 +448,6 @@ public class ConstrainedMDPSolver {
 		}
 		assert consistencyCheckDeltaConstraints(n, m, deltaResults);
 		assert consistencyCheckOMDeltaConstraints(n, m, xResults, deltaResults, upperBoundOM);
-	}
-
-	private boolean consistencyCheckConstraintsA(int n, int m, double[][] xResults) {
-		// Initial state distribution
-		double[] alpha = new double[n];
-		int iniState = mExplicitMDP.getInitialState();
-		alpha[iniState] = 1.0;
-
-		double gamma = ExplicitMDP.DEFAULT_DISCOUNT_FACTOR;
-
-		// Constraints: sum_a(x_ja) - gamma * sum_i,a(x_ia * p_iaj) = alpha_j, for all j
-		for (int j = 0; j < n; j++) {
-			double sum = 0;
-
-			// sum_a(x_ja)
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia term when action a is not applicable in state i
-				if (mExplicitMDP.isActionApplicable(j, a)) {
-					sum += xResults[j][a];
-				}
-			}
-
-			// - gamma * sum_i,a(x_ia * p_iaj)
-			double coeff = -1 * gamma;
-			for (int i = 0; i < n; i++) {
-				for (int a = 0; a < m; a++) {
-					// Exclude any x_ia term when action a is not applicable in state i
-					if (mExplicitMDP.isActionApplicable(i, a)) {
-						double p = mExplicitMDP.getTransitionProbability(i, a, j);
-						double termCoeff = coeff * p;
-
-						// - gamma * p_iaj * x_ia
-						sum += termCoeff * xResults[i][a];
-					}
-				}
-			}
-
-			// GRB FeasibilityTol
-			if (Math.abs(sum - alpha[j]) > 1e-6) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * Check whether the results of x_ia satisfy the constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all
-	 * k.
-	 * 
-	 * @param n
-	 * @param m
-	 * @param xResults
-	 * @return Whether the results of x_ia satisfy: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k
-	 */
-	private boolean consistencyCheckConstraintsB(int n, int m, double[][] xResults) {
-		// Non-objective cost functions start at index 1 in ExplicitMDP
-		for (int k = 1; k < mUpperBoundConstraints.length; k++) {
-			if (mUpperBoundConstraints[k] == null) {
-				// Skip -- there is no constraint on this cost function k
-				continue;
-			}
-
-			double sum = 0;
-			for (int i = 0; i < n; i++) {
-				for (int a = 0; a < m; a++) {
-					if (mExplicitMDP.isActionApplicable(i, a)) {
-						// Transition k-cost: c^k_ia
-						// OR
-						// State k-cost: c^k_i
-						double stepCost = isTransitionCost() ? mExplicitMDP.getTransitionCost(k, i, a)
-								: mExplicitMDP.getStateCost(k, i);
-
-						// c^k_ia * x_ia
-						// OR
-						// c^k_i * x_ia
-						sum += stepCost * xResults[i][a];
-					}
-				}
-			}
-
-			if (sum > mUpperBoundConstraints[k]) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	/**
@@ -626,7 +510,7 @@ public class ConstrainedMDPSolver {
 				// Exclude any pi_ia term when action a is not applicable in state i
 				if (mExplicitMDP.isActionApplicable(i, a)) {
 					double pi = policy[i][a];
-	
+
 					// Check for any randomized decision
 					if (pi > 0 && pi < 1) {
 						return false;

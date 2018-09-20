@@ -12,6 +12,8 @@ import solver.common.ExplicitMDP;
 
 public class GRBSolverUtils {
 
+	public static final double DEFAULT_DISCOUNT_FACTOR = 0.99;
+
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -63,7 +65,7 @@ public class GRBSolverUtils {
 		int iniState = explicitMDP.getInitialState();
 
 		for (int i = 0; i < n; i++) {
-			if (goals.contains(i) || iniState == i) {
+			if (goals.contains(Integer.valueOf(i)) || iniState == i) {
 				// Exclude goal states G and initial state s0
 				continue;
 			}
@@ -186,7 +188,44 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Add coeff * in(i) term to a given linear expression, where in(i) = sum_j,a (x_ja * P(i|j,a)).
+	 * Add the discounted flow-conservation constraints:
+	 * 
+	 * out(i) - gamma * in(i) = alpha_i, for all i in S, where alpha is the initial state distribution.
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param xVars
+	 *            : Occupation measure variables
+	 * @param model
+	 *            : GRB model to which to add the cost-k constraint
+	 * @throws GRBException
+	 */
+	public static void addDiscountedFlowConservationConstraints(ExplicitMDP explicitMDP, GRBVar[][] xVars,
+			GRBModel model) throws GRBException {
+		int n = explicitMDP.getNumStates();
+
+		// Initial state distribution
+		double[] alpha = new double[n];
+		int iniState = explicitMDP.getInitialState();
+		alpha[iniState] = 1.0;
+
+		double gamma = DEFAULT_DISCOUNT_FACTOR;
+
+		// Constraints: sum_a (x_ia) - gamma * sum_j,a (x_ja * P(i|j,a)) = alpha_j, for all i in S
+		for (int i = 0; i < n; i++) {
+			String constraintName = "constraint_" + i;
+			GRBLinExpr constraintLinExpr = new GRBLinExpr();
+
+			addOutTerm(i, 1, constraintLinExpr, xVars, explicitMDP);
+			addInTerm(i, -1 * gamma, constraintLinExpr, xVars, explicitMDP);
+
+			// Add constraint
+			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[i], constraintName);
+		}
+	}
+
+	/**
+	 * Add coeff * in(i) term to a given linear expression, where in(i) = sum_j,a (x_ja * P(i|j,a)), for all i in S.
 	 * 
 	 * @param i
 	 * @param coeff
@@ -212,7 +251,7 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Add coeff * out(i) term to a given linear expression, where out(i) = sum_a (x_ia).
+	 * Add coeff * out(i) term to a given linear expression, where out(i) = sum_a (x_ia), for all i in S \ G.
 	 * 
 	 * @param i
 	 * @param coeff
@@ -239,7 +278,7 @@ public class GRBSolverUtils {
 		int iniState = explicitMDP.getInitialState();
 
 		for (int i = 0; i < n; i++) {
-			if (goals.contains(i) || iniState == i) {
+			if (goals.contains(Integer.valueOf(i)) || iniState == i) {
 				// Exclude goal states G and initial state s0
 				continue;
 			}
@@ -295,6 +334,31 @@ public class GRBSolverUtils {
 			}
 		}
 		return sum <= upperBound;
+	}
+
+	public static boolean consistencyCheckDiscountedFlowConservationConstraints(double[][] xResults,
+			ExplicitMDP explicitMDP) {
+		int n = explicitMDP.getNumStates();
+
+		// Initial state distribution
+		double[] alpha = new double[n];
+		int iniState = explicitMDP.getInitialState();
+		alpha[iniState] = 1.0;
+
+		double gamma = GRBSolverUtils.DEFAULT_DISCOUNT_FACTOR;
+
+		// Constraints: sum_a (x_ia) - gamma * sum_j,a (x_ja * P(i|j,a)) = alpha_j, for all i in S
+		for (int i = 0; i < n; i++) {
+			double outValue = getOutValue(i, xResults, explicitMDP);
+			double inValue = getInValue(i, xResults, explicitMDP);
+			double diff = outValue - gamma * inValue;
+
+			// GRB FeasibilityTol
+			if (Math.abs(diff - alpha[i]) > 1e-6) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static double getInValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {

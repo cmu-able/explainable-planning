@@ -13,6 +13,7 @@ import solver.common.ExplicitMDP;
 public class GRBSolverUtils {
 
 	public static final double DEFAULT_DISCOUNT_FACTOR = 0.99;
+	private static final double DEFAULT_FEASIBILITY_TOL = 1e-6;
 
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
@@ -286,7 +287,7 @@ public class GRBSolverUtils {
 			double outValue = getOutValue(i, xResults, explicitMDP);
 			double inValue = getInValue(i, xResults, explicitMDP);
 
-			if (outValue - inValue != 0) {
+			if (!approximatelyEquals(outValue, inValue)) {
 				return false;
 			}
 		}
@@ -297,7 +298,7 @@ public class GRBSolverUtils {
 		int iniState = explicitMDP.getInitialState();
 		double outValue = getOutValue(iniState, xResults, explicitMDP);
 		double inValue = getInValue(iniState, xResults, explicitMDP);
-		return outValue - inValue == 1;
+		return approximatelyEquals(outValue - inValue, 1);
 	}
 
 	public static boolean consistencyCheckSinksFlowConstraint(double[][] xResults, ExplicitMDP explicitMDP) {
@@ -306,7 +307,7 @@ public class GRBSolverUtils {
 			double inValue = getInValue(goal, xResults, explicitMDP);
 			sum += inValue;
 		}
-		return sum == 1;
+		return approximatelyEquals(sum, 1);
 	}
 
 	public static boolean consistencyCheckCostConstraint(double[][] xResults, ExplicitMDP explicitMDP,
@@ -354,7 +355,7 @@ public class GRBSolverUtils {
 			double diff = outValue - gamma * inValue;
 
 			// GRB FeasibilityTol
-			if (Math.abs(diff - alpha[i]) > 1e-6) {
+			if (!approximatelyEquals(diff, alpha[i])) {
 				return false;
 			}
 		}
@@ -391,5 +392,9 @@ public class GRBSolverUtils {
 			}
 		}
 		return outValue;
+	}
+
+	static boolean approximatelyEquals(double valueA, double valueB) {
+		return Math.abs(valueA - valueB) <= DEFAULT_FEASIBILITY_TOL;
 	}
 }

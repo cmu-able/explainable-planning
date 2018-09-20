@@ -181,7 +181,9 @@ public class Verbalizer {
 		PolicyInfo altPolicyInfo = tradeoff.getAlternativePolicyInfo();
 		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaGains = tradeoff.getQAGains();
 		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaLosses = tradeoff.getQALosses();
-		File altPolicyJsonFile = mPolicyWriter.writePolicy(altPolicyInfo.getPolicy(), "altPolicy" + index + ".json");
+		Policy alternativePolicy = altPolicyInfo.getPolicy();
+		File altPolicyJsonFile = mPolicyWriter.writePolicy(alternativePolicy, "altPolicy" + index + ".json");
+		mPolicyJsonFiles.put(alternativePolicy, altPolicyJsonFile);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("Alternatively, following this policy [");

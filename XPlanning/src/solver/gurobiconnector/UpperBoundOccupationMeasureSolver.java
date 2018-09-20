@@ -80,7 +80,7 @@ public class UpperBoundOccupationMeasureSolver {
 		model.dispose();
 		env.dispose();
 
-		if (GRBSolverUtils.consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP)) {
+		if (!GRBSolverUtils.consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP)) {
 			throw new IllegalStateException("Discounted flow-conservation constraints violated");
 		}
 

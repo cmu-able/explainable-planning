@@ -120,30 +120,30 @@ public class ConstrainedMDPSolver {
 	}
 
 	public double[][] solveOptimalPolicy() throws GRBException {
+		double[][] occupationMeasure = solveOccupationMeasure();
+
+		if (occupationMeasure.length == 0) {
+			// No solution found
+			return occupationMeasure;
+		}
+
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 		double[][] policy = new double[n][m];
-		double[][] occupationMeasure = solveOccupationMeasure();
 
 		for (int i = 0; i < n; i++) {
-			// sum_a(x_ia)
-			double denom = 0;
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia value when action a is not applicable in state i
-				if (mExplicitMDP.isActionApplicable(i, a)) {
-					denom += occupationMeasure[i][a];
-				}
-			}
+			// out(i) = sum_a (x_ia)
+			double denom = GRBSolverUtils.getOutValue(i, occupationMeasure, mExplicitMDP);
 
 			if (denom > 0) {
 				// Interpret occupation measure x_ia as the total expected discounted number of times action a is
 				// executed in state i.
-				// When sum_a(x_ia) > 0, it means state i is reachable.
+				// When sum_a (x_ia) > 0, it means state i is reachable.
 
 				for (int a = 0; a < m; a++) {
 					// Exclude any x_ia value when action a is not applicable in state i
 					if (mExplicitMDP.isActionApplicable(i, a)) {
-						// pi_ia = x_ia / sum_a(x_ia)
+						// pi_ia = x_ia / sum_a (x_ia)
 						policy[i][a] = occupationMeasure[i][a] / denom;
 					}
 				}
@@ -201,6 +201,13 @@ public class ConstrainedMDPSolver {
 
 		// Solve optimization problem for x_ia and Delta_ia
 		model.optimize();
+
+		int numSolutions = model.get(GRB.IntAttr.SolCount);
+
+		if (numSolutions == 0) {
+			// No solution found
+			return new double[0][0];
+		}
 
 		// Query results: optimal values of x_ia and Delta_ia
 		double[][] xResults = model.get(GRB.DoubleAttr.X, xVars);

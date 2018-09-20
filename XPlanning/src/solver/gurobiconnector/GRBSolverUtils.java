@@ -361,7 +361,7 @@ public class GRBSolverUtils {
 		return true;
 	}
 
-	private static double getInValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+	static double getInValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double inValue = 0;
@@ -379,7 +379,7 @@ public class GRBSolverUtils {
 		return inValue;
 	}
 
-	private static double getOutValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+	static double getOutValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
 		int m = explicitMDP.getNumActions();
 		double outValue = 0;
 

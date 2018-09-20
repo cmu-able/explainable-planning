@@ -49,7 +49,7 @@ public class MobileRobotAlternativeExplorerTest {
 
 			if (altPolicy == null) {
 				SimpleConsoleLogger
-						.log(String.format("No alternative found that improves %s .", TravelTimeQFunction.NAME));
+						.log(String.format("No alternative found that improves %s.", TravelTimeQFunction.NAME));
 			} else {
 				printPrismDTMCAndProperties(prismConnector, altPolicy);
 			}

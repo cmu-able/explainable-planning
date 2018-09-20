@@ -21,6 +21,11 @@ public class GRBPolicyReader {
 
 	public Policy readPolicyFromExplicitPolicy(double[][] explicitPolicy, ExplicitMDP explicitMDP)
 			throws VarNotFoundException, IOException {
+		if (explicitPolicy.length == 0) {
+			// No solution found
+			return null;
+		}
+
 		Map<Integer, StateVarTuple> stateIndices = mPrismExplicitModelReader.readStatesFromFile();
 
 		Policy policy = new Policy();

@@ -17,6 +17,8 @@ import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.qfactors.MoveToAction;
 import explanation.analysis.Explainer;
+import explanation.analysis.Explanation;
+import explanation.verbalization.Verbalizer;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
@@ -51,11 +53,14 @@ public class MobileRobotExplanationTest {
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConn.terminate();
 
-		Vocabulary vocabulary = getVocabulary(xmdp);
-		Explainer explainer = new Explainer(prismConnSetttings, vocabulary, POLICY_JSON_PATH);
-		String explanation = explainer.explain(missionName, xmdp, policy);
+		Explainer explainer = new Explainer(prismConnSetttings);
+		Explanation explanation = explainer.explain(xmdp, policy);
 
-		SimpleConsoleLogger.log("Explanation", explanation, false);
+		Vocabulary vocabulary = getVocabulary(xmdp);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICY_JSON_PATH);
+		String verbalization = verbalizer.verbalize(missionName, explanation);
+
+		SimpleConsoleLogger.log("Explanation", verbalization, false);
 	}
 
 	@DataProvider(name = "xmdpProblems")

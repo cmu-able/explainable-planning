@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import explanation.analysis.EventBasedQAValue;
+import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.Tradeoff;
 import language.mdp.QSpace;
@@ -29,8 +30,11 @@ public class Verbalizer {
 		mPolicyWriter = new PolicyWriter(policyJsonDir);
 	}
 
-	public String verbalize(String missionName, PolicyInfo solnPolicyInfo, QSpace qSpace, Set<Tradeoff> tradeoffs)
-			throws IOException {
+	public String verbalize(String missionName, Explanation explanation) throws IOException {
+		PolicyInfo solnPolicyInfo = explanation.getSolutionPolicyInfo();
+		QSpace qSpace = explanation.getQSpace();
+		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
+
 		String policyJsonFilename = String.format("%s_policy.json", missionName);
 		File policyJsonFile = mPolicyWriter.writePolicy(solnPolicyInfo.getPolicy(), policyJsonFilename);
 

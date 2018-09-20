@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import explanation.verbalization.Verbalizer;
-import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
@@ -27,15 +25,13 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 public class Explainer {
 
 	private PrismConnectorSettings mConnSettings;
-	private Verbalizer mVerbalizer;
 
-	public Explainer(PrismConnectorSettings prismConnectorSettings, Vocabulary vocabulary, String policyJsonDir) {
+	public Explainer(PrismConnectorSettings prismConnectorSettings) {
 		mConnSettings = prismConnectorSettings;
-		mVerbalizer = new Verbalizer(vocabulary, policyJsonDir);
 	}
 
-	public String explain(String missionName, XMDP xmdp, Policy policy) throws PrismException, ResultParsingException,
-			XMDPException, IOException, ExplicitModelParsingException, GRBException {
+	public Explanation explain(XMDP xmdp, Policy policy) throws PrismException, ResultParsingException, XMDPException,
+			IOException, ExplicitModelParsingException, GRBException {
 		// PrismConnector
 		// Create a new PrismConnector for calculating the QA values of a given policy
 		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);
@@ -59,7 +55,8 @@ public class Explainer {
 		}
 		// Close down PRISM
 		prismConnector.terminate();
-		return mVerbalizer.verbalize(missionName, solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
+
+		return new Explanation(solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
 	}
 
 	private PolicyInfo buildPolicyInfo(Policy policy, QSpace qSpace, PrismConnector prismConnector)

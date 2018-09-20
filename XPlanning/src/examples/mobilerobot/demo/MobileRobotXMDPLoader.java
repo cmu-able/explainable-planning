@@ -1,4 +1,4 @@
-package examples.mobilerobot.tests;
+package examples.mobilerobot.demo;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import examples.mobilerobot.dsm.parser.OcclusionParser;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 
-public class MobileRobotTestLoader {
+public class MobileRobotXMDPLoader {
 
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
@@ -31,7 +31,7 @@ public class MobileRobotTestLoader {
 	private File mMapJsonDir;
 	private File mMissionJsonDir;
 
-	public MobileRobotTestLoader(String mapJsonDirPath, String missionJsonDirPath) {
+	public MobileRobotXMDPLoader(String mapJsonDirPath, String missionJsonDirPath) {
 		mMapJsonDir = new File(mapJsonDirPath);
 		mMissionJsonDir = new File(missionJsonDirPath);
 		AreaParser areaParser = new AreaParser();

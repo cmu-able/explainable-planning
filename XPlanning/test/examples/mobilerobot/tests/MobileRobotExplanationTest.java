@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
@@ -68,7 +69,7 @@ public class MobileRobotExplanationTest {
 		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
 
-		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
 		Object[][] data = new Object[missionJsonFiles.length][2];

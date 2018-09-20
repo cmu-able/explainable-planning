@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
@@ -84,7 +85,7 @@ public class MobileRobotXMDPTest {
 		SimpleConsoleLogger.log("Loading maps from", mapJsonDirPath, true);
 		SimpleConsoleLogger.log("Loading missions from", missionJsonDirPath, true);
 
-		MobileRobotTestLoader testLoader = new MobileRobotTestLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
 		Object[][] data = new Object[missionJsonFiles.length][2];

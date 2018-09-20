@@ -2,6 +2,7 @@ package explanation.verbalization;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,6 +18,7 @@ import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.metrics.NonStandardMetricQFunction;
+import language.policy.Policy;
 import language.qfactors.IAction;
 import uiconnector.PolicyWriter;
 
@@ -24,6 +26,7 @@ public class Verbalizer {
 
 	private Vocabulary mVocabulary;
 	private PolicyWriter mPolicyWriter;
+	private Map<Policy, File> mPolicyJsonFiles = new HashMap<>();
 
 	public Verbalizer(Vocabulary vocabulary, String policyJsonDir) {
 		mVocabulary = vocabulary;
@@ -36,7 +39,9 @@ public class Verbalizer {
 		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
 
 		String policyJsonFilename = String.format("%s_policy.json", missionName);
-		File policyJsonFile = mPolicyWriter.writePolicy(solnPolicyInfo.getPolicy(), policyJsonFilename);
+		Policy solutionPolicy = solnPolicyInfo.getPolicy();
+		File policyJsonFile = mPolicyWriter.writePolicy(solutionPolicy, policyJsonFilename);
+		mPolicyJsonFiles.put(solutionPolicy, policyJsonFile);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("I'm planning to follow this policy [");
@@ -57,6 +62,10 @@ public class Verbalizer {
 			i++;
 		}
 		return builder.toString();
+	}
+
+	public File getPolicyJsonFile(Policy policy) {
+		return mPolicyJsonFiles.get(policy);
 	}
 
 	private String verbalizeQAs(PolicyInfo policyInfo, QSpace qSpace) {

@@ -28,16 +28,16 @@ public class UpperBoundOccupationMeasureSolver {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		// From the constraint: x_ia >=0 for all i, a
-		double maxX = 0;
+		double upperBoundX = 0;
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
 				// Exclude any x_ia value when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
-					maxX = Math.max(maxX, xResults[i][a]);
+					upperBoundX += xResults[i][a];
 				}
 			}
 		}
-		return maxX;
+		return upperBoundX;
 	}
 
 	/**

@@ -1,0 +1,116 @@
+{
+  "mpr" : 20,
+  "map" : [
+    {
+      "node-id" : "l0",
+      "coords" : {
+        "x" : 0,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l1", "l3"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l1",
+      "coords" : {
+        "x" : 200,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l0", "l2"
+      ],
+      "area" : "PRIVATE"
+    },
+    {
+      "node-id" : "l2",
+      "coords" : {
+        "x" : 400,
+        "y" : 0
+      },
+      "connected-to" : [
+        "l1", "l5"
+      ],
+      "area" : "PRIVATE"
+    },
+    {
+      "node-id" : "l3",
+      "coords" : {
+        "x" : 0,
+        "y" : 200
+      },
+      "connected-to" : [
+        "l0", "l4", "l6"
+      ],
+      "area" : "SEMI-PRIVATE"
+    },
+    {
+      "node-id" : "l4",
+      "coords" : {
+        "x" : 200,
+        "y" : 200
+      },
+      "connected-to" : [
+        "l3", "l5"
+      ],
+      "area" : "SEMI-PRIVATE"
+    },
+    {
+      "node-id" : "l5",
+      "coords" : {
+        "x" : 400,
+        "y" : 200
+      },
+      "connected-to" : [
+        "l2", "l4", "l8"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l6",
+      "coords" : {
+        "x" : 0,
+        "y" : 400
+      },
+      "connected-to" : [
+        "l3", "l7"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l7",
+      "coords" : {
+        "x" : 200,
+        "y" : 400
+      },
+      "connected-to" : [
+        "l6", "l8"
+      ],
+      "area" : "PUBLIC"
+    },
+    {
+      "node-id" : "l8",
+      "coords" : {
+        "x" : 400,
+        "y" : 400
+      },
+      "connected-to" : [
+        "l5", "l7"
+      ],
+      "area" : "PUBLIC"
+    }
+  ],
+  "obstacles" : [
+    {
+      "from-id" : "l3",
+      "to-id" : "l4",
+      "occlusion" : "PARTIALLY_OCCLUDED"
+    },
+    {
+      "from-id" : "l5",
+      "to-id" : "l8",
+      "occlusion" : "PARTIALLY_OCCLUDED"
+    }
+  ]
+}

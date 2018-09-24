@@ -59,10 +59,10 @@ public class AlternativeExplorer {
 		for (IQFunction<?, ?> qFunction : xmdp.getQSpace()) {
 			frontier.add(qFunction);
 		}
-		Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 
 		// Generate alternatives by improving each QA (one at a time) to the next best value, if exists
-		while (frontierIter.hasNext()) {
+		while (!frontier.isEmpty()) {
+			Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 			IQFunction<?, ?> qFunction = frontierIter.next();
 
 			if (hasZeroAttributeCost(qFunction)) {

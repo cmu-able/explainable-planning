@@ -43,7 +43,7 @@
       "connected-to" : [
         "l0", "l4", "l6"
       ],
-      "area" : "SEMI-PRIVATE"
+      "area" : "SEMI_PRIVATE"
     },
     {
       "node-id" : "l4",
@@ -54,7 +54,7 @@
       "connected-to" : [
         "l3", "l5"
       ],
-      "area" : "SEMI-PRIVATE"
+      "area" : "SEMI_PRIVATE"
     },
     {
       "node-id" : "l5",

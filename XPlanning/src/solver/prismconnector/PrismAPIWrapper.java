@@ -176,7 +176,16 @@ public class PrismAPIWrapper {
 		PrismMDPMultiSolutionMethod mdpMultiSolutionMethod = mPrismConfig.getMDPMultiSolutionMethod();
 		mPrism.getSettings().set(PrismSettings.PRISM_MDP_MULTI_SOLN_METHOD, mdpMultiSolutionMethod.toString());
 
-		return queryPropertyHelper(modulesFile, propertyStr, 0);
+		try {
+			return queryPropertyHelper(modulesFile, propertyStr, 0);
+		} catch (PrismException e) {
+			// This maybe because the selected MDP solution method (Value iteration or Gauss-Seidel) did not converge
+			// within 10000 iterations.
+			// Change PRISM MDP solution method to "Policy iteration"
+			PrismMDPSolutionMethod policyIteration = PrismMDPSolutionMethod.POLICY_ITERATION;
+			mPrism.getSettings().set(PrismSettings.PRISM_MDP_SOLN_METHOD, policyIteration.toString());
+			return queryPropertyHelper(modulesFile, propertyStr, 0);
+		}
 	}
 
 	/**

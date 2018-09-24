@@ -82,7 +82,7 @@ public class AlternativeExplorer {
 
 				// For other QAs that have been improved as a side effect, remove them from the set of QAs to be
 				// explored
-				update(frontier, alternative);
+				update(frontierIter, alternative);
 			}
 		}
 		return alternatives;
@@ -120,9 +120,8 @@ public class AlternativeExplorer {
 		return currQACost == 0;
 	}
 
-	private void update(Set<IQFunction<?, ?>> frontier, Policy alternative)
+	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy alternative)
 			throws XMDPException, PrismException, ResultParsingException {
-		Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
 			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);

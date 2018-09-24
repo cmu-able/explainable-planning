@@ -53,6 +53,13 @@ public class Connection {
 		return attributeType.cast(mEdgeAttributes.get(name));
 	}
 
+	public <E extends IEdgeAttribute> E getConnectionAttribute(Class<E> attributeType, String name, E defaultValue) {
+		if (!mEdgeAttributes.containsKey(name)) {
+			return defaultValue;
+		}
+		return attributeType.cast(mEdgeAttributes.get(name));
+	}
+
 	public LocationNode getOtherNode(LocationNode node) throws LocationNodeNotFoundException {
 		if (!getNodeA().equals(node) && !getNodeB().equals(node)) {
 			throw new LocationNodeNotFoundException(node);

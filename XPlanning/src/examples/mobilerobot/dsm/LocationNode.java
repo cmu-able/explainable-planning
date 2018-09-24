@@ -47,6 +47,13 @@ public class LocationNode {
 		return attributeType.cast(mNodeAttributes.get(name));
 	}
 
+	public <E extends INodeAttribute> E getNodeAttribute(Class<E> attributeType, String name, E defaultValue) {
+		if (!mNodeAttributes.containsKey(name)) {
+			return defaultValue;
+		}
+		return attributeType.cast(mNodeAttributes.get(name));
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

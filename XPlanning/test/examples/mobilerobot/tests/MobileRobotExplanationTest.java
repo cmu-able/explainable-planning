@@ -37,7 +37,7 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotExplanationTest {
 
-	static final String POLICY_JSON_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/policies";
+	static final String POLICY_JSON_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
@@ -58,8 +58,8 @@ public class MobileRobotExplanationTest {
 		Explanation explanation = explainer.explain(xmdp, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICY_JSON_PATH);
-		String verbalization = verbalizer.verbalize(missionName, explanation);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICY_JSON_PATH + "/" + missionName);
+		String verbalization = verbalizer.verbalize(explanation);
 
 		SimpleConsoleLogger.log("Explanation", verbalization, false);
 	}

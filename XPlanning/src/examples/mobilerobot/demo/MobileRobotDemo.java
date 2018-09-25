@@ -35,10 +35,10 @@ import uiconnector.ExplanationWriter;
 public class MobileRobotDemo {
 	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
 	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
-	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism/models";
-	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/prism/advs";
-	static final String POLICIES_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/policies";
-	static final String EXPLANATIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/explanations";
+	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
+	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
+	static final String POLICIES_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
+	static final String EXPLANATIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
 
 	private MobileRobotXMDPLoader mXMDPLoader;
 	private PrismConfiguration mPrismConfig = new PrismConfiguration();
@@ -67,7 +67,7 @@ public class MobileRobotDemo {
 		Explanation explanation = explainer.explain(xmdp, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICIES_PATH);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICIES_PATH + "/" + missionName);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(EXPLANATIONS_PATH, verbalizer);

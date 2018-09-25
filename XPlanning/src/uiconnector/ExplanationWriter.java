@@ -25,7 +25,7 @@ public class ExplanationWriter {
 
 	public File writeExplanation(String missionName, Explanation explanation, String explanationJsonFilename)
 			throws IOException {
-		String verbalization = mVerbalizer.verbalize(missionName, explanation);
+		String verbalization = mVerbalizer.verbalize(explanation);
 
 		Policy solutionPolicy = explanation.getSolutionPolicyInfo().getPolicy();
 		File solnPolicyJsonFile = mVerbalizer.getPolicyJsonFile(solutionPolicy);

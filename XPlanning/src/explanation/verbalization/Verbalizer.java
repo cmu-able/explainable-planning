@@ -33,12 +33,12 @@ public class Verbalizer {
 		mPolicyWriter = new PolicyWriter(policyJsonDir);
 	}
 
-	public String verbalize(String missionName, Explanation explanation) throws IOException {
+	public String verbalize(Explanation explanation) throws IOException {
 		PolicyInfo solnPolicyInfo = explanation.getSolutionPolicyInfo();
 		QSpace qSpace = explanation.getQSpace();
 		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
 
-		String policyJsonFilename = String.format("%s_policy.json", missionName);
+		String policyJsonFilename = "solnPolicy.json";
 		Policy solutionPolicy = solnPolicyInfo.getPolicy();
 		File policyJsonFile = mPolicyWriter.writePolicy(solutionPolicy, policyJsonFilename);
 		mPolicyJsonFiles.put(solutionPolicy, policyJsonFile);

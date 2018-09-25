@@ -19,10 +19,13 @@ import language.qfactors.StateVar;
 
 public class PolicyWriter {
 
-	private String mPolicyJsonDir;
+	private File mPolicyJsonDir;
 
-	public PolicyWriter(String policyJsonDir) {
-		mPolicyJsonDir = policyJsonDir;
+	public PolicyWriter(String policyJsonPath) {
+		mPolicyJsonDir = new File(policyJsonPath);
+		if (!mPolicyJsonDir.exists()) {
+			mPolicyJsonDir.mkdirs();
+		}
 	}
 
 	public File writePolicy(Policy policy, String policyJsonFilename) throws IOException {

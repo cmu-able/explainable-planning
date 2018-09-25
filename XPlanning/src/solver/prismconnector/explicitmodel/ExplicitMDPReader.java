@@ -209,7 +209,7 @@ public class ExplicitMDPReader {
 		int numRewardStructs = mQFunctionEncoding.getNumRewardStructures();
 
 		// Reserve 0-slot for the optimization objective function
-		for (int k = 1; k < numRewardStructs; k++) {
+		for (int k = 1; k <= numRewardStructs; k++) {
 			File trewFile = mPrismModelPointer.getIndexedTransitionRewardsFile(k);
 			List<String> trewAllLines = readLinesFromFile(trewFile);
 			readTransitionCosts(k, trewAllLines, choicesToActions, explicitMDP);

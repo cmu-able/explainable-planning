@@ -451,7 +451,9 @@ public class ConstrainedMDPSolver {
 				continue;
 			}
 
-			assert GRBSolverUtils.consistencyCheckCostConstraint(xResults, mExplicitMDP, k, mUpperBoundConstraints[k]);
+			boolean satCostConstraint = GRBSolverUtils.consistencyCheckCostConstraint(xResults, mExplicitMDP, k,
+					mUpperBoundConstraints[k]);
+			assert satCostConstraint;
 		}
 		assert consistencyCheckDeltaConstraints(n, m, deltaResults);
 		assert consistencyCheckOMDeltaConstraints(n, m, xResults, deltaResults, upperBoundOM);

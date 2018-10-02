@@ -86,6 +86,15 @@ public class QFunctionEncodingScheme {
 		return mOrderedQFunctions;
 	}
 
+	/**
+	 * 
+	 * @param objectiveFunction
+	 * @return Whether a given objective function has a corresponding reward structure
+	 */
+	public boolean contains(IAdditiveCostFunction objectiveFunction) {
+		return mOrderedRewardStructs.contains(objectiveFunction);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

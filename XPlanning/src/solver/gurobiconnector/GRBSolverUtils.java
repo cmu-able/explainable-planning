@@ -476,9 +476,68 @@ public class GRBSolverUtils {
 	}
 
 	/**
+	 * Check, for all states i such that sum_a(x_ia) > 0, whether the property Delta_ia = 1 <=> x_ia > 0 holds.
+	 * 
+	 * @param xResults
+	 * @param deltaResults
+	 * @return Whether the property Delta_ia = 1 <=> x_ia > 0 holds for all states i such that sum_a(x_ia) > 0
+	 */
+	static boolean consistencyCheckResults(double[][] xResults, double[][] deltaResults, ExplicitMDP explicitMDP) {
+		int n = explicitMDP.getNumStates();
+		int m = explicitMDP.getNumActions();
+
+		for (int i = 0; i < n; i++) {
+			if (hasNonZeroProbVisited(i, xResults, explicitMDP)) {
+				// sum_a(x_ia) > 0
+
+				for (int a = 0; a < m; a++) {
+					// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+					if (explicitMDP.isActionApplicable(i, a)) {
+						double deltaResult = deltaResults[i][a];
+						double xResult = xResults[i][a];
+
+						if (!checkResultsConsistency(deltaResult, xResult)) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Check whether the state i has non-zero probability of being visited, i.e., sum_a(x_ia) > 0.
+	 * 
+	 * @param i
+	 * @param xResults
+	 * @param explicitMDP
+	 * @return Whether the state i has non-zero probability of being visited
+	 */
+	private static boolean hasNonZeroProbVisited(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+		int m = explicitMDP.getNumActions();
+
+		// sum_a(x_ia)
+		double probVisited = 0;
+		for (int a = 0; a < m; a++) {
+			if (explicitMDP.isActionApplicable(i, a)) {
+				probVisited += xResults[i][a];
+			}
+		}
+
+		// Check whether sum_a(x_ia) > 0
+		return probVisited > 0;
+	}
+
+	private static boolean checkResultsConsistency(double deltaResult, double xResult) {
+		return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0);
+	}
+
+	/**
 	 * Check whether the policy is deterministic.
 	 * 
 	 * @param policy
+	 * @param explicitMDP
 	 * @return Whether the policy is deterministic
 	 */
 	static boolean consistencyCheckDeterministicPolicy(double[][] policy, ExplicitMDP explicitMDP) {

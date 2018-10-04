@@ -28,7 +28,7 @@ public class AverageCostMDPSolver {
 	 * Solve for an optimal policy for the average-cost MDP.
 	 * 
 	 * @param policy
-	 *            : Policy (return parameter)
+	 *            : Return parameter of optimal policy
 	 * @return Whether a solution policy exists
 	 * @throws GRBException
 	 */
@@ -138,9 +138,9 @@ public class AverageCostMDPSolver {
 	 * out_v(i) = sum_a (v_ia).
 	 * 
 	 * @param xResults
-	 *            : Return parameter of x's results
+	 *            : Return parameter of x*_ia results
 	 * @param yResults
-	 *            : Return parameter of y's results
+	 *            : Return parameter of y*_ia results
 	 * @return Whether a feasible solution exists
 	 * @throws GRBException
 	 */
@@ -185,24 +185,22 @@ public class AverageCostMDPSolver {
 
 		int numSolutions = model.get(GRB.IntAttr.SolCount);
 
-		if (numSolutions == 0) {
-			// No solution found
-			return false;
+		if (numSolutions > 0) {
+			// Solution found
+			// Query results: optimal values of x_ia and Delta_ia
+			double[][] grbXResults = model.get(GRB.DoubleAttr.X, xVars);
+			double[][] grbYResults = model.get(GRB.DoubleAttr.X, yVars);
+
+			// Copy x_ia and y_ia results to the return parameters
+			System.arraycopy(grbXResults, 0, xResults, 0, grbXResults.length);
+			System.arraycopy(grbYResults, 0, yResults, 0, grbYResults.length);
 		}
-
-		// Query results: optimal values of x_ia and Delta_ia
-		double[][] grbXResults = model.get(GRB.DoubleAttr.X, xVars);
-		double[][] grbYResults = model.get(GRB.DoubleAttr.X, yVars);
-
-		// Copy x and y results to the return parameters
-		System.arraycopy(grbXResults, 0, xResults, 0, grbXResults.length);
-		System.arraycopy(grbYResults, 0, yResults, 0, grbYResults.length);
 
 		// Dispose of model and environment
 		model.dispose();
 		env.dispose();
 
-		return true;
+		return numSolutions > 0;
 	}
 
 	/**
@@ -223,10 +221,10 @@ public class AverageCostMDPSolver {
 			GRBLinExpr constraintLinExpr = new GRBLinExpr();
 
 			// Expression += out_x(i)
-			GRBSolverUtils.addOutTerm(i, 1, constraintLinExpr, xVars, mExplicitMDP);
+			GRBSolverUtils.addOutTerm(i, 1, mExplicitMDP, xVars, constraintLinExpr);
 
 			// Expression -= in_x(i)
-			GRBSolverUtils.addInTerm(i, -1, constraintLinExpr, xVars, mExplicitMDP);
+			GRBSolverUtils.addInTerm(i, -1, mExplicitMDP, xVars, constraintLinExpr);
 
 			// Add constraint
 			model.addConstr(constraintLinExpr, GRB.EQUAL, 0, constraintName);
@@ -257,13 +255,13 @@ public class AverageCostMDPSolver {
 			GRBLinExpr constraintLinExpr = new GRBLinExpr();
 
 			// Expression += out_x(i)
-			GRBSolverUtils.addOutTerm(i, 1, constraintLinExpr, xVars, mExplicitMDP);
+			GRBSolverUtils.addOutTerm(i, 1, mExplicitMDP, xVars, constraintLinExpr);
 
 			// Expression += out_y(i)
-			GRBSolverUtils.addOutTerm(i, 1, constraintLinExpr, yVars, mExplicitMDP);
+			GRBSolverUtils.addOutTerm(i, 1, mExplicitMDP, yVars, constraintLinExpr);
 
 			// Expression -= in_y(i)
-			GRBSolverUtils.addInTerm(i, -1, constraintLinExpr, yVars, mExplicitMDP);
+			GRBSolverUtils.addInTerm(i, -1, mExplicitMDP, yVars, constraintLinExpr);
 
 			// Add constraint
 			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[i], constraintName);

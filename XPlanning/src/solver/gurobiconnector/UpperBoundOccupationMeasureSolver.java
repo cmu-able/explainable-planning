@@ -12,6 +12,8 @@ import solver.common.ExplicitMDP;
 
 public class UpperBoundOccupationMeasureSolver {
 
+	private static final double DEFAULT_DISCOUNT_FACTOR = 0.99;
+
 	private UpperBoundOccupationMeasureSolver() {
 		throw new IllegalSelectorException();
 	}
@@ -61,15 +63,18 @@ public class UpperBoundOccupationMeasureSolver {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
+		int n = explicitMDP.getNumStates();
+		int m = explicitMDP.getNumActions();
+
 		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
-		GRBVar[][] xVars = GRBSolverUtils.createOccupationMeasureVars(explicitMDP, model);
+		GRBVar[][] xVars = GRBSolverUtils.createContinuousOptimizationVars("x", n, m, model);
 
 		// Set optimization objective
 		setOptimizationObjective(xVars, model, explicitMDP);
 
 		// Add constraints
-		GRBSolverUtils.addDiscountedFlowConservationConstraints(explicitMDP, xVars, model);
+		addDiscountedFlowConservationConstraints(explicitMDP, xVars, model);
 
 		// Solve optimization problem for x_ia
 		model.optimize();
@@ -80,9 +85,7 @@ public class UpperBoundOccupationMeasureSolver {
 		model.dispose();
 		env.dispose();
 
-		if (!GRBSolverUtils.consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP)) {
-			throw new IllegalStateException("Discounted flow-conservation constraints violated");
-		}
+		assert consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP);
 
 		return xResults;
 	}
@@ -113,5 +116,67 @@ public class UpperBoundOccupationMeasureSolver {
 
 		// Set objective
 		model.setObjective(objectiveLinExpr, GRB.MAXIMIZE);
+	}
+
+	/**
+	 * Add the discounted flow-conservation constraints:
+	 * 
+	 * out(i) - gamma * in(i) = alpha_i, for all i in S, where alpha is the initial state distribution.
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param xVars
+	 *            : Occupation measure variables
+	 * @param model
+	 *            : GRB model to which to add the constraints
+	 * @throws GRBException
+	 */
+	private static void addDiscountedFlowConservationConstraints(ExplicitMDP explicitMDP, GRBVar[][] xVars,
+			GRBModel model) throws GRBException {
+		int n = explicitMDP.getNumStates();
+
+		// Initial state distribution
+		double[] alpha = new double[n];
+		int iniState = explicitMDP.getInitialState();
+		alpha[iniState] = 1.0;
+
+		double gamma = DEFAULT_DISCOUNT_FACTOR;
+
+		// Constraints: sum_a (x_ia) - gamma * sum_j,a (x_ja * P(i|j,a)) = alpha_j, for all i in S
+		for (int i = 0; i < n; i++) {
+			String constraintName = "constraint_" + i;
+			GRBLinExpr constraintLinExpr = new GRBLinExpr();
+
+			GRBSolverUtils.addOutTerm(i, 1, explicitMDP, xVars, constraintLinExpr);
+			GRBSolverUtils.addInTerm(i, -1 * gamma, explicitMDP, xVars, constraintLinExpr);
+
+			// Add constraint
+			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[i], constraintName);
+		}
+	}
+
+	private static boolean consistencyCheckDiscountedFlowConservationConstraints(double[][] xResults,
+			ExplicitMDP explicitMDP) {
+		int n = explicitMDP.getNumStates();
+
+		// Initial state distribution
+		double[] alpha = new double[n];
+		int iniState = explicitMDP.getInitialState();
+		alpha[iniState] = 1.0;
+
+		double gamma = DEFAULT_DISCOUNT_FACTOR;
+
+		// Constraints: sum_a (x_ia) - gamma * sum_j,a (x_ja * P(i|j,a)) = alpha_j, for all i in S
+		for (int i = 0; i < n; i++) {
+			double outValue = GRBSolverUtils.getOutValue(i, xResults, explicitMDP);
+			double inValue = GRBSolverUtils.getInValue(i, xResults, explicitMDP);
+			double diff = outValue - gamma * inValue;
+
+			// GRB FeasibilityTol
+			if (!GRBSolverUtils.approximatelyEquals(diff, alpha[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

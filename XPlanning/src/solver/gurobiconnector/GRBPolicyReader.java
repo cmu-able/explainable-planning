@@ -19,22 +19,17 @@ public class GRBPolicyReader {
 		mPrismExplicitModelReader = prismExplicitModelReader;
 	}
 
-	public Policy readPolicyFromExplicitPolicy(double[][] explicitPolicy, ExplicitMDP explicitMDP)
+	public Policy readPolicyFromPolicyMatrix(double[][] policyMatrix, ExplicitMDP explicitMDP)
 			throws VarNotFoundException, IOException {
-		if (explicitPolicy.length == 0) {
-			// No solution found
-			return null;
-		}
-
 		Map<Integer, StateVarTuple> stateIndices = mPrismExplicitModelReader.readStatesFromFile();
 
 		Policy policy = new Policy();
 
-		for (int i = 0; i < explicitPolicy.length; i++) {
-			for (int a = 0; a < explicitPolicy[i].length; a++) {
+		for (int i = 0; i < policyMatrix.length; i++) {
+			for (int a = 0; a < policyMatrix[i].length; a++) {
 				String sanitizedActionName = explicitMDP.getActionNameAtIndex(a);
 
-				if (explicitPolicy[i][a] > 0 && !PrismExplicitModelReader.isAuxiliaryAction(sanitizedActionName)) {
+				if (policyMatrix[i][a] > 0 && !PrismExplicitModelReader.isAuxiliaryAction(sanitizedActionName)) {
 					// Probability of taking action a in state i is non-zero
 					// Skip any helper action
 

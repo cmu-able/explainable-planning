@@ -39,12 +39,23 @@ public class GRBConnector {
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints)
 			throws IOException, ExplicitModelParsingException, XMDPException, GRBException {
-		// Create a new ExplicitMDP for every new objective function, because ConstrainedMDPSolver will fill in the
+		// Create a new ExplicitMDP for every new objective function, because this method will fill in the
 		// ExplicitMDP with the objective costs
-		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP();
-		ConstrainedMDPSolver solver = new ConstrainedMDPSolver(explicitMDP, objectiveFunction, attrConstraints,
-				mQFunctionEncoding);
-		double[][] explicitPolicy = solver.solveOptimalPolicy();
-		return mPolicyReader.readPolicyFromExplicitPolicy(explicitPolicy, explicitMDP);
+		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP(objectiveFunction);
+
+		// Create upper-bounds for costs of ExplicitMDP
+		Double[] upperBounds = GRBSolverUtils.createUpperBounds(attrConstraints, mQFunctionEncoding);
+
+		SSPSolver solver = new SSPSolver(explicitMDP, upperBounds);
+		int n = explicitMDP.getNumStates();
+		int m = explicitMDP.getNumActions();
+		double[][] policy = new double[n][m];
+		boolean solutionFound = solver.solveOptimalPolicy(policy);
+
+		if (solutionFound) {
+			return mPolicyReader.readPolicyFromPolicyMatrix(policy, explicitMDP);
+		}
+
+		return null;
 	}
 }

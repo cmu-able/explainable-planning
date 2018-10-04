@@ -53,6 +53,8 @@ public class AverageCostMDPSolver {
 					fillPolicyForTransientState(policy, i, yResults);
 				}
 			}
+
+			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(policy, mExplicitMDP);
 		}
 
 		return solutionFound;
@@ -151,6 +153,10 @@ public class AverageCostMDPSolver {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
+		// Initial state distribution
+		double[] alpha = new double[n];
+		Arrays.fill(alpha, 1.0 / n);
+
 		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
 		GRBVar[][] xVars = GRBSolverUtils.createContinuousOptimizationVars("x", n, m, model);
@@ -167,7 +173,7 @@ public class AverageCostMDPSolver {
 
 		// Add constraints
 		addC1Constraints(xVars, model);
-		addC2Constraints(xVars, yVars, model);
+		addC2Constraints(alpha, xVars, yVars, model);
 
 		// Add constraints to ensure deterministic solution policy
 		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaVars, model);
@@ -180,20 +186,25 @@ public class AverageCostMDPSolver {
 			GRBSolverUtils.addCostConstraints(mUpperBounds, mExplicitMDP, xVars, model);
 		}
 
-		// Solve optimization problem for x_ia and y_ia
+		// Solve optimization problem for x_ia, y_ia, and Delta_ia
 		model.optimize();
 
 		int numSolutions = model.get(GRB.IntAttr.SolCount);
 
 		if (numSolutions > 0) {
 			// Solution found
-			// Query results: optimal values of x_ia and Delta_ia
+			// Query results: optimal values of x_ia, y_ia, and Delta_ia
 			double[][] grbXResults = model.get(GRB.DoubleAttr.X, xVars);
 			double[][] grbYResults = model.get(GRB.DoubleAttr.X, yVars);
+			double[][] grbDeltaResults = model.get(GRB.DoubleAttr.X, deltaVars);
 
 			// Copy x_ia and y_ia results to the return parameters
 			System.arraycopy(grbXResults, 0, xResults, 0, grbXResults.length);
 			System.arraycopy(grbYResults, 0, yResults, 0, grbYResults.length);
+
+			// Consistency checks
+			verifyAllConstraints(grbXResults, grbYResults, grbDeltaResults, alpha);
+			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaResults, mExplicitMDP);
 		}
 
 		// Dispose of model and environment
@@ -234,6 +245,8 @@ public class AverageCostMDPSolver {
 	/**
 	 * Add the constraints: out_x(i) + out_y(i) - in_y(i) = alpha_i, for all i in S.
 	 * 
+	 * @param alpha
+	 *            : Initial state distribution
 	 * @param xVars
 	 *            : Optimization x variables
 	 * @param yVars
@@ -242,12 +255,9 @@ public class AverageCostMDPSolver {
 	 *            : GRB model to which to add the constraints
 	 * @throws GRBException
 	 */
-	private void addC2Constraints(GRBVar[][] xVars, GRBVar[][] yVars, GRBModel model) throws GRBException {
+	private void addC2Constraints(double[] alpha, GRBVar[][] xVars, GRBVar[][] yVars, GRBModel model)
+			throws GRBException {
 		int n = mExplicitMDP.getNumStates();
-
-		// Initial state distribution
-		double[] alpha = new double[n];
-		Arrays.fill(alpha, 1.0 / n);
 
 		for (int i = 0; i < n; i++) {
 			String constraintName = "constraintC2_" + i;
@@ -266,6 +276,44 @@ public class AverageCostMDPSolver {
 			// Add constraint
 			model.addConstr(constraintLinExpr, GRB.EQUAL, alpha[i], constraintName);
 		}
+	}
+
+	private void verifyAllConstraints(double[][] xResults, double[][] yResults, double[][] deltaResults,
+			double[] alpha) {
+		assert consistencyCheckC1Constraints(xResults);
+		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
+		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, 1.0, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+	}
+
+	private boolean consistencyCheckC1Constraints(double[][] xResults) {
+		int n = mExplicitMDP.getNumStates();
+
+		for (int i = 0; i < n; i++) {
+			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
+			double inxValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
+
+			if (!GRBSolverUtils.approximatelyEquals(outxValue, inxValue)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean consistencyCheckC2Constraints(double[][] xResults, double[][] yResults, double[] alpha) {
+		int n = mExplicitMDP.getNumStates();
+
+		for (int i = 0; i < n; i++) {
+			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
+			double outyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
+			double inyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
+
+			if (!GRBSolverUtils.approximatelyEquals(outxValue + outyValue - inyValue, alpha[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }

@@ -44,7 +44,7 @@ public class Explainer {
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
 				encodings);
-		GRBConnector grbConnector = new GRBConnector(prismExplicitModelReader);
+		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, prismExplicitModelReader);
 
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
 		Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();

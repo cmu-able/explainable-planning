@@ -237,7 +237,9 @@ public class SSPSolver {
 		assert consistencyCheckSinksFlowConstraint(xResults);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		if (mUpperBounds != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		}
 	}
 
 	private boolean consistencyCheckFlowConservationConstraints(double[][] xResults) {

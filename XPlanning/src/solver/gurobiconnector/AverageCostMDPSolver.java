@@ -284,7 +284,9 @@ public class AverageCostMDPSolver {
 		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, 1.0, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		if (mUpperBounds != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		}
 	}
 
 	private boolean consistencyCheckC1Constraints(double[][] xResults) {

@@ -5,10 +5,14 @@ import language.mdp.StateVarTuple;
 import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
+import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 
 public class PrismPropertyTranslator {
+
+	private static final String DTMC_REWARD_QUERY = "=?";
+	private static final String MDP_MIN_REWARD_QUERY = "min=?";
 
 	private ValueEncodingScheme mEncodings;
 
@@ -22,18 +26,15 @@ public class PrismPropertyTranslator {
 	 *            : Goal of MDP
 	 * @param costFunction
 	 *            : Cost function of MDP
-	 * @return R{"cost"}min=? [ F {end predicate} ]
+	 * @param costCriterion
+	 *            : Cost criterion of MDP
+	 * @return R{"cost"}min=? [ F {end predicate} ] for SSP; R{"cost"}min=? [ S ] for average-cost MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildMDPCostMinProperty(StateVarTuple goal, CostFunction costFunction) throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(costFunction.getName());
-		builder.append("\"}min=? [ F ");
-		String endPredicate = buildEndPredicate(goal);
-		builder.append(endPredicate);
-		builder.append(" ]");
-		return builder.toString();
+	public String buildMDPCostMinProperty(StateVarTuple goal, CostFunction costFunction, CostCriterion costCriterion)
+			throws VarNotFoundException {
+		String sanitizedCostName = PrismTranslatorUtils.sanitizeNameString(costFunction.getName());
+		return buildRewardQueryProperty(sanitizedCostName, MDP_MIN_REWARD_QUERY, goal, costCriterion);
 	}
 
 	/**
@@ -83,19 +84,15 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param costFunction
 	 *            : Cost function of the corresponding MDP
-	 * @return R{"cost"}=? [ F {end predicate} ]
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return R{"cost"}=? [ F {end predicate} ] for SSP; R{"cost"}=? [ S ] for average-cost MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction)
+	public String buildDTMCCostQueryProperty(StateVarTuple goal, CostFunction costFunction, CostCriterion costCriterion)
 			throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(costFunction.getName());
-		builder.append("\"}=? [ F ");
-		String endPredicate = buildEndPredicate(goal);
-		builder.append(endPredicate);
-		builder.append(" ]");
-		return builder.toString();
+		String sanitizedCostName = PrismTranslatorUtils.sanitizeNameString(costFunction.getName());
+		return buildRewardQueryProperty(sanitizedCostName, DTMC_REWARD_QUERY, goal, costCriterion);
 	}
 
 	/**
@@ -104,19 +101,15 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param qFunction
 	 *            : QA function of the value to be queried
-	 * @return R{"{QA name}"}=? [ F {end predicate} ]
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return R{"{QA name}"}=? [ F {end predicate} ] for SSP; R{"{QA name}"}=? [ S ] for average-cost MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction<?, ?> qFunction)
+	public String buildDTMCNumQueryProperty(StateVarTuple goal, IQFunction<?, ?> qFunction, CostCriterion costCriterion)
 			throws VarNotFoundException {
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(qFunction.getName());
-		builder.append("\"}=? [ F ");
-		String endPredicate = buildEndPredicate(goal);
-		builder.append(endPredicate);
-		builder.append(" ]");
-		return builder.toString();
+		String sanitizedQAName = PrismTranslatorUtils.sanitizeNameString(qFunction.getName());
+		return buildRewardQueryProperty(sanitizedQAName, DTMC_REWARD_QUERY, goal, costCriterion);
 	}
 
 	/**
@@ -125,33 +118,55 @@ public class PrismPropertyTranslator {
 	 *            : Goal of the corresponding MDP
 	 * @param event
 	 *            : Event to be counted
-	 * @return R{"{event name}_count"}=? [ F {end predicate} ]
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return R{"{event name}_count"}=? [ F {end predicate} ] for SSP; R{"{event name}_count"}=? [ S ] for average-cost
+	 *         MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCEventCountProperty(StateVarTuple goal, IEvent<?, ?> event) throws VarNotFoundException {
+	public String buildDTMCEventCountProperty(StateVarTuple goal, IEvent<?, ?> event, CostCriterion costCriterion)
+			throws VarNotFoundException {
 		String sanitizedEventName = PrismTranslatorUtils.sanitizeNameString(event.getName());
-		StringBuilder builder = new StringBuilder();
-		builder.append("R{\"");
-		builder.append(sanitizedEventName);
-		builder.append("_count\"}=? [ F ");
-		String endPredicate = buildEndPredicate(goal);
-		builder.append(endPredicate);
-		builder.append(" ]");
-		return builder.toString();
+		return buildRewardQueryProperty(sanitizedEventName + "_count", DTMC_REWARD_QUERY, goal, costCriterion);
 	}
 
 	/**
 	 * 
 	 * @param goal
 	 *            : Goal of the corresponding MDP
-	 * @return R=? [ F {end predicate} ]
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return R=? [ F {end predicate} ] for SSP; R=? [ S ] for average-cost MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCRawRewardQueryProperty(StateVarTuple goal) throws VarNotFoundException {
+	public String buildDTMCRawRewardQueryProperty(StateVarTuple goal, CostCriterion costCriterion)
+			throws VarNotFoundException {
+		return buildRewardQueryProperty(null, DTMC_REWARD_QUERY, goal, costCriterion);
+	}
+
+	private String buildRewardQueryProperty(String rewardName, String query, StateVarTuple goal,
+			CostCriterion costCriterion) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
-		builder.append("R=? [ F ");
-		String endPredicate = buildEndPredicate(goal);
-		builder.append(endPredicate);
+		builder.append("R");
+
+		if (rewardName != null) {
+			builder.append("{\"");
+			builder.append(rewardName);
+			builder.append("\"}");
+		}
+
+		// =? for DTMC or min=? for MDP
+		builder.append(query);
+		builder.append(" [ ");
+
+		if (costCriterion == CostCriterion.TOTAL_COST) {
+			String endPredicate = buildEndPredicate(goal);
+			builder.append("F ");
+			builder.append(endPredicate);
+		} else if (costCriterion == CostCriterion.AVERAGE_COST) {
+			builder.append("S");
+		}
+
 		builder.append(" ]");
 		return builder.toString();
 	}
@@ -171,4 +186,5 @@ public class PrismPropertyTranslator {
 		builder.append(" & !computeGo & barrier");
 		return builder.toString();
 	}
+
 }

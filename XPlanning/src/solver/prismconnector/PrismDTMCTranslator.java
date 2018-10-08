@@ -18,6 +18,7 @@ import language.mdp.XMDP;
 import language.metrics.EventBasedMetric;
 import language.metrics.IEvent;
 import language.metrics.IQFunction;
+import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
@@ -126,37 +127,45 @@ public class PrismDTMCTranslator {
 
 	/**
 	 * 
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
 	 * @return Numerical query property of the expected total cost of this DTMC
 	 * @throws VarNotFoundException
 	 */
-	public String getCostQueryPropertyTranslation() throws VarNotFoundException {
+	public String getCostQueryPropertyTranslation(CostCriterion costCriterion) throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		CostFunction costFunction = mXDTMC.getXMDP().getCostFunction();
-		return mPropertyTranslator.buildDTMCCostQueryProperty(goal, costFunction);
+		return mPropertyTranslator.buildDTMCCostQueryProperty(goal, costFunction, costCriterion);
 	}
 
 	/**
 	 * 
 	 * @param qFunction
 	 *            : QA function
-	 * @return Numerical query property of the expected total QA value of this DTMC
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return Numerical query property of the expected total QA value, or long-run average QA value, of this DTMC
 	 * @throws VarNotFoundException
 	 */
-	public String getNumQueryPropertyTranslation(IQFunction<?, ?> qFunction) throws VarNotFoundException {
+	public String getNumQueryPropertyTranslation(IQFunction<?, ?> qFunction, CostCriterion costCriterion)
+			throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
-		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction);
+		return mPropertyTranslator.buildDTMCNumQueryProperty(goal, qFunction, costCriterion);
 	}
 
 	/**
 	 * 
 	 * @param event
 	 *            : Event to be counted
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
 	 * @return Numerical query property of the expected total occurrences of the event in this DTMC
 	 * @throws VarNotFoundException
 	 */
-	public String getEventCountPropertyTranslation(IEvent<?, ?> event) throws VarNotFoundException {
+	public String getEventCountPropertyTranslation(IEvent<?, ?> event, CostCriterion costCriterion)
+			throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
-		return mPropertyTranslator.buildDTMCEventCountProperty(goal, event);
+		return mPropertyTranslator.buildDTMCEventCountProperty(goal, event, costCriterion);
 	}
 
 	/**

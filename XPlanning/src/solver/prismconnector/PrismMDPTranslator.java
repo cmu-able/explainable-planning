@@ -9,6 +9,7 @@ import language.mdp.IActionDescription;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
+import language.objectives.CostCriterion;
 import language.qfactors.ActionDefinition;
 import language.qfactors.IAction;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
@@ -93,11 +94,13 @@ public class PrismMDPTranslator {
 
 	/**
 	 * 
+	 * @param costCriterion
+	 *            : Cost criterion of MDP
 	 * @return Goal reachability property of this MDP with cost minimization
 	 * @throws VarNotFoundException
 	 */
-	public String getGoalPropertyTranslation() throws VarNotFoundException {
-		return mPropertyTranslator.buildMDPCostMinProperty(mXMDP.getGoal(), mXMDP.getCostFunction());
+	public String getGoalPropertyTranslation(CostCriterion costCriterion) throws VarNotFoundException {
+		return mPropertyTranslator.buildMDPCostMinProperty(mXMDP.getGoal(), mXMDP.getCostFunction(), costCriterion);
 	}
 
 	/**

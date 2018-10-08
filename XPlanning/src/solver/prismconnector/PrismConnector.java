@@ -16,6 +16,7 @@ import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.metrics.NonStandardMetricQFunction;
 import language.objectives.AttributeConstraint;
+import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import language.qfactors.IAction;
@@ -31,15 +32,18 @@ public class PrismConnector {
 	public static final String DEFAULT_MODEL_FILENAME_PREFIX = "model";
 
 	private XMDP mXMDP;
+	private CostCriterion mCostCriterion;
 	private PrismMDPTranslator mMDPTranslator;
 	private PrismConnectorSettings mSettings;
 	private PrismAPIWrapper mPrismAPI;
-	private Map<Policy, Double> mCachedTotalCosts = new HashMap<>();
+	private Map<Policy, Double> mCachedCosts = new HashMap<>();
 	private Map<Policy, Map<IQFunction<?, ?>, Double>> mCachedQAValues = new HashMap<>();
 	private Map<PrismExplicitModelPointer, Policy> mExplicitModelPtrToPolicy = new HashMap<>();
 
-	public PrismConnector(XMDP xmdp, PrismConnectorSettings settings) throws PrismException {
+	public PrismConnector(XMDP xmdp, CostCriterion costCriterion, PrismConnectorSettings settings)
+			throws PrismException {
 		mXMDP = xmdp;
+		mCostCriterion = costCriterion;
 		mMDPTranslator = new PrismMDPTranslator(xmdp);
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper(settings.getPrismConfiguration());
@@ -47,10 +51,6 @@ public class PrismConnector {
 
 	public XMDP getXMDP() {
 		return mXMDP;
-	}
-
-	public PrismConnectorSettings getSettings() {
-		return mSettings;
 	}
 
 	public PrismMDPTranslator getPrismMDPTranslator() {
@@ -83,8 +83,10 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Generate an optimal policy (the objective is the cost function only). Compute its QA values. Cache its expected
-	 * total cost and QA values.
+	 * Generate an optimal policy (the objective is the cost function) of the MDP. Compute its QA values. Cache its
+	 * expected total cost and QA values.
+	 * 
+	 * This method is only applicable to the total-cost criteria.
 	 * 
 	 * @return An optimal policy, if exists.
 	 * @throws XMDPException
@@ -93,10 +95,12 @@ public class PrismConnector {
 	 * @throws IOException
 	 */
 	public Policy generateOptimalPolicy() throws XMDPException, PrismException, ResultParsingException, IOException {
+		legalCostCriterionCheck(CostCriterion.TOTAL_COST);
+
 		String mdp = mMDPTranslator.getMDPTranslation(false);
 
 		// Goal with cost-minimizing objective
-		String goalProperty = mMDPTranslator.getGoalPropertyTranslation();
+		String goalProperty = mMDPTranslator.getGoalPropertyTranslation(mCostCriterion);
 
 		// Compute an optimal policy, and cache its total cost and QA values
 		return computeOptimalPolicy(mdp, goalProperty, mSettings.getAdversaryOutputPath());
@@ -105,6 +109,8 @@ public class PrismConnector {
 	/**
 	 * Generate an optimal policy w.r.t. a given objective function, that satisfies a given constraint. Compute its QA
 	 * values and its expected total cost (not the objective value). Cache its expected total cost and QA values.
+	 * 
+	 * This method is only applicable to the total-cost criteria.
 	 * 
 	 * @param objectiveFunction
 	 *            : Objective function
@@ -119,6 +125,8 @@ public class PrismConnector {
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<IQFunction<?, ?>> constraint)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
+		legalCostCriterionCheck(CostCriterion.TOTAL_COST);
+
 		configureForMultiObjectiveStrategySynthesis();
 
 		PrismRewardTranslator rewardTranslator = mMDPTranslator.getPrismRewardTranslator();
@@ -145,6 +153,12 @@ public class PrismConnector {
 		// Compute an optimal policy that satisfies the constraint, and cache its total cost and QA values
 		String advOutputPath = mSettings.getAdversaryOutputPath() + "_" + constraint.getQFunction().getName();
 		return computeOptimalPolicy(mdpStr, propertyStr, advOutputPath);
+	}
+
+	private void legalCostCriterionCheck(CostCriterion costCriterion) {
+		if (mCostCriterion != costCriterion) {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	private void configureForMultiObjectiveStrategySynthesis() {
@@ -200,11 +214,11 @@ public class PrismConnector {
 		if (isCostMinProperty(propertyStr)) {
 			// The objective function in the property is the cost function
 			// Cache the expected total cost of the policy
-			mCachedTotalCosts.put(policy, result);
+			mCachedCosts.put(policy, result);
 		} else {
 			// The objective function in the property is not the cost function
 			// Calculate the expected total cost of the policy, and cache it
-			computeExpectedTotalCost(policy);
+			computeCost(policy);
 		}
 
 		// Compute and cache the QA values of the policy
@@ -223,29 +237,29 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Retrieve the expected total cost of a given policy from the cache. If the policy is not already in the cache,
-	 * then compute and cache its expected total cost.
+	 * Retrieve the cost (depending on the cost criterion of the MDP) of a given policy from the cache. If the policy is
+	 * not already in the cache, then compute and cache its cost.
 	 * 
 	 * @param policy
-	 * @return Expected total cost of the policy
+	 * @return Cost of the policy (depending on the cost criterion of the MDP)
 	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double getExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
-		if (!mCachedTotalCosts.containsKey(policy)) {
-			computeExpectedTotalCost(policy);
+	public double getCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
+		if (!mCachedCosts.containsKey(policy)) {
+			computeCost(policy);
 		}
-		return mCachedTotalCosts.get(policy);
+		return mCachedCosts.get(policy);
 	}
 
-	private void computeExpectedTotalCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
+	private void computeCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmc = dtmcTranslator.getDTMCTranslation(false);
-		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation();
+		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation(mCostCriterion);
 		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
-		mCachedTotalCosts.put(policy, totalCost);
+		mCachedCosts.put(policy, totalCost);
 	}
 
 	/**
@@ -280,7 +294,7 @@ public class PrismConnector {
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
 		StringBuilder builder = new StringBuilder();
 		for (IQFunction<?, ?> qFunction : qSpace) {
-			String queryProperty = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+			String queryProperty = dtmcTranslator.getNumQueryPropertyTranslation(qFunction, mCostCriterion);
 			queryProperties.put(qFunction, queryProperty);
 			builder.append(queryProperty);
 			builder.append("\n");
@@ -304,7 +318,7 @@ public class PrismConnector {
 			throws XMDPException, PrismException, ResultParsingException {
 		PrismPropertyTranslator propertyTranslator = mMDPTranslator.getPrismPropertyTransltor();
 		ValueEncodingScheme encodings = mMDPTranslator.getValueEncodingScheme();
-		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal());
+		String rawRewardQuery = propertyTranslator.buildDTMCRawRewardQueryProperty(mXMDP.getGoal(), mCostCriterion);
 
 		// Cache the QA values of the policy
 		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
@@ -346,7 +360,7 @@ public class PrismConnector {
 		Map<E, String> eventQueryProps = new HashMap<>();
 		StringBuilder propsStrBuilder = new StringBuilder();
 		for (E event : qFunction.getEventBasedMetric().getEvents()) {
-			String eventQueryProp = dtmcTranslator.getEventCountPropertyTranslation(event);
+			String eventQueryProp = dtmcTranslator.getEventCountPropertyTranslation(event, mCostCriterion);
 			eventQueryProps.put(event, eventQueryProp);
 			propsStrBuilder.append(eventQueryProp);
 			propsStrBuilder.append("\n");

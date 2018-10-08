@@ -11,6 +11,7 @@ import language.mdp.XMDP;
 import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.NonStandardMetricQFunction;
+import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
@@ -30,11 +31,11 @@ public class Explainer {
 		mConnSettings = prismConnectorSettings;
 	}
 
-	public Explanation explain(XMDP xmdp, Policy policy) throws PrismException, ResultParsingException, XMDPException,
-			IOException, ExplicitModelParsingException, GRBException {
+	public Explanation explain(XMDP xmdp, CostCriterion costCriterion, Policy policy) throws PrismException,
+			ResultParsingException, XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		// PrismConnector
 		// Create a new PrismConnector for calculating the QA values of a given policy
-		PrismConnector prismConnector = new PrismConnector(xmdp, mConnSettings);
+		PrismConnector prismConnector = new PrismConnector(xmdp, costCriterion, mConnSettings);
 		PolicyInfo solnPolicyInfo = buildPolicyInfo(policy, xmdp.getQSpace(), prismConnector);
 
 		// GRBConnector

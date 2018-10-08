@@ -8,6 +8,7 @@ import java.util.Set;
 
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.mdp.ActionSpace;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
 import language.metrics.IQFunction;
@@ -18,8 +19,9 @@ import language.qfactors.IStateVarValue;
 import language.qfactors.StateVarDefinition;
 
 /**
- * {@link ValueEncodingScheme} is an encoding scheme for representing the values of each state variable as PRISM's
- * supported types. In the case of 3-parameter reward function: R(s,a,s'), this is also an encoding scheme for actions.
+ * {@link ValueEncodingScheme} is an encoding scheme for: representing the values of each state variable as PRISM's
+ * supported types, and indexing the QA functions according to the order of their corresponding reward structures in the
+ * PRISM model.
  * 
  * @author rsukkerd
  *
@@ -36,9 +38,12 @@ public class ValueEncodingScheme {
 	private Map<String, Map<Integer, ? extends IStateVarInt>> mIntVarLookups = new HashMap<>();
 	private QFunctionEncodingScheme mQFunctionEncoding;
 	private StateSpace mStateSpace;
+	private ActionSpace mActionSpace;
 
-	public ValueEncodingScheme(StateSpace stateSpace, QSpace qSpace, IAdditiveCostFunction objectiveFunction) {
+	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace, QSpace qSpace,
+			IAdditiveCostFunction objectiveFunction) {
 		mStateSpace = stateSpace;
+		mActionSpace = actionSpace;
 		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
 		encodeStates(stateSpace);
 	}
@@ -101,6 +106,10 @@ public class ValueEncodingScheme {
 
 	public StateSpace getStateSpace() {
 		return mStateSpace;
+	}
+
+	public ActionSpace getActionSpace() {
+		return mActionSpace;
 	}
 
 	public IStateVarBoolean lookupStateVarBoolean(String stateVarName, Boolean boolValue) {
@@ -176,7 +185,8 @@ public class ValueEncodingScheme {
 		ValueEncodingScheme scheme = (ValueEncodingScheme) obj;
 		return scheme.mStateVarEncodings.equals(mStateVarEncodings)
 				&& scheme.mBooleanVarLookups.equals(mBooleanVarLookups) && scheme.mIntVarLookups.equals(mIntVarLookups)
-				&& scheme.mQFunctionEncoding.equals(mQFunctionEncoding) && scheme.mStateSpace.equals(mStateSpace);
+				&& scheme.mQFunctionEncoding.equals(mQFunctionEncoding) && scheme.mStateSpace.equals(mStateSpace)
+				&& scheme.mActionSpace.equals(mActionSpace);
 	}
 
 	@Override
@@ -189,6 +199,7 @@ public class ValueEncodingScheme {
 			result = 31 * result + mIntVarLookups.hashCode();
 			result = 31 * result + mQFunctionEncoding.hashCode();
 			result = 31 * result + mStateSpace.hashCode();
+			result = 31 * result + mActionSpace.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

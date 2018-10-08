@@ -43,7 +43,7 @@ public class Explainer {
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
-				encodings, xmdp.getActionSpace());
+				encodings);
 		GRBConnector grbConnector = new GRBConnector(prismExplicitModelReader);
 
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);

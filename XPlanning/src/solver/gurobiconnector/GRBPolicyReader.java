@@ -36,7 +36,8 @@ public class GRBPolicyReader {
 					String actionName = PrismTranslatorUtils.desanitizeNameString(sanitizedActionName);
 
 					StateVarTuple sourceState = stateIndices.get(i);
-					IAction action = mPrismExplicitModelReader.getActionSpace().getAction(actionName);
+					IAction action = mPrismExplicitModelReader.getValueEncodingScheme().getActionSpace()
+							.getAction(actionName);
 					policy.put(sourceState, action);
 
 					// Move on to the next state

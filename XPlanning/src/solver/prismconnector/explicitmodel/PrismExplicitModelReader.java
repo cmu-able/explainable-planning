@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import language.exceptions.VarNotFoundException;
-import language.mdp.ActionSpace;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
 import language.qfactors.IAction;
@@ -36,13 +35,10 @@ public class PrismExplicitModelReader {
 
 	private PrismExplicitModelPointer mExplicitModelPtr;
 	private ValueEncodingScheme mEncodings;
-	private ActionSpace mActionSpace;
 
-	public PrismExplicitModelReader(PrismExplicitModelPointer prismExplicitModelPtr, ValueEncodingScheme encodings,
-			ActionSpace actionSpace) {
+	public PrismExplicitModelReader(PrismExplicitModelPointer prismExplicitModelPtr, ValueEncodingScheme encodings) {
 		mEncodings = encodings;
 		mExplicitModelPtr = prismExplicitModelPtr;
-		mActionSpace = actionSpace;
 	}
 
 	public PrismExplicitModelPointer getPrismExplicitModelPointer() {
@@ -51,10 +47,6 @@ public class PrismExplicitModelReader {
 
 	public ValueEncodingScheme getValueEncodingScheme() {
 		return mEncodings;
-	}
-
-	public ActionSpace getActionSpace() {
-		return mActionSpace;
 	}
 
 	/**
@@ -152,7 +144,7 @@ public class PrismExplicitModelReader {
 			Integer sourceIndex = Integer.parseInt(sourceStr);
 
 			StateVarTuple sourceState = stateIndices.get(sourceIndex);
-			IAction action = mActionSpace.getAction(actionName);
+			IAction action = mEncodings.getActionSpace().getAction(actionName);
 			policy.put(sourceState, action);
 		}
 		return policy;

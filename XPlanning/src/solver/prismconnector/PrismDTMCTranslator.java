@@ -40,7 +40,8 @@ public class PrismDTMCTranslator {
 	public PrismDTMCTranslator(XDTMC xdtmc) {
 		mXDTMC = xdtmc;
 		XMDP xmdp = xdtmc.getXMDP();
-		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
+		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
+				xmdp.getCostFunction());
 		mActionFilter = action -> mXDTMC.getPolicy().containsAction(action);
 		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, mActionFilter);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);

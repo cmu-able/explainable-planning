@@ -26,7 +26,8 @@ public class PrismMDPTranslator {
 
 	public PrismMDPTranslator(XMDP xmdp) {
 		mXMDP = xmdp;
-		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getQSpace(), xmdp.getCostFunction());
+		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
+				xmdp.getCostFunction());
 		mActionFilter = action -> mXMDP.getActionSpace().contains(action);
 		mRewardTranslator = new PrismRewardTranslator(xmdp.getTransitionFunction(), mEncodings, mActionFilter);
 		mPropertyTranslator = new PrismPropertyTranslator(mEncodings);

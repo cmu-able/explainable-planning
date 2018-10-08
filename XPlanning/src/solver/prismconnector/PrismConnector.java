@@ -86,7 +86,7 @@ public class PrismConnector {
 	 * Generate an optimal policy (the objective is the cost function) of the MDP. Compute its QA values. Cache its
 	 * expected total cost and QA values.
 	 * 
-	 * This method is only applicable to the total-cost criteria.
+	 * This method is only applicable to the total-cost criterion.
 	 * 
 	 * @return An optimal policy, if exists.
 	 * @throws XMDPException
@@ -194,7 +194,7 @@ public class PrismConnector {
 
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(outputExplicitModelPointer,
-				mMDPTranslator.getValueEncodingScheme(), mXMDP.getActionSpace());
+				mMDPTranslator.getValueEncodingScheme());
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function

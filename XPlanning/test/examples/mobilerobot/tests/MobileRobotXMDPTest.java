@@ -16,6 +16,7 @@ import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
+import language.objectives.CostCriterion;
 import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
 import solver.prismconnector.PrismConfiguration;
@@ -37,7 +38,7 @@ public class MobileRobotXMDPTest {
 
 		try {
 			String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
-			String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+			String goalProperty = mdpTranslator.getGoalPropertyTranslation(CostCriterion.TOTAL_COST);
 			SimpleConsoleLogger.log("Transition-reward MDP Translation with (with QAs)", mdpWithQAs, false);
 			SimpleConsoleLogger.newLine();
 			SimpleConsoleLogger.log("Goal Property Translation", goalProperty, false);
@@ -57,7 +58,7 @@ public class MobileRobotXMDPTest {
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
-		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+		String goalProperty = mdpTranslator.getGoalPropertyTranslation(CostCriterion.TOTAL_COST);
 
 		// Default PRISM configuration
 		PrismConfiguration prismConfig = new PrismConfiguration();

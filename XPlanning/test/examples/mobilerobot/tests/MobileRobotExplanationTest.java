@@ -27,6 +27,7 @@ import language.mdp.QSpace;
 import language.mdp.XMDP;
 import language.metrics.CountQFunction;
 import language.metrics.NonStandardMetricQFunction;
+import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.prismconnector.PrismConfiguration;
@@ -48,14 +49,14 @@ public class MobileRobotExplanationTest {
 		PrismConfiguration prismConfig = new PrismConfiguration();
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
 				prismConfig);
-		PrismConnector prismConn = new PrismConnector(xmdp, prismConnSetttings);
+		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConn.terminate();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
-		Explanation explanation = explainer.explain(xmdp, policy);
+		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICY_JSON_PATH + "/" + missionName);

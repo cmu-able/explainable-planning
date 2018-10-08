@@ -19,6 +19,7 @@ import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
+import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
@@ -43,7 +44,8 @@ public class MobileRobotXDTMCTest {
 			SimpleConsoleLogger.newLine();
 
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
-				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+				String queryTranslation = dtmcTranslator.getNumQueryPropertyTranslation(qFunction,
+						CostCriterion.TOTAL_COST);
 				SimpleConsoleLogger.log("Query Property Translation of " + qFunction.getName(), queryTranslation,
 						false);
 				SimpleConsoleLogger.newLine();
@@ -59,7 +61,8 @@ public class MobileRobotXDTMCTest {
 			throws VarNotFoundException {
 		ValueEncodingScheme encodings = explicitDTMCReader.getValueEncodingScheme();
 		PrismPropertyTranslator propTranslator = new PrismPropertyTranslator(encodings);
-		String propertyStr = propTranslator.buildDTMCRawRewardQueryProperty(xdtmc.getXMDP().getGoal());
+		String propertyStr = propTranslator.buildDTMCRawRewardQueryProperty(xdtmc.getXMDP().getGoal(),
+				CostCriterion.TOTAL_COST);
 		PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
 
 		// Default PRISM configuration
@@ -100,7 +103,7 @@ public class MobileRobotXDTMCTest {
 
 		try {
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
-				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction);
+				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction, CostCriterion.TOTAL_COST);
 				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
 				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
 
@@ -149,7 +152,7 @@ public class MobileRobotXDTMCTest {
 
 		PrismMDPTranslator mdpTranslator = new PrismMDPTranslator(xmdp);
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
-		String goalProperty = mdpTranslator.getGoalPropertyTranslation();
+		String goalProperty = mdpTranslator.getGoalPropertyTranslation(CostCriterion.TOTAL_COST);
 
 		// Default PRISM configuration
 		PrismConfiguration prismConfig = new PrismConfiguration();
@@ -158,7 +161,7 @@ public class MobileRobotXDTMCTest {
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
 		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(outputExplicitModelPointer,
-				mdpTranslator.getValueEncodingScheme(), xmdp.getActionSpace());
+				mdpTranslator.getValueEncodingScheme());
 
 		// Close down PRISM
 		prismAPI.terminatePrism();

@@ -22,6 +22,7 @@ import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
+import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
@@ -143,14 +144,14 @@ public class MobileRobotAlternativeExplorerTest {
 			PrismConfiguration prismConfig = new PrismConfiguration();
 			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
 					prismConfig);
-			PrismConnector prismConnector = new PrismConnector(xmdp, prismConnSetttings);
+			PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 
 			// GRBConnector
 			PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 			ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 			PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
-					encodings, xmdp.getActionSpace());
-			GRBConnector grbConnector = new GRBConnector(prismExplicitModelReader);
+					encodings);
+			GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.TOTAL_COST, prismExplicitModelReader);
 
 			// Optimal policy
 			Policy policy = prismConnector.generateOptimalPolicy();

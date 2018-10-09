@@ -23,7 +23,6 @@ import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
-import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismDTMCTranslator;
 import solver.prismconnector.PrismMDPTranslator;
 import solver.prismconnector.PrismPropertyTranslator;
@@ -65,11 +64,8 @@ public class MobileRobotXDTMCTest {
 				CostCriterion.TOTAL_COST);
 		PrismExplicitModelPointer explicitDTMCPointer = explicitDTMCReader.getPrismExplicitModelPointer();
 
-		// Default PRISM configuration
-		PrismConfiguration prismConfig = new PrismConfiguration();
-
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
 			double totalCost = prismAPI.queryPropertyFromExplicitDTMC(propertyStr, explicitDTMCPointer, 1);
 			List<Double> totalValues = prismAPI.queryPropertiesFromExplicitDTMC(propertyStr, explicitDTMCPointer);
 
@@ -98,13 +94,10 @@ public class MobileRobotXDTMCTest {
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
 
-		// Default PRISM configuration
-		PrismConfiguration prismConfig = new PrismConfiguration();
-
 		try {
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
 				String query = dtmcTranslator.getNumQueryPropertyTranslation(qFunction, CostCriterion.TOTAL_COST);
-				PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+				PrismAPIWrapper prismAPI = new PrismAPIWrapper();
 				double result = prismAPI.queryPropertyFromDTMC(dtmcWithQAs, query);
 
 				SimpleConsoleLogger.log("Query Property", query, true);
@@ -154,10 +147,7 @@ public class MobileRobotXDTMCTest {
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation(CostCriterion.TOTAL_COST);
 
-		// Default PRISM configuration
-		PrismConfiguration prismConfig = new PrismConfiguration();
-
-		PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+		PrismAPIWrapper prismAPI = new PrismAPIWrapper();
 		prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 
 		PrismExplicitModelReader explicitDTMCReader = new PrismExplicitModelReader(outputExplicitModelPointer,

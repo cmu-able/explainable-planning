@@ -26,7 +26,6 @@ import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
-import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.PrismDTMCTranslator;
@@ -141,9 +140,7 @@ public class MobileRobotAlternativeExplorerTest {
 			String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 			String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 			String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
-			PrismConfiguration prismConfig = new PrismConfiguration();
-			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
-					prismConfig);
+			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 			PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 
 			// GRBConnector

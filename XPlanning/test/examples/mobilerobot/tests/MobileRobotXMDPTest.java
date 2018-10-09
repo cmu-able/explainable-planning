@@ -19,7 +19,6 @@ import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import prism.PrismException;
 import solver.prismconnector.PrismAPIWrapper;
-import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismMDPTranslator;
 import solver.prismconnector.PrismRewardType;
 import solver.prismconnector.exceptions.ResultParsingException;
@@ -60,11 +59,8 @@ public class MobileRobotXMDPTest {
 		String mdpWithQAs = mdpTranslator.getMDPTranslation(true);
 		String goalProperty = mdpTranslator.getGoalPropertyTranslation(CostCriterion.TOTAL_COST);
 
-		// Default PRISM configuration
-		PrismConfiguration prismConfig = new PrismConfiguration();
-
 		try {
-			PrismAPIWrapper prismAPI = new PrismAPIWrapper(prismConfig);
+			PrismAPIWrapper prismAPI = new PrismAPIWrapper();
 			SimpleConsoleLogger.log("Generate adverary from transition-reward MDP...");
 			double totalCost = prismAPI.generateMDPAdversary(mdpWithQAs, goalProperty, outputExplicitModelPointer);
 			SimpleConsoleLogger.log("Expected total cost of adversary", totalCost, true);

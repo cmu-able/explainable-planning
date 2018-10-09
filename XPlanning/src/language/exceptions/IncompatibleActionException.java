@@ -1,6 +1,6 @@
 package language.exceptions;
 
-import language.qfactors.IAction;
+import language.domain.models.IAction;
 
 public class IncompatibleActionException extends XMDPException {
 

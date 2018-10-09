@@ -1,7 +1,7 @@
 package language.policy;
 
+import language.domain.models.IAction;
 import language.mdp.StateVarTuple;
-import language.qfactors.IAction;
 
 /**
  * {@link Decision} is a pair of a state and an action.

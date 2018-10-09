@@ -2,12 +2,12 @@ package language.mdp;
 
 import java.util.Iterator;
 
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleEffectClassException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
-import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Effect} is a set of state variables whose values changed from their previous values in the previous stage.

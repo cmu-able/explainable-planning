@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import gurobi.GRBException;
+import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.metrics.IQFunction;
@@ -15,7 +16,6 @@ import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.policy.Policy;
-import language.qfactors.IAction;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;

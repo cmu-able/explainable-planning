@@ -1,5 +1,6 @@
 package solver.prismconnector;
 
+import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.TransitionFunction;
 import language.metrics.EventBasedMetric;
@@ -7,7 +8,6 @@ import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.IAction;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslator {

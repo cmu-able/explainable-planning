@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVarDefinition;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVarDefinition;
 
 /**
  * {@link StateSpace} represents a state space (i.e., a set of {@link StateVarDefinition}s) of an MDP.

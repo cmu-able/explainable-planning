@@ -1,8 +1,8 @@
 package language.metrics;
 
+import language.domain.models.IAction;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import language.qfactors.IAction;
 
 /**
  * {@link NonStandardMetricQFunction} represents a generic Q_i function that characterizes a QA i using a non-standard

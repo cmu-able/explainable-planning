@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
@@ -26,11 +31,6 @@ import language.metrics.ITransitionStructure;
 import language.metrics.Transition;
 import language.objectives.AttributeCostFunction;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
-import language.qfactors.StateVarDefinition;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslatorHelper {

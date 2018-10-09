@@ -1,7 +1,7 @@
 package language.exceptions;
 
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 
 public class ActionDefinitionNotFoundException extends XMDPException {
 

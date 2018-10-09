@@ -1,11 +1,11 @@
 package solver.prismconnector;
 
+import language.domain.models.IStateVarBoolean;
+import language.domain.models.IStateVarInt;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
 import language.exceptions.VarNotFoundException;
 import language.mdp.IStateVarTuple;
-import language.qfactors.IStateVarBoolean;
-import language.qfactors.IStateVarInt;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
 
 public class PrismTranslatorUtils {
 	static final String INDENT = "  ";

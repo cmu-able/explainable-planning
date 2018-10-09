@@ -1,4 +1,4 @@
-package language.qfactors;
+package language.domain.models;
 
 /**
  * {@link IStateVarInt} is an interface to an integer value of {@link StateVar}.

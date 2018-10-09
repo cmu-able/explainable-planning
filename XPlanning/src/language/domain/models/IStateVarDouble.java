@@ -1,4 +1,4 @@
-package language.qfactors;
+package language.domain.models;
 
 /**
  * {@link IStateVarDouble} is an interface to a double value of {@link StateVar}.

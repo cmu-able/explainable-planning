@@ -11,13 +11,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import language.domain.models.IAction;
 import language.exceptions.QFunctionNotFoundException;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.IAction;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
 import solver.prismconnector.PrismRewardType;

@@ -1,8 +1,8 @@
 package examples.mobilerobot.qfactors;
 
+import language.domain.models.IStateVarAttribute;
+import language.domain.models.IStateVarBoolean;
 import language.exceptions.AttributeNameNotFoundException;
-import language.qfactors.IStateVarAttribute;
-import language.qfactors.IStateVarBoolean;
 
 /**
  * {@link RobotBumped} is a type of bump sensor value (boolean) of the robot.

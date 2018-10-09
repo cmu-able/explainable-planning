@@ -3,12 +3,12 @@ package solver.prismconnector;
 import java.util.ArrayList;
 import java.util.List;
 
+import language.domain.models.IAction;
 import language.exceptions.QFunctionNotFoundException;
 import language.mdp.QSpace;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.objectives.IAdditiveCostFunction;
-import language.qfactors.IAction;
 
 public class QFunctionEncodingScheme {
 

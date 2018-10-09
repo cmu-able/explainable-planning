@@ -1,7 +1,7 @@
 package examples.mobilerobot.qfactors;
 
 import examples.mobilerobot.dsm.IEdgeAttribute;
-import language.qfactors.IActionAttribute;
+import language.domain.models.IActionAttribute;
 
 /**
  * {@link Occlusion} is a derived attribute associated with a {@link MoveToAction}.

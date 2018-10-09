@@ -2,9 +2,9 @@ package examples.mobilerobot.qfactors;
 
 import java.text.DecimalFormat;
 
+import language.domain.models.IStateVarAttribute;
+import language.domain.models.IStateVarDouble;
 import language.exceptions.AttributeNameNotFoundException;
-import language.qfactors.IStateVarAttribute;
-import language.qfactors.IStateVarDouble;
 
 /**
  * {@link RobotSpeed} is a type of speed value of the robot. The unit of speed is meter/second.

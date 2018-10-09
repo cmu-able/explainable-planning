@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import language.domain.models.IAction;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
-import language.qfactors.IAction;
 
 /**
  * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs of a single

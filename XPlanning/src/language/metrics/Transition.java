@@ -1,13 +1,13 @@
 package language.metrics;
 
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.IncompatibleVarException;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
-import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Transition} represents a factored (s, a, s') transition. A transition has a parameterized type of

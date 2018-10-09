@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 
 /**
  * {@link ActionSpace} represents an action space (i.e., a set of {@link ActionDefinition}s) of an MDP.

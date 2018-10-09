@@ -2,6 +2,8 @@ package solver.prismconnector;
 
 import java.util.Set;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -10,8 +12,6 @@ import language.mdp.ProbabilisticEffect;
 import language.mdp.ProbabilisticTransition;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 

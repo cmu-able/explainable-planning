@@ -3,10 +3,10 @@ package solver.gurobiconnector;
 import java.io.IOException;
 import java.util.Map;
 
+import language.domain.models.IAction;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
-import language.qfactors.IAction;
 import solver.common.ExplicitMDP;
 import solver.prismconnector.PrismTranslatorUtils;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;

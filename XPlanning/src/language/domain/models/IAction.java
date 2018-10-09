@@ -1,4 +1,4 @@
-package language.qfactors;
+package language.domain.models;
 
 import java.util.List;
 import java.util.Set;

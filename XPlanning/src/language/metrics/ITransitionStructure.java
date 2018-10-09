@@ -2,10 +2,10 @@ package language.metrics;
 
 import java.util.Set;
 
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVarDefinition;
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVarDefinition;
 
 /**
  * {@link ITransitionStructure} is an interface to the structure of a transition. It can be used to represent the domain

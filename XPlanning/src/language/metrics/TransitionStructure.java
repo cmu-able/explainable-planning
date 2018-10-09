@@ -3,10 +3,10 @@ package language.metrics;
 import java.util.HashSet;
 import java.util.Set;
 
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVarDefinition;
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVarDefinition;
 
 /**
  * {@link TransitionStructure} represents the structure of a transition. It contains a set of variable definitions in

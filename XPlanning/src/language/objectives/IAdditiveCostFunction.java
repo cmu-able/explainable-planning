@@ -2,9 +2,9 @@ package language.objectives;
 
 import java.util.Set;
 
+import language.domain.models.IAction;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
-import language.qfactors.IAction;
 
 /**
  * {@link IAdditiveCostFunction} is an interface to an additive, multi-attribute cost function of n values

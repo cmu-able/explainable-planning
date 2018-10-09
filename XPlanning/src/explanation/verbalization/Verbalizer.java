@@ -13,13 +13,13 @@ import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.Tradeoff;
+import language.domain.models.IAction;
 import language.mdp.QSpace;
 import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
-import language.qfactors.IAction;
 import uiconnector.PolicyWriter;
 
 public class Verbalizer {

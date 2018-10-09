@@ -1,7 +1,7 @@
 package language.exceptions;
 
+import language.domain.models.IAction;
 import language.mdp.IStateVarTuple;
-import language.qfactors.IAction;
 
 public class ActionNotApplicableException extends XMDPException {
 

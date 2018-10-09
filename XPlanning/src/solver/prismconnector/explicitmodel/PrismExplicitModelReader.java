@@ -12,15 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import language.domain.models.IAction;
+import language.domain.models.IStateVarBoolean;
+import language.domain.models.IStateVarInt;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
 import language.policy.Policy;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarBoolean;
-import language.qfactors.IStateVarInt;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
-import language.qfactors.StateVarDefinition;
 import solver.prismconnector.PrismTranslatorUtils;
 import solver.prismconnector.ValueEncodingScheme;
 

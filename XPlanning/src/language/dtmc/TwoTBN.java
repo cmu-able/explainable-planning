@@ -5,14 +5,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 import language.exceptions.EffectClassNotFoundException;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.StateNotFoundException;
 import language.mdp.EffectClass;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.StateVarTuple;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
 
 /**
  * {@link TwoTBN} is a 2-step Temporal Bayesian Network (2TBN) for a particular action type (i.e.,

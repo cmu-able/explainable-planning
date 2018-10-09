@@ -1,6 +1,6 @@
 package examples.mobilerobot.qfactors;
 
-import language.qfactors.IActionAttribute;
+import language.domain.models.IActionAttribute;
 
 /**
  * {@link Distance} represents a distance attribute of an action. The unit of distance is meter.

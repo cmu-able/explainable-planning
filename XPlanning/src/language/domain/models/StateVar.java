@@ -1,4 +1,4 @@
-package language.qfactors;
+package language.domain.models;
 
 /**
  * {@link StateVar} represents a generic state variable, whose value type is a subtype of {@link IStateVarValue}.

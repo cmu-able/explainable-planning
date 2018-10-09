@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import explanation.analysis.EventBasedQAValue;
+import language.domain.models.IAction;
 import language.dtmc.XDTMC;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.XMDPException;
@@ -20,7 +21,6 @@ import language.objectives.AttributeConstraint;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
-import language.qfactors.IAction;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;

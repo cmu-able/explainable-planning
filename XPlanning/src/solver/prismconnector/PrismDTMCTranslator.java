@@ -4,6 +4,11 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
@@ -20,11 +25,6 @@ import language.metrics.IEvent;
 import language.metrics.IQFunction;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVar;
-import language.qfactors.StateVarDefinition;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 import solver.prismconnector.PrismTranslatorHelper.PartialModuleCommandsBuilder;
 

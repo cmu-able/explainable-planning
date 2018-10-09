@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
-import language.qfactors.IStateVarValue;
-import language.qfactors.StateVarDefinition;
 
 /**
  * {@link Precondition} defines a precondition for each action in a particular {@link ActionDefinition}. Precondition is

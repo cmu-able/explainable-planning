@@ -2,9 +2,9 @@ package language.mdp;
 
 import java.util.Set;
 
+import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 import language.exceptions.XMDPException;
-import language.qfactors.ActionDefinition;
-import language.qfactors.IAction;
 
 /**
  * {@link IActionDescription} is an interface to an action description for a specific {@link EffectClass} of a specific

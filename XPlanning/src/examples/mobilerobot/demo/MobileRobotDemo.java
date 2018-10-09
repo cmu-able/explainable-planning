@@ -26,7 +26,6 @@ import language.metrics.NonStandardMetricQFunction;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
-import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
@@ -42,7 +41,6 @@ public class MobileRobotDemo {
 	static final String EXPLANATIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
 
 	private MobileRobotXMDPLoader mXMDPLoader;
-	private PrismConfiguration mPrismConfig = new PrismConfiguration();
 
 	public MobileRobotDemo() {
 		mXMDPLoader = new MobileRobotXMDPLoader(MAPS_PATH, MISSIONS_PATH);
@@ -56,8 +54,7 @@ public class MobileRobotDemo {
 
 		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
 
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
-				mPrismConfig);
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
 

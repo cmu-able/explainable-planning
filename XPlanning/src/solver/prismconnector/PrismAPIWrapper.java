@@ -42,8 +42,8 @@ public class PrismAPIWrapper {
 	private PrismConfiguration mPrismConfig;
 	private Prism mPrism;
 
-	public PrismAPIWrapper(PrismConfiguration prismConfig) throws PrismException {
-		mPrismConfig = prismConfig;
+	public PrismAPIWrapper() throws PrismException {
+		mPrismConfig = new PrismConfiguration(); // set to default PRISM configuration initially
 		initializePrism();
 	}
 
@@ -63,16 +63,32 @@ public class PrismAPIWrapper {
 		mPrism.closeDown();
 	}
 
-	public void reconfigurePrism(PrismEngine engine) {
-		mPrismConfig.setEngine(engine);
+	/**
+	 * Configure PRISM for model-checking steady-state property.
+	 */
+	public void configureForSteadySteadProperty() {
+		// Use Sparse engine for model-checking steady-state property
+		mPrismConfig.setEngine(PrismEngine.SPARSE);
 	}
 
-	public void reconfigurePrism(PrismMDPSolutionMethod mdpSolutionMethod) {
-		mPrismConfig.setMDPSolutionMethod(mdpSolutionMethod);
-	}
+	/**
+	 * Configure PRISM for multi-objective strategy synthesis.
+	 * 
+	 * @param prodStaOutputFile
+	 *            : Product states output file
+	 * @throws PrismException
+	 */
+	public void configureForMultiObjectiveStrategySynthesis(File prodStaOutputFile) throws PrismException {
+		// Export the product states of the generated adversary to a file
+		mPrism.setExportProductStates(true);
+		mPrism.setExportProductStatesFilename(prodStaOutputFile.getPath());
 
-	public void reconfigurePrism(PrismMDPMultiSolutionMethod mdpMultiSolutionMethod) {
-		mPrismConfig.setMDPMultiSolutionMethod(mdpMultiSolutionMethod);
+		// Use transition rewards for multi-objective adversary synthesis
+		// PrismRewardTranslator already uses transition rewards
+
+		// Use Sparse engine and linear-programming solution method for multi-objective adversary synthesis
+		mPrismConfig.setEngine(PrismEngine.SPARSE);
+		mPrismConfig.setMDPMultiSolutionMethod(PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
 	}
 
 	/**
@@ -147,18 +163,13 @@ public class PrismAPIWrapper {
 	public double generateMDPAdversary(String mdpStr, String propertyStr,
 			PrismExplicitModelPointer outputExplicitModelPointer)
 			throws PrismException, FileNotFoundException, ResultParsingException {
-		File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
 		File advOutputFile = outputExplicitModelPointer.getAdversaryFile();
 
 		// Export explicit model files: .sta, .tra, .lab, and .srew/.trew
 		ModulesFile modulesFile = exportExplicitModelFiles(mdpStr, outputExplicitModelPointer);
 
-		if (isMultiObjectiveProperty(propertyStr)) {
-			// For multi-objective strategy synthesis
-			// Export the product states of the generated adversary to a file
-			mPrism.setExportProductStates(true);
-			mPrism.setExportProductStatesFilename(prodStaOutputFile.getPath());
-		}
+		// At this point, if the property is multi-objective strategy synthesis, then the method
+		// configureForMultiObjectiveStrategySynthesis() is assumed to be invoked already.
 
 		// Configure PRISM to export an optimal adversary to a file when model checking an MDP
 		mPrism.getSettings().set(PrismSettings.PRISM_EXPORT_ADV, "DTMC");
@@ -344,10 +355,6 @@ public class PrismAPIWrapper {
 		}
 		throw new ResultParsingException(resultStr, FLOATING_POINT_RESULT_PATTERN, INFINITY_RESULT_PATTERN,
 				NAN_RESULT_PATTERN);
-	}
-
-	private boolean isMultiObjectiveProperty(String propertyStr) {
-		return propertyStr.startsWith("multi");
 	}
 
 	private void switchEngineFromExplicitToSparse() throws PrismException {

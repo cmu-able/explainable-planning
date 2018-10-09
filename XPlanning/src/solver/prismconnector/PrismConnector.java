@@ -1,5 +1,6 @@
 package solver.prismconnector;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,8 +22,6 @@ import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import language.qfactors.IAction;
 import prism.PrismException;
-import solver.prismconnector.PrismConfiguration.PrismEngine;
-import solver.prismconnector.PrismConfiguration.PrismMDPMultiSolutionMethod;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
@@ -46,7 +45,11 @@ public class PrismConnector {
 		mCostCriterion = costCriterion;
 		mMDPTranslator = new PrismMDPTranslator(xmdp);
 		mSettings = settings;
-		mPrismAPI = new PrismAPIWrapper(settings.getPrismConfiguration());
+		mPrismAPI = new PrismAPIWrapper();
+
+		if (costCriterion == CostCriterion.AVERAGE_COST) {
+			mPrismAPI.configureForSteadySteadProperty();
+		}
 	}
 
 	public XMDP getXMDP() {
@@ -127,8 +130,6 @@ public class PrismConnector {
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		legalCostCriterionCheck(CostCriterion.TOTAL_COST);
 
-		configureForMultiObjectiveStrategySynthesis();
-
 		PrismRewardTranslator rewardTranslator = mMDPTranslator.getPrismRewardTranslator();
 		PrismPropertyTranslator propTranslator = mMDPTranslator.getPrismPropertyTransltor();
 
@@ -161,15 +162,6 @@ public class PrismConnector {
 		}
 	}
 
-	private void configureForMultiObjectiveStrategySynthesis() {
-		// Use transition rewards for multi-objective adversary synthesis
-		// PrismRewardTranslator already uses transition rewards
-
-		// Use Sparse engine and linear-programming solution method for multi-objective adversary synthesis
-		mPrismAPI.reconfigurePrism(PrismEngine.SPARSE);
-		mPrismAPI.reconfigurePrism(PrismMDPMultiSolutionMethod.LINEAR_PROGRAMMING);
-	}
-
 	/**
 	 * Helper method to compute an optimal policy. Cache the policy's expected total cost and QA values.
 	 * 
@@ -195,6 +187,12 @@ public class PrismConnector {
 		// Create explicit model reader of the output model
 		PrismExplicitModelReader explicitModelReader = new PrismExplicitModelReader(outputExplicitModelPointer,
 				mMDPTranslator.getValueEncodingScheme());
+
+		if (isMultiObjectiveProperty(propertyStr)) {
+			// Configure PRISM for multi-objective strategy synthesis
+			File prodStaOutputFile = outputExplicitModelPointer.getProductStatesFile();
+			mPrismAPI.configureForMultiObjectiveStrategySynthesis(prodStaOutputFile);
+		}
 
 		// Expected total objective value of the policy -- the objective function is specified in the property
 		// The objective function can be the cost function
@@ -237,10 +235,20 @@ public class PrismConnector {
 	}
 
 	/**
+	 * 
+	 * @param propertyStr
+	 * @return Whether the property is multi-objective
+	 */
+	private boolean isMultiObjectiveProperty(String propertyStr) {
+		return propertyStr.startsWith("multi");
+	}
+
+	/**
 	 * Retrieve the cost (depending on the cost criterion of the MDP) of a given policy from the cache. If the policy is
 	 * not already in the cache, then compute and cache its cost.
 	 * 
 	 * @param policy
+	 *            : Policy
 	 * @return Cost of the policy (depending on the cost criterion of the MDP)
 	 * @throws XMDPException
 	 * @throws PrismException
@@ -267,6 +275,7 @@ public class PrismConnector {
 	 * and cache all of its QA values.
 	 * 
 	 * @param policy
+	 *            : Policy
 	 * @param qFunction
 	 *            : QA function
 	 * @return QA value of the policy
@@ -336,6 +345,7 @@ public class PrismConnector {
 	 * Compute the expected total occurrences of each event in a given non-standard QA metric.
 	 * 
 	 * @param policy
+	 *            : Policy
 	 * @param qFunction
 	 *            : Non-standard QA function
 	 * @return Event-based QA value of the policy

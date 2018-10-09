@@ -9,12 +9,10 @@ public class PrismConnectorSettings {
 
 	private String mModelOutputPath;
 	private String mAdvOutputPath;
-	private PrismConfiguration mPrismConfig;
 
-	public PrismConnectorSettings(String modelOutputPath, String advOutputPath, PrismConfiguration prismConfig) {
+	public PrismConnectorSettings(String modelOutputPath, String advOutputPath) {
 		mModelOutputPath = modelOutputPath;
 		mAdvOutputPath = advOutputPath;
-		mPrismConfig = prismConfig;
 	}
 
 	public String getModelOutputPath() {
@@ -23,10 +21,6 @@ public class PrismConnectorSettings {
 
 	public String getAdversaryOutputPath() {
 		return mAdvOutputPath;
-	}
-
-	public PrismConfiguration getPrismConfiguration() {
-		return mPrismConfig;
 	}
 
 	@Override
@@ -38,8 +32,7 @@ public class PrismConnectorSettings {
 			return false;
 		}
 		PrismConnectorSettings settings = (PrismConnectorSettings) obj;
-		return settings.mModelOutputPath.equals(mModelOutputPath) && settings.mAdvOutputPath.equals(mAdvOutputPath)
-				&& settings.mPrismConfig.equals(mPrismConfig);
+		return settings.mModelOutputPath.equals(mModelOutputPath) && settings.mAdvOutputPath.equals(mAdvOutputPath);
 	}
 
 	@Override
@@ -49,7 +42,6 @@ public class PrismConnectorSettings {
 			result = 17;
 			result = 31 * result + mModelOutputPath.hashCode();
 			result = 31 * result + mAdvOutputPath.hashCode();
-			result = 31 * result + mPrismConfig.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -30,7 +30,6 @@ import language.metrics.NonStandardMetricQFunction;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
-import solver.prismconnector.PrismConfiguration;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
@@ -46,9 +45,7 @@ public class MobileRobotExplanationTest {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
-		PrismConfiguration prismConfig = new PrismConfiguration();
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath,
-				prismConfig);
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
 

@@ -15,6 +15,7 @@ import language.exceptions.QFunctionNotFoundException;
 import language.metrics.IQFunction;
 import language.metrics.ITransitionStructure;
 import language.objectives.AttributeCostFunction;
+import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.qfactors.IAction;
 import solver.common.CostType;
@@ -32,10 +33,12 @@ public class ExplicitMDPReader {
 
 	private PrismExplicitModelPointer mPrismModelPointer;
 	private QFunctionEncodingScheme mQFunctionEncoding;
+	private CostCriterion mCostCriterion;
 
-	public ExplicitMDPReader(PrismExplicitModelReader prismExplicitModelReader) {
+	public ExplicitMDPReader(PrismExplicitModelReader prismExplicitModelReader, CostCriterion costCriterion) {
 		mPrismModelPointer = prismExplicitModelReader.getPrismExplicitModelPointer();
 		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
+		mCostCriterion = costCriterion;
 	}
 
 	/**
@@ -53,9 +56,15 @@ public class ExplicitMDPReader {
 		String traHeader = readFirstLineFromFile(traFile);
 
 		int numStates = readNumStates(traHeader);
-		int iniState = readInitialState(labAllLines);
-		Set<Integer> goalStates = readGoalStates(labAllLines);
 		Set<String> actionNames = readActionNames(traAllLines);
+
+		// Assume a single initial state
+		int iniState = readInitialState(labAllLines);
+
+		// SSP must have at least one goal state
+		// Average-cost MDP does not have a goal state (there is no goal-reachability guarantee)
+		Set<Integer> goalStates = mCostCriterion == CostCriterion.TOTAL_COST ? readGoalStates(labAllLines)
+				: new HashSet<>();
 
 		// Create an additional slot for cost function to:
 		// (1) Align the indices of the cost functions (starts at 0) to the PRISM reward indices (starts at 1), and

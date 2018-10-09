@@ -32,7 +32,7 @@ public class GRBConnector {
 		mXMDP = xmdp;
 		mCostCriterion = costCriterion;
 		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
-		mExplicitMDPReader = new ExplicitMDPReader(prismExplicitModelReader);
+		mExplicitMDPReader = new ExplicitMDPReader(prismExplicitModelReader, costCriterion);
 		mPolicyReader = new GRBPolicyReader(prismExplicitModelReader);
 	}
 

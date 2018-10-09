@@ -173,6 +173,13 @@ public class ExplicitMDP {
 		return mIniState;
 	}
 
+	/**
+	 * For SSP, there must be at least one goal state.
+	 * 
+	 * For average-cost MDP, there is no goal state (this method returns empty set).
+	 * 
+	 * @return A set of goal states
+	 */
 	public Set<Integer> getGoalStates() {
 		return mGoalStates;
 	}

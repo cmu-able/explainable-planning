@@ -1,9 +1,9 @@
 package solver.prismconnector;
 
+import language.domain.metrics.IEvent;
+import language.domain.metrics.IQFunction;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
-import language.metrics.IEvent;
-import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;

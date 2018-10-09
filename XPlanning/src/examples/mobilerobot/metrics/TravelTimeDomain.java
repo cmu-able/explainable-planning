@@ -6,14 +6,14 @@ import examples.mobilerobot.qfactors.Distance;
 import examples.mobilerobot.qfactors.Location;
 import examples.mobilerobot.qfactors.MoveToAction;
 import examples.mobilerobot.qfactors.RobotSpeed;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.metrics.Transition;
+import language.domain.metrics.TransitionStructure;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
-import language.metrics.ITransitionStructure;
-import language.metrics.TransitionStructure;
-import language.metrics.Transition;
 
 public class TravelTimeDomain implements ITransitionStructure<MoveToAction> {
 

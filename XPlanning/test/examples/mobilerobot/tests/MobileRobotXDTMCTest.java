@@ -14,11 +14,11 @@ import org.testng.annotations.Test;
 
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import language.domain.metrics.IQFunction;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
-import language.metrics.IQFunction;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;

@@ -1,4 +1,4 @@
-package language.metrics;
+package language.domain.metrics;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -3,9 +3,9 @@ package examples.mobilerobot.metrics;
 import examples.mobilerobot.qfactors.MoveToAction;
 import examples.mobilerobot.qfactors.RobotBumped;
 import examples.mobilerobot.qfactors.RobotSpeed;
+import language.domain.metrics.IEvent;
+import language.domain.metrics.Transition;
 import language.exceptions.VarNotFoundException;
-import language.metrics.IEvent;
-import language.metrics.Transition;
 
 /**
  * {@link CollisionEvent} represents a collision, where the robot bumps into obstacles at a speed greater than some

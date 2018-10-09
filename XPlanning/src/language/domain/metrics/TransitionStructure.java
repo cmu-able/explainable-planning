@@ -1,4 +1,4 @@
-package language.metrics;
+package language.domain.metrics;
 
 import java.util.HashSet;
 import java.util.Set;

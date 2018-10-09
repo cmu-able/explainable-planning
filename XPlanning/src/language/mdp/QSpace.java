@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
-import language.metrics.IQFunction;
-import language.metrics.ITransitionStructure;
 
 /**
  * {@link QSpace} is a set of {@link IQFunction}s of an MDP.

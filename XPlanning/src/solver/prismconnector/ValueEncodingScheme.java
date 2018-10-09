@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import language.domain.metrics.IQFunction;
 import language.domain.models.IStateVarBoolean;
 import language.domain.models.IStateVarInt;
 import language.domain.models.IStateVarValue;
@@ -15,7 +16,6 @@ import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
-import language.metrics.IQFunction;
 import language.objectives.IAdditiveCostFunction;
 
 /**

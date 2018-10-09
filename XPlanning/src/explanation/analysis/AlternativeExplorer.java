@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 import gurobi.GRBException;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
-import language.metrics.IQFunction;
-import language.metrics.ITransitionStructure;
 import language.objectives.AdditiveCostFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;

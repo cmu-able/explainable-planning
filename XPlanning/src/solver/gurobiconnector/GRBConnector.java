@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import gurobi.GRBException;
+import language.domain.metrics.IQFunction;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
-import language.metrics.IQFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;

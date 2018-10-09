@@ -3,9 +3,9 @@ package explanation.verbalization;
 import java.util.HashMap;
 import java.util.Map;
 
-import language.metrics.IEvent;
-import language.metrics.IQFunction;
-import language.metrics.NonStandardMetricQFunction;
+import language.domain.metrics.IEvent;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.NonStandardMetricQFunction;
 
 public class Vocabulary {
 

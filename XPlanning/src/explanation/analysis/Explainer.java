@@ -5,12 +5,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import gurobi.GRBException;
+import language.domain.metrics.IEvent;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.NonStandardMetricQFunction;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
-import language.metrics.IEvent;
-import language.metrics.IQFunction;
-import language.metrics.NonStandardMetricQFunction;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;

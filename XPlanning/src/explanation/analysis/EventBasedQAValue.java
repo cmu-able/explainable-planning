@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import language.metrics.IEvent;
+import language.domain.metrics.IEvent;
 
 public class EventBasedQAValue<E extends IEvent<?, ?>> implements Iterable<Entry<E, Double>> {
 

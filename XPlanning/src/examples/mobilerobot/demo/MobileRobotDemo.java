@@ -12,7 +12,7 @@ import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import examples.mobilerobot.qfactors.MoveToAction;
+import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.verbalization.Verbalizer;

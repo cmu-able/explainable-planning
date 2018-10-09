@@ -1,8 +1,8 @@
 package examples.mobilerobot.metrics;
 
-import examples.mobilerobot.qfactors.Distance;
-import examples.mobilerobot.qfactors.MoveToAction;
-import examples.mobilerobot.qfactors.RobotSpeed;
+import examples.mobilerobot.models.Distance;
+import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.IStandardMetricQFunction;
 import language.domain.metrics.Transition;
 import language.exceptions.AttributeNameNotFoundException;

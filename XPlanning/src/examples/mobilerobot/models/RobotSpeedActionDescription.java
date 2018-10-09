@@ -1,4 +1,4 @@
-package examples.mobilerobot.qfactors;
+package examples.mobilerobot.models;
 
 import java.util.Set;
 

@@ -2,9 +2,9 @@ package examples.mobilerobot.metrics;
 
 import java.util.Set;
 
-import examples.mobilerobot.qfactors.MoveToAction;
-import examples.mobilerobot.qfactors.RobotBumped;
-import examples.mobilerobot.qfactors.RobotSpeed;
+import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.RobotBumped;
+import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
 import language.domain.metrics.TransitionStructure;

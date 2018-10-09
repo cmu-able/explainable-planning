@@ -2,7 +2,7 @@ package examples.mobilerobot.dsm.parser;
 
 import org.json.simple.JSONObject;
 
-import examples.mobilerobot.qfactors.Occlusion;
+import examples.mobilerobot.models.Occlusion;
 
 public class OcclusionParser implements IEdgeAttributeParser<Occlusion> {
 

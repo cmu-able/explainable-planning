@@ -1,4 +1,4 @@
-package examples.mobilerobot.qfactors;
+package examples.mobilerobot.models;
 
 import language.domain.models.IStateVarAttribute;
 import language.domain.models.IStateVarValue;

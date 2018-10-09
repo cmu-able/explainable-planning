@@ -2,10 +2,10 @@ package examples.mobilerobot.metrics;
 
 import java.util.Set;
 
-import examples.mobilerobot.qfactors.Distance;
-import examples.mobilerobot.qfactors.Location;
-import examples.mobilerobot.qfactors.MoveToAction;
-import examples.mobilerobot.qfactors.RobotSpeed;
+import examples.mobilerobot.models.Distance;
+import examples.mobilerobot.models.Location;
+import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
 import language.domain.metrics.TransitionStructure;

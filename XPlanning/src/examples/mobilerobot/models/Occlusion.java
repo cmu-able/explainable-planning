@@ -1,4 +1,4 @@
-package examples.mobilerobot.qfactors;
+package examples.mobilerobot.models;
 
 import examples.mobilerobot.dsm.IEdgeAttribute;
 import language.domain.models.IActionAttribute;

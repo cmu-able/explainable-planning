@@ -1,7 +1,7 @@
 package examples.mobilerobot.metrics;
 
-import examples.mobilerobot.qfactors.Area;
-import examples.mobilerobot.qfactors.MoveToAction;
+import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.MoveToAction;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.Transition;
 import language.exceptions.AttributeNameNotFoundException;

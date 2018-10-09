@@ -53,7 +53,7 @@ public class RobotBumped implements IStateVarBoolean {
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Boolean.valueOf(mBumped).hashCode();
+			result = Boolean.hashCode(mBumped);
 			hashCode = result;
 		}
 		return hashCode;

@@ -1,6 +1,7 @@
 package solver.prismconnector;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -239,8 +240,9 @@ public class PrismTranslatorHelper {
 	String buildIntModuleVarDecl(StateVarDefinition<IStateVarInt> intVarDef, IStateVarInt iniValInt) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(intVarDef.getName());
-		IStateVarInt lowerBound = Collections.max(intVarDef.getPossibleValues());
-		IStateVarInt uppberBound = Collections.max(intVarDef.getPossibleValues());
+		Comparator<IStateVarInt> comparator = (var1, var2) -> var1.getValue() - var2.getValue();
+		IStateVarInt lowerBound = Collections.max(intVarDef.getPossibleValues(), comparator);
+		IStateVarInt uppberBound = Collections.max(intVarDef.getPossibleValues(), comparator);
 		builder.append(" : [");
 		builder.append(lowerBound.getValue());
 		builder.append("..");

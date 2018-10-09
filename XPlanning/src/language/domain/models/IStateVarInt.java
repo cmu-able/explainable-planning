@@ -6,7 +6,7 @@ package language.domain.models;
  * @author rsukkerd
  *
  */
-public interface IStateVarInt extends IStateVarValue, Comparable<IStateVarInt> {
+public interface IStateVarInt extends IStateVarValue {
 
 	public int getValue();
 }

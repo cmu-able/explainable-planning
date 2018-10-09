@@ -61,7 +61,7 @@ public class RobotSpeed implements IStateVarDouble {
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Double.valueOf(mSpeed).hashCode();
+			result = Double.hashCode(mSpeed);
 			hashCode = result;
 		}
 		return hashCode;

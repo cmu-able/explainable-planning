@@ -18,16 +18,16 @@ public class ScheduleAction implements IAction {
 	private volatile int hashCode;
 
 	private Action mAction;
-	private AdvanceBookingPolicy mNewABP;
+	private ABP mNewABP;
 	private ClientCount mNumClientsToService;
 
-	public ScheduleAction(AdvanceBookingPolicy newABP, ClientCount numClientsToService) {
+	public ScheduleAction(ABP newABP, ClientCount numClientsToService) {
 		mAction = new Action("schedule", newABP, numClientsToService);
 		mNewABP = newABP;
 		mNumClientsToService = numClientsToService;
 	}
 
-	public AdvanceBookingPolicy getNewAdvanceBookingPolicy() {
+	public ABP getNewAdvanceBookingPolicy() {
 		return mNewABP;
 	}
 

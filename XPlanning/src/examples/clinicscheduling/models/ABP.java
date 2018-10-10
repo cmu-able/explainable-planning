@@ -4,7 +4,7 @@ import language.domain.models.IStateVarAttribute;
 import language.domain.models.IStateVarInt;
 import language.exceptions.AttributeNameNotFoundException;
 
-public class AdvanceBookingPolicy implements IStateVarInt {
+public class ABP implements IStateVarInt {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -13,17 +13,17 @@ public class AdvanceBookingPolicy implements IStateVarInt {
 
 	private int mABP;
 
-	public AdvanceBookingPolicy(int abp) {
+	public ABP(int abp) {
 		mABP = abp;
 	}
 
-	public int getAdvanceBookingPolicy() {
+	public int getABP() {
 		return mABP;
 	}
 
 	@Override
 	public int getValue() {
-		return getAdvanceBookingPolicy();
+		return getABP();
 	}
 
 	@Override
@@ -36,10 +36,10 @@ public class AdvanceBookingPolicy implements IStateVarInt {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof AdvanceBookingPolicy)) {
+		if (!(obj instanceof ABP)) {
 			return false;
 		}
-		AdvanceBookingPolicy abp = (AdvanceBookingPolicy) obj;
+		ABP abp = (ABP) obj;
 		return abp.mABP == mABP;
 	}
 

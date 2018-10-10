@@ -33,8 +33,8 @@ public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleActio
 	public ProbabilisticEffect formula(Discriminant discriminant, ScheduleAction schedule) throws XMDPException {
 		ProbabilisticEffect abpProbEffect = new ProbabilisticEffect(mEffectClass);
 		Effect newABPEffect = new Effect(mEffectClass);
-		StateVar<ABP> newABP = mABPDef.getStateVar(schedule.getNewABP());
-		newABPEffect.add(newABP);
+		StateVar<ABP> abpDest = mABPDef.getStateVar(schedule.getNewABP());
+		newABPEffect.add(abpDest);
 		abpProbEffect.put(newABPEffect, 1.0);
 		return abpProbEffect;
 	}

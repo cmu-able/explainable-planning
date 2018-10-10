@@ -33,8 +33,8 @@ public class RobotSpeedFormula implements IProbabilisticTransitionFormula<SetSpe
 	public ProbabilisticEffect formula(Discriminant discriminant, SetSpeedAction setSpeed) throws XMDPException {
 		ProbabilisticEffect rSpeedProbEffect = new ProbabilisticEffect(mEffectClass);
 		Effect newSpeedEffect = new Effect(mEffectClass);
-		StateVar<RobotSpeed> newSpeed = mrSpeedDef.getStateVar(setSpeed.getTargetSpeed());
-		newSpeedEffect.add(newSpeed);
+		StateVar<RobotSpeed> rSpeedDest = mrSpeedDef.getStateVar(setSpeed.getTargetSpeed());
+		newSpeedEffect.add(rSpeedDest);
 		rSpeedProbEffect.put(newSpeedEffect, 1.0);
 		return rSpeedProbEffect;
 	}

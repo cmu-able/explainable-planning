@@ -4,7 +4,6 @@ import java.util.Set;
 
 import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
-import language.exceptions.IncompatibleVarException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
@@ -36,7 +35,7 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 
 	public RobotBumpedActionDescription(ActionDefinition<MoveToAction> moveToDef,
 			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocSrcDef,
-			StateVarDefinition<RobotBumped> rBumpedDestDef) throws IncompatibleVarException {
+			StateVarDefinition<RobotBumped> rBumpedDestDef) {
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(rLocSrcDef);
 		EffectClass effectClass = new EffectClass();

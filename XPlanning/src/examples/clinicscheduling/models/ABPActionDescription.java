@@ -21,7 +21,7 @@ public class ABPActionDescription implements IActionDescription<ScheduleAction> 
 	 */
 	private volatile int hashCode;
 
-	private FormulaActionDescription<ScheduleAction> mScheduleActionDesc;
+	private FormulaActionDescription<ScheduleAction> mABPActionDesc;
 
 	public ABPActionDescription(ActionDefinition<ScheduleAction> scheduleDef, Precondition<ScheduleAction> precondition,
 			StateVarDefinition<ABP> abpDef) {
@@ -30,34 +30,34 @@ public class ABPActionDescription implements IActionDescription<ScheduleAction> 
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(abpDef);
 		ABPFormula abpFormula = new ABPFormula(abpDef, precondition);
-		mScheduleActionDesc = new FormulaActionDescription<>(scheduleDef, discrClass, effectClass, abpFormula);
+		mABPActionDesc = new FormulaActionDescription<>(scheduleDef, discrClass, effectClass, abpFormula);
 	}
 
 	@Override
 	public Set<ProbabilisticTransition<ScheduleAction>> getProbabilisticTransitions(ScheduleAction action)
 			throws XMDPException {
-		return mScheduleActionDesc.getProbabilisticTransitions(action);
+		return mABPActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
 	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, ScheduleAction action)
 			throws XMDPException {
-		return mScheduleActionDesc.getProbabilisticEffect(discriminant, action);
+		return mABPActionDesc.getProbabilisticEffect(discriminant, action);
 	}
 
 	@Override
 	public ActionDefinition<ScheduleAction> getActionDefinition() {
-		return mScheduleActionDesc.getActionDefinition();
+		return mABPActionDesc.getActionDefinition();
 	}
 
 	@Override
 	public DiscriminantClass getDiscriminantClass() {
-		return mScheduleActionDesc.getDiscriminantClass();
+		return mABPActionDesc.getDiscriminantClass();
 	}
 
 	@Override
 	public EffectClass getEffectClass() {
-		return mScheduleActionDesc.getEffectClass();
+		return mABPActionDesc.getEffectClass();
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class ABPActionDescription implements IActionDescription<ScheduleAction> 
 			return false;
 		}
 		ABPActionDescription actionDesc = (ABPActionDescription) obj;
-		return actionDesc.mScheduleActionDesc.equals(mScheduleActionDesc);
+		return actionDesc.mABPActionDesc.equals(mABPActionDesc);
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class ABPActionDescription implements IActionDescription<ScheduleAction> 
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mScheduleActionDesc.hashCode();
+			result = 31 * result + mABPActionDesc.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

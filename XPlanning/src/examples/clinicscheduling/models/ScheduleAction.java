@@ -27,7 +27,7 @@ public class ScheduleAction implements IAction {
 		mNumClientsToService = numClientsToService;
 	}
 
-	public ABP getNewAdvanceBookingPolicy() {
+	public ABP getNewABP() {
 		return mNewABP;
 	}
 

@@ -40,8 +40,9 @@ public class RobotBumpedActionDescription implements IActionDescription<MoveToAc
 		discrClass.add(rLocSrcDef);
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(rBumpedDestDef);
-		RobotBumpedFormula rBumpedFormula = new RobotBumpedFormula(rLocSrcDef, rBumpedDestDef, precondition);
-		mrBumpedActionDesc = new FormulaActionDescription<>(moveToDef, discrClass, effectClass, rBumpedFormula);
+		RobotBumpedFormula rBumpedFormula = new RobotBumpedFormula(rLocSrcDef, rBumpedDestDef);
+		mrBumpedActionDesc = new FormulaActionDescription<>(moveToDef, precondition, discrClass, effectClass,
+				rBumpedFormula);
 	}
 
 	@Override

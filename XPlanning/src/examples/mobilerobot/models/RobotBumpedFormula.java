@@ -7,7 +7,6 @@ import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
 import language.mdp.EffectClass;
-import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 
 /**
@@ -29,15 +28,12 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 
 	private StateVarDefinition<Location> mrLocSrcDef;
 	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
-	private Precondition<MoveToAction> mPrecondition;
 
 	private EffectClass mEffectClass; // of rBumped
 
-	public RobotBumpedFormula(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef,
-			Precondition<MoveToAction> precondition) {
+	public RobotBumpedFormula(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef) {
 		mrLocSrcDef = rLocSrcDef;
 		mrBumpedDestDef = rBumpedDestDef;
-		mPrecondition = precondition;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(rBumpedDestDef);
@@ -70,11 +66,6 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 	}
 
 	@Override
-	public Precondition<MoveToAction> getPrecondition() {
-		return mPrecondition;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -83,8 +74,7 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 			return false;
 		}
 		RobotBumpedFormula formula = (RobotBumpedFormula) obj;
-		return formula.mrLocSrcDef.equals(mrLocSrcDef) && formula.mrBumpedDestDef.equals(mrBumpedDestDef)
-				&& formula.mPrecondition.equals(mPrecondition);
+		return formula.mrLocSrcDef.equals(mrLocSrcDef) && formula.mrBumpedDestDef.equals(mrBumpedDestDef);
 	}
 
 	@Override
@@ -94,7 +84,6 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 			result = 17;
 			result = 31 * result + mrLocSrcDef.hashCode();
 			result = 31 * result + mrBumpedDestDef.hashCode();
-			result = 31 * result + mPrecondition.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

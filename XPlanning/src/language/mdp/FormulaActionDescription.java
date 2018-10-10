@@ -29,13 +29,16 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	private volatile int hashCode;
 
 	private ActionDefinition<E> mActionDefinition;
+	private Precondition<E> mPrecondition;
 	private DiscriminantClass mDiscriminantClass;
 	private EffectClass mEffectClass;
 	private IProbabilisticTransitionFormula<E> mProbTransFormula;
 
-	public FormulaActionDescription(ActionDefinition<E> actionDefinition, DiscriminantClass discriminantClass,
-			EffectClass effectClass, IProbabilisticTransitionFormula<E> transitionFormula) {
+	public FormulaActionDescription(ActionDefinition<E> actionDefinition, Precondition<E> precondition,
+			DiscriminantClass discriminantClass, EffectClass effectClass,
+			IProbabilisticTransitionFormula<E> transitionFormula) {
 		mActionDefinition = actionDefinition;
+		mPrecondition = precondition;
 		mDiscriminantClass = discriminantClass;
 		mEffectClass = effectClass;
 		mProbTransFormula = transitionFormula;
@@ -44,8 +47,7 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	@Override
 	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws XMDPException {
 		Set<ProbabilisticTransition<E>> probTransitions = new HashSet<>();
-		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action,
-				mProbTransFormula.getPrecondition());
+		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action);
 		for (Discriminant discriminant : allDiscriminants) {
 			ProbabilisticEffect probEffect = mProbTransFormula.formula(discriminant, action);
 			ProbabilisticTransition<E> probTrans = new ProbabilisticTransition<>(probEffect, discriminant, action);
@@ -59,12 +61,10 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	 * 
 	 * @param discrClass
 	 * @param action
-	 * @param precondition
 	 * @return All possible combinations of values of a given discriminant class -- as a set of discriminants.
 	 * @throws XMDPException
 	 */
-	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action, Precondition<E> precondition)
-			throws XMDPException {
+	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action) throws XMDPException {
 		Set<Discriminant> allDiscriminants = new HashSet<>();
 
 		DiscriminantClass copyDiscrClass = new DiscriminantClass();
@@ -77,8 +77,8 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 
 		StateVarDefinition<IStateVarValue> srcVarDef = iter.next();
 		iter.remove();
-		Set<Discriminant> subDiscriminants = getAllDiscriminants(copyDiscrClass, action, precondition);
-		Set<IStateVarValue> applicableValues = precondition.getApplicableValues(action, srcVarDef);
+		Set<Discriminant> subDiscriminants = getAllDiscriminants(copyDiscrClass, action);
+		Set<IStateVarValue> applicableValues = mPrecondition.getApplicableValues(action, srcVarDef);
 
 		// Build a set of all discriminants of the variable srcVarDef
 		Set<Discriminant> discriminants = new HashSet<>();

@@ -7,7 +7,6 @@ import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
 import language.mdp.EffectClass;
-import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 
 public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleAction> {
@@ -18,12 +17,10 @@ public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleActio
 	private volatile int hashCode;
 
 	private StateVarDefinition<ABP> mABPDef;
-	private Precondition<ScheduleAction> mPrecondition;
 	private EffectClass mEffectClass; // of ABP
 
-	public ABPFormula(StateVarDefinition<ABP> abpDef, Precondition<ScheduleAction> precondition) {
+	public ABPFormula(StateVarDefinition<ABP> abpDef) {
 		mABPDef = abpDef;
-		mPrecondition = precondition;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(abpDef);
@@ -40,11 +37,6 @@ public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleActio
 	}
 
 	@Override
-	public Precondition<ScheduleAction> getPrecondition() {
-		return mPrecondition;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -53,7 +45,7 @@ public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleActio
 			return false;
 		}
 		ABPFormula formula = (ABPFormula) obj;
-		return formula.mABPDef.equals(mABPDef) && formula.mPrecondition.equals(mPrecondition);
+		return formula.mABPDef.equals(mABPDef);
 	}
 
 	@Override
@@ -62,7 +54,6 @@ public class ABPFormula implements IProbabilisticTransitionFormula<ScheduleActio
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mABPDef.hashCode();
-			result = 31 * result + mPrecondition.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -33,9 +33,9 @@ public class BookedClientCountActionDescription implements IActionDescription<Sc
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(bookedClientCountDef);
 		BookedClientCountFormula bookedClientFormula = new BookedClientCountFormula(bookedClientCountDef, abpDef,
-				newClientCountDef, precondition);
-		mBookedClientCountActionDesc = new FormulaActionDescription<>(scheduleDef, discrClass, effectClass,
-				bookedClientFormula);
+				newClientCountDef);
+		mBookedClientCountActionDesc = new FormulaActionDescription<>(scheduleDef, precondition, discrClass,
+				effectClass, bookedClientFormula);
 	}
 
 	@Override

@@ -7,7 +7,6 @@ import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
 import language.mdp.EffectClass;
-import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 
 /**
@@ -27,12 +26,10 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 	private volatile int hashCode;
 
 	private StateVarDefinition<Location> mrLocDef;
-	private Precondition<MoveToAction> mPrecondition;
 	private EffectClass mEffectClass; // of rLoc
 
-	public RobotLocationFormula(StateVarDefinition<Location> rLocDef, Precondition<MoveToAction> precondition) {
+	public RobotLocationFormula(StateVarDefinition<Location> rLocDef) {
 		mrLocDef = rLocDef;
-		mPrecondition = precondition;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(rLocDef);
@@ -60,11 +57,6 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 	}
 
 	@Override
-	public Precondition<MoveToAction> getPrecondition() {
-		return mPrecondition;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -73,7 +65,7 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 			return false;
 		}
 		RobotLocationFormula formula = (RobotLocationFormula) obj;
-		return formula.mrLocDef.equals(mrLocDef) && formula.mPrecondition.equals(mPrecondition);
+		return formula.mrLocDef.equals(mrLocDef);
 	}
 
 	@Override
@@ -82,7 +74,6 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mrLocDef.hashCode();
-			result = 31 * result + mPrecondition.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

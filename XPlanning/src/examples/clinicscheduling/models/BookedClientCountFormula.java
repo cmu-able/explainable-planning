@@ -7,7 +7,6 @@ import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
 import language.mdp.EffectClass;
-import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 
 public class BookedClientCountFormula implements IProbabilisticTransitionFormula<ScheduleAction> {
@@ -20,16 +19,13 @@ public class BookedClientCountFormula implements IProbabilisticTransitionFormula
 	private StateVarDefinition<ClientCount> mBookedClientCountDef;
 	private StateVarDefinition<ABP> mABPDef;
 	private StateVarDefinition<ClientCount> mNewClientCountDef;
-	private Precondition<ScheduleAction> mPrecondition;
 	private EffectClass mEffectClass; // of bookedClientCount
 
 	public BookedClientCountFormula(StateVarDefinition<ClientCount> bookedClientCountDef,
-			StateVarDefinition<ABP> abpDef, StateVarDefinition<ClientCount> newClientCountDef,
-			Precondition<ScheduleAction> precondition) {
+			StateVarDefinition<ABP> abpDef, StateVarDefinition<ClientCount> newClientCountDef) {
 		mBookedClientCountDef = bookedClientCountDef;
 		mABPDef = abpDef;
 		mNewClientCountDef = newClientCountDef;
-		mPrecondition = precondition;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(bookedClientCountDef);
@@ -59,11 +55,6 @@ public class BookedClientCountFormula implements IProbabilisticTransitionFormula
 	}
 
 	@Override
-	public Precondition<ScheduleAction> getPrecondition() {
-		return mPrecondition;
-	}
-
-	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;
@@ -73,7 +64,7 @@ public class BookedClientCountFormula implements IProbabilisticTransitionFormula
 		}
 		BookedClientCountFormula formula = (BookedClientCountFormula) obj;
 		return formula.mBookedClientCountDef.equals(mBookedClientCountDef) && formula.mABPDef.equals(mABPDef)
-				&& formula.mNewClientCountDef.equals(mNewClientCountDef) && formula.mPrecondition.equals(mPrecondition);
+				&& formula.mNewClientCountDef.equals(mNewClientCountDef);
 	}
 
 	@Override
@@ -84,7 +75,6 @@ public class BookedClientCountFormula implements IProbabilisticTransitionFormula
 			result = 31 * result + mBookedClientCountDef.hashCode();
 			result = 31 * result + mABPDef.hashCode();
 			result = 31 * result + mNewClientCountDef.hashCode();
-			result = 31 * result + mPrecondition.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

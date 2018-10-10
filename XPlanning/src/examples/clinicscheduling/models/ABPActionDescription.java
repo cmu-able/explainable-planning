@@ -29,8 +29,8 @@ public class ABPActionDescription implements IActionDescription<ScheduleAction> 
 		discrClass.add(abpDef);
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(abpDef);
-		ABPFormula abpFormula = new ABPFormula(abpDef, precondition);
-		mABPActionDesc = new FormulaActionDescription<>(scheduleDef, discrClass, effectClass, abpFormula);
+		ABPFormula abpFormula = new ABPFormula(abpDef);
+		mABPActionDesc = new FormulaActionDescription<>(scheduleDef, precondition, discrClass, effectClass, abpFormula);
 	}
 
 	@Override

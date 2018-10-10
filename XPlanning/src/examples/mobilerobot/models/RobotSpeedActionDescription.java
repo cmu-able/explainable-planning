@@ -36,8 +36,9 @@ public class RobotSpeedActionDescription implements IActionDescription<SetSpeedA
 		discrClass.add(rSpeedDef);
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(rSpeedDef);
-		RobotSpeedFormula rSpeedFormula = new RobotSpeedFormula(rSpeedDef, precondition);
-		mrSpeedActionDesc = new FormulaActionDescription<>(setSpeedDef, discrClass, effectClass, rSpeedFormula);
+		RobotSpeedFormula rSpeedFormula = new RobotSpeedFormula(rSpeedDef);
+		mrSpeedActionDesc = new FormulaActionDescription<>(setSpeedDef, precondition, discrClass, effectClass,
+				rSpeedFormula);
 	}
 
 	@Override

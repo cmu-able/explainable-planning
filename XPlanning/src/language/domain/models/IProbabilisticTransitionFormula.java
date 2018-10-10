@@ -2,7 +2,6 @@ package language.domain.models;
 
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
-import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
 
 /**
@@ -20,17 +19,11 @@ public interface IProbabilisticTransitionFormula<E extends IAction> {
 	 * Calculate the probabilistic effect of a given action and a discriminant.
 	 * 
 	 * @param discriminant
-	 *            : Values in the discriminant are guaranteed to satisfy the precondition
+	 *            : Values in the discriminant are guaranteed to satisfy the precondition of the action
 	 * @param action
+	 *            : Action
 	 * @return Probabilistic effect of the action
 	 * @throws XMDPException
 	 */
 	public ProbabilisticEffect formula(Discriminant discriminant, E action) throws XMDPException;
-
-	/**
-	 * Precondition defining the domains of the discriminant variables.
-	 * 
-	 * @return Precondition
-	 */
-	public Precondition<E> getPrecondition();
 }

@@ -39,8 +39,8 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 		discrClass.add(rLocDef);
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(rLocDef);
-		RobotLocationFormula rLocFormula = new RobotLocationFormula(rLocDef, precondition);
-		mrLocActionDesc = new FormulaActionDescription<>(moveToDef, discrClass, effectClass, rLocFormula);
+		RobotLocationFormula rLocFormula = new RobotLocationFormula(rLocDef);
+		mrLocActionDesc = new FormulaActionDescription<>(moveToDef, precondition, discrClass, effectClass, rLocFormula);
 	}
 
 	@Override

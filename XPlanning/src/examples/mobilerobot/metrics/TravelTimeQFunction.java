@@ -55,8 +55,8 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 		if (!(obj instanceof TravelTimeQFunction)) {
 			return false;
 		}
-		TravelTimeQFunction qFunc = (TravelTimeQFunction) obj;
-		return qFunc.mDomain.equals(mDomain);
+		TravelTimeQFunction qFunction = (TravelTimeQFunction) obj;
+		return qFunction.mDomain.equals(mDomain);
 	}
 
 	@Override

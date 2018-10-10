@@ -36,12 +36,12 @@ public class BookedClientCountFormula implements IProbabilisticTransitionFormula
 		ClientCount currBookedClientCount = discriminant.getStateVarValue(ClientCount.class, mBookedClientCountDef);
 		ClientCount newClientCount = discriminant.getStateVarValue(ClientCount.class, mNewClientCountDef);
 		ABP currABP = discriminant.getStateVarValue(ABP.class, mABPDef);
-		ClientCount servicedClientCount = schedule.getNumClientsToService();
+		ClientCount servicedNewClientCount = schedule.getNumNewClientsToService();
 
 		int x = currBookedClientCount.getValue();
 		int y = newClientCount.getValue();
 		int w = currABP.getValue();
-		int b = servicedClientCount.getValue();
+		int b = servicedNewClientCount.getValue();
 
 		int numBookedClients = x - Math.min(x, w) + y - b;
 		ClientCount newBookedClientCount = new ClientCount(numBookedClients);

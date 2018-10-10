@@ -19,20 +19,20 @@ public class ScheduleAction implements IAction {
 
 	private Action mAction;
 	private ABP mNewABP;
-	private ClientCount mNumClientsToService;
+	private ClientCount mNumNewClientsToService;
 
-	public ScheduleAction(ABP newABP, ClientCount numClientsToService) {
-		mAction = new Action("schedule", newABP, numClientsToService);
+	public ScheduleAction(ABP newABP, ClientCount numNewClientsToService) {
+		mAction = new Action("schedule", newABP, numNewClientsToService);
 		mNewABP = newABP;
-		mNumClientsToService = numClientsToService;
+		mNumNewClientsToService = numNewClientsToService;
 	}
 
 	public ABP getNewABP() {
 		return mNewABP;
 	}
 
-	public ClientCount getNumClientsToService() {
-		return mNumClientsToService;
+	public ClientCount getNumNewClientsToService() {
+		return mNumNewClientsToService;
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public class ScheduleAction implements IAction {
 		}
 		ScheduleAction schedule = (ScheduleAction) obj;
 		return schedule.mAction.equals(mAction) && schedule.mNewABP.equals(mNewABP)
-				&& schedule.mNumClientsToService.equals(mNumClientsToService);
+				&& schedule.mNumNewClientsToService.equals(mNumNewClientsToService);
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class ScheduleAction implements IAction {
 			result = 17;
 			result = 31 * result + mAction.hashCode();
 			result = 31 * result + mNewABP.hashCode();
-			result = 31 * result + mNumClientsToService.hashCode();
+			result = 31 * result + mNumNewClientsToService.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

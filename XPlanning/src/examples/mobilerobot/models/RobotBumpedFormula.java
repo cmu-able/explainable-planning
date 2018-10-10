@@ -3,7 +3,6 @@ package examples.mobilerobot.models;
 import language.domain.models.IProbabilisticTransitionFormula;
 import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
-import language.exceptions.IncompatibleVarException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.Effect;
@@ -33,24 +32,15 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 	private Precondition<MoveToAction> mPrecondition;
 
 	private EffectClass mEffectClass; // of rBumped
-	private Effect mBumpedEffect;
-	private Effect mNotBumpedEffect;
 
 	public RobotBumpedFormula(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotBumped> rBumpedDestDef,
-			Precondition<MoveToAction> precondition) throws IncompatibleVarException {
+			Precondition<MoveToAction> precondition) {
 		mrLocSrcDef = rLocSrcDef;
 		mrBumpedDestDef = rBumpedDestDef;
 		mPrecondition = precondition;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(rBumpedDestDef);
-		// Possible effects on rBumped
-		mBumpedEffect = new Effect(mEffectClass);
-		mNotBumpedEffect = new Effect(mEffectClass);
-		RobotBumped bumped = new RobotBumped(true);
-		RobotBumped notBumped = new RobotBumped(false);
-		mBumpedEffect.add(mrBumpedDestDef.getStateVar(bumped));
-		mNotBumpedEffect.add(mrBumpedDestDef.getStateVar(notBumped));
 	}
 
 	@Override
@@ -59,14 +49,21 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 		StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
 		ProbabilisticEffect rBumpedProbEffect = new ProbabilisticEffect(mEffectClass);
+		// Possible effects on rBumped
+		Effect bumpedEffect = new Effect(mEffectClass);
+		Effect notBumpedEffect = new Effect(mEffectClass);
+		RobotBumped bumped = new RobotBumped(true);
+		RobotBumped notBumped = new RobotBumped(false);
+		bumpedEffect.add(mrBumpedDestDef.getStateVar(bumped));
+		notBumpedEffect.add(mrBumpedDestDef.getStateVar(notBumped));
 
 		if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-			rBumpedProbEffect.put(mBumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
-			rBumpedProbEffect.put(mNotBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
+			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
 		} else if (occlusion == Occlusion.BLOCKED) {
-			rBumpedProbEffect.put(mBumpedEffect, BUMP_PROB_BLOCKED);
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
 		} else {
-			rBumpedProbEffect.put(mNotBumpedEffect, 1 - BUMP_PROB_CLEAR);
+			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
 		}
 
 		return rBumpedProbEffect;

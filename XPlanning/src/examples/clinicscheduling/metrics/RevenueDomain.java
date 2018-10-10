@@ -15,14 +15,6 @@ import language.exceptions.VarNotFoundException;
 
 public class RevenueDomain implements ITransitionStructure<ScheduleAction> {
 
-	private static final double BETA_1 = 12;
-	private static final double BETA_2 = 36.54;
-
-	/**
-	 * Lower bound on the show probability of any advance-booking client.
-	 */
-	private static final double BETA_3 = 0.5;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -54,43 +46,6 @@ public class RevenueDomain implements ITransitionStructure<ScheduleAction> {
 
 	public ClientCount getNumNewClientsToService(Transition<ScheduleAction, RevenueDomain> transition) {
 		return transition.getAction().getNumNewClientsToService();
-	}
-
-	/**
-	 * Show probability of an advance-booking appointment: p_s(w,x) = max(1 - (B1 + B2 + log(LT + 1))/100, B3).
-	 * 
-	 * @param transition
-	 * @return Show probability of an advance-booking appointment
-	 * @throws VarNotFoundException
-	 */
-	public double getAdvanceBookingShowProbability(Transition<ScheduleAction, RevenueDomain> transition)
-			throws VarNotFoundException {
-		double leadTime = getAppointmentLeadTime(transition);
-		double gallucciTerm = 1 - (BETA_1 + BETA_2 * Math.log(leadTime + 1)) / 100;
-		return Math.max(gallucciTerm, BETA_3);
-	}
-
-	/**
-	 * Show probability of a same-day appointment: p_sd = 1 - B1/100.
-	 * 
-	 * @return Show probability of a same-day appointment
-	 */
-	public double getSameDayShowProbability() {
-		return 1 - BETA_1 / 100;
-	}
-
-	/**
-	 * Lead time of advance-booking appointment: LT = max(1, floor(x/w)).
-	 * 
-	 * @param transition
-	 * @return Lead time of advance-booking appointment
-	 * @throws VarNotFoundException
-	 */
-	public double getAppointmentLeadTime(Transition<ScheduleAction, RevenueDomain> transition)
-			throws VarNotFoundException {
-		int x = getCurrentBookedClientCount(transition).getValue();
-		int w = getCurrentABP(transition).getValue();
-		return Math.max(1, Math.floorDiv(x, w));
 	}
 
 	@Override

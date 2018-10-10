@@ -1,5 +1,7 @@
 package examples.clinicscheduling.metrics;
 
+import examples.clinicscheduling.models.ABP;
+import examples.clinicscheduling.models.ClientCount;
 import examples.clinicscheduling.models.ScheduleAction;
 import language.domain.metrics.IStandardMetricQFunction;
 import language.domain.metrics.Transition;
@@ -43,10 +45,12 @@ public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction
 	@Override
 	public double getValue(Transition<ScheduleAction, RevenueDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
-		double advanceBookingShowProb = mDomain.getAdvanceBookingShowProbability(transition);
-		double sameDayShowProb = mDomain.getSameDayShowProbability();
-		int w = mDomain.getCurrentABP(transition).getValue();
-		int x = mDomain.getCurrentBookedClientCount(transition).getValue();
+		ClientCount bookedClientCount = mDomain.getCurrentBookedClientCount(transition);
+		ABP abp = mDomain.getCurrentABP(transition);
+		double advanceBookingShowProb = ClientPredictionUtils.getAdvanceBookingShowProbability(bookedClientCount, abp);
+		double sameDayShowProb = ClientPredictionUtils.getSameDayShowProbability();
+		int w = abp.getValue();
+		int x = bookedClientCount.getValue();
 		int b = mDomain.getNumNewClientsToService(transition).getValue();
 		return mRevenuePerPatient * (advanceBookingShowProb * Math.min(w, x) + sameDayShowProb * b);
 	}
@@ -70,7 +74,8 @@ public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction
 			return false;
 		}
 		RevenueQFunction qFunction = (RevenueQFunction) obj;
-		return qFunction.mDomain.equals(mDomain) && Double.compare(qFunction.mRevenuePerPatient, mRevenuePerPatient) == 0;
+		return qFunction.mDomain.equals(mDomain)
+				&& Double.compare(qFunction.mRevenuePerPatient, mRevenuePerPatient) == 0;
 	}
 
 	@Override

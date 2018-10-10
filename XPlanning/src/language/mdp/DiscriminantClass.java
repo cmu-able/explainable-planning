@@ -38,6 +38,10 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 		return mDiscriminantClass.contains(stateVarDef);
 	}
 
+	public boolean isEmpty() {
+		return mDiscriminantClass.isEmpty();
+	}
+
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
 		return new Iterator<StateVarDefinition<IStateVarValue>>() {

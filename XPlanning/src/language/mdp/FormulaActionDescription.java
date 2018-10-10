@@ -47,13 +47,25 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	@Override
 	public Set<ProbabilisticTransition<E>> getProbabilisticTransitions(E action) throws XMDPException {
 		Set<ProbabilisticTransition<E>> probTransitions = new HashSet<>();
-		Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action);
-		for (Discriminant discriminant : allDiscriminants) {
-			ProbabilisticEffect probEffect = mProbTransFormula.formula(discriminant, action);
-			ProbabilisticTransition<E> probTrans = new ProbabilisticTransition<>(probEffect, discriminant, action);
+
+		if (mDiscriminantClass.isEmpty()) {
+			Discriminant emptyDiscr = new Discriminant(mDiscriminantClass);
+			ProbabilisticTransition<E> probTrans = getProbabilisticTransition(emptyDiscr, action);
 			probTransitions.add(probTrans);
+		} else {
+			Set<Discriminant> allDiscriminants = getAllDiscriminants(mDiscriminantClass, action);
+			for (Discriminant discriminant : allDiscriminants) {
+				ProbabilisticTransition<E> probTrans = getProbabilisticTransition(discriminant, action);
+				probTransitions.add(probTrans);
+			}
 		}
 		return probTransitions;
+	}
+
+	private ProbabilisticTransition<E> getProbabilisticTransition(Discriminant discriminant, E action)
+			throws XMDPException {
+		ProbabilisticEffect probEffect = mProbTransFormula.formula(discriminant, action);
+		return new ProbabilisticTransition<>(probEffect, discriminant, action);
 	}
 
 	/**

@@ -1,0 +1,87 @@
+package examples.clinicscheduling.metrics;
+
+import java.util.Set;
+
+import examples.clinicscheduling.models.ClientCount;
+import examples.clinicscheduling.models.ScheduleAction;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.metrics.Transition;
+import language.domain.metrics.TransitionStructure;
+import language.domain.models.ActionDefinition;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVarDefinition;
+import language.exceptions.VarNotFoundException;
+
+public class LeadTimeDomain implements ITransitionStructure<ScheduleAction> {
+
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
+
+	private StateVarDefinition<ClientCount> mBookedClientCountSrcDef;
+
+	private TransitionStructure<ScheduleAction> mDomain = new TransitionStructure<>();
+
+	public LeadTimeDomain(StateVarDefinition<ClientCount> bookedClientCountSrcDef,
+			ActionDefinition<ScheduleAction> scheduleDef) {
+		mBookedClientCountSrcDef = bookedClientCountSrcDef;
+
+		mDomain.addSrcStateVarDef(bookedClientCountSrcDef);
+		mDomain.setActionDef(scheduleDef);
+	}
+
+	public ClientCount getCurrentBookedClientCount(Transition<ScheduleAction, LeadTimeDomain> transition)
+			throws VarNotFoundException {
+		return transition.getSrcStateVarValue(ClientCount.class, mBookedClientCountSrcDef);
+	}
+
+	@Override
+	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs() {
+		return mDomain.getSrcStateVarDefs();
+	}
+
+	@Override
+	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs() {
+		return mDomain.getDestStateVarDefs();
+	}
+
+	@Override
+	public ActionDefinition<ScheduleAction> getActionDef() {
+		return mDomain.getActionDef();
+	}
+
+	@Override
+	public boolean containsSrcStateVarDef(StateVarDefinition<? extends IStateVarValue> srcVarDef) {
+		return mDomain.containsSrcStateVarDef(srcVarDef);
+	}
+
+	@Override
+	public boolean containsDestStateVarDef(StateVarDefinition<? extends IStateVarValue> destVarDef) {
+		return mDomain.containsDestStateVarDef(destVarDef);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof LeadTimeDomain)) {
+			return false;
+		}
+		LeadTimeDomain domain = (LeadTimeDomain) obj;
+		return domain.mDomain.equals(mDomain);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mDomain.hashCode();
+			hashCode = result;
+		}
+		return result;
+	}
+
+}

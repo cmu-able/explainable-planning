@@ -25,12 +25,11 @@ public class NewClientCountActionDescription implements IActionDescription<Sched
 
 	public NewClientCountActionDescription(ActionDefinition<ScheduleAction> scheduleDef,
 			Precondition<ScheduleAction> precondition, StateVarDefinition<ClientCount> newClientCountDef,
-			double eventRate, int branchFactor) {
+			double clientArrivalRate) {
 		DiscriminantClass discrClass = new DiscriminantClass(); // empty discriminant class
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(newClientCountDef);
-		NewClientCountFormula newClientCountFormula = new NewClientCountFormula(newClientCountDef, eventRate,
-				branchFactor);
+		NewClientCountFormula newClientCountFormula = new NewClientCountFormula(newClientCountDef, clientArrivalRate);
 		mNewClientCountActionDesc = new FormulaActionDescription<>(scheduleDef, precondition, discrClass, effectClass,
 				newClientCountFormula);
 	}

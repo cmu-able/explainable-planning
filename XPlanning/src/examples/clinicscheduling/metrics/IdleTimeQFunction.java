@@ -8,9 +8,9 @@ import language.domain.metrics.Transition;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 
-public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleAction, ScheduleDomain> {
+public class IdleTimeQFunction implements IStandardMetricQFunction<ScheduleAction, ScheduleDomain> {
 
-	public static final String NAME = "overtime";
+	public static final String NAME = "idle-time";
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -18,23 +18,23 @@ public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleActio
 	private volatile int hashCode;
 
 	private ScheduleDomain mDomain;
-	private double mOvertimeCostPerPatient;
+	private double mIdleTimeCostPerPatient;
 	private int mCapacity;
 
-	public OvertimeQFunction(ScheduleDomain domain, double overtimeCostPerPatient, int capacity) {
+	public IdleTimeQFunction(ScheduleDomain domain, double idleTimeCostPerPatient, int capacity) {
 		mDomain = domain;
-		mOvertimeCostPerPatient = overtimeCostPerPatient;
+		mIdleTimeCostPerPatient = idleTimeCostPerPatient;
 		mCapacity = capacity;
 	}
 
-	public double getOvertimeCostPerPatient() {
-		return mOvertimeCostPerPatient;
+	public double getIdleTimeCostPerPatient() {
+		return mIdleTimeCostPerPatient;
 	}
 
 	/**
-	 * Overtime cost = OT * sum_i,j (i + j - C)+ * Pr(AB = i) * Pr(SD = j), where:
+	 * Idle time cost = IT * sum_i,j (C - i - j)+ * Pr(AB = i) * Pr(SD = j), where:
 	 * 
-	 * OT = overtime cost per patient serviced,
+	 * IT = idle time cost per patient not serviced,
 	 * 
 	 * i = from 0 to number of patients advanced-booked for today, min(w, x),
 	 * 
@@ -60,7 +60,7 @@ public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleActio
 		int b = mDomain.getNumNewClientsToService(transition).getValue();
 
 		int numClientsBookedForToday = Math.min(w, x);
-		double overtimeCost = 0;
+		double idleTimeCost = 0;
 
 		for (int i = 0; i <= numClientsBookedForToday; i++) {
 			double iAdvanceBookingShowProb = ClientPredictionUtils.getAdvanceBookingShowProbability(i,
@@ -68,13 +68,13 @@ public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleActio
 
 			for (int j = 0; j <= b; j++) {
 				double jSameDayShowProb = ClientPredictionUtils.getSameDayShowProbability(j, b);
-				int numOvertimePatients = Math.max(i + j - mCapacity, 0);
+				int numIdleSlots = Math.max(mCapacity - i - j, 0);
 
-				overtimeCost += numOvertimePatients * iAdvanceBookingShowProb * jSameDayShowProb;
+				idleTimeCost += numIdleSlots * iAdvanceBookingShowProb * jSameDayShowProb;
 			}
 		}
 
-		return mOvertimeCostPerPatient * overtimeCost;
+		return mIdleTimeCostPerPatient * idleTimeCost;
 	}
 
 	@Override
@@ -92,12 +92,12 @@ public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleActio
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof OvertimeQFunction)) {
+		if (!(obj instanceof IdleTimeQFunction)) {
 			return false;
 		}
-		OvertimeQFunction qFunction = (OvertimeQFunction) obj;
+		IdleTimeQFunction qFunction = (IdleTimeQFunction) obj;
 		return qFunction.mDomain.equals(mDomain)
-				&& Double.compare(qFunction.mOvertimeCostPerPatient, mOvertimeCostPerPatient) == 0
+				&& Double.compare(qFunction.mIdleTimeCostPerPatient, mIdleTimeCostPerPatient) == 0
 				&& Double.compare(qFunction.mCapacity, mCapacity) == 0;
 	}
 
@@ -107,7 +107,7 @@ public class OvertimeQFunction implements IStandardMetricQFunction<ScheduleActio
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDomain.hashCode();
-			result = 31 * result + Double.hashCode(mOvertimeCostPerPatient);
+			result = 31 * result + Double.hashCode(mIdleTimeCostPerPatient);
 			result = 31 * result + Double.hashCode(mCapacity);
 			hashCode = result;
 		}

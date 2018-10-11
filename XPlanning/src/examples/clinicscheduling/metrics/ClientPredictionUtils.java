@@ -35,12 +35,47 @@ public class ClientPredictionUtils {
 	}
 
 	/**
+	 * Show probability of N advance-booking patients: Pr(AB = i) = p_s^i for all i > 0, (1 - p_s)^min(w, x) for i = 0.
+	 * 
+	 * @param numShowPatients
+	 *            : Number of advance-booking patients who show up
+	 * @param bookedClientCount
+	 *            : Number of clients who have been booked
+	 * @param abp
+	 *            : Current ABP
+	 * @return Show probability of N advance-booking patients
+	 */
+	public static double getAdvanceBookingShowProbability(int numShowPatients, ClientCount bookedClientCount, ABP abp) {
+		int w = abp.getValue();
+		int x = bookedClientCount.getValue();
+		int numClientsBookedForToday = Math.min(w, x);
+		double advanceBookingShowProb = getAdvanceBookingShowProbability(bookedClientCount, abp);
+		return numShowPatients > 0 ? Math.pow(advanceBookingShowProb, numShowPatients)
+				: Math.pow(1 - advanceBookingShowProb, numClientsBookedForToday);
+	}
+
+	/**
 	 * Show probability of a same-day appointment: p_sd = 1 - B1/100.
 	 * 
 	 * @return Show probability of a same-day appointment
 	 */
 	public static double getSameDayShowProbability() {
 		return 1 - BETA_1 / 100;
+	}
+
+	/**
+	 * Show probability of N same-day patients: Pr(SD = j) = p_sd^j for all j > 0, (1 - p_sd)^b for i = 0.
+	 * 
+	 * @param numShowPatients
+	 *            : Number of same-day patients who show up
+	 * @param numNewClientsToService
+	 *            : Number of newly arrived patients to service today
+	 * @return Show probability of N same-day patients
+	 */
+	public static double getSameDayShowProbability(int numShowPatients, int numNewClientsToService) {
+		double sameDayShowProb = getSameDayShowProbability();
+		return numShowPatients > 0 ? Math.pow(sameDayShowProb, numShowPatients)
+				: Math.pow(1 - sameDayShowProb, numNewClientsToService);
 	}
 
 	/**

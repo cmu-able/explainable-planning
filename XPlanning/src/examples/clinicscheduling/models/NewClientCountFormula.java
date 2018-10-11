@@ -17,15 +17,12 @@ public class NewClientCountFormula implements IProbabilisticTransitionFormula<Sc
 	private volatile int hashCode;
 
 	private StateVarDefinition<ClientCount> mNewClientCountDef;
-	private double mEventRate;
-	private int mBranchFactor;
+	private double mClientArrivalRate;
 	private EffectClass mEffectClass; // of newClientCount
 
-	public NewClientCountFormula(StateVarDefinition<ClientCount> newClientCountDef, double eventRate,
-			int branchFactor) {
+	public NewClientCountFormula(StateVarDefinition<ClientCount> newClientCountDef, double clientArrivalRate) {
 		mNewClientCountDef = newClientCountDef;
-		mEventRate = eventRate;
-		mBranchFactor = branchFactor;
+		mClientArrivalRate = clientArrivalRate;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(newClientCountDef);
@@ -33,25 +30,20 @@ public class NewClientCountFormula implements IProbabilisticTransitionFormula<Sc
 
 	@Override
 	public ProbabilisticEffect formula(Discriminant discriminant, ScheduleAction action) throws XMDPException {
-		// Branching factor is always an odd number
-		int numIntervals = (mBranchFactor - 1) / 2 + 1;
-
 		ProbabilisticEffect newClientCountProbEffect = new ProbabilisticEffect(mEffectClass);
 
 		// Possible effects on newClientCount
-		for (int i = 1; i <= mBranchFactor; i++) {
-			double c = (double) i / numIntervals;
-			int numEvents = (int) Math.floor(c * mEventRate);
-
-			// numEvents is a possible number of new clients arriving today
+		for (ClientCount newClientCount : mNewClientCountDef.getPossibleValues()) {
 			Effect numClientsEffect = new Effect(mEffectClass);
-			ClientCount newClientCount = new ClientCount(numEvents);
 			numClientsEffect.add(mNewClientCountDef.getStateVar(newClientCount));
+
+			// A possible number of new clients arriving today
+			int numNewClients = newClientCount.getValue();
 
 			// Probability of the above number of new clients arriving today
 			// Poisson distribution: P(k events in a day) = e^(-lambda) * lambda^k / k!
-			double probNumClients = Math.pow(Math.E, -1 * mEventRate) * Math.pow(mEventRate, numEvents)
-					/ ArithmeticUtils.factorial(numEvents);
+			double probNumClients = Math.pow(Math.E, -1 * mClientArrivalRate)
+					* Math.pow(mClientArrivalRate, numNewClients) / ArithmeticUtils.factorial(numNewClients);
 
 			newClientCountProbEffect.put(numClientsEffect, probNumClients);
 		}
@@ -69,7 +61,7 @@ public class NewClientCountFormula implements IProbabilisticTransitionFormula<Sc
 		}
 		NewClientCountFormula formula = (NewClientCountFormula) obj;
 		return formula.mNewClientCountDef.equals(mNewClientCountDef)
-				&& Double.compare(formula.mEventRate, mEventRate) == 0 && formula.mBranchFactor == mBranchFactor;
+				&& Double.compare(formula.mClientArrivalRate, mClientArrivalRate) == 0;
 	}
 
 	@Override
@@ -78,8 +70,7 @@ public class NewClientCountFormula implements IProbabilisticTransitionFormula<Sc
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mNewClientCountDef.hashCode();
-			result = 31 * result + Double.hashCode(mEventRate);
-			result = 31 * result + Integer.hashCode(mBranchFactor);
+			result = 31 * result + Double.hashCode(mClientArrivalRate);
 			hashCode = result;
 		}
 		return hashCode;

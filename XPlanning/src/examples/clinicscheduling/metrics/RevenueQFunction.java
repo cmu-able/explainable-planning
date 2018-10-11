@@ -8,7 +8,7 @@ import language.domain.metrics.Transition;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 
-public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction, RevenueDomain> {
+public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction, ScheduleDomain> {
 
 	public static final String NAME = "revenue";
 
@@ -17,10 +17,10 @@ public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction
 	 */
 	private volatile int hashCode;
 
-	private RevenueDomain mDomain;
+	private ScheduleDomain mDomain;
 	private double mRevenuePerPatient;
 
-	public RevenueQFunction(RevenueDomain domain, double revenuePerPatient) {
+	public RevenueQFunction(ScheduleDomain domain, double revenuePerPatient) {
 		mDomain = domain;
 		mRevenuePerPatient = revenuePerPatient;
 	}
@@ -43,7 +43,7 @@ public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction
 	 * p_sd = probability that a same-day booking patient shows up.
 	 */
 	@Override
-	public double getValue(Transition<ScheduleAction, RevenueDomain> transition)
+	public double getValue(Transition<ScheduleAction, ScheduleDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		ClientCount bookedClientCount = mDomain.getCurrentBookedClientCount(transition);
 		ABP abp = mDomain.getCurrentABP(transition);
@@ -61,7 +61,7 @@ public class RevenueQFunction implements IStandardMetricQFunction<ScheduleAction
 	}
 
 	@Override
-	public RevenueDomain getTransitionStructure() {
+	public ScheduleDomain getTransitionStructure() {
 		return mDomain;
 	}
 

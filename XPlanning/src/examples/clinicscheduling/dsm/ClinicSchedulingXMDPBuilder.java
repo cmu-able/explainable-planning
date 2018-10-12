@@ -18,7 +18,10 @@ import examples.clinicscheduling.models.BookedClientCountActionDescription;
 import examples.clinicscheduling.models.ClientCount;
 import examples.clinicscheduling.models.NewClientCountActionDescription;
 import examples.clinicscheduling.models.ScheduleAction;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
 import language.domain.models.ActionDefinition;
+import language.domain.models.IAction;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.mdp.ActionSpace;
@@ -29,6 +32,8 @@ import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
+import language.objectives.AttributeCostFunction;
+import language.objectives.CostFunction;
 
 public class ClinicSchedulingXMDPBuilder {
 
@@ -46,17 +51,21 @@ public class ClinicSchedulingXMDPBuilder {
 		mBranchFactor = branchFactor;
 	}
 
-	public XMDP buildXMDP(int maxABP, int maxQueueSize, double clientArrivalRate, int iniABP, int iniABCount,
-			int iniNewClientCount, int capacity, double revenuePerPatient, double overtimeCostPerPatient,
-			double idleTimeCostPerPatient, double leadTimeCostFactor, double switchingABPCostFactor)
-			throws IncompatibleActionException {
+	public XMDP buildXMDP(SchedulingContext schedulingContext, int iniABP, int iniABCount, int iniNewClientCount,
+			double clientArrivalRate) throws IncompatibleActionException {
+		int maxABP = schedulingContext.getMaxABP();
+		int maxQueueSize = schedulingContext.getMaxQueueSize();
+		int capacity = schedulingContext.getCapacity();
+		ClinicCostProfile clinicCostProfile = schedulingContext.getClinicCostProfile();
+
 		StateSpace stateSpace = buildStateSpace(maxABP, maxQueueSize, clientArrivalRate);
 		ActionSpace actionSpace = buildActionSpace(maxABP);
 		StateVarTuple initialState = buildInitialState(iniABP, iniABCount, iniNewClientCount);
+		StateVarTuple goal = new StateVarTuple(); // This average-cost MDP does not have a goal
 		TransitionFunction transFunction = buildTransitionFunction(maxQueueSize, clientArrivalRate);
-		QSpace qSpace = buildQFunctions(capacity, revenuePerPatient, overtimeCostPerPatient, idleTimeCostPerPatient,
-				leadTimeCostFactor, switchingABPCostFactor);
-		return null;
+		QSpace qSpace = buildQFunctions(capacity, clinicCostProfile);
+		CostFunction costFunction = buildCostFunction(qSpace);
+		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
 	private StateSpace buildStateSpace(int maxABP, int maxQueueSize, double clientArrivalRate) {
@@ -270,23 +279,27 @@ public class ClinicSchedulingXMDPBuilder {
 		return Math.abs(w - a) <= 1;
 	}
 
-	private QSpace buildQFunctions(int capacity, double revenuePerPatient, double overtimeCostPerPatient,
-			double idleTimeCostPerPatient, double leadTimeCostFactor, double switchingABPCostFactor) {
+	private QSpace buildQFunctions(int capacity, ClinicCostProfile clinicCostProfile) {
 		// Revenue
+		double revenuePerPatient = clinicCostProfile.getRevenuePerPatient();
 		ScheduleDomain scheduleDomain = new ScheduleDomain(rABPDef, rABClientCountDef, scheduleDef);
 		RevenueQFunction revenueQFunction = new RevenueQFunction(scheduleDomain, revenuePerPatient);
 
 		// Overtime cost
+		double overtimeCostPerPatient = clinicCostProfile.getOvertimeCostPerPatient();
 		OvertimeQFunction overtimeQFunction = new OvertimeQFunction(scheduleDomain, overtimeCostPerPatient, capacity);
 
 		// Idle time cost
+		double idleTimeCostPerPatient = clinicCostProfile.getIdleTimeCostPerPatient();
 		IdleTimeQFunction idleTimeQFunction = new IdleTimeQFunction(scheduleDomain, idleTimeCostPerPatient, capacity);
 
 		// Lead time cost
+		double leadTimeCostFactor = clinicCostProfile.getLeadTimeCostFactor();
 		LeadTimeDomain leadTimeDomain = new LeadTimeDomain(rABClientCountDef, scheduleDef);
 		LeadTimeQFunction leadTimeQFunction = new LeadTimeQFunction(leadTimeDomain, leadTimeCostFactor);
 
 		// Switching ABP cost
+		double switchingABPCostFactor = clinicCostProfile.getSwitchingABPCostFactor();
 		SwitchABPDomain switchABPDomain = new SwitchABPDomain(rABPDef, scheduleDef);
 		SwitchABPQFunction switchABPQFunction = new SwitchABPQFunction(switchABPDomain, switchingABPCostFactor);
 
@@ -297,5 +310,22 @@ public class ClinicSchedulingXMDPBuilder {
 		qSpace.addQFunction(leadTimeQFunction);
 		qSpace.addQFunction(switchABPQFunction);
 		return qSpace;
+	}
+
+	private CostFunction buildCostFunction(QSpace qSpace) {
+		CostFunction costFunction = new CostFunction();
+		for (IQFunction<?, ?> qFunction : qSpace) {
+			addAttributeCostFunctions(qFunction, costFunction);
+		}
+		return costFunction;
+	}
+
+	private <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void addAttributeCostFunctions(
+			S qFunction, CostFunction costFunction) {
+		double aConst = 0;
+		double bConst = 1;
+		double scalingConst = 1;
+		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
+		costFunction.put(qFunction, attrCostFunction, scalingConst);
 	}
 }

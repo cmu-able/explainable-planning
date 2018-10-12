@@ -23,9 +23,9 @@ public class XMDP {
 	private QSpace mQSpace;
 	private CostFunction mCostFunction;
 
-	public XMDP(StateSpace stateVarDefs, ActionSpace actionSpace, StateVarTuple initialState, StateVarTuple goal,
+	public XMDP(StateSpace stateSpace, ActionSpace actionSpace, StateVarTuple initialState, StateVarTuple goal,
 			TransitionFunction transFunction, QSpace qSpace, CostFunction costFunction) {
-		mStateSpace = stateVarDefs;
+		mStateSpace = stateSpace;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
 		mGoal = goal;

@@ -91,14 +91,11 @@ public class MobileRobotXMDPBuilder {
 	// --- QA functions --- //
 
 	// --- Travel time --- //
-	private TravelTimeQFunction timeQFunction;
 
 	// --- Collision --- //
-	private CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collisionQFunction;
 	private static final double SAFE_SPEED = 0.6;
 
 	// --- Intrusiveness --- //
-	private NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction;
 	private static final double NON_INTRUSIVE_PENALTY = 0;
 	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
 	private static final double VERY_INTRUSIVE_PENALTY = 3;
@@ -121,7 +118,7 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple goal = buildGoal(goalNode);
 		TransitionFunction transFunction = buildTransitionFunction(map);
 		QSpace qSpace = buildQFunctions();
-		CostFunction costFunction = buildCostFunction(prefInfo);
+		CostFunction costFunction = buildCostFunction(qSpace, prefInfo);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
@@ -249,12 +246,13 @@ public class MobileRobotXMDPBuilder {
 	private QSpace buildQFunctions() {
 		// Travel time
 		TravelTimeDomain timeDomain = new TravelTimeDomain(rLocDef, rSpeedDef, moveToDef, rLocDef);
-		timeQFunction = new TravelTimeQFunction(timeDomain);
+		TravelTimeQFunction timeQFunction = new TravelTimeQFunction(timeDomain);
 
 		// Collision
 		CollisionDomain collDomain = new CollisionDomain(rSpeedDef, moveToDef, rBumpedDef);
 		CollisionEvent collEvent = new CollisionEvent(collDomain, SAFE_SPEED);
-		collisionQFunction = new CountQFunction<>(collEvent);
+		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collisionQFunction = new CountQFunction<>(
+				collEvent);
 
 		// Intrusiveness
 		IntrusivenessDomain intrusiveDomain = new IntrusivenessDomain(moveToDef, rLocDef);
@@ -267,7 +265,8 @@ public class MobileRobotXMDPBuilder {
 		metric.put(nonIntrusive, NON_INTRUSIVE_PENALTY);
 		metric.put(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
 		metric.put(veryIntrusive, VERY_INTRUSIVE_PENALTY);
-		intrusiveQFunction = new NonStandardMetricQFunction<>(metric);
+		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = new NonStandardMetricQFunction<>(
+				metric);
 
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
@@ -276,10 +275,9 @@ public class MobileRobotXMDPBuilder {
 		return qSpace;
 	}
 
-	private CostFunction buildCostFunction(PreferenceInfo prefInfo) {
+	private CostFunction buildCostFunction(QSpace qSpace, PreferenceInfo prefInfo) {
 		CostFunction costFunction = new CostFunction();
-		IQFunction<?, ?>[] qFunctions = { timeQFunction, collisionQFunction, intrusiveQFunction };
-		for (IQFunction<?, ?> qFunction : qFunctions) {
+		for (IQFunction<?, ?> qFunction : qSpace) {
 			addAttributeCostFunctions(qFunction, prefInfo, costFunction);
 		}
 		return costFunction;

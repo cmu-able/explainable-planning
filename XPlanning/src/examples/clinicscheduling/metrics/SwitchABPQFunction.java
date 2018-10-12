@@ -17,15 +17,15 @@ public class SwitchABPQFunction implements IStandardMetricQFunction<ScheduleActi
 	private volatile int hashCode;
 
 	private SwitchABPDomain mDomain;
-	private double mSwitchingABPCostFactor;
+	private double mSwitchABPCostFactor;
 
-	public SwitchABPQFunction(SwitchABPDomain domain, double switchingABPCostFactor) {
+	public SwitchABPQFunction(SwitchABPDomain domain, double switchABPCostFactor) {
 		mDomain = domain;
-		mSwitchingABPCostFactor = switchingABPCostFactor;
+		mSwitchABPCostFactor = switchABPCostFactor;
 	}
 
-	public double getSwitchingABPCostFactor() {
-		return mSwitchingABPCostFactor;
+	public double getSwitchABPCostFactor() {
+		return mSwitchABPCostFactor;
 	}
 
 	/**
@@ -44,7 +44,7 @@ public class SwitchABPQFunction implements IStandardMetricQFunction<ScheduleActi
 		ABP newABP = mDomain.getNewABP(transition);
 		int w = currABP.getValue();
 		int a = newABP.getValue();
-		return mSwitchingABPCostFactor * Math.abs(w - a);
+		return mSwitchABPCostFactor * Math.abs(w - a);
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class SwitchABPQFunction implements IStandardMetricQFunction<ScheduleActi
 		}
 		SwitchABPQFunction qFunction = (SwitchABPQFunction) obj;
 		return qFunction.mDomain.equals(mDomain)
-				&& Double.compare(qFunction.mSwitchingABPCostFactor, mSwitchingABPCostFactor) == 0;
+				&& Double.compare(qFunction.mSwitchABPCostFactor, mSwitchABPCostFactor) == 0;
 	}
 
 	@Override
@@ -76,7 +76,7 @@ public class SwitchABPQFunction implements IStandardMetricQFunction<ScheduleActi
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDomain.hashCode();
-			result = 31 * result + Double.hashCode(mSwitchingABPCostFactor);
+			result = 31 * result + Double.hashCode(mSwitchABPCostFactor);
 			hashCode = result;
 		}
 		return result;

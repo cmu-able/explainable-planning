@@ -11,7 +11,7 @@ public class ClinicCostProfile {
 	private double mOvertimeCostPerPatient;
 	private double mIdleTimeCostPerPatient;
 	private double mLeadTimeCostFactor;
-	private double mSwitchingABPCostFactor;
+	private double mSwitchABPCostFactor;
 
 	public ClinicCostProfile(double revenuePerPatient, double overtimeCostPerPatient, double idleTimeCostPerPatient,
 			double leadTimeCostFactor, double switchingABPCostFactor) {
@@ -19,7 +19,7 @@ public class ClinicCostProfile {
 		mOvertimeCostPerPatient = overtimeCostPerPatient;
 		mIdleTimeCostPerPatient = idleTimeCostPerPatient;
 		mLeadTimeCostFactor = leadTimeCostFactor;
-		mSwitchingABPCostFactor = switchingABPCostFactor;
+		mSwitchABPCostFactor = switchingABPCostFactor;
 	}
 
 	public double getRevenuePerPatient() {
@@ -38,8 +38,8 @@ public class ClinicCostProfile {
 		return mLeadTimeCostFactor;
 	}
 
-	public double getSwitchingABPCostFactor() {
-		return mSwitchingABPCostFactor;
+	public double getSwitchABPCostFactor() {
+		return mSwitchABPCostFactor;
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class ClinicCostProfile {
 				&& Double.compare(profile.mOvertimeCostPerPatient, mOvertimeCostPerPatient) == 0
 				&& Double.compare(profile.mIdleTimeCostPerPatient, mIdleTimeCostPerPatient) == 0
 				&& Double.compare(profile.mLeadTimeCostFactor, mLeadTimeCostFactor) == 0
-				&& Double.compare(profile.mSwitchingABPCostFactor, mSwitchingABPCostFactor) == 0;
+				&& Double.compare(profile.mSwitchABPCostFactor, mSwitchABPCostFactor) == 0;
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class ClinicCostProfile {
 			result = 31 * result + Double.hashCode(mOvertimeCostPerPatient);
 			result = 31 * result + Double.hashCode(mIdleTimeCostPerPatient);
 			result = 31 * result + Double.hashCode(mLeadTimeCostFactor);
-			result = 31 * result + Double.hashCode(mSwitchingABPCostFactor);
+			result = 31 * result + Double.hashCode(mSwitchABPCostFactor);
 			hashCode = result;
 		}
 		return hashCode;

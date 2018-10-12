@@ -299,9 +299,9 @@ public class ClinicSchedulingXMDPBuilder {
 		LeadTimeQFunction leadTimeQFunction = new LeadTimeQFunction(leadTimeDomain, leadTimeCostFactor);
 
 		// Switching ABP cost
-		double switchingABPCostFactor = clinicCostProfile.getSwitchingABPCostFactor();
+		double switchABPCostFactor = clinicCostProfile.getSwitchABPCostFactor();
 		SwitchABPDomain switchABPDomain = new SwitchABPDomain(rABPDef, scheduleDef);
-		SwitchABPQFunction switchABPQFunction = new SwitchABPQFunction(switchABPDomain, switchingABPCostFactor);
+		SwitchABPQFunction switchABPQFunction = new SwitchABPQFunction(switchABPDomain, switchABPCostFactor);
 
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(revenueQFunction);

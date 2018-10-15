@@ -33,8 +33,8 @@ import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.ExplanationWriter;
 
 public class MobileRobotDemo {
-	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/maps";
-	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/missions";
+	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
+	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
 	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
 	static final String POLICIES_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";

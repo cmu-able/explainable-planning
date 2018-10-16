@@ -52,7 +52,12 @@ public class Discriminant implements IStateVarTuple {
 	}
 
 	private boolean sanityCheck(Discriminant discriminant) {
-		return discriminant.getDiscriminantClass().equals(mDiscriminantClass);
+		for (StateVar<? extends IStateVarValue> stateVar : discriminant.mVarTuple) {
+			if (!sanityCheck(stateVar)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public DiscriminantClass getDiscriminantClass() {

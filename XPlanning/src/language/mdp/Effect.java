@@ -48,7 +48,12 @@ public class Effect implements IStateVarTuple {
 	}
 
 	private boolean sanityCheck(Effect effect) {
-		return effect.getEffectClass().equals(mEffectClass);
+		for (StateVar<? extends IStateVarValue> stateVar : effect.mVarTuple) {
+			if (!sanityCheck(stateVar)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public EffectClass getEffectClass() {

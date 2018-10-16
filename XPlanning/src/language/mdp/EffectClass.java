@@ -1,8 +1,6 @@
 package language.mdp;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
@@ -14,61 +12,38 @@ import language.domain.models.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>> {
+public class EffectClass implements IStateVarClass {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mEffectClass = new HashSet<>();
+	private StateVarClass mStateVarClass = new StateVarClass();
 
 	public EffectClass() {
 		// mEffectClass initially empty
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		mEffectClass.add(stateVarDef);
+		mStateVarClass.add(stateVarDef);
 	}
 
 	public void addAll(EffectClass effectClass) {
-		mEffectClass.addAll(effectClass.mEffectClass);
+		mStateVarClass.addAll(effectClass.mStateVarClass);
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		return mEffectClass.contains(stateVarDef);
+		return mStateVarClass.contains(stateVarDef);
 	}
 
 	public boolean overlaps(EffectClass other) {
-		for (StateVarDefinition<? extends IStateVarValue> varDef : other.mEffectClass) {
-			if (mEffectClass.contains(varDef)) {
-				return true;
-			}
-		}
-		return false;
+		return mStateVarClass.overlaps(other);
 	}
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return new Iterator<StateVarDefinition<IStateVarValue>>() {
-
-			private Iterator<StateVarDefinition<? extends IStateVarValue>> iter = mEffectClass.iterator();
-
-			@Override
-			public boolean hasNext() {
-				return iter.hasNext();
-			}
-
-			@Override
-			public StateVarDefinition<IStateVarValue> next() {
-				return (StateVarDefinition<IStateVarValue>) iter.next();
-			}
-
-			@Override
-			public void remove() {
-				iter.remove();
-			}
-		};
+		return mStateVarClass.iterator();
 	}
 
 	@Override
@@ -80,7 +55,7 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 			return false;
 		}
 		EffectClass effectClass = (EffectClass) obj;
-		return effectClass.mEffectClass.equals(mEffectClass);
+		return effectClass.mStateVarClass.equals(mStateVarClass);
 	}
 
 	@Override
@@ -88,7 +63,7 @@ public class EffectClass implements Iterable<StateVarDefinition<IStateVarValue>>
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mEffectClass.hashCode();
+			result = 31 * result + mStateVarClass.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

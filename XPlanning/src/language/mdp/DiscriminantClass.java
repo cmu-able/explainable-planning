@@ -1,8 +1,6 @@
 package language.mdp;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
@@ -13,56 +11,38 @@ import language.domain.models.StateVarDefinition;
  * @author rsukkerd
  *
  */
-public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarValue>> {
+public class DiscriminantClass implements IStateVarClass {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mDiscriminantClass = new HashSet<>();
+	private StateVarClass mStateVarClass = new StateVarClass();
 
 	public DiscriminantClass() {
 		// mDiscriminantClass initially empty
 	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		mDiscriminantClass.add(stateVarDef);
+		mStateVarClass.add(stateVarDef);
 	}
 
 	public void addAll(DiscriminantClass discriminantClass) {
-		mDiscriminantClass.addAll(discriminantClass.mDiscriminantClass);
+		mStateVarClass.addAll(discriminantClass);
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		return mDiscriminantClass.contains(stateVarDef);
+		return mStateVarClass.contains(stateVarDef);
 	}
 
 	public boolean isEmpty() {
-		return mDiscriminantClass.isEmpty();
+		return mStateVarClass.isEmpty();
 	}
 
 	@Override
 	public Iterator<StateVarDefinition<IStateVarValue>> iterator() {
-		return new Iterator<StateVarDefinition<IStateVarValue>>() {
-
-			private Iterator<StateVarDefinition<? extends IStateVarValue>> iter = mDiscriminantClass.iterator();
-
-			@Override
-			public boolean hasNext() {
-				return iter.hasNext();
-			}
-
-			@Override
-			public StateVarDefinition<IStateVarValue> next() {
-				return (StateVarDefinition<IStateVarValue>) iter.next();
-			}
-
-			@Override
-			public void remove() {
-				iter.remove();
-			}
-		};
+		return mStateVarClass.iterator();
 	}
 
 	@Override
@@ -74,7 +54,7 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 			return false;
 		}
 		DiscriminantClass discrClass = (DiscriminantClass) obj;
-		return discrClass.mDiscriminantClass.equals(mDiscriminantClass);
+		return discrClass.mStateVarClass.equals(mStateVarClass);
 	}
 
 	@Override
@@ -82,7 +62,7 @@ public class DiscriminantClass implements Iterable<StateVarDefinition<IStateVarV
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDiscriminantClass.hashCode();
+			result = 31 * result + mStateVarClass.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

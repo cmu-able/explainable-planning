@@ -137,8 +137,8 @@ public class ClinicSchedulingDemo {
 
 		CommandLine line = parser.parse(options, argsArray);
 		int capacity = Integer.parseInt(line.getOptionValue(CAPACITY_PARAM, "10"));
-		int maxABP = Integer.parseInt(line.getOptionValue(MAX_ABP_PARAM, "15"));
-		int maxQueueSize = Integer.parseInt(line.getOptionValue(MAX_QUEUE_SIZE_PARAM, "150"));
+		int maxABP = Integer.parseInt(line.getOptionValue(MAX_ABP_PARAM, "10"));
+		int maxQueueSize = Integer.parseInt(line.getOptionValue(MAX_QUEUE_SIZE_PARAM, "100"));
 		double revenuePerPatient = Double.parseDouble(line.getOptionValue(REVENUE_PARAM, "20"));
 		double overtimeCostPerPatient = Double.parseDouble(line.getOptionValue(OVERTIME_COST_PARAM, "10"));
 		double idleTimeCostPerPatient = Double.parseDouble(line.getOptionValue(IDLE_TIME_COST_PARAM, "0"));

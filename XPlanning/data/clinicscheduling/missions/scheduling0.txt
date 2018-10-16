@@ -1,0 +1,1 @@
+--capacity=10 --maxABP=10 --maxQueueSize=100 --revenuePerPatient=20 --overtimeCostPerPatient=10 --idleTimeCostPerPatient=0 --leadTimeCostFactor=0 --switchABPCostFactor=10 --iniABP=9 --iniABCount=0 --iniNewClientCount=10 --clientArrivalRate=10

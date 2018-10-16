@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.CollisionDomain;
@@ -37,14 +38,12 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class MobileRobotExplanationTest {
 
-	static final String POLICY_JSON_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
-
 	@Test(dataProvider = "xmdpProblems")
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
 			ResultParsingException, XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String modelOutputPath = MobileRobotXMDPTest.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-		String advOutputPath = MobileRobotXMDPTest.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
+		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		Policy policy = prismConn.generateOptimalPolicy();
@@ -56,7 +55,7 @@ public class MobileRobotExplanationTest {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICY_JSON_PATH + "/" + missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
 		String verbalization = verbalizer.verbalize(explanation);
 
 		SimpleConsoleLogger.log("Explanation", verbalization, false);

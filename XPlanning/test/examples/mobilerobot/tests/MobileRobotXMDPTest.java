@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.XMDPException;
@@ -28,8 +29,6 @@ public class MobileRobotXMDPTest {
 
 	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
 	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
-	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
-	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPTranslatorTransitionReward(File missionJsonFile, XMDP xmdp) {
@@ -51,7 +50,7 @@ public class MobileRobotXMDPTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String outputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.TRANSITION_REWARD);
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
+import examples.common.Directories;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
@@ -35,11 +36,6 @@ import uiconnector.ExplanationWriter;
 public class MobileRobotDemo {
 	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
 	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
-	static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
-	static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
-	static final String POLICIES_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
-	static final String EXPLANATIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
-
 	private MobileRobotXMDPLoader mXMDPLoader;
 
 	public MobileRobotDemo() {
@@ -49,8 +45,8 @@ public class MobileRobotDemo {
 	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
 			ExplicitModelParsingException, GRBException, ParseException, MapTopologyException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String modelOutputPath = PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-		String advOutputPath = PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
+		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 
 		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
 
@@ -65,10 +61,10 @@ public class MobileRobotDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, POLICIES_PATH + "/" + missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
-		ExplanationWriter explanationWriter = new ExplanationWriter(EXPLANATIONS_PATH, verbalizer);
+		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(missionName, explanation,
 				explanationJsonFilename);
 
@@ -84,7 +80,7 @@ public class MobileRobotDemo {
 		demo.run(missionJsonFile);
 	}
 
-	public static Vocabulary getVocabulary(XMDP xmdp) {
+	private static Vocabulary getVocabulary(XMDP xmdp) {
 		QSpace qSpace = xmdp.getQSpace();
 		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
 		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace

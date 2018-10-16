@@ -14,12 +14,12 @@ public class ClinicCostProfile {
 	private double mSwitchABPCostFactor;
 
 	public ClinicCostProfile(double revenuePerPatient, double overtimeCostPerPatient, double idleTimeCostPerPatient,
-			double leadTimeCostFactor, double switchingABPCostFactor) {
+			double leadTimeCostFactor, double switchABPCostFactor) {
 		mRevenuePerPatient = revenuePerPatient;
 		mOvertimeCostPerPatient = overtimeCostPerPatient;
 		mIdleTimeCostPerPatient = idleTimeCostPerPatient;
 		mLeadTimeCostFactor = leadTimeCostFactor;
-		mSwitchABPCostFactor = switchingABPCostFactor;
+		mSwitchABPCostFactor = switchABPCostFactor;
 	}
 
 	public double getRevenuePerPatient() {

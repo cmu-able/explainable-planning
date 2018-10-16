@@ -55,7 +55,8 @@ public class MobileRobotExplanationTest {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST,
+				Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
 		String verbalization = verbalizer.verbalize(explanation);
 
 		SimpleConsoleLogger.log("Explanation", verbalization, false);

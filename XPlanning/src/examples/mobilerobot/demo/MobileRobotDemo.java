@@ -61,7 +61,8 @@ public class MobileRobotDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST,
+				Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);

@@ -94,7 +94,8 @@ public class ClinicSchedulingDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST,
+				Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);
@@ -168,19 +169,21 @@ public class ClinicSchedulingDemo {
 		Vocabulary vocab = new Vocabulary();
 		vocab.putNoun(revenueQFunction, "revenue");
 		vocab.putVerb(revenueQFunction, "have");
-		vocab.putUnit(revenueQFunction, "dollar", "dollars");
+		vocab.putUnit(revenueQFunction, "dollar in revenue", "dollars in revenue");
 		vocab.putNoun(overtimeQFunction, "overtime cost");
 		vocab.putVerb(overtimeQFunction, "have");
-		vocab.putUnit(overtimeQFunction, "dollar", "dollars");
+		vocab.putUnit(overtimeQFunction, "dollar in overtime cost", "dollars in overtime cost");
 		vocab.putNoun(idleTimeQFunction, "idle time cost");
 		vocab.putVerb(idleTimeQFunction, "have");
-		vocab.putUnit(idleTimeQFunction, "dollar", "dollars");
+		vocab.putUnit(idleTimeQFunction, "dollar in idle time cost", "dollars in idle time cost");
 		vocab.putNoun(leadTimeQFunction, "appointment lead time cost");
 		vocab.putVerb(leadTimeQFunction, "have");
-		vocab.putUnit(leadTimeQFunction, "dollar", "dollars");
+		vocab.putUnit(leadTimeQFunction, "dollar in appointment lead time cost",
+				"dollars in appointment lead time cost");
 		vocab.putNoun(switchABPQFunction, "switching ABP cost");
 		vocab.putVerb(switchABPQFunction, "have");
-		vocab.putUnit(switchABPQFunction, "dollar", "dollars");
+		vocab.putUnit(switchABPQFunction, "dollar in switching ABP cost", "dollars in switching ABP cost");
+		vocab.setPeriodUnit("day");
 
 		return vocab;
 	}

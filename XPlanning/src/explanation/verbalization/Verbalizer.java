@@ -19,17 +19,20 @@ import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.NonStandardMetricQFunction;
 import language.domain.models.IAction;
 import language.mdp.QSpace;
+import language.objectives.CostCriterion;
 import language.policy.Policy;
 import uiconnector.PolicyWriter;
 
 public class Verbalizer {
 
 	private Vocabulary mVocabulary;
+	private CostCriterion mCostCriterion;
 	private PolicyWriter mPolicyWriter;
 	private Map<Policy, File> mPolicyJsonFiles = new HashMap<>();
 
-	public Verbalizer(Vocabulary vocabulary, String policyJsonDir) {
+	public Verbalizer(Vocabulary vocabulary, CostCriterion costCriterion, String policyJsonDir) {
 		mVocabulary = vocabulary;
+		mCostCriterion = costCriterion;
 		mPolicyWriter = new PolicyWriter(policyJsonDir);
 	}
 
@@ -97,7 +100,14 @@ public class Verbalizer {
 				builder.append(verbalizeQAValue(qFunction, qaValue));
 			}
 		}
-		builder.append(".");
+
+		if (mCostCriterion == CostCriterion.AVERAGE_COST) {
+			builder.append(" per ");
+			builder.append(mVocabulary.getPeriodUnit());
+			builder.append(" on average.");
+		} else {
+			builder.append(".");
+		}
 		return builder.toString();
 	}
 

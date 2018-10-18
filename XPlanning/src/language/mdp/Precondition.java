@@ -1,6 +1,7 @@
 package language.mdp;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +11,7 @@ import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
+import language.exceptions.StateVarClassNotFoundException;
 
 /**
  * {@link Precondition} defines a precondition for each action in a particular {@link ActionDefinition}. Precondition is
@@ -29,7 +31,12 @@ public class Precondition<E extends IAction> {
 
 	private ActionDefinition<E> mActionDef;
 
+	// Univariate predicates
 	private Map<E, Map<StateVarDefinition<? extends IStateVarValue>, UnivarPredicate<? extends IStateVarValue>>> mUnivarPredicates = new HashMap<>();
+
+	// Multivariate predicates
+	private Map<E, Map<StateVarClass, MultivarPredicate>> mMultivarPredicates = new HashMap<>();
+	private Set<StateVarClass> mMultivarClasses = new HashSet<>(); // for fast look-up
 
 	public Precondition(ActionDefinition<E> actionDef) {
 		mActionDef = actionDef;
@@ -68,6 +75,64 @@ public class Precondition<E extends IAction> {
 		}
 	}
 
+	/**
+	 * Add an allowable value tuple of a class of state variables.
+	 * 
+	 * @param action
+	 * @param stateVarClass
+	 * @param allowableTuple
+	 * @throws IncompatibleActionException
+	 */
+	public void add(E action, StateVarClass stateVarClass, StateVarTuple allowableTuple)
+			throws IncompatibleActionException {
+		if (!sanityCheck(action)) {
+			throw new IncompatibleActionException(action);
+		}
+
+		// Keep track of variable classes of multivariate predicates for fast look-up
+		mMultivarClasses.add(stateVarClass);
+
+		if (!mMultivarPredicates.containsKey(action)) {
+			Map<StateVarClass, MultivarPredicate> predicates = new HashMap<>();
+			// Create a new multivariate predicate for a new class of variables, and add a first allowable value tuple
+			MultivarPredicate predicate = new MultivarPredicate(stateVarClass);
+			predicate.addAllowableTuple(allowableTuple);
+			predicates.put(stateVarClass, predicate);
+			mMultivarPredicates.put(action, predicates);
+		} else if (!mMultivarPredicates.get(action).containsKey(stateVarClass)) {
+			// Create a new multivariate predicate for a new class of variables, and add a first allowable value tuple
+			MultivarPredicate predicate = new MultivarPredicate(stateVarClass);
+			predicate.addAllowableTuple(allowableTuple);
+			mMultivarPredicates.get(action).put(stateVarClass, predicate);
+		} else {
+			// Add a new allowable value tuple to an existing multivariate predicate
+			MultivarPredicate predicate = mMultivarPredicates.get(action).get(stateVarClass);
+			predicate.addAllowableTuple(allowableTuple);
+		}
+	}
+
+	/**
+	 * This method must be invoked before getApplicableTuples().
+	 * 
+	 * @param stateVarClass
+	 *            : Class of state variables
+	 * @return Whether this precondition contains a multivariate predicate on the class of state variables.
+	 */
+	public boolean containsMultivarPredicateOn(StateVarClass stateVarClass) {
+		return mMultivarClasses.contains(stateVarClass);
+	}
+
+	/**
+	 * Get a set of applicable values of a given state variable for a given action. The state variable has a univariate
+	 * predicate on it.
+	 * 
+	 * @param action
+	 *            : Action
+	 * @param stateVarDef
+	 *            : State variable
+	 * @return A set of applicable values of the state variable for the action
+	 * @throws ActionNotFoundException
+	 */
 	public <T extends IStateVarValue> Set<T> getApplicableValues(E action, StateVarDefinition<T> stateVarDef)
 			throws ActionNotFoundException {
 		if (!sanityCheck(action)) {
@@ -78,6 +143,29 @@ public class Precondition<E extends IAction> {
 		}
 		// Casting: state variable of type T always maps to univariate predicate of type T
 		return (Set<T>) mUnivarPredicates.get(action).get(stateVarDef).getAllowableValues();
+	}
+
+	/**
+	 * Get a set of applicable value tuples of a given class of state variables for a given action. The state variables
+	 * have a multivariate predicate on them.
+	 * 
+	 * @param action
+	 *            : Action
+	 * @param stateVarClass
+	 *            : Class of state variables
+	 * @return A set of applicable value tuples of the state variables for the action
+	 * @throws ActionNotFoundException
+	 * @throws StateVarClassNotFoundException
+	 */
+	public Set<StateVarTuple> getApplicableTuples(E action, StateVarClass stateVarClass)
+			throws ActionNotFoundException, StateVarClassNotFoundException {
+		if (!sanityCheck(action)) {
+			throw new ActionNotFoundException(action);
+		}
+		if (!mMultivarPredicates.containsKey(action) || !mMultivarPredicates.get(action).containsKey(stateVarClass)) {
+			throw new StateVarClassNotFoundException(stateVarClass);
+		}
+		return mMultivarPredicates.get(action).get(stateVarClass).getAllowableTuples();
 	}
 
 	private boolean sanityCheck(E action) {
@@ -93,7 +181,8 @@ public class Precondition<E extends IAction> {
 			return false;
 		}
 		Precondition<?> precond = (Precondition<?>) obj;
-		return precond.mActionDef.equals(mActionDef) && precond.mUnivarPredicates.equals(mUnivarPredicates);
+		return precond.mActionDef.equals(mActionDef) && precond.mUnivarPredicates.equals(mUnivarPredicates)
+				&& precond.mMultivarPredicates.equals(mMultivarPredicates);
 	}
 
 	@Override
@@ -103,6 +192,7 @@ public class Precondition<E extends IAction> {
 			result = 17;
 			result = 31 * result + mActionDef.hashCode();
 			result = 31 * result + mUnivarPredicates.hashCode();
+			result = 31 * result + mMultivarPredicates.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

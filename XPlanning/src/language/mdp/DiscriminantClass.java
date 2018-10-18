@@ -29,7 +29,7 @@ public class DiscriminantClass implements IStateVarClass {
 	}
 
 	public void addAll(DiscriminantClass discriminantClass) {
-		mStateVarClass.addAll(discriminantClass);
+		mStateVarClass.addAll(discriminantClass.mStateVarClass);
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
@@ -38,6 +38,10 @@ public class DiscriminantClass implements IStateVarClass {
 
 	public boolean isEmpty() {
 		return mStateVarClass.isEmpty();
+	}
+
+	StateVarClass getStateVarClass() {
+		return mStateVarClass;
 	}
 
 	@Override

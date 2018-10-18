@@ -30,10 +30,8 @@ public class StateVarClass implements IStateVarClass {
 		mStateVarClass.add(stateVarDef);
 	}
 
-	public void addAll(IStateVarClass stateVarClass) {
-		for (StateVarDefinition<IStateVarValue> stateVarDef : stateVarClass) {
-			add(stateVarDef);
-		}
+	public void addAll(StateVarClass stateVarClass) {
+		mStateVarClass.addAll(stateVarClass.mStateVarClass);
 	}
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef) {

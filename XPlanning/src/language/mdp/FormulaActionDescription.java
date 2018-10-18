@@ -9,6 +9,9 @@ import language.domain.models.IAction;
 import language.domain.models.IProbabilisticTransitionFormula;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
+import language.exceptions.ActionNotFoundException;
+import language.exceptions.IncompatibleVarsException;
+import language.exceptions.StateVarClassNotFoundException;
 import language.exceptions.XMDPException;
 
 /**
@@ -77,6 +80,12 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	 * @throws XMDPException
 	 */
 	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action) throws XMDPException {
+		// If precondition contains a multivariate predicate on the discriminant class, get all applicable discriminants
+		// from precondition
+		if (mPrecondition.containsMultivarPredicateOn(discrClass.getStateVarClass())) {
+			return getAllDiscriminantsFromPrecondition(discrClass, action);
+		}
+
 		Set<Discriminant> allDiscriminants = new HashSet<>();
 
 		DiscriminantClass copyDiscrClass = new DiscriminantClass();
@@ -119,6 +128,18 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 		}
 
 		return allDiscriminants;
+	}
+
+	private Set<Discriminant> getAllDiscriminantsFromPrecondition(DiscriminantClass discrClass, E action)
+			throws ActionNotFoundException, StateVarClassNotFoundException, IncompatibleVarsException {
+		Set<StateVarTuple> applicableTuples = mPrecondition.getApplicableTuples(action, discrClass.getStateVarClass());
+		Set<Discriminant> discriminants = new HashSet<>();
+		for (StateVarTuple applicableTuple : applicableTuples) {
+			Discriminant discriminant = new Discriminant(discrClass);
+			discriminant.addAll(applicableTuple);
+			discriminants.add(discriminant);
+		}
+		return discriminants;
 	}
 
 	@Override

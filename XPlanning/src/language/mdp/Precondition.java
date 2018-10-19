@@ -8,6 +8,7 @@ import java.util.Set;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.IncompatibleActionException;
@@ -116,10 +117,26 @@ public class Precondition<E extends IAction> {
 	 * 
 	 * @param stateVarClass
 	 *            : Class of state variables
-	 * @return Whether this precondition contains a multivariate predicate on the class of state variables.
+	 * @return Whether this precondition has a multivariate predicate on the class of state variables.
 	 */
-	public boolean containsMultivarPredicateOn(StateVarClass stateVarClass) {
+	public boolean hasMultivarPredicateOn(StateVarClass stateVarClass) {
 		return mMultivarClasses.contains(stateVarClass);
+	}
+
+	/**
+	 * This method must be invoked before getPartialApplicableTuples().
+	 * 
+	 * @param stateVarClass
+	 *            : Class of state variables
+	 * @return Whether this precondition has a multivariate predicate partially on the class of state variables.
+	 */
+	public boolean hasMultivarPredicatePartiallyOn(StateVarClass stateVarClass) {
+		for (StateVarClass multivarClass : mMultivarClasses) {
+			if (multivarClass.containsAll(stateVarClass)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -192,6 +209,51 @@ public class Precondition<E extends IAction> {
 			}
 		}
 		return constrainedApplicableTuples;
+	}
+
+	/**
+	 * Get a set of partial applicable value tuples of a given class of state variables for a given action. The tuples
+	 * are partial because the action's applicability depends on other variables outside the given class.
+	 * 
+	 * @param action
+	 *            : Action
+	 * @param stateVarClass
+	 *            : Class of state variables
+	 * @return A set of partial applicable value tuples of the state variables for the action
+	 */
+	public Set<StateVarTuple> getPartialApplicableTuples(E action, StateVarClass stateVarClass) {
+		Set<StateVarTuple> partialApplicableTuples = new HashSet<>();
+		for (StateVarClass multivarClass : mMultivarClasses) {
+			if (multivarClass.containsAll(stateVarClass)) {
+				Set<StateVarTuple> allowableTuples = mMultivarPredicates.get(action).get(multivarClass)
+						.getAllowableTuples();
+
+				for (StateVarTuple allowableTuple : allowableTuples) {
+					StateVarTuple partialApplicableTuple = filterStateVarTuple(allowableTuple, stateVarClass);
+					partialApplicableTuples.add(partialApplicableTuple);
+				}
+			}
+		}
+		return partialApplicableTuples;
+	}
+
+	/**
+	 * Filter a state variable tuple to contain only a given set of variables.
+	 * 
+	 * @param stateVarTuple
+	 *            : State variable tuple to be filtered
+	 * @param filterStateVarClass
+	 *            : Class of state variables to be preserved in the result
+	 * @return Filtered state variable tuple
+	 */
+	private StateVarTuple filterStateVarTuple(StateVarTuple stateVarTuple, StateVarClass filterStateVarClass) {
+		StateVarTuple filteredTuple = new StateVarTuple();
+		for (StateVar<IStateVarValue> stateVar : stateVarTuple) {
+			if (filterStateVarClass.contains(stateVar.getDefinition())) {
+				filteredTuple.addStateVar(stateVar);
+			}
+		}
+		return filteredTuple;
 	}
 
 	private boolean sanityCheck(E action) {

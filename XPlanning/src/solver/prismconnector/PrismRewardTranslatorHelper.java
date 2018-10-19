@@ -262,7 +262,8 @@ public class PrismRewardTranslatorHelper {
 				continue;
 			}
 
-			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarClass, action, actionPSO);
+			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarClass, action,
+					actionPSO);
 
 			for (StateVarTuple srcVars : srcCombinations) {
 				Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarClass, srcVars,
@@ -442,9 +443,9 @@ public class PrismRewardTranslatorHelper {
 		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
 		Precondition<E> precond = actionPSO.getPrecondition();
 
-		// If precondition contains a multivariate predicate on the discriminant class, get all applicable discriminants
+		// If precondition has a multivariate predicate on the discriminant class, get all applicable discriminants
 		// from precondition
-		if (precond.containsMultivarPredicateOn(discrClass.getStateVarClass())) {
+		if (precond.hasMultivarPredicateOn(discrClass.getStateVarClass())) {
 			return getApplicableDiscriminantsFromPrecondition(precond, discrClass, action, srcVars);
 		}
 
@@ -518,8 +519,9 @@ public class PrismRewardTranslatorHelper {
 	 * @return All combinations of applicable discriminants of all destination variables, given source values and action
 	 * @throws XMDPException
 	 */
-	private <E extends IAction> Set<StateVarTuple> getApplicableDiscriminantCombinations(StateVarClass destStateVarClass,
-			StateVarTuple srcVars, FactoredPSO<E> actionPSO, E action) throws XMDPException {
+	private <E extends IAction> Set<StateVarTuple> getApplicableDiscriminantCombinations(
+			StateVarClass destStateVarClass, StateVarTuple srcVars, FactoredPSO<E> actionPSO, E action)
+			throws XMDPException {
 		// All applicable discriminants of all destination variables, given srcVars and action
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> allApplicableDiscriminants = new HashMap<>();
 

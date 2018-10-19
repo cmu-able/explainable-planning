@@ -80,9 +80,9 @@ public class FormulaActionDescription<E extends IAction> implements IActionDescr
 	 * @throws XMDPException
 	 */
 	private Set<Discriminant> getAllDiscriminants(DiscriminantClass discrClass, E action) throws XMDPException {
-		// If precondition contains a multivariate predicate on the discriminant class, get all applicable discriminants
+		// If precondition has a multivariate predicate on the discriminant class, get all applicable discriminants
 		// from precondition
-		if (mPrecondition.containsMultivarPredicateOn(discrClass.getStateVarClass())) {
+		if (mPrecondition.hasMultivarPredicateOn(discrClass.getStateVarClass())) {
 			return getAllDiscriminantsFromPrecondition(discrClass, action);
 		}
 

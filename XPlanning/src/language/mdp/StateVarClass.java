@@ -38,6 +38,10 @@ public class StateVarClass implements IStateVarClass {
 		return mStateVarClass.contains(stateVarDef);
 	}
 
+	public boolean containsAll(StateVarClass stateVarClass) {
+		return mStateVarClass.containsAll(stateVarClass.mStateVarClass);
+	}
+
 	public boolean isEmpty() {
 		return mStateVarClass.isEmpty();
 	}
@@ -49,6 +53,10 @@ public class StateVarClass implements IStateVarClass {
 			}
 		}
 		return false;
+	}
+
+	public int size() {
+		return mStateVarClass.size();
 	}
 
 	@Override

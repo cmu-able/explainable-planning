@@ -29,6 +29,7 @@ import language.mdp.FactoredPSO;
 import language.mdp.IActionDescription;
 import language.mdp.Precondition;
 import language.mdp.ProbabilisticEffect;
+import language.mdp.StateVarClass;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.objectives.AttributeCostFunction;
@@ -249,8 +250,8 @@ public class PrismRewardTranslatorHelper {
 	 */
 	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardItems(T transStructure,
 			FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator) throws XMDPException {
-		Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs = transStructure.getSrcStateVarDefs();
-		Set<StateVarDefinition<IStateVarValue>> destStateVarDefs = transStructure.getDestStateVarDefs();
+		StateVarClass srcStateVarClass = transStructure.getSrcStateVarClass();
+		StateVarClass destStateVarClass = transStructure.getDestStateVarClass();
 		ActionDefinition<E> actionDef = transStructure.getActionDef();
 
 		StringBuilder builder = new StringBuilder();
@@ -261,10 +262,10 @@ public class PrismRewardTranslatorHelper {
 				continue;
 			}
 
-			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarDefs, action, actionPSO);
+			Set<StateVarTuple> srcCombinations = getApplicableSrcValuesCombinations(srcStateVarClass, action, actionPSO);
 
 			for (StateVarTuple srcVars : srcCombinations) {
-				Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarDefs, srcVars,
+				Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarClass, srcVars,
 						actionPSO, action);
 
 				for (StateVarTuple applicableDiscrVars : discrCombinations) {
@@ -365,7 +366,7 @@ public class PrismRewardTranslatorHelper {
 	 * If there is no source variable definition, then this method returns a singleton set of an empty
 	 * {@link StateVarTuple}.
 	 * 
-	 * @param srcStateVarDefs
+	 * @param srcStateVarClasss
 	 *            : Source variable definitions
 	 * @param action
 	 *            : Action
@@ -373,12 +374,11 @@ public class PrismRewardTranslatorHelper {
 	 * @return All applicable source value combinations
 	 * @throws ActionNotFoundException
 	 */
-	private <E extends IAction> Set<StateVarTuple> getApplicableSrcValuesCombinations(
-			Set<StateVarDefinition<IStateVarValue>> srcStateVarDefs, E action, FactoredPSO<E> actionPSO)
-			throws ActionNotFoundException {
+	private <E extends IAction> Set<StateVarTuple> getApplicableSrcValuesCombinations(StateVarClass srcStateVarClasss,
+			E action, FactoredPSO<E> actionPSO) throws ActionNotFoundException {
 		Precondition<E> precondition = actionPSO.getPrecondition();
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
-		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarClasss) {
 			Set<IStateVarValue> applicableVals = precondition.getApplicableValues(action, srcVarDef);
 			srcVarValues.put(srcVarDef, applicableVals);
 		}
@@ -392,7 +392,7 @@ public class PrismRewardTranslatorHelper {
 	 * If there is no destination variable definition, then this method returns a singleton set of an empty
 	 * {@link StateVarTuple}.
 	 * 
-	 * @param destStateVarDefs
+	 * @param destStateVarClass
 	 *            : Destination variable definitions
 	 * @param srcVars
 	 *            : Source variables
@@ -402,11 +402,10 @@ public class PrismRewardTranslatorHelper {
 	 * @return All possible destination value combinations
 	 * @throws XMDPException
 	 */
-	private <E extends IAction> Set<StateVarTuple> getPossibleDestValuesCombinations(
-			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, StateVarTuple srcVars, E action,
-			FactoredPSO<E> actionPSO) throws XMDPException {
+	private <E extends IAction> Set<StateVarTuple> getPossibleDestValuesCombinations(StateVarClass destStateVarClass,
+			StateVarTuple srcVars, E action, FactoredPSO<E> actionPSO) throws XMDPException {
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> destVarValues = new HashMap<>();
-		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarClass) {
 			Set<Discriminant> applicableDiscriminants = getApplicableDiscriminants(destVarDef, srcVars, actionPSO,
 					action);
 			Set<IStateVarValue> possibleDestVals = new HashSet<>();
@@ -512,20 +511,19 @@ public class PrismRewardTranslatorHelper {
 	/**
 	 * Get all combinations of discriminants of a set of destination variables, given source values and action.
 	 * 
-	 * @param destStateVarDefs
+	 * @param destStateVarClass
 	 * @param srcVars
 	 * @param actionPSO
 	 * @param action
 	 * @return All combinations of applicable discriminants of all destination variables, given source values and action
 	 * @throws XMDPException
 	 */
-	private <E extends IAction> Set<StateVarTuple> getApplicableDiscriminantCombinations(
-			Set<StateVarDefinition<IStateVarValue>> destStateVarDefs, StateVarTuple srcVars, FactoredPSO<E> actionPSO,
-			E action) throws XMDPException {
+	private <E extends IAction> Set<StateVarTuple> getApplicableDiscriminantCombinations(StateVarClass destStateVarClass,
+			StateVarTuple srcVars, FactoredPSO<E> actionPSO, E action) throws XMDPException {
 		// All applicable discriminants of all destination variables, given srcVars and action
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> allApplicableDiscriminants = new HashMap<>();
 
-		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarDefs) {
+		for (StateVarDefinition<IStateVarValue> destVarDef : destStateVarClass) {
 			Set<Discriminant> applicableDiscriminants = getApplicableDiscriminants(destVarDef, srcVars, actionPSO,
 					action);
 
@@ -641,7 +639,7 @@ public class PrismRewardTranslatorHelper {
 			StateVarTuple applicableDiscrVars, E action) throws XMDPException {
 		double expectedTransValue = 0;
 
-		Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(transStructure.getDestStateVarDefs(),
+		Set<StateVarTuple> destCombinations = getPossibleDestValuesCombinations(transStructure.getDestStateVarClass(),
 				srcVars, action, actionPSO);
 
 		// Assume: all destination variables of any TransitionStructure are affected by its action

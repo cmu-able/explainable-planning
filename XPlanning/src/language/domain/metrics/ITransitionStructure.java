@@ -1,11 +1,10 @@
 package language.domain.metrics;
 
-import java.util.Set;
-
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
+import language.mdp.StateVarClass;
 
 /**
  * {@link ITransitionStructure} is an interface to the structure of a transition. It can be used to represent the domain
@@ -18,9 +17,9 @@ import language.domain.models.StateVarDefinition;
  */
 public interface ITransitionStructure<E extends IAction> {
 
-	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs();
+	public StateVarClass getSrcStateVarClass();
 
-	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs();
+	public StateVarClass getDestStateVarClass();
 
 	public ActionDefinition<E> getActionDef();
 

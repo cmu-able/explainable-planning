@@ -1,12 +1,10 @@
 package language.domain.metrics;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
+import language.mdp.StateVarClass;
 
 /**
  * {@link TransitionStructure} represents the structure of a transition. It contains a set of variable definitions in
@@ -25,29 +23,16 @@ public class TransitionStructure<E extends IAction> implements ITransitionStruct
 	 */
 	private volatile int hashCode;
 
-	private Set<StateVarDefinition<? extends IStateVarValue>> mSrcVarDefs = new HashSet<>();
-	private Set<StateVarDefinition<? extends IStateVarValue>> mDestVarDefs = new HashSet<>();
+	private StateVarClass mSrcVarClass = new StateVarClass();
+	private StateVarClass mDestVarClass = new StateVarClass();
 	private ActionDefinition<E> mActionDef;
 
-	// Generic state variables of the transition
-	// For PRISM translator
-	private Set<StateVarDefinition<IStateVarValue>> mGenericSrcVarDefs = new HashSet<>();
-	private Set<StateVarDefinition<IStateVarValue>> mGenericDestVarDefs = new HashSet<>();
-
 	public void addSrcStateVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		mSrcVarDefs.add(stateVarDef);
-
-		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
-				stateVarDef.getPossibleValues());
-		mGenericSrcVarDefs.add(genericVarDef);
+		mSrcVarClass.add(stateVarDef);
 	}
 
 	public void addDestStateVarDef(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
-		mDestVarDefs.add(stateVarDef);
-
-		StateVarDefinition<IStateVarValue> genericVarDef = new StateVarDefinition<>(stateVarDef.getName(),
-				stateVarDef.getPossibleValues());
-		mGenericDestVarDefs.add(genericVarDef);
+		mDestVarClass.add(stateVarDef);
 	}
 
 	public void setActionDef(ActionDefinition<E> actionDef) {
@@ -55,13 +40,13 @@ public class TransitionStructure<E extends IAction> implements ITransitionStruct
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs() {
-		return mGenericSrcVarDefs;
+	public StateVarClass getSrcStateVarClass() {
+		return mSrcVarClass;
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs() {
-		return mGenericDestVarDefs;
+	public StateVarClass getDestStateVarClass() {
+		return mDestVarClass;
 	}
 
 	@Override
@@ -71,12 +56,12 @@ public class TransitionStructure<E extends IAction> implements ITransitionStruct
 
 	@Override
 	public boolean containsSrcStateVarDef(StateVarDefinition<? extends IStateVarValue> srcVarDef) {
-		return mSrcVarDefs.contains(srcVarDef);
+		return mSrcVarClass.contains(srcVarDef);
 	}
 
 	@Override
 	public boolean containsDestStateVarDef(StateVarDefinition<? extends IStateVarValue> destVarDef) {
-		return mDestVarDefs.contains(destVarDef);
+		return mDestVarClass.contains(destVarDef);
 	}
 
 	@Override
@@ -88,7 +73,7 @@ public class TransitionStructure<E extends IAction> implements ITransitionStruct
 			return false;
 		}
 		TransitionStructure<?> domain = (TransitionStructure<?>) obj;
-		return domain.mSrcVarDefs.equals(mSrcVarDefs) && domain.mDestVarDefs.equals(mDestVarDefs)
+		return domain.mSrcVarClass.equals(mSrcVarClass) && domain.mDestVarClass.equals(mDestVarClass)
 				&& domain.mActionDef.equals(mActionDef);
 	}
 
@@ -97,8 +82,8 @@ public class TransitionStructure<E extends IAction> implements ITransitionStruct
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mSrcVarDefs.hashCode();
-			result = 31 * result + mDestVarDefs.hashCode();
+			result = 31 * result + mSrcVarClass.hashCode();
+			result = 31 * result + mDestVarClass.hashCode();
 			result = 31 * result + mActionDef.hashCode();
 			hashCode = result;
 		}

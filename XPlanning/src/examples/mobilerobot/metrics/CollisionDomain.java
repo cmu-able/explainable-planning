@@ -1,7 +1,5 @@
 package examples.mobilerobot.metrics;
 
-import java.util.Set;
-
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.RobotBumped;
 import examples.mobilerobot.models.RobotSpeed;
@@ -12,6 +10,7 @@ import language.domain.models.ActionDefinition;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
+import language.mdp.StateVarClass;
 
 public class CollisionDomain implements ITransitionStructure<MoveToAction> {
 
@@ -45,13 +44,13 @@ public class CollisionDomain implements ITransitionStructure<MoveToAction> {
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs() {
-		return mDomain.getSrcStateVarDefs();
+	public StateVarClass getSrcStateVarClass() {
+		return mDomain.getSrcStateVarClass();
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs() {
-		return mDomain.getDestStateVarDefs();
+	public StateVarClass getDestStateVarClass() {
+		return mDomain.getDestStateVarClass();
 	}
 
 	@Override

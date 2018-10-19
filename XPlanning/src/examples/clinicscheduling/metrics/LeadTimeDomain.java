@@ -1,7 +1,5 @@
 package examples.clinicscheduling.metrics;
 
-import java.util.Set;
-
 import examples.clinicscheduling.models.ClientCount;
 import examples.clinicscheduling.models.ScheduleAction;
 import language.domain.metrics.ITransitionStructure;
@@ -11,6 +9,7 @@ import language.domain.models.ActionDefinition;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.VarNotFoundException;
+import language.mdp.StateVarClass;
 
 public class LeadTimeDomain implements ITransitionStructure<ScheduleAction> {
 
@@ -37,13 +36,13 @@ public class LeadTimeDomain implements ITransitionStructure<ScheduleAction> {
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs() {
-		return mDomain.getSrcStateVarDefs();
+	public StateVarClass getSrcStateVarClass() {
+		return mDomain.getSrcStateVarClass();
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs() {
-		return mDomain.getDestStateVarDefs();
+	public StateVarClass getDestStateVarClass() {
+		return mDomain.getDestStateVarClass();
 	}
 
 	@Override

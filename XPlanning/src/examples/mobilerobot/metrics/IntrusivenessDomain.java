@@ -1,7 +1,5 @@
 package examples.mobilerobot.metrics;
 
-import java.util.Set;
-
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
@@ -13,6 +11,7 @@ import language.domain.models.IStateVarValue;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
+import language.mdp.StateVarClass;
 
 public class IntrusivenessDomain implements ITransitionStructure<MoveToAction> {
 
@@ -39,13 +38,13 @@ public class IntrusivenessDomain implements ITransitionStructure<MoveToAction> {
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getSrcStateVarDefs() {
-		return mDomain.getSrcStateVarDefs();
+	public StateVarClass getSrcStateVarClass() {
+		return mDomain.getSrcStateVarClass();
 	}
 
 	@Override
-	public Set<StateVarDefinition<IStateVarValue>> getDestStateVarDefs() {
-		return mDomain.getDestStateVarDefs();
+	public StateVarClass getDestStateVarClass() {
+		return mDomain.getDestStateVarClass();
 	}
 
 	@Override

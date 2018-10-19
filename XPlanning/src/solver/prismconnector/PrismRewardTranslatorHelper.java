@@ -18,6 +18,8 @@ import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
+import language.exceptions.IncompatibleVarsException;
+import language.exceptions.StateVarClassNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -439,6 +441,14 @@ public class PrismRewardTranslatorHelper {
 			StateVarDefinition<IStateVarValue> destVarDef, StateVarTuple srcVars, FactoredPSO<E> actionPSO, E action)
 			throws XMDPException {
 		DiscriminantClass discrClass = actionPSO.getDiscriminantClass(destVarDef);
+		Precondition<E> precond = actionPSO.getPrecondition();
+
+		// If precondition contains a multivariate predicate on the discriminant class, get all applicable discriminants
+		// from precondition
+		if (precond.containsMultivarPredicateOn(discrClass.getStateVarClass())) {
+			return getApplicableDiscriminantsFromPrecondition(precond, discrClass, action, srcVars);
+		}
+
 		Discriminant boundedDiscriminant = new Discriminant(discrClass);
 
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> freeDiscrVars = new HashMap<>();
@@ -452,7 +462,6 @@ public class PrismRewardTranslatorHelper {
 			} else {
 				// Discriminant class has a variable that is not in srcVars
 				// Get all applicable values of that variable -- to find all applicable discriminants
-				Precondition<E> precond = actionPSO.getPrecondition();
 				Set<IStateVarValue> applicableValues = precond.getApplicableValues(action, varDef);
 				freeDiscrVars.put(varDef, applicableValues);
 			}
@@ -484,6 +493,20 @@ public class PrismRewardTranslatorHelper {
 			discriminants.add(fullDiscriminant);
 		}
 		return discriminants;
+	}
+
+	private <E extends IAction> Set<Discriminant> getApplicableDiscriminantsFromPrecondition(Precondition<E> precond,
+			DiscriminantClass discrClass, E action, StateVarTuple srcVars)
+			throws ActionNotFoundException, StateVarClassNotFoundException, IncompatibleVarsException {
+		Set<StateVarTuple> applicableTuples = precond.getApplicableTuples(action, discrClass.getStateVarClass(),
+				srcVars);
+		Set<Discriminant> applicableDiscriminants = new HashSet<>();
+		for (StateVarTuple applicableTuple : applicableTuples) {
+			Discriminant applicableDiscr = new Discriminant(discrClass);
+			applicableDiscr.addAll(applicableTuple);
+			applicableDiscriminants.add(applicableDiscr);
+		}
+		return applicableDiscriminants;
 	}
 
 	/**

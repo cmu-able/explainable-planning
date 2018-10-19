@@ -8,6 +8,9 @@ import language.domain.models.StateVarDefinition;
 /**
  * {@link DiscriminantClass} is a set of {@link StateVarDefinition} that defines a class of {@link Discriminant}s.
  * 
+ * Assumption: A discriminant class is either a class of independent variables, or a class of all-dependent variables,
+ * w.r.t. action precondition.
+ * 
  * @author rsukkerd
  *
  */
@@ -40,7 +43,7 @@ public class DiscriminantClass implements IStateVarClass {
 		return mStateVarClass.isEmpty();
 	}
 
-	StateVarClass getStateVarClass() {
+	public StateVarClass getStateVarClass() {
 		return mStateVarClass;
 	}
 

@@ -47,7 +47,7 @@ public class Discriminant implements IStateVarTuple {
 		mVarTuple.addStateVarTuple(discriminant.mVarTuple);
 	}
 
-	void addAll(StateVarTuple stateVarTuple) throws IncompatibleVarsException {
+	public void addAll(StateVarTuple stateVarTuple) throws IncompatibleVarsException {
 		if (!sanityCheck(stateVarTuple)) {
 			throw new IncompatibleVarsException(stateVarTuple);
 		}

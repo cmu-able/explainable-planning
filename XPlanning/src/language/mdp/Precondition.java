@@ -168,6 +168,32 @@ public class Precondition<E extends IAction> {
 		return mMultivarPredicates.get(action).get(stateVarClass).getAllowableTuples();
 	}
 
+	/**
+	 * Get a set of applicable value tuples of a given class of state variables for a given action, given a constraining
+	 * tuple. The state variables have a multivariate predicate on them.
+	 * 
+	 * @param action
+	 *            : Action
+	 * @param stateVarClass
+	 *            : Class of state variables
+	 * @param constrainingTuple
+	 *            : Value tuple that must be contained in all of the result tuples
+	 * @return A set of applicable value tuples of the state variables for the action, given the constraining tuple
+	 * @throws StateVarClassNotFoundException
+	 * @throws ActionNotFoundException
+	 */
+	public Set<StateVarTuple> getApplicableTuples(E action, StateVarClass stateVarClass,
+			StateVarTuple constrainingTuple) throws ActionNotFoundException, StateVarClassNotFoundException {
+		Set<StateVarTuple> constrainedApplicableTuples = new HashSet<>();
+		Set<StateVarTuple> unconstrainedApplicableTuples = getApplicableTuples(action, stateVarClass);
+		for (StateVarTuple tuple : unconstrainedApplicableTuples) {
+			if (tuple.contains(constrainingTuple)) {
+				constrainedApplicableTuples.add(tuple);
+			}
+		}
+		return constrainedApplicableTuples;
+	}
+
 	private boolean sanityCheck(E action) {
 		return mActionDef.getActions().contains(action);
 	}

@@ -266,16 +266,30 @@ public class PrismRewardTranslatorHelper {
 					actionPSO);
 
 			for (StateVarTuple srcVars : srcCombinations) {
-				Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarClass, srcVars,
-						actionPSO, action);
-
-				for (StateVarTuple applicableDiscrVars : discrCombinations) {
-					double expectedValue = computeExpectedTransitionValue(transStructure, actionPSO, evaluator, srcVars,
-							applicableDiscrVars, action);
-					String rewardItem = buildRewardItem(srcVars, applicableDiscrVars, action, expectedValue);
+				if (destStateVarClass.isEmpty()) {
+					// Transition structure has no destination variable
+					// Reward value r(s,a) can be computed from srcVars and action
+					StateVarTuple emptyVarTuple = new StateVarTuple();
+					Transition<E, T> transition = new Transition<>(transStructure, action, srcVars, emptyVarTuple);
+					double transValue = evaluator.evaluate(transition);
+					String rewardItem = buildRewardItem(srcVars, emptyVarTuple, action, transValue);
 					builder.append(PrismTranslatorUtils.INDENT);
 					builder.append(rewardItem);
 					builder.append("\n");
+				} else {
+					// Transition structure has destination variables
+					// Reward value r(s,a) must be computed from the expectation of r'(s,a,s') over all s'
+					Set<StateVarTuple> discrCombinations = getApplicableDiscriminantCombinations(destStateVarClass,
+							srcVars, actionPSO, action);
+
+					for (StateVarTuple applicableDiscrVars : discrCombinations) {
+						double expectedValue = computeExpectedTransitionValue(transStructure, actionPSO, evaluator,
+								srcVars, applicableDiscrVars, action);
+						String rewardItem = buildRewardItem(srcVars, applicableDiscrVars, action, expectedValue);
+						builder.append(PrismTranslatorUtils.INDENT);
+						builder.append(rewardItem);
+						builder.append("\n");
+					}
 				}
 			}
 		}

@@ -29,6 +29,7 @@ import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
+import language.mdp.StateVarClass;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
@@ -198,6 +199,12 @@ public class ClinicSchedulingXMDPBuilder {
 	private void addSchedulePreconditions(Precondition<ScheduleAction> preSchedule, int maxQueueSize,
 			ScheduleAction schedule, ABP newABP, ClientCount numNewClientsToService)
 			throws IncompatibleActionException {
+		// Precondition has a multivariate predicate on variables (w, x, y)
+		StateVarClass multivarPredVarClass = new StateVarClass();
+		multivarPredVarClass.add(rABPDef);
+		multivarPredVarClass.add(rABClientCountDef);
+		multivarPredVarClass.add(rNewClientCountDef);
+
 		for (ABP currABP : rABPDef.getPossibleValues()) { // w
 
 			for (ClientCount currABClientCount : rABClientCountDef.getPossibleValues()) { // x
@@ -210,9 +217,13 @@ public class ClinicSchedulingXMDPBuilder {
 					boolean sat3 = satScheduleConstraint3(currABP, newABP);
 
 					if (sat1 && sat2 && sat3) {
-						preSchedule.add(schedule, rABPDef, currABP);
-						preSchedule.add(schedule, rABClientCountDef, currABClientCount);
-						preSchedule.add(schedule, rNewClientCountDef, newClientCount);
+						StateVarTuple allowableTuple = new StateVarTuple();
+						allowableTuple.addStateVar(rABPDef.getStateVar(currABP));
+						allowableTuple.addStateVar(rABClientCountDef.getStateVar(currABClientCount));
+						allowableTuple.addStateVar(rNewClientCountDef.getStateVar(newClientCount));
+
+						// Add an allowable value tuple of (w, x, y)
+						preSchedule.add(schedule, multivarPredVarClass, allowableTuple);
 					}
 				}
 			}

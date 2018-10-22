@@ -10,8 +10,8 @@ import language.mdp.IStateVarTuple;
 public class PrismTranslatorUtils {
 	static final String INDENT = "  ";
 
-	private static final String[] REPLACED_CHARS = { ".", "\\(", "\\)", "-" };
-	private static final String[] REPLACING_WORDS = { "_DOT_", "_LP_", "_RP_", "_DASH_" };
+	private static final String[] REPLACED_CHARS = { ".", "\\(", "\\)", "-", "," };
+	private static final String[] REPLACING_WORDS = { "_DOT_", "_LP_", "_RP_", "_DASH_", "_COMMA_" };
 
 	private PrismTranslatorUtils() {
 		throw new IllegalStateException("Utility class");

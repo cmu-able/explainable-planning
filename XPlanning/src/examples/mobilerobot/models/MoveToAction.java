@@ -110,4 +110,9 @@ public class MoveToAction implements IAction {
 		}
 		return hashCode;
 	}
+
+	@Override
+	public String toString() {
+		return mAction.toString();
+	}
 }

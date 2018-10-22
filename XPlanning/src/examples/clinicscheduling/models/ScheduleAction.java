@@ -87,4 +87,9 @@ public class ScheduleAction implements IAction {
 		return hashCode;
 	}
 
+	@Override
+	public String toString() {
+		return mAction.toString();
+	}
+
 }

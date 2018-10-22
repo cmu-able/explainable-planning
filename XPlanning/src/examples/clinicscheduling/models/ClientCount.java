@@ -53,4 +53,9 @@ public class ClientCount implements IStateVarInt {
 		return hashCode;
 	}
 
+	@Override
+	public String toString() {
+		return Integer.toString(mNumClients);
+	}
+
 }

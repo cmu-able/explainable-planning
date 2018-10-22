@@ -85,4 +85,9 @@ public class SetSpeedAction implements IAction {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		return mAction.toString();
+	}
+
 }

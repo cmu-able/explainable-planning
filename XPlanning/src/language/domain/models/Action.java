@@ -37,7 +37,7 @@ public class Action implements IAction {
 			if (firstParam) {
 				firstParam = false;
 			} else {
-				builder.append(", ");
+				builder.append(",");
 			}
 			builder.append(param);
 			mParameters.add(param);
@@ -122,20 +122,7 @@ public class Action implements IAction {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append(mActionNamePrefix);
-		builder.append("(");
-		boolean firstParam = true;
-		for (IStateVarValue param : mParameters) {
-			if (firstParam) {
-				firstParam = false;
-			} else {
-				builder.append(", ");
-			}
-			builder.append(param);
-		}
-		builder.append(")");
-		return builder.toString();
+		return mActionName;
 	}
 
 }

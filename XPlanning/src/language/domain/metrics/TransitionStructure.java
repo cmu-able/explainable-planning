@@ -12,6 +12,10 @@ import language.mdp.StateVarClass;
  * a {@link IQFunction} -- among others. This is to facilitate PRISM translator in generating a reward structure for the
  * corresponding QA function.
  * 
+ * Assumption: A source state variable class is either a class of independent variables, or a class of all-dependent
+ * variables, w.r.t. action precondition. Such all-dependent variables can be a proper subset of the variables in a
+ * multivariate predicate in the action precondition.
+ * 
  * @author rsukkerd
  *
  * @param <E>

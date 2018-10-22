@@ -374,10 +374,26 @@ public class PrismRewardTranslatorHelper {
 	 * @param actionPSO
 	 * @return All applicable source value combinations
 	 * @throws ActionNotFoundException
+	 * @throws StateVarClassNotFoundException
 	 */
 	private <E extends IAction> Set<StateVarTuple> getApplicableSrcValuesCombinations(StateVarClass srcStateVarClasss,
-			E action, FactoredPSO<E> actionPSO) throws ActionNotFoundException {
+			E action, FactoredPSO<E> actionPSO) throws ActionNotFoundException, StateVarClassNotFoundException {
 		Precondition<E> precondition = actionPSO.getPrecondition();
+
+		if (precondition.hasMultivarPredicateOn(srcStateVarClasss)) {
+			// Precondition has a multivariate predicate exactly on the variables in srcStateVarClass
+			// Get all applicable source value tuples from the precondition
+			return precondition.getApplicableTuples(action, srcStateVarClasss);
+		} else if (precondition.hasMultivarPredicatePartiallyOn(srcStateVarClasss)) {
+			// Precondition has a multivariate predicate that is partially on the variables in srcStateVarClass
+			// Get all partially applicable source value tuples from the precondition
+			return precondition.getPartialApplicableTuples(action, srcStateVarClasss);
+		}
+
+		// Assume that there is no multivariate predicate in the precondition that is on SOME of the variables in
+		// srcStateVarClass.
+		// Therefore, each variable in srcStateVarClass can at most have 1 univariate predicate on it.
+
 		Map<StateVarDefinition<IStateVarValue>, Set<IStateVarValue>> srcVarValues = new HashMap<>();
 		for (StateVarDefinition<IStateVarValue> srcVarDef : srcStateVarClasss) {
 			Set<IStateVarValue> applicableVals = precondition.getApplicableValues(action, srcVarDef);

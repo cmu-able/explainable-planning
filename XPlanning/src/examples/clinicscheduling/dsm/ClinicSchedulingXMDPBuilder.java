@@ -71,7 +71,8 @@ public class ClinicSchedulingXMDPBuilder {
 
 	private StateSpace buildStateSpace(int maxABP, int maxQueueSize, double clientArrivalRate) {
 		Set<ABP> possibleABPs = new HashSet<>();
-		for (int i = 0; i <= maxABP; i++) {
+		// The minimum value of ABP must be 1 to be able to compute appointment lead time: LT = floor(x / w)
+		for (int i = 1; i <= maxABP; i++) {
 			ABP abp = new ABP(i);
 			possibleABPs.add(abp);
 		}

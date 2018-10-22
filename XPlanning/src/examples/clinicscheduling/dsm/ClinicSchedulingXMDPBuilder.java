@@ -60,7 +60,7 @@ public class ClinicSchedulingXMDPBuilder {
 		ClinicCostProfile clinicCostProfile = schedulingContext.getClinicCostProfile();
 
 		StateSpace stateSpace = buildStateSpace(maxABP, maxQueueSize, clientArrivalRate);
-		ActionSpace actionSpace = buildActionSpace(maxABP);
+		ActionSpace actionSpace = buildActionSpace();
 		StateVarTuple initialState = buildInitialState(iniABP, iniABCount, iniNewClientCount);
 		StateVarTuple goal = new StateVarTuple(); // This average-cost MDP does not have a goal
 		TransitionFunction transFunction = buildTransitionFunction(maxQueueSize, clientArrivalRate);
@@ -122,18 +122,20 @@ public class ClinicSchedulingXMDPBuilder {
 		return Collections.max(possibleNewClientCounts, (count1, count2) -> count1.getValue() - count2.getValue());
 	}
 
-	private ActionSpace buildActionSpace(int maxABP) {
+	private ActionSpace buildActionSpace() {
 		Set<ScheduleAction> scheduleActions = new HashSet<>();
 
 		// Schedule action: action = <a, b>
 		// a = new ABP
 		// b = # new clients arriving today to service today
 
+		// Parameter a can be any value in the set of possible values of variable w (current ABP)
+		// Parameter b can be any value up to maximum number of new clients arriving in each day
+
 		ClientCount maxNewClientCount = getMaxNewClientCount();
 
-		for (int a = 0; a <= maxABP; a++) {
+		for (ABP newABP : rABPDef.getPossibleValues()) {
 			for (int b = 0; b <= maxNewClientCount.getValue(); b++) {
-				ABP newABP = new ABP(a);
 				ClientCount numNewClientsToService = new ClientCount(b);
 				ScheduleAction schedule = new ScheduleAction(newABP, numNewClientsToService);
 				scheduleActions.add(schedule);

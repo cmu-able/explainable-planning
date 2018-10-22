@@ -61,6 +61,11 @@ public class Effect implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean isEmpty() {
+		return mVarTuple.isEmpty();
+	}
+
+	@Override
 	public boolean contains(IStateVarTuple stateVarTuple) {
 		return mVarTuple.contains(stateVarTuple);
 	}

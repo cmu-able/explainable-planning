@@ -43,6 +43,10 @@ public class PrismTranslatorUtils {
 	 */
 	public static String buildExpression(IStateVarTuple predicate, ValueEncodingScheme encodings)
 			throws VarNotFoundException {
+		if (predicate.isEmpty()) {
+			return "true";
+		}
+
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
 		for (StateVar<IStateVarValue> var : predicate) {

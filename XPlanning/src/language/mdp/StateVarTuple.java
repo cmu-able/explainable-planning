@@ -38,6 +38,11 @@ public class StateVarTuple implements IStateVarTuple {
 	}
 
 	@Override
+	public boolean isEmpty() {
+		return mStateVarMap.isEmpty();
+	}
+
+	@Override
 	public boolean contains(IStateVarTuple stateVarTuple) {
 		for (StateVar<IStateVarValue> stateVar : stateVarTuple) {
 			if (!mStateVarMap.containsValue(stateVar)) {

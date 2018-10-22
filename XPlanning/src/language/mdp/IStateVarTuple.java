@@ -14,6 +14,8 @@ import language.exceptions.VarNotFoundException;
  */
 public interface IStateVarTuple extends Iterable<StateVar<IStateVarValue>> {
 
+	public boolean isEmpty();
+
 	public boolean contains(IStateVarTuple stateVarTuple);
 
 	public boolean contains(StateVarDefinition<? extends IStateVarValue> stateVarDef);

@@ -62,7 +62,7 @@ public class ClinicSchedulingXMDPBuilder {
 		StateSpace stateSpace = buildStateSpace(maxABP, maxQueueSize, clientArrivalRate);
 		ActionSpace actionSpace = buildActionSpace();
 		StateVarTuple initialState = buildInitialState(iniABP, iniABCount, iniNewClientCount);
-		StateVarTuple goal = new StateVarTuple(); // This average-cost MDP does not have a goal
+		StateVarTuple goal = null; // This average-cost MDP does not have a goal
 		TransitionFunction transFunction = buildTransitionFunction(maxQueueSize, clientArrivalRate);
 		QSpace qSpace = buildQFunctions(capacity, clinicCostProfile);
 		CostFunction costFunction = buildCostFunction(qSpace);

@@ -1,5 +1,6 @@
 package examples.clinicscheduling.metrics;
 
+import examples.clinicscheduling.models.ABP;
 import examples.clinicscheduling.models.ClientCount;
 import examples.clinicscheduling.models.ScheduleAction;
 import language.domain.metrics.ITransitionStructure;
@@ -18,16 +19,23 @@ public class LeadTimeDomain implements ITransitionStructure<ScheduleAction> {
 	 */
 	private volatile int hashCode;
 
+	private StateVarDefinition<ABP> mABPSrcDef;
 	private StateVarDefinition<ClientCount> mBookedClientCountSrcDef;
 
 	private TransitionStructure<ScheduleAction> mDomain = new TransitionStructure<>();
 
-	public LeadTimeDomain(StateVarDefinition<ClientCount> bookedClientCountSrcDef,
+	public LeadTimeDomain(StateVarDefinition<ABP> abpSrcDef, StateVarDefinition<ClientCount> bookedClientCountSrcDef,
 			ActionDefinition<ScheduleAction> scheduleDef) {
+		mABPSrcDef = abpSrcDef;
 		mBookedClientCountSrcDef = bookedClientCountSrcDef;
 
+		mDomain.addSrcStateVarDef(mABPSrcDef);
 		mDomain.addSrcStateVarDef(bookedClientCountSrcDef);
 		mDomain.setActionDef(scheduleDef);
+	}
+
+	public ABP getCurrentABP(Transition<ScheduleAction, LeadTimeDomain> transition) throws VarNotFoundException {
+		return transition.getSrcStateVarValue(ABP.class, mABPSrcDef);
 	}
 
 	public ClientCount getCurrentBookedClientCount(Transition<ScheduleAction, LeadTimeDomain> transition)

@@ -1,5 +1,6 @@
 package examples.clinicscheduling.metrics;
 
+import examples.clinicscheduling.models.ABP;
 import examples.clinicscheduling.models.ClientCount;
 import examples.clinicscheduling.models.ScheduleAction;
 import language.domain.metrics.IStandardMetricQFunction;
@@ -29,18 +30,21 @@ public class LeadTimeQFunction implements IStandardMetricQFunction<ScheduleActio
 	}
 
 	/**
-	 * Lead time cost = LT * x, where:
+	 * Lead time cost = LT * max(1, floor(x/w)), where:
 	 * 
 	 * LT = lead time cost factor,
 	 * 
-	 * x = number of patients who have been booked (size of the queue).
+	 * x = number of patients who have been booked (size of the queue),
+	 * 
+	 * w = current ABP.
 	 */
 	@Override
 	public double getValue(Transition<ScheduleAction, LeadTimeDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
+		ABP currABP = mDomain.getCurrentABP(transition);
 		ClientCount bookedClientCount = mDomain.getCurrentBookedClientCount(transition);
-		int x = bookedClientCount.getValue();
-		return mLeadTimeCostFactor * x;
+		double leadTime = ClientPredictionUtils.getAppointmentLeadTime(bookedClientCount, currABP);
+		return mLeadTimeCostFactor * leadTime;
 	}
 
 	@Override

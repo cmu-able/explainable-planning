@@ -293,7 +293,7 @@ public class ClinicSchedulingXMDPBuilder {
 
 		// Lead time cost
 		double leadTimeCostFactor = clinicCostProfile.getLeadTimeCostFactor();
-		LeadTimeDomain leadTimeDomain = new LeadTimeDomain(rABClientCountDef, scheduleDef);
+		LeadTimeDomain leadTimeDomain = new LeadTimeDomain(rABPDef, rABClientCountDef, scheduleDef);
 		LeadTimeQFunction leadTimeQFunction = new LeadTimeQFunction(leadTimeDomain, leadTimeCostFactor);
 
 		// Switching ABP cost

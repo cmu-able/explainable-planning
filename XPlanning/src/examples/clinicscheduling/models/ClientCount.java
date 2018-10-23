@@ -4,7 +4,7 @@ import language.domain.models.IStateVarAttribute;
 import language.domain.models.IStateVarInt;
 import language.exceptions.AttributeNameNotFoundException;
 
-public class ClientCount implements IStateVarInt {
+public class ClientCount implements IStateVarInt, Comparable<ClientCount> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -29,6 +29,11 @@ public class ClientCount implements IStateVarInt {
 	@Override
 	public IStateVarAttribute getAttributeValue(String name) throws AttributeNameNotFoundException {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public int compareTo(ClientCount other) {
+		return mNumClients - other.mNumClients;
 	}
 
 	@Override

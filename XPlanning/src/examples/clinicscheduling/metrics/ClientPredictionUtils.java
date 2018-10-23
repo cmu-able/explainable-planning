@@ -1,5 +1,15 @@
 package examples.clinicscheduling.metrics;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.math3.util.ArithmeticUtils;
+
 import examples.clinicscheduling.models.ABP;
 import examples.clinicscheduling.models.ClientCount;
 import language.exceptions.VarNotFoundException;
@@ -16,6 +26,102 @@ public class ClientPredictionUtils {
 
 	private ClientPredictionUtils() {
 		throw new IllegalStateException("Utility class");
+	}
+
+	/**
+	 * Create a set of possible numbers of new clients arriving today.
+	 * 
+	 * @param clientArrivalRate
+	 *            : Average client arrival rate
+	 * @param branchFactor
+	 *            : Number of sampled numbers of new clients
+	 * @return A set of possible numbers of new clients arriving today
+	 */
+	public static Set<ClientCount> getPossibleNewClientCounts(double clientArrivalRate, int branchFactor) {
+		Set<ClientCount> possibleNewClientCounts = new HashSet<>();
+
+		// Branching factor is always an odd number
+		double interval = clientArrivalRate / (Math.floorDiv(branchFactor - 1, 2) + 1);
+
+		// At the end of each interval, pick the value as a possible number of new clients
+		for (int i = 1; i <= branchFactor; i++) {
+			int numClients = (int) Math.round(i * interval);
+
+			ClientCount clientCount = new ClientCount(numClients);
+			possibleNewClientCounts.add(clientCount);
+		}
+
+		return possibleNewClientCounts;
+	}
+
+	/**
+	 * Calculate a discrete probability distribution of a number of new clients arriving today.
+	 * 
+	 * @param clientArrivalRate
+	 *            : Average client arrival rate
+	 * @param branchFactor
+	 *            : Number of sampled numbers of new clients
+	 * @return Probability distribution of a number of new clients arriving today
+	 */
+	public static Map<ClientCount, Double> getNewClientCountDistribution(double clientArrivalRate, int branchFactor) {
+		// Branching factor is always an odd number
+		double interval = clientArrivalRate / (Math.floorDiv(branchFactor - 1, 2) + 1);
+
+		// Sampled possible numbers of new clients
+		Set<ClientCount> possibleNewClientCounts = getPossibleNewClientCounts(clientArrivalRate, branchFactor);
+
+		List<ClientCount> sortedPossibleNewClientCounts = new ArrayList<>(possibleNewClientCounts);
+		Collections.sort(sortedPossibleNewClientCounts);
+
+		Map<ClientCount, Double> distribution = new HashMap<>();
+		double cumulativeProb = 0;
+
+		for (int i = 0; i < sortedPossibleNewClientCounts.size(); i++) {
+			ClientCount newClientCount = sortedPossibleNewClientCounts.get(i);
+			double rangeProb;
+
+			if (i == 0) {
+				double lowerBound = 0;
+				double upperBound = newClientCount.getValue() + 0.5 * interval;
+				rangeProb = getNewClientCountRangeProbability(lowerBound, upperBound, clientArrivalRate);
+			} else if (i == sortedPossibleNewClientCounts.size() - 1) {
+				rangeProb = 1 - cumulativeProb;
+			} else {
+				double lowerBound = newClientCount.getValue() - 0.5 * interval;
+				double upperBound = newClientCount.getValue() + 0.5 * interval;
+				rangeProb = getNewClientCountRangeProbability(lowerBound, upperBound, clientArrivalRate);
+			}
+
+			distribution.put(newClientCount, rangeProb);
+			cumulativeProb += rangeProb;
+		}
+		return distribution;
+	}
+
+	/**
+	 * Calculate the total probability of having a number of new clients within a given range [lower, upper).
+	 * 
+	 * @param lowerBound
+	 *            : Inclusive lower bound of number of new clients
+	 * @param upperBound
+	 *            : Exclusive upper bound of number of new clients
+	 * @param clientArrivalRate
+	 * @return Total probability of having a number of new clients within the given range
+	 */
+	private static double getNewClientCountRangeProbability(double lowerBound, double upperBound,
+			double clientArrivalRate) {
+		int roundedLowerBound = (int) Math.round(lowerBound);
+		int roundedUpperBound = (int) Math.round(upperBound);
+		double rangeProbability = 0;
+		for (int k = roundedLowerBound; k < roundedUpperBound; k++) {
+			// Probability of each number of new clients arriving today
+			// Poisson distribution: P(k events in a day) = e^(-lambda) * lambda^k / k!
+			double probNumNewClients = Math.pow(Math.E, -1 * clientArrivalRate) * Math.pow(clientArrivalRate, k)
+					/ ArithmeticUtils.factorial(k);
+			rangeProbability += probNumNewClients;
+
+		}
+		return rangeProbability;
 	}
 
 	/**

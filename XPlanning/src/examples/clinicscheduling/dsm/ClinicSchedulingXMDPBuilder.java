@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import examples.clinicscheduling.metrics.ClientPredictionUtils;
 import examples.clinicscheduling.metrics.IdleTimeQFunction;
 import examples.clinicscheduling.metrics.LeadTimeDomain;
 import examples.clinicscheduling.metrics.LeadTimeQFunction;
@@ -91,7 +92,7 @@ public class ClinicSchedulingXMDPBuilder {
 
 		// Variable: y = # new client-requests arriving today
 		rNewClientCountDef = new StateVarDefinition<>("y",
-				getPossibleNumbersOfNewClients(clientArrivalRate, mBranchFactor));
+				ClientPredictionUtils.getPossibleNewClientCounts(clientArrivalRate, mBranchFactor));
 
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(rABPDef);
@@ -100,26 +101,9 @@ public class ClinicSchedulingXMDPBuilder {
 		return stateSpace;
 	}
 
-	private Set<ClientCount> getPossibleNumbersOfNewClients(double clientArrivalRate, int branchFactor) {
-		Set<ClientCount> possibleNewClientCounts = new HashSet<>();
-
-		// Branching factor is always an odd number
-		double interval = clientArrivalRate / (Math.floorDiv(branchFactor - 1, 2) + 1);
-
-		// At the end of each interval, pick the value as a possible number of new clients
-		for (int i = 1; i <= branchFactor; i++) {
-			int numClients = (int) Math.floor(i * interval);
-
-			ClientCount clientCount = new ClientCount(numClients);
-			possibleNewClientCounts.add(clientCount);
-		}
-
-		return possibleNewClientCounts;
-	}
-
 	private ClientCount getMaxNewClientCount() {
 		Set<ClientCount> possibleNewClientCounts = rNewClientCountDef.getPossibleValues();
-		return Collections.max(possibleNewClientCounts, (count1, count2) -> count1.getValue() - count2.getValue());
+		return Collections.max(possibleNewClientCounts);
 	}
 
 	private ActionSpace buildActionSpace() {

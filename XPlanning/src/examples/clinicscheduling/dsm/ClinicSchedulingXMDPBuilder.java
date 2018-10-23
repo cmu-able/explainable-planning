@@ -66,7 +66,7 @@ public class ClinicSchedulingXMDPBuilder {
 		StateVarTuple goal = null; // This average-cost MDP does not have a goal
 		TransitionFunction transFunction = buildTransitionFunction(maxQueueSize, clientArrivalRate);
 		QSpace qSpace = buildQFunctions(capacity, clinicCostProfile);
-		CostFunction costFunction = buildCostFunction(qSpace);
+		CostFunction costFunction = buildCostFunction(qSpace, maxABP, clientArrivalRate);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
@@ -310,19 +310,35 @@ public class ClinicSchedulingXMDPBuilder {
 		return qSpace;
 	}
 
-	private CostFunction buildCostFunction(QSpace qSpace) {
+	private CostFunction buildCostFunction(QSpace qSpace, int maxABP, double clientArrivalRate) {
 		CostFunction costFunction = new CostFunction();
 		for (IQFunction<?, ?> qFunction : qSpace) {
-			addAttributeCostFunctions(qFunction, costFunction);
+			addAttributeCostFunctions(qFunction, costFunction, maxABP, clientArrivalRate);
 		}
 		return costFunction;
 	}
 
 	private <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void addAttributeCostFunctions(
-			S qFunction, CostFunction costFunction) {
-		double aConst = 0;
-		double bConst = 1;
+			S qFunction, CostFunction costFunction, int maxABP, double clientArrivalRate) {
+		double aConst;
+		double bConst;
 		double scalingConst = 1;
+
+		if (qFunction instanceof RevenueQFunction) {
+			RevenueQFunction revenueQFunction = (RevenueQFunction) qFunction;
+			// Maximum number of new clients arriving each day is 2X the average client arrival rate
+			double maxClientArrival = 2 * clientArrivalRate;
+			// Maximum daily revenue = maximum revenue from all advance-booking patients and same-day patients booked
+			// for today
+			double maxDailyRevenue = revenueQFunction.getRevenuePerPatient() * (maxABP + maxClientArrival);
+			// "Cost" of revenue is the difference between the revenue and its maximum value
+			aConst = maxDailyRevenue;
+			bConst = -1;
+		} else {
+			aConst = 0;
+			bConst = 1;
+		}
+
 		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
 		costFunction.put(qFunction, attrCostFunction, scalingConst);
 	}

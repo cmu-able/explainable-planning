@@ -86,9 +86,11 @@ public class PrismDTMCTranslator {
 			}
 		};
 
+		boolean hasGoal = xmdp.getGoal() != null;
+
 		String constsDecl = mHelper.buildConstsDecl(xmdp.getStateSpace());
 		String modules = mHelper.buildModules(xmdp.getStateSpace(), xmdp.getInitialState(), actionDefs, actionPSOs,
-				partialCommandsBuilder, mActionFilter);
+				partialCommandsBuilder, mActionFilter, hasGoal);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(xmdp.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
@@ -97,7 +99,7 @@ public class PrismDTMCTranslator {
 		builder.append(constsDecl);
 		builder.append("\n\n");
 
-		if (xmdp.getGoal() != null) {
+		if (hasGoal) {
 			String goalDecl = mHelper.buildGoalDecl(xmdp.getGoal());
 			String endDecl = mHelper.buildEndDecl(xmdp.getGoal());
 			builder.append(goalDecl);

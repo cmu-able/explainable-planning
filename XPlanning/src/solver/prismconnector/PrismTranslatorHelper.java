@@ -105,21 +105,27 @@ public class PrismTranslatorHelper {
 	}
 
 	/**
-	 * Build a helper module that handles cycles of choosing action, reward computation, checking if the goal is reached
-	 * for termination.
+	 * Build a helper module that handles cycles of choosing action, reward computation, checking if the goal (if any)
+	 * is reached for termination.
 	 * 
 	 * @param actionPSOs
 	 * @param helperActionFilter
+	 * @param hasGoal
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
 	 */
-	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, ActionFilter helperActionFilter) {
+	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, ActionFilter helperActionFilter,
+			boolean hasGoal) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
-		builder.append(PrismTranslatorUtils.INDENT);
-		builder.append("barrier : bool init false;");
-		builder.append("\n");
+
+		if (hasGoal) {
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("barrier : bool init false;");
+			builder.append("\n");
+		}
+
 		builder.append(PrismTranslatorUtils.INDENT);
 		builder.append("computeGo : bool init false;");
 		builder.append("\n\n");
@@ -138,21 +144,32 @@ public class PrismTranslatorHelper {
 				builder.append("[");
 				builder.append(sanitizedActionName);
 				builder.append("]");
-				builder.append(" !computeGo & !barrier -> (computeGo'=true) & (barrier'=true);");
+
+				if (hasGoal) {
+					builder.append(" !computeGo & !barrier -> (computeGo'=true) & (barrier'=true);");
+				} else {
+					builder.append(" !computeGo -> (computeGo'=true);");
+				}
 				builder.append("\n");
 			}
 		}
 
 		builder.append("\n");
-		builder.append(PrismTranslatorUtils.INDENT);
-		builder.append("[compute] computeGo & barrier -> (computeGo'=false);");
-		builder.append("\n");
-		builder.append(PrismTranslatorUtils.INDENT);
-		builder.append("[next] !computeGo & barrier & !goal -> (barrier'=false);");
-		builder.append("\n");
-		builder.append(PrismTranslatorUtils.INDENT);
-		builder.append("[end] !computeGo & barrier & goal -> true;");
-		builder.append("\n");
+		if (hasGoal) {
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("[compute] computeGo & barrier -> (computeGo'=false);");
+			builder.append("\n");
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("[next] !computeGo & barrier & !goal -> (barrier'=false);");
+			builder.append("\n");
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("[end] !computeGo & barrier & goal -> true;");
+			builder.append("\n");
+		} else {
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("[compute] computeGo -> (computeGo'=false);");
+			builder.append("\n");
+		}
 		builder.append("endmodule");
 		return builder.toString();
 	}
@@ -267,12 +284,14 @@ public class PrismTranslatorHelper {
 	 *            : A function that builds partial commands of a module, given an action description
 	 * @param helperActionFilter
 	 *            : A function that filters actions of the helper module
+	 * @param hasGoal
+	 *            : Whether the MDP has a goal
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws XMDPException
 	 */
 	String buildModules(StateSpace stateSpace, StateVarTuple iniState, Iterable<ActionDefinition<IAction>> actionDefs,
 			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
-			ActionFilter helperActionFilter) throws XMDPException {
+			ActionFilter helperActionFilter, boolean hasGoal) throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -324,7 +343,7 @@ public class PrismTranslatorHelper {
 			builder.append(noCommandModule);
 		}
 
-		String helperModule = buildHelperModule(actionPSOs, helperActionFilter);
+		String helperModule = buildHelperModule(actionPSOs, helperActionFilter, hasGoal);
 		builder.append("\n\n");
 		builder.append(helperModule);
 		return builder.toString();

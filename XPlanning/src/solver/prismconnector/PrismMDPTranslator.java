@@ -64,10 +64,11 @@ public class PrismMDPTranslator {
 			}
 		};
 
-		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
+		boolean hasGoal = mXMDP.getGoal() != null;
 
+		String constsDecl = mHelper.buildConstsDecl(mXMDP.getStateSpace());
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
-				mXMDP.getTransitionFunction(), partialCommandsBuilder, mActionFilter);
+				mXMDP.getTransitionFunction(), partialCommandsBuilder, mActionFilter, hasGoal);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();
@@ -76,7 +77,7 @@ public class PrismMDPTranslator {
 		builder.append(constsDecl);
 		builder.append("\n\n");
 
-		if (mXMDP.getGoal() != null) {
+		if (hasGoal) {
 			String goalDecl = mHelper.buildGoalDecl(mXMDP.getGoal());
 			String endDecl = mHelper.buildEndDecl(mXMDP.getGoal());
 			builder.append(goalDecl);

@@ -170,7 +170,7 @@ public class ClinicSchedulingXMDPBuilder {
 
 		// Action description for y
 		NewClientCountActionDescription rNewClientCountActionDesc = new NewClientCountActionDescription(scheduleDef,
-				preSchedule, rNewClientCountDef, clientArrivalRate);
+				preSchedule, rNewClientCountDef, clientArrivalRate, mBranchFactor);
 
 		// PSO
 		FactoredPSO<ScheduleAction> schedulePSO = new FactoredPSO<>(scheduleDef, preSchedule);

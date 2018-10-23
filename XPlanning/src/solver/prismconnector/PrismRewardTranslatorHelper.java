@@ -102,8 +102,9 @@ public class PrismRewardTranslatorHelper {
 	 */
 	String buildRewardStructure(TransitionFunction transFunction, IAdditiveCostFunction objectiveFunction)
 			throws XMDPException {
+		String sanitizedRewardName = PrismTranslatorUtils.sanitizeNameString(objectiveFunction.getName());
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format(BEGIN_REWARDS, objectiveFunction.getName()));
+		builder.append(String.format(BEGIN_REWARDS, sanitizedRewardName));
 		builder.append("\n");
 
 		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
@@ -149,7 +150,7 @@ public class PrismRewardTranslatorHelper {
 	 */
 	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(TransitionFunction transFunction,
 			IQFunction<E, T> qFunction) throws XMDPException {
-		String rewardName = qFunction.getName();
+		String sanitizedRewardName = PrismTranslatorUtils.sanitizeNameString(qFunction.getName());
 		T domain = qFunction.getTransitionStructure();
 		FactoredPSO<E> actionPSO = transFunction.getActionPSO(domain.getActionDef());
 		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
@@ -162,7 +163,7 @@ public class PrismRewardTranslatorHelper {
 		};
 
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format(BEGIN_REWARDS, rewardName));
+		builder.append(String.format(BEGIN_REWARDS, sanitizedRewardName));
 		builder.append("\n");
 		String rewardItems = buildRewardItems(domain, actionPSO, evaluator);
 		builder.append(rewardItems);

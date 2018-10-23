@@ -258,7 +258,7 @@ public class PrismTranslatorHelper {
 		StringBuilder builder = new StringBuilder();
 		builder.append(intVarDef.getName());
 		Comparator<IStateVarInt> comparator = (var1, var2) -> var1.getValue() - var2.getValue();
-		IStateVarInt lowerBound = Collections.max(intVarDef.getPossibleValues(), comparator);
+		IStateVarInt lowerBound = Collections.min(intVarDef.getPossibleValues(), comparator);
 		IStateVarInt uppberBound = Collections.max(intVarDef.getPossibleValues(), comparator);
 		builder.append(" : [");
 		builder.append(lowerBound.getValue());

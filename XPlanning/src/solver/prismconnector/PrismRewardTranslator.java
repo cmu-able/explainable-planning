@@ -6,19 +6,18 @@ import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.TransitionFunction;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslator {
 
-	private TransitionFunction mTransFunction;
 	private PrismRewardTranslatorHelper mRewardHelper;
 
 	public PrismRewardTranslator(TransitionFunction transFunction, ValueEncodingScheme encodings,
 			ActionFilter actionFilter) {
-		mTransFunction = transFunction;
-		mRewardHelper = new PrismRewardTranslatorHelper(encodings, actionFilter);
+		mRewardHelper = new PrismRewardTranslatorHelper(transFunction, encodings, actionFilter);
 	}
 
 	/**
@@ -29,7 +28,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getCostFunctionTranslation(CostFunction costFunction) throws XMDPException {
-		return mRewardHelper.buildRewardStructure(mTransFunction, costFunction);
+		return mRewardHelper.buildRewardStructure(costFunction);
 	}
 
 	/**
@@ -40,7 +39,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getObjectiveFunctionTranslation(IAdditiveCostFunction objectiveFunction) throws XMDPException {
-		return mRewardHelper.buildRewardStructure(mTransFunction, objectiveFunction);
+		return mRewardHelper.buildRewardStructure(objectiveFunction);
 	}
 
 	/**
@@ -52,7 +51,7 @@ public class PrismRewardTranslator {
 	 */
 	public String getQAFunctionsTranslation(Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions)
 			throws XMDPException {
-		return mRewardHelper.buildRewardStructures(mTransFunction, qFunctions);
+		return mRewardHelper.buildRewardStructures(qFunctions);
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getQAFunctionTranslation(IQFunction<?, ?> qFunction) throws XMDPException {
-		return mRewardHelper.buildRewardStructure(mTransFunction, qFunction);
+		return mRewardHelper.buildRewardStructure(qFunction);
 	}
 
 	/**
@@ -74,6 +73,19 @@ public class PrismRewardTranslator {
 	 * @throws XMDPException
 	 */
 	public String getEventCounters(EventBasedMetric<?, ?, ?> eventBasedMetric) throws XMDPException {
-		return mRewardHelper.buildRewardStructuresForEventCounts(mTransFunction, eventBasedMetric.getEvents());
+		return mRewardHelper.buildRewardStructuresForEventCounts(eventBasedMetric.getEvents());
+	}
+
+	/**
+	 * 
+	 * @param attrCostFunctions
+	 *            : Single-attribute cost functions of QAs
+	 * @return Reward structures representing the QA cost functions
+	 * @throws XMDPException
+	 */
+	public String getQACostFunctionsTranslation(
+			Iterable<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> attrCostFunctions)
+			throws XMDPException {
+		return mRewardHelper.buildRewardStructuresForQACostFunctions(attrCostFunctions);
 	}
 }

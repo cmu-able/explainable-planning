@@ -42,49 +42,15 @@ public class PrismRewardTranslatorHelper {
 	private static final String BEGIN_REWARDS = "rewards \"%s\"";
 	private static final String END_REWARDS = "endrewards";
 
+	private TransitionFunction mTransFunction;
 	private ValueEncodingScheme mEncodings;
 	private ActionFilter mActionFilter;
 
-	public PrismRewardTranslatorHelper(ValueEncodingScheme encodings, ActionFilter actionFilter) {
+	public PrismRewardTranslatorHelper(TransitionFunction transFunction, ValueEncodingScheme encodings,
+			ActionFilter actionFilter) {
+		mTransFunction = transFunction;
 		mEncodings = encodings;
 		mActionFilter = actionFilter;
-	}
-
-	/**
-	 * Build a list of transition-reward structures for a given set of QA functions.
-	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
-	 * @param qFunctions
-	 *            : QA functions
-	 * @return Reward structures for the QA functions
-	 * @throws XMDPException
-	 */
-	String buildRewardStructures(TransitionFunction transFunction,
-			Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions) throws XMDPException {
-		// Assume that the input QFunctions are all of the QFunctions in XMDP
-
-		// This is to ensure that: the order of which the reward structures representing the QA functions are written to
-		// the model correspond to the predefined reward-structure-index of each QA function
-		List<IQFunction<IAction, ITransitionStructure<IAction>>> orderedQFunctions = mEncodings
-				.getQFunctionEncodingScheme().getOrderedQFunctions();
-
-		StringBuilder builder = new StringBuilder();
-		builder.append("// Quality-Attribute Functions\n\n");
-		boolean first = true;
-		for (IQFunction<?, ?> qFunction : orderedQFunctions) {
-			if (!first) {
-				builder.append("\n\n");
-			} else {
-				first = false;
-			}
-			builder.append("// ");
-			builder.append(qFunction.getName());
-			builder.append("\n\n");
-			String rewards = buildRewardStructure(transFunction, qFunction);
-			builder.append(rewards);
-		}
-		return builder.toString();
 	}
 
 	/**
@@ -93,15 +59,12 @@ public class PrismRewardTranslatorHelper {
 	 * 
 	 * The objective function must be the first reward structure in any PRISM MDP translation.
 	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
 	 * @param objectiveFunction
 	 *            : Objective function that this reward structure represents
 	 * @return rewards "{objective name}" ... endrewards
 	 * @throws XMDPException
 	 */
-	String buildRewardStructure(TransitionFunction transFunction, IAdditiveCostFunction objectiveFunction)
-			throws XMDPException {
+	String buildRewardStructure(IAdditiveCostFunction objectiveFunction) throws XMDPException {
 		String sanitizedRewardName = PrismTranslatorUtils.sanitizeNameString(objectiveFunction.getName());
 		StringBuilder builder = new StringBuilder();
 		builder.append(String.format(BEGIN_REWARDS, sanitizedRewardName));
@@ -115,7 +78,7 @@ public class PrismRewardTranslatorHelper {
 			double scalingConst = objectiveFunction.getScalingConstant(attrCostFunction);
 
 			ITransitionStructure<IAction> domain = qFunction.getTransitionStructure();
-			FactoredPSO<IAction> actionPSO = transFunction.getActionPSO(domain.getActionDef());
+			FactoredPSO<IAction> actionPSO = mTransFunction.getActionPSO(domain.getActionDef());
 			TransitionEvaluator<IAction, ITransitionStructure<IAction>> evaluator = new TransitionEvaluator<IAction, ITransitionStructure<IAction>>() {
 
 				@Override
@@ -139,20 +102,53 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
+	 * Build a list of transition-reward structures for a given set of QA functions.
+	 * 
+	 * @param qFunctions
+	 *            : QA functions
+	 * @return Reward structures for the QA functions
+	 * @throws XMDPException
+	 */
+	String buildRewardStructures(Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions)
+			throws XMDPException {
+		// Assume that the input QFunctions are all of the QFunctions in XMDP
+
+		// This is to ensure that: the order of which the reward structures representing the QA functions are written to
+		// the model correspond to the predefined reward-structure-index of each QA function
+		List<IQFunction<IAction, ITransitionStructure<IAction>>> orderedQFunctions = mEncodings
+				.getQFunctionEncodingScheme().getOrderedQFunctions();
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("// Quality-Attribute Functions\n\n");
+		boolean first = true;
+		for (IQFunction<?, ?> qFunction : orderedQFunctions) {
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
+			builder.append("// ");
+			builder.append(qFunction.getName());
+			builder.append("\n\n");
+			String rewards = buildRewardStructure(qFunction);
+			builder.append(rewards);
+		}
+		return builder.toString();
+	}
+
+	/**
 	 * Build a transition-reward structure for a given QA function.
 	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
 	 * @param qFunction
 	 *            : QA function
 	 * @return rewards "{QA name}" ... endrewards
 	 * @throws XMDPException
 	 */
-	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(TransitionFunction transFunction,
-			IQFunction<E, T> qFunction) throws XMDPException {
-		String sanitizedRewardName = PrismTranslatorUtils.sanitizeNameString(qFunction.getName());
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(IQFunction<E, T> qFunction)
+			throws XMDPException {
+		String rewardName = qFunction.getName();
 		T domain = qFunction.getTransitionStructure();
-		FactoredPSO<E> actionPSO = transFunction.getActionPSO(domain.getActionDef());
+		FactoredPSO<E> actionPSO = mTransFunction.getActionPSO(domain.getActionDef());
 		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
 
 			@Override
@@ -161,28 +157,72 @@ public class PrismRewardTranslatorHelper {
 				return qFunction.getValue(transition);
 			}
 		};
+		return buildRewardStructure(rewardName, domain, actionPSO, evaluator);
+	}
 
+	/**
+	 * Build a list of transition-reward structures for a given set of single-attribute cost functions of QAs.
+	 * 
+	 * @param attrCostFunctions
+	 *            : Single-attribute cost functions of QAs
+	 * @return Reward structures for the QA cost functions
+	 * @throws XMDPException
+	 */
+	String buildRewardStructuresForQACostFunctions(
+			Iterable<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> attrCostFunctions)
+			throws XMDPException {
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format(BEGIN_REWARDS, sanitizedRewardName));
-		builder.append("\n");
-		String rewardItems = buildRewardItems(domain, actionPSO, evaluator);
-		builder.append(rewardItems);
-		builder.append(END_REWARDS);
+		builder.append("// QA Cost Functions\n\n");
+		boolean first = true;
+		for (AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunction : attrCostFunctions) {
+			if (!first) {
+				builder.append("\n\n");
+			} else {
+				first = false;
+			}
+			builder.append("// ");
+			builder.append(attrCostFunction.getName());
+			builder.append("\n\n");
+			String rewards = buildRewardStructure(attrCostFunction);
+			builder.append(rewards);
+		}
 		return builder.toString();
+	}
+
+	/**
+	 * Build a transition-reward structure for a given QA cost function.
+	 * 
+	 * @param attrCostFunction
+	 *            : Single-attribute cost function of QA
+	 * @return rewards "cost_{QA name}" ... endrewards
+	 * @throws XMDPException
+	 */
+	<E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> String buildRewardStructure(
+			AttributeCostFunction<S> attrCostFunction) throws XMDPException {
+		String rewardName = attrCostFunction.getName();
+		T domain = attrCostFunction.getQFunction().getTransitionStructure();
+		FactoredPSO<E> actionPSO = mTransFunction.getActionPSO(domain.getActionDef());
+		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
+
+			@Override
+			public double evaluate(Transition<E, T> transition)
+					throws VarNotFoundException, AttributeNameNotFoundException {
+				S qFunction = attrCostFunction.getQFunction();
+				return attrCostFunction.getCost(qFunction.getValue(transition));
+			}
+		};
+		return buildRewardStructure(rewardName, domain, actionPSO, evaluator);
 	}
 
 	/**
 	 * Build a list of reward structures for counting events.
 	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
 	 * @param events
 	 *            : Events to be counted
 	 * @return Reward structures for counting the events.
 	 * @throws XMDPException
 	 */
-	String buildRewardStructuresForEventCounts(TransitionFunction transFunction, Set<? extends IEvent<?, ?>> events)
-			throws XMDPException {
+	String buildRewardStructuresForEventCounts(Set<? extends IEvent<?, ?>> events) throws XMDPException {
 		StringBuilder builder = new StringBuilder();
 		builder.append("// Counters for events\n\n");
 		boolean first = true;
@@ -195,7 +235,7 @@ public class PrismRewardTranslatorHelper {
 			builder.append("// ");
 			builder.append(event.getName());
 			builder.append("\n\n");
-			String rewards = buildRewardStructureForEventCount(transFunction, event);
+			String rewards = buildRewardStructureForEventCount(event);
 			builder.append(rewards);
 		}
 		return builder.toString();
@@ -204,19 +244,16 @@ public class PrismRewardTranslatorHelper {
 	/**
 	 * Build a reward structure for counting a particular event.
 	 * 
-	 * @param transFunction
-	 *            : Transition function of MDP
 	 * @param event
 	 *            : Event to be counted
 	 * @return Reward structure for counting the event.
 	 * @throws XMDPException
 	 */
-	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructureForEventCount(
-			TransitionFunction transFunction, IEvent<E, T> event) throws XMDPException {
-		String sanitizedEventName = PrismTranslatorUtils.sanitizeNameString(event.getName());
-		String rewardName = sanitizedEventName + "_count";
+	<E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructureForEventCount(IEvent<E, T> event)
+			throws XMDPException {
+		String rewardName = event.getName() + "_count";
 		T eventStructure = event.getTransitionStructure();
-		FactoredPSO<E> actionPSO = transFunction.getActionPSO(eventStructure.getActionDef());
+		FactoredPSO<E> actionPSO = mTransFunction.getActionPSO(eventStructure.getActionDef());
 		TransitionEvaluator<E, T> evaluator = new TransitionEvaluator<E, T>() {
 
 			@Override
@@ -225,11 +262,16 @@ public class PrismRewardTranslatorHelper {
 				return event.hasEventOccurred(transition) ? 1 : 0;
 			}
 		};
+		return buildRewardStructure(rewardName, eventStructure, actionPSO, evaluator);
+	}
 
+	private <E extends IAction, T extends ITransitionStructure<E>> String buildRewardStructure(String rewardName,
+			T domain, FactoredPSO<E> actionPSO, TransitionEvaluator<E, T> evaluator) throws XMDPException {
+		String sanitizedRewardName = PrismTranslatorUtils.sanitizeNameString(rewardName);
 		StringBuilder builder = new StringBuilder();
-		builder.append(String.format(BEGIN_REWARDS, rewardName));
+		builder.append(String.format(BEGIN_REWARDS, sanitizedRewardName));
 		builder.append("\n");
-		String rewardItems = buildRewardItems(eventStructure, actionPSO, evaluator);
+		String rewardItems = buildRewardItems(domain, actionPSO, evaluator);
 		builder.append(rewardItems);
 		builder.append(END_REWARDS);
 		return builder.toString();

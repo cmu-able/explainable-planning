@@ -57,7 +57,7 @@ public class Explainer {
 		// Close down PRISM
 		prismConnector.terminate();
 
-		return new Explanation(solnPolicyInfo, xmdp.getQSpace(), tradeoffs);
+		return new Explanation(solnPolicyInfo, xmdp.getQSpace(), xmdp.getCostFunction(), tradeoffs);
 	}
 
 	private PolicyInfo buildPolicyInfo(Policy policy, QSpace qSpace, PrismConnector prismConnector)

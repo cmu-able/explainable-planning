@@ -3,6 +3,7 @@ package explanation.analysis;
 import java.util.Set;
 
 import language.mdp.QSpace;
+import language.objectives.CostFunction;
 
 public class Explanation {
 
@@ -13,12 +14,15 @@ public class Explanation {
 
 	private PolicyInfo mSolnPolicyInfo;
 	private QSpace mQSpace;
+	private CostFunction mCostFunction;
 	private Set<Tradeoff> mTradeoffs;
 
-	public Explanation(PolicyInfo solnPolicyInfo, QSpace qSpace, Set<Tradeoff> tradeoffs) {
+	public Explanation(PolicyInfo solnPolicyInfo, QSpace qSpace, CostFunction costFunction, Set<Tradeoff> tradeoffs) {
 		mSolnPolicyInfo = solnPolicyInfo;
 		mQSpace = qSpace;
-		mTradeoffs = tradeoffs;
+		mCostFunction = costFunction;
+		mTradeoffs = tradeoffs; // this is be an empty set when there is no tradeoff (i.e., the solution policy is an
+								// absolute optimal one)
 	}
 
 	public PolicyInfo getSolutionPolicyInfo() {
@@ -29,6 +33,15 @@ public class Explanation {
 		return mQSpace;
 	}
 
+	public CostFunction getCostFunction() {
+		return mCostFunction;
+	}
+
+	/**
+	 * This is be an empty set when there is no tradeoff (i.e., the solution policy is an absolute optimal one).
+	 * 
+	 * @return A set of tradeoffs
+	 */
 	public Set<Tradeoff> getTradeoffs() {
 		return mTradeoffs;
 	}
@@ -43,7 +56,7 @@ public class Explanation {
 		}
 		Explanation explanation = (Explanation) obj;
 		return explanation.mSolnPolicyInfo.equals(mSolnPolicyInfo) && explanation.mQSpace.equals(mQSpace)
-				&& explanation.mTradeoffs.equals(mTradeoffs);
+				&& explanation.mCostFunction.equals(mCostFunction) && explanation.mTradeoffs.equals(mTradeoffs);
 	}
 
 	@Override
@@ -53,6 +66,7 @@ public class Explanation {
 			result = 17;
 			result = 31 * result + mSolnPolicyInfo.hashCode();
 			result = 31 * result + mQSpace.hashCode();
+			result = 31 * result + mCostFunction.hashCode();
 			result = 31 * result + mTradeoffs.hashCode();
 			hashCode = result;
 		}

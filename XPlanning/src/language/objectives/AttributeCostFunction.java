@@ -42,6 +42,14 @@ public class AttributeCostFunction<E extends IQFunction<?, ?>> implements ILinea
 		return mQFunction;
 	}
 
+	public double getaConst() {
+		return maConst;
+	}
+
+	public double getbConst() {
+		return mbConst;
+	}
+
 	@Override
 	public double getCost(double value) {
 		return maConst + mbConst * value;

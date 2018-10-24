@@ -19,7 +19,9 @@ import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.NonStandardMetricQFunction;
 import language.domain.models.IAction;
 import language.mdp.QSpace;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
+import language.objectives.CostFunction;
 import language.policy.Policy;
 import uiconnector.PolicyWriter;
 
@@ -39,6 +41,7 @@ public class Verbalizer {
 	public String verbalize(Explanation explanation) throws IOException {
 		PolicyInfo solnPolicyInfo = explanation.getSolutionPolicyInfo();
 		QSpace qSpace = explanation.getQSpace();
+		CostFunction costFunction = explanation.getCostFunction();
 		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
 
 		String policyJsonFilename = "solnPolicy.json";
@@ -52,10 +55,15 @@ public class Verbalizer {
 		builder.append("]. ");
 		builder.append(verbalizeQAs(solnPolicyInfo, qSpace));
 
-		Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs = getOptimalQAs(qSpace, tradeoffs);
-		if (!optimalQAs.isEmpty()) {
+		// Optimal QAs can have either the lowest values (when attribute cost function has positive slope) or the
+		// highest values (when attribute cost function has negative slope).
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> lowestOptimalQAs = new HashSet<>();
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> highestOptimalQAs = new HashSet<>();
+		getOptimalQAs(qSpace, costFunction, tradeoffs, lowestOptimalQAs, highestOptimalQAs);
+
+		if (!lowestOptimalQAs.isEmpty() || !highestOptimalQAs.isEmpty()) {
 			builder.append(" ");
-			builder.append(verbalizeOptimalQAValues(optimalQAs));
+			builder.append(verbalizeOptimalQAValues(lowestOptimalQAs, highestOptimalQAs));
 		}
 
 		int i = 1;
@@ -147,28 +155,75 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private Set<IQFunction<IAction, ITransitionStructure<IAction>>> getOptimalQAs(QSpace qSpace,
-			Set<Tradeoff> tradeoffs) {
-		Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs = new HashSet<>();
+	/**
+	 * Get a set of lowest-value optimal QAs and a set of highest-value optimal QAs. The two sets are mutually
+	 * exclusive.
+	 * 
+	 * @param qSpace
+	 * @param costFunction
+	 * @param tradeoffs
+	 * @param lowestOptimalQAs
+	 *            : return parameter
+	 * @param highestOptimalQAs
+	 *            : return parameter
+	 */
+	private void getOptimalQAs(QSpace qSpace, CostFunction costFunction, Set<Tradeoff> tradeoffs,
+			Set<IQFunction<IAction, ITransitionStructure<IAction>>> lowestOptimalQAs,
+			Set<IQFunction<IAction, ITransitionStructure<IAction>>> highestOptimalQAs) {
 		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
-			boolean isOptimal = true;
+			AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc = costFunction
+					.getAttributeCostFunction(qFunction);
+
+			boolean isOptimal = true; // if there is no tradeoff, then all QAs have optimal values
+			boolean negativeSlope = attrCostFunc.getbConst() < 0;
+
 			for (Tradeoff tradeoff : tradeoffs) {
+				// Check each alternative in the tradeoff set if it has an improvement on this QA.
+				// If so, then this QA is not optimal.
 				if (tradeoff.getQAGains().containsKey(qFunction)) {
 					isOptimal = false;
 					break;
 				}
 			}
-			if (isOptimal) {
-				optimalQAs.add(qFunction);
+
+			if (isOptimal && negativeSlope) {
+				// Optimal value of this QA has the highest value
+				highestOptimalQAs.add(qFunction);
+			} else if (isOptimal) {
+				// Optimal value of this QA has the lowest value
+				lowestOptimalQAs.add(qFunction);
 			}
 		}
-		return optimalQAs;
 	}
 
-	private String verbalizeOptimalQAValues(Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs) {
+	private String verbalizeOptimalQAValues(Set<IQFunction<IAction, ITransitionStructure<IAction>>> lowestOptimalQAs,
+			Set<IQFunction<IAction, ITransitionStructure<IAction>>> highestOptimalQAs) {
 		StringBuilder builder = new StringBuilder();
-		builder.append("It has the lowest expected ");
+		boolean beginSentence = true;
 
+		if (!lowestOptimalQAs.isEmpty()) {
+			String listOfLowestOptimalQAs = listQAs(lowestOptimalQAs);
+			builder.append("It has the lowest expected ");
+			builder.append(listOfLowestOptimalQAs);
+			beginSentence = false;
+		}
+
+		if (!highestOptimalQAs.isEmpty()) {
+			String listOfHighestOptimalQAs = listQAs(highestOptimalQAs);
+			if (beginSentence) {
+				builder.append("It has the highest expected ");
+			} else {
+				builder.append("; and has the highest expected ");
+			}
+			builder.append(listOfHighestOptimalQAs);
+		}
+
+		builder.append(".");
+		return builder.toString();
+	}
+
+	private String listQAs(Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs) {
+		StringBuilder builder = new StringBuilder();
 		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = optimalQAs.iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
@@ -183,7 +238,6 @@ public class Verbalizer {
 			}
 			builder.append(mVocabulary.getNoun(qFunction));
 		}
-		builder.append(".");
 		return builder.toString();
 	}
 

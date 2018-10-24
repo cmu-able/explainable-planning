@@ -5,6 +5,7 @@ import language.domain.metrics.IQFunction;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
@@ -93,6 +94,24 @@ public class PrismPropertyTranslator {
 			throws VarNotFoundException {
 		String sanitizedCostName = PrismTranslatorUtils.sanitizeNameString(costFunction.getName());
 		return buildRewardQueryProperty(sanitizedCostName, DTMC_REWARD_QUERY, goal, costCriterion);
+	}
+
+	/**
+	 * 
+	 * @param goal
+	 *            : Goal of the corresponding MDP
+	 * @param attrCostFunction
+	 *            : Single-attribute cost function of a QA
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return R{"cost_{QA name}"}=? [ F {end predicate} ] for SSP; R{"cost_{QA name}"}=? [ S ] for average-cost MDP
+	 * @throws VarNotFoundException
+	 */
+	public String buildDTMCQACostQueryProperty(StateVarTuple goal,
+			AttributeCostFunction<IQFunction<?, ?>> attrCostFunction, CostCriterion costCriterion)
+			throws VarNotFoundException {
+		String sanitizedQACostName = PrismTranslatorUtils.sanitizeNameString(attrCostFunction.getName());
+		return buildRewardQueryProperty(sanitizedQACostName, DTMC_REWARD_QUERY, goal, costCriterion);
 	}
 
 	/**

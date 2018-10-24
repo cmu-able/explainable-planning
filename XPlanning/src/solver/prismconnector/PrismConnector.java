@@ -264,10 +264,23 @@ public class PrismConnector {
 	private void computeCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-		String dtmc = dtmcTranslator.getDTMCTranslation(false);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false, false);
 		String queryProperty = dtmcTranslator.getCostQueryPropertyTranslation(mCostCriterion);
 		double totalCost = mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
 		mCachedCosts.put(policy, totalCost);
+	}
+
+	public double getQACost(Policy policy, IQFunction<?, ?> qFunction) {
+		// TODO
+		return 0;
+	}
+
+	private void computeQACosts(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
+			throws XMDPException {
+		XDTMC xdtmc = new XDTMC(mXMDP, policy);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
+
+		// TODO
 	}
 
 	/**
@@ -298,7 +311,7 @@ public class PrismConnector {
 			throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
 		StringBuilder builder = new StringBuilder();
@@ -358,7 +371,7 @@ public class PrismConnector {
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-		String dtmc = dtmcTranslator.getDTMCTranslation(false);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false, false);
 		String eventCounterRewards = dtmcTranslator.getEventCounterRewardsTranslation(qFunction.getEventBasedMetric());
 
 		StringBuilder dtmcStrBuilder = new StringBuilder();

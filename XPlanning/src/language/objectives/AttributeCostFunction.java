@@ -51,6 +51,11 @@ public class AttributeCostFunction<E extends IQFunction<?, ?>> implements ILinea
 	}
 
 	@Override
+	public String getName() {
+		return "cost_" + mQFunction.getName();
+	}
+
+	@Override
 	public double getCost(double value) {
 		return maConst + mbConst * value;
 	}

@@ -48,6 +48,7 @@ public class CostFunction implements IAdditiveCostFunction {
 		return mAdditiveCostFunc.getName();
 	}
 
+	@Override
 	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions() {
 		return mAdditiveCostFunc.getQFunctions();
 	}

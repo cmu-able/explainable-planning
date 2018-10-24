@@ -10,6 +10,8 @@ package language.objectives;
  */
 public interface ILinearCostFunction {
 
+	public String getName();
+
 	/**
 	 * 
 	 * @param value

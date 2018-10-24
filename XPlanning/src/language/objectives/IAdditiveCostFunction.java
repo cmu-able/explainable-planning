@@ -23,4 +23,6 @@ public interface IAdditiveCostFunction {
 	public String getName();
 
 	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions();
+
+	public Set<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> getAttributeCostFunctions();
 }

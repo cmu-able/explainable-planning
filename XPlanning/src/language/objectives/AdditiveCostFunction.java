@@ -29,8 +29,11 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	// For fast look-up of AttributeCostFunction via IQFunction
 	private Map<IQFunction<?, ?>, AttributeCostFunction<? extends IQFunction<?, ?>>> mAttrCostFuncs = new HashMap<>();
 
-	// For client to obtain a set of generic QA functions
-	private Set<IQFunction<IAction, ITransitionStructure<IAction>>> mQFunctions = new HashSet<>();
+	// For caller to obtain a set of generic QA functions
+	private Set<IQFunction<IAction, ITransitionStructure<IAction>>> mGenericQFuncs = new HashSet<>();
+
+	// For caller to obtain a set of generic single-attribute cost functions
+	private Set<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> mGenericAttrCostFuncs = new HashSet<>();
 
 	public AdditiveCostFunction(String name) {
 		mName = name;
@@ -40,7 +43,10 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
 		mAttrCostFuncs.put(qFunction, attrCostFunc);
 		mScalingConsts.put(attrCostFunc, scalingConst);
-		mQFunctions.add((IQFunction<IAction, ITransitionStructure<IAction>>) qFunction);
+
+		mGenericQFuncs.add((IQFunction<IAction, ITransitionStructure<IAction>>) qFunction);
+		mGenericAttrCostFuncs
+				.add((AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>) attrCostFunc);
 	}
 
 	@Override
@@ -60,7 +66,12 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	}
 
 	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions() {
-		return mQFunctions;
+		return mGenericQFuncs;
+	}
+
+	@Override
+	public Set<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> getAttributeCostFunctions() {
+		return mGenericAttrCostFuncs;
 	}
 
 	@Override

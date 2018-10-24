@@ -54,6 +54,11 @@ public class CostFunction implements IAdditiveCostFunction {
 	}
 
 	@Override
+	public Set<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> getAttributeCostFunctions() {
+		return mAdditiveCostFunc.getAttributeCostFunctions();
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
 			return true;

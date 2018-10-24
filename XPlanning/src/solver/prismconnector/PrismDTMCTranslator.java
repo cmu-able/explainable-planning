@@ -60,12 +60,14 @@ public class PrismDTMCTranslator {
 	 * 
 	 * @param withQAFunctions
 	 *            : Whether or not to include QA functions in the DTMC translation
+	 * @param withQACostFunctions
+	 *            : Whether or not to include single-attribute cost functions of QAs in the DTMC translation
 	 * @return Prism model of this DTMC, including constants' declarations, DTMC model, and a reward structure
 	 *         representing the cost function of the corresponding MDP, and optionally reward structure(s) representing
-	 *         the QA function(s).
+	 *         the QA function(s) and the corresponding single-attribute cost function(s).
 	 * @throws XMDPException
 	 */
-	public String getDTMCTranslation(boolean withQAFunctions) throws XMDPException {
+	public String getDTMCTranslation(boolean withQAFunctions, boolean withQACostFunctions) throws XMDPException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
 		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
@@ -113,9 +115,16 @@ public class PrismDTMCTranslator {
 		builder.append(costStruct);
 
 		if (withQAFunctions) {
-			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(xmdp.getQSpace());
+			String qaStructs = mRewardTranslator.getQAFunctionsTranslation(xmdp.getQSpace());
 			builder.append("\n\n");
-			builder.append(qasRewards);
+			builder.append(qaStructs);
+		}
+
+		if (withQACostFunctions) {
+			String qaCostStructs = mRewardTranslator
+					.getQACostFunctionsTranslation(xmdp.getCostFunction().getAttributeCostFunctions());
+			builder.append("\n\n");
+			builder.append(qaCostStructs);
 		}
 
 		return builder.toString();

@@ -107,9 +107,8 @@ public class PrismPropertyTranslator {
 	 * @return R{"cost_{QA name}"}=? [ F {end predicate} ] for SSP; R{"cost_{QA name}"}=? [ S ] for average-cost MDP
 	 * @throws VarNotFoundException
 	 */
-	public String buildDTMCQACostQueryProperty(StateVarTuple goal,
-			AttributeCostFunction<IQFunction<?, ?>> attrCostFunction, CostCriterion costCriterion)
-			throws VarNotFoundException {
+	public String buildDTMCQACostQueryProperty(StateVarTuple goal, AttributeCostFunction<?> attrCostFunction,
+			CostCriterion costCriterion) throws VarNotFoundException {
 		String sanitizedQACostName = PrismTranslatorUtils.sanitizeNameString(attrCostFunction.getName());
 		return buildRewardQueryProperty(sanitizedQACostName, DTMC_REWARD_QUERY, goal, costCriterion);
 	}

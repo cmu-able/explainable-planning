@@ -18,6 +18,7 @@ import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
@@ -37,6 +38,7 @@ public class PrismConnector {
 	private PrismAPIWrapper mPrismAPI;
 	private Map<Policy, Double> mCachedCosts = new HashMap<>();
 	private Map<Policy, Map<IQFunction<?, ?>, Double>> mCachedQAValues = new HashMap<>();
+	private Map<Policy, Map<AttributeCostFunction<?>, Double>> mCachedQACosts = new HashMap<>();
 	private Map<PrismExplicitModelPointer, Policy> mExplicitModelPtrToPolicy = new HashMap<>();
 
 	public PrismConnector(XMDP xmdp, CostCriterion costCriterion, PrismConnectorSettings settings)
@@ -219,8 +221,8 @@ public class PrismConnector {
 			computeCost(policy);
 		}
 
-		// Compute and cache the QA values of the policy
-		computeQAValues(policy, mXMDP.getQSpace());
+		// Compute and cache all of the QA values of the policy
+		computeAllQAValues(policy);
 
 		return policy;
 	}
@@ -270,17 +272,42 @@ public class PrismConnector {
 		mCachedCosts.put(policy, totalCost);
 	}
 
-	public double getQACost(Policy policy, IQFunction<?, ?> qFunction) {
-		// TODO
-		return 0;
+	/**
+	 * Retrieve the QA cost of a given policy from the cache. If the policy is not already in the cache, then compute
+	 * and cache all of its QA costs.
+	 * 
+	 * @param policy
+	 *            : Policy
+	 * @param attrCostFunction
+	 *            : Single-attribute cost function of a QA
+	 * @return QA cost of the policy
+	 * @throws ResultParsingException
+	 * @throws XMDPException
+	 * @throws PrismException
+	 */
+	public double getQACost(Policy policy, AttributeCostFunction<?> attrCostFunction)
+			throws ResultParsingException, XMDPException, PrismException {
+		if (!mCachedQACosts.containsKey(policy)) {
+			computeAllQACosts(policy);
+		}
+		return mCachedQACosts.get(policy).get(attrCostFunction);
 	}
 
-	private void computeQACosts(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
-			throws XMDPException {
+	private void computeAllQACosts(Policy policy) throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
+		String dtmcWithQACosts = dtmcTranslator.getDTMCTranslation(false, true);
 
-		// TODO
+		Map<AttributeCostFunction<?>, String> queryProperties = new HashMap<>();
+		for (IQFunction<?, ?> qFunction : mXMDP.getQSpace()) {
+			AttributeCostFunction<?> attrCostFunction = mXMDP.getCostFunction().getAttributeCostFunction(qFunction);
+			String queryProperty = dtmcTranslator.getQACostQueryPropertyTranslation(attrCostFunction, mCostCriterion);
+			queryProperties.put(attrCostFunction, queryProperty);
+		}
+
+		// Compute and cache the QA costs of the policy
+		Map<AttributeCostFunction<?>, Double> qaCosts = computeValues(dtmcWithQACosts, queryProperties);
+		mCachedQACosts.put(policy, qaCosts);
 	}
 
 	/**
@@ -302,37 +329,48 @@ public class PrismConnector {
 			throw new QFunctionNotFoundException(qFunction);
 		}
 		if (!mCachedQAValues.containsKey(policy)) {
-			computeQAValues(policy, mXMDP.getQSpace());
+			computeAllQAValues(policy);
 		}
 		return mCachedQAValues.get(policy).get(qFunction);
 	}
 
-	private void computeQAValues(Policy policy, Iterable<IQFunction<IAction, ITransitionStructure<IAction>>> qSpace)
-			throws XMDPException, PrismException, ResultParsingException {
+	private void computeAllQAValues(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		XDTMC xdtmc = new XDTMC(mXMDP, policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 
 		Map<IQFunction<?, ?>, String> queryProperties = new HashMap<>();
-		StringBuilder builder = new StringBuilder();
-		for (IQFunction<?, ?> qFunction : qSpace) {
+		for (IQFunction<?, ?> qFunction : mXMDP.getQSpace()) {
 			String queryProperty = dtmcTranslator.getNumQueryPropertyTranslation(qFunction, mCostCriterion);
 			queryProperties.put(qFunction, queryProperty);
+		}
+
+		// Compute and cache the QA values of the policy
+		Map<IQFunction<?, ?>, Double> qaValues = computeValues(dtmcWithQAs, queryProperties);
+		mCachedQAValues.put(policy, qaValues);
+	}
+
+	private <E> Map<E, Double> computeValues(String dtmcModelStr, Map<E, String> queryProperties)
+			throws ResultParsingException, PrismException {
+		// Build a string containing all properties to be computed (1 property/line)
+		StringBuilder builder = new StringBuilder();
+		for (String queryProperty : queryProperties.values()) {
 			builder.append(queryProperty);
 			builder.append("\n");
 		}
 		String propertiesStr = builder.toString();
 
-		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcWithQAs, propertiesStr);
+		// Get result of each property
+		Map<String, Double> results = mPrismAPI.queryPropertiesFromDTMC(dtmcModelStr, propertiesStr);
 
-		// Cache the QA values of the policy
-		Map<IQFunction<?, ?>, Double> qaValues = new HashMap<>();
-		for (Entry<IQFunction<?, ?>, String> entry : queryProperties.entrySet()) {
-			IQFunction<?, ?> qFunction = entry.getKey();
+		// Pair results to the functions that compute them
+		Map<E, Double> objValues = new HashMap<>();
+		for (Entry<E, String> entry : queryProperties.entrySet()) {
+			E obj = entry.getKey();
 			String queryProperty = entry.getValue();
-			qaValues.put(qFunction, results.get(queryProperty));
+			objValues.put(obj, results.get(queryProperty));
 		}
-		mCachedQAValues.put(policy, qaValues);
+		return objValues;
 	}
 
 	public void computeQAValuesFromExplicitDTMC(PrismExplicitModelPointer explicitDTMCPointer,

@@ -23,6 +23,7 @@ import language.mdp.IActionDescription;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
@@ -145,13 +146,28 @@ public class PrismDTMCTranslator {
 	 * 
 	 * @param costCriterion
 	 *            : Cost criterion of the corresponding MDP
-	 * @return Numerical query property of the expected total cost of this DTMC
+	 * @return Numerical query property of the expected total cost, or long-run average cost, of this DTMC
 	 * @throws VarNotFoundException
 	 */
 	public String getCostQueryPropertyTranslation(CostCriterion costCriterion) throws VarNotFoundException {
 		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
 		CostFunction costFunction = mXDTMC.getXMDP().getCostFunction();
 		return mPropertyTranslator.buildDTMCCostQueryProperty(goal, costFunction, costCriterion);
+	}
+
+	/**
+	 * 
+	 * @param attrCostFunction
+	 *            : Single-attribute cost function of a QA
+	 * @param costCriterion
+	 *            : Cost criterion of the corresponding MDP
+	 * @return Numerical query property of the expected total, or long-run average, QA cost of this DTMC
+	 * @throws VarNotFoundException
+	 */
+	public String getQACostQueryPropertyTranslation(AttributeCostFunction<?> attrCostFunction,
+			CostCriterion costCriterion) throws VarNotFoundException {
+		StateVarTuple goal = mXDTMC.getXMDP().getGoal();
+		return mPropertyTranslator.buildDTMCQACostQueryProperty(goal, attrCostFunction, costCriterion);
 	}
 
 	/**

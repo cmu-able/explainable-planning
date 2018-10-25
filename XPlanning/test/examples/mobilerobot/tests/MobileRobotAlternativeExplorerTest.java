@@ -97,7 +97,7 @@ public class MobileRobotAlternativeExplorerTest {
 			throws XMDPException, ResultParsingException, PrismException {
 		XDTMC xdtmc = new XDTMC(prismConnector.getXMDP(), policy);
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 
 		SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
 		SimpleConsoleLogger.newLine();

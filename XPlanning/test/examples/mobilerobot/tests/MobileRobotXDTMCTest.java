@@ -39,7 +39,7 @@ public class MobileRobotXDTMCTest {
 	public void testPrismDTMCTranslatorTransitionReward(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc) {
 		try {
 			PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
+			String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 			SimpleConsoleLogger.log("Transition-reward DTMC Translation (with QAs)", dtmcWithQAs, false);
 			SimpleConsoleLogger.newLine();
 
@@ -93,7 +93,7 @@ public class MobileRobotXDTMCTest {
 	public void testPrismDTMCPropertyQuery(PrismExplicitModelReader explicitDTMCReader, XDTMC xdtmc)
 			throws XMDPException {
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
-		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true);
+		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 
 		try {
 			for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {

@@ -7,8 +7,6 @@ import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
 import language.mdp.QSpace;
-import language.objectives.AttributeCostFunction;
-import language.objectives.CostFunction;
 
 public class Tradeoff {
 
@@ -19,28 +17,35 @@ public class Tradeoff {
 
 	private PolicyInfo mSolnPolicyInfo;
 	private PolicyInfo mAltPolicyInfo;
-	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAGains = new HashMap<>();
-	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQALosses = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAValueGains = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAValueLosses = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQACostGains = new HashMap<>();
+	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQACostLosses = new HashMap<>();
 
-	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace, CostFunction costFunction) {
+	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace) {
 		mSolnPolicyInfo = solnPolicyInfo;
 		mAltPolicyInfo = altPolicyInfo;
-		computeTradeoff(qSpace, costFunction);
+		computeTradeoff(qSpace);
 	}
 
-	private void computeTradeoff(QSpace qSpace, CostFunction costFunction) {
+	private void computeTradeoff(QSpace qSpace) {
 		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
+			// QA values
 			double solnQAValue = mSolnPolicyInfo.getQAValue(qFunction);
 			double altQAValue = mAltPolicyInfo.getQAValue(qFunction);
 			double diffQAValue = altQAValue - solnQAValue;
-			AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc = costFunction
-					.getAttributeCostFunction(qFunction);
-			double solnQACost = attrCostFunc.getCost(solnQAValue);
-			double altQACost = attrCostFunc.getCost(altQAValue);
-			if (altQACost < solnQACost) {
-				mQAGains.put(qFunction, diffQAValue);
-			} else if (altQACost > solnQACost) {
-				mQALosses.put(qFunction, diffQAValue);
+
+			// Scaled QA costs
+			double solnScaledQACost = mSolnPolicyInfo.getScaledQACost(qFunction);
+			double altScaledQACost = mAltPolicyInfo.getScaledQACost(qFunction);
+			double diffScaledQACost = altScaledQACost - solnScaledQACost;
+
+			if (altScaledQACost < solnScaledQACost) {
+				mQAValueGains.put(qFunction, diffQAValue);
+				mQACostGains.put(qFunction, diffScaledQACost);
+			} else if (altScaledQACost > solnScaledQACost) {
+				mQAValueLosses.put(qFunction, diffQAValue);
+				mQACostLosses.put(qFunction, diffScaledQACost);
 			}
 		}
 	}
@@ -53,12 +58,20 @@ public class Tradeoff {
 		return mAltPolicyInfo;
 	}
 
-	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQAGains() {
-		return mQAGains;
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQAValueGains() {
+		return mQAValueGains;
 	}
 
-	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQALosses() {
-		return mQALosses;
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQAValueLosses() {
+		return mQAValueLosses;
+	}
+
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQACostGains() {
+		return mQACostGains;
+	}
+
+	public Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> getQACostLosses() {
+		return mQACostLosses;
 	}
 
 	@Override
@@ -71,7 +84,8 @@ public class Tradeoff {
 		}
 		Tradeoff tradeoff = (Tradeoff) obj;
 		return tradeoff.mSolnPolicyInfo.equals(mSolnPolicyInfo) && tradeoff.mAltPolicyInfo.equals(mAltPolicyInfo)
-				&& tradeoff.mQAGains.equals(mQAGains) && tradeoff.mQALosses.equals(mQALosses);
+				&& tradeoff.mQAValueGains.equals(mQAValueGains) && tradeoff.mQAValueLosses.equals(mQAValueLosses)
+				&& tradeoff.mQACostGains.equals(mQACostGains) && tradeoff.mQACostLosses.equals(mQACostLosses);
 	}
 
 	@Override
@@ -81,8 +95,10 @@ public class Tradeoff {
 			result = 17;
 			result = 31 * result + mSolnPolicyInfo.hashCode();
 			result = 31 * result + mAltPolicyInfo.hashCode();
-			result = 31 * result + mQAGains.hashCode();
-			result = 31 * result + mQALosses.hashCode();
+			result = 31 * result + mQAValueGains.hashCode();
+			result = 31 * result + mQAValueLosses.hashCode();
+			result = 31 * result + mQACostGains.hashCode();
+			result = 31 * result + mQACostLosses.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

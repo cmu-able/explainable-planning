@@ -18,6 +18,7 @@ public class PolicyInfo {
 	private Policy mPolicy;
 	private Map<IQFunction<?, ?>, Double> mQAValues = new HashMap<>();
 	private Map<NonStandardMetricQFunction<?, ?, ?>, EventBasedQAValue<?>> mEventBasedQAValues = new HashMap<>();
+	private Map<IQFunction<?, ?>, Double> mScaledQACosts = new HashMap<>();
 
 	public PolicyInfo(Policy policy) {
 		mPolicy = policy;
@@ -30,6 +31,10 @@ public class PolicyInfo {
 	public <E extends IEvent<?, ?>> void putEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
 			EventBasedQAValue<E> qaValue) {
 		mEventBasedQAValues.put(qFunction, qaValue);
+	}
+
+	public void putScaledQACost(IQFunction<?, ?> qFunction, double scaledQACost) {
+		mScaledQACosts.put(qFunction, scaledQACost);
 	}
 
 	public Policy getPolicy() {
@@ -46,6 +51,10 @@ public class PolicyInfo {
 		return (EventBasedQAValue<E>) mEventBasedQAValues.get(qFunction);
 	}
 
+	public double getScaledQACost(IQFunction<?, ?> qFunction) {
+		return mScaledQACosts.get(qFunction);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -56,7 +65,8 @@ public class PolicyInfo {
 		}
 		PolicyInfo policyInfo = (PolicyInfo) obj;
 		return policyInfo.mPolicy.equals(mPolicy) && policyInfo.mQAValues.equals(mQAValues)
-				&& policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues);
+				&& policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
+				&& policyInfo.mScaledQACosts.equals(mScaledQACosts);
 	}
 
 	@Override
@@ -67,6 +77,7 @@ public class PolicyInfo {
 			result = 31 * result + mPolicy.hashCode();
 			result = 31 * result + mQAValues.hashCode();
 			result = 31 * result + mEventBasedQAValues.hashCode();
+			result = 31 * result + mScaledQACosts.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

@@ -31,11 +31,14 @@ public class Verbalizer {
 	private CostCriterion mCostCriterion;
 	private PolicyWriter mPolicyWriter;
 	private Map<Policy, File> mPolicyJsonFiles = new HashMap<>();
+	private VerbalizerSettings mSettings;
 
-	public Verbalizer(Vocabulary vocabulary, CostCriterion costCriterion, String policyJsonDir) {
+	public Verbalizer(Vocabulary vocabulary, CostCriterion costCriterion, String policyJsonDir,
+			VerbalizerSettings settings) {
 		mVocabulary = vocabulary;
 		mCostCriterion = costCriterion;
 		mPolicyWriter = new PolicyWriter(policyJsonDir);
+		mSettings = settings;
 	}
 
 	public String verbalize(Explanation explanation) throws IOException {
@@ -102,10 +105,12 @@ public class Verbalizer {
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = policyInfo.getEventBasedQAValue(nonStdQFunction);
-				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue));
+				double scaledQACost = policyInfo.getScaledQACost(nonStdQFunction);
+				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACost, false));
 			} else {
 				double qaValue = policyInfo.getQAValue(qFunction);
-				builder.append(verbalizeQAValue(qFunction, qaValue));
+				double scaledQACost = policyInfo.getScaledQACost(qFunction);
+				builder.append(verbalizeQAValue(qFunction, qaValue, scaledQACost, false));
 			}
 		}
 
@@ -119,16 +124,23 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue) {
+	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost,
+			boolean isCostDiff) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(qaValue);
 		builder.append(" ");
 		builder.append(qaValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+
+		if (mSettings.getDescribeCosts()) {
+			builder.append(" ");
+			builder.append(verbalizeCost(scaledQACost, isCostDiff));
+		}
+
 		return builder.toString();
 	}
 
 	private <E extends IEvent<?, ?>> String verbalizeEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
-			EventBasedQAValue<E> qaValue) {
+			EventBasedQAValue<E> qaValue, double scaledQACost, boolean isCostDiff) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<Entry<E, Double>> iter = qaValue.iterator();
 		boolean firstCatValue = true;
@@ -152,6 +164,24 @@ public class Verbalizer {
 			builder.append(
 					expectedCount > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
 		}
+
+		if (mSettings.getDescribeCosts()) {
+			builder.append(" ");
+			builder.append(verbalizeCost(scaledQACost, isCostDiff));
+		}
+
+		return builder.toString();
+	}
+
+	private String verbalizeCost(double scaledQACost, boolean isCostDiff) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("(");
+		if (isCostDiff) {
+			builder.append(scaledQACost >= 0 ? "+" : "");
+		}
+		builder.append(scaledQACost);
+		builder.append(" in cost");
+		builder.append(")");
 		return builder.toString();
 	}
 
@@ -180,7 +210,7 @@ public class Verbalizer {
 			for (Tradeoff tradeoff : tradeoffs) {
 				// Check each alternative in the tradeoff set if it has an improvement on this QA.
 				// If so, then this QA is not optimal.
-				if (tradeoff.getQAGains().containsKey(qFunction)) {
+				if (tradeoff.getQAValueGains().containsKey(qFunction)) {
 					isOptimal = false;
 					break;
 				}
@@ -243,8 +273,10 @@ public class Verbalizer {
 
 	private String verbalizeTradeoff(Tradeoff tradeoff, int index) throws IOException {
 		PolicyInfo altPolicyInfo = tradeoff.getAlternativePolicyInfo();
-		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaGains = tradeoff.getQAGains();
-		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaLosses = tradeoff.getQALosses();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaValueGains = tradeoff.getQAValueGains();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaCostGains = tradeoff.getQACostGains();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaValueLosses = tradeoff.getQAValueLosses();
+		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaCostLosses = tradeoff.getQACostLosses();
 		Policy alternativePolicy = altPolicyInfo.getPolicy();
 		File altPolicyJsonFile = mPolicyWriter.writePolicy(alternativePolicy, "altPolicy" + index + ".json");
 		mPolicyJsonFiles.put(alternativePolicy, altPolicyJsonFile);
@@ -253,16 +285,17 @@ public class Verbalizer {
 		builder.append("Alternatively, following this policy [");
 		builder.append(altPolicyJsonFile.getAbsolutePath());
 		builder.append("] would ");
-		builder.append(verbalizeQADifferences(altPolicyInfo, qaGains));
+		builder.append(verbalizeQADifferences(altPolicyInfo, qaValueGains, qaCostGains));
 		builder.append(". However, I didn't choose that policy because it would ");
-		builder.append(verbalizeQADifferences(altPolicyInfo, qaLosses));
+		builder.append(verbalizeQADifferences(altPolicyInfo, qaValueLosses, qaCostLosses));
 		builder.append(". ");
-		builder.append(verbalizePreference(qaGains, qaLosses));
+		builder.append(verbalizePreference(qaValueGains, qaValueLosses));
 		return builder.toString();
 	}
 
 	private String verbalizeQADifferences(PolicyInfo altPolicyInfo,
-			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs) {
+			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaDiffs,
+			Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> scaledQACostDiffs) {
 		StringBuilder builder = new StringBuilder();
 		Iterator<Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double>> iter = qaDiffs.entrySet()
 				.iterator();
@@ -270,7 +303,8 @@ public class Verbalizer {
 		while (iter.hasNext()) {
 			Entry<IQFunction<IAction, ITransitionStructure<IAction>>, Double> e = iter.next();
 			IQFunction<?, ?> qFunction = e.getKey();
-			double diffQAValue = e.getValue();
+			double diffQAValue = e.getValue(); // Difference in QA values
+			double scaledQACostDiff = scaledQACostDiffs.get(qFunction); // Difference in scaled QA costs
 			double altQAValue = altPolicyInfo.getQAValue(qFunction);
 
 			if (firstQA) {
@@ -288,9 +322,9 @@ public class Verbalizer {
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = altPolicyInfo.getEventBasedQAValue(nonStdQFunction);
-				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue));
+				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACostDiff, true));
 			} else {
-				builder.append(verbalizeQAValue(qFunction, altQAValue));
+				builder.append(verbalizeQAValue(qFunction, altQAValue, scaledQACostDiff, true));
 			}
 		}
 		return builder.toString();

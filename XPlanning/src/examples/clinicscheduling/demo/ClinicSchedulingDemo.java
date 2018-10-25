@@ -24,6 +24,7 @@ import examples.common.Directories;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.verbalization.Verbalizer;
+import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
@@ -94,8 +95,9 @@ public class ClinicSchedulingDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
+		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST,
-				Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
+				Directories.POLICIES_OUTPUT_PATH + "/" + missionName, verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);

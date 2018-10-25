@@ -17,6 +17,7 @@ import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.verbalization.Verbalizer;
+import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
@@ -61,8 +62,9 @@ public class MobileRobotDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
+		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST,
-				Directories.POLICIES_OUTPUT_PATH + "/" + missionName);
+				Directories.POLICIES_OUTPUT_PATH + "/" + missionName, verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);

@@ -215,7 +215,7 @@ public class GRBSolverUtils {
 			for (int a = 0; a < m; a++) {
 				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
-					String constaintName = "constraintEq9_" + i + a;
+					String constaintName = "constraintxDelta_" + i + a;
 
 					// x_ia / X
 					GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();

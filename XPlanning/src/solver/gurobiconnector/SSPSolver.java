@@ -13,15 +13,23 @@ import solver.common.ExplicitMDP;
 public class SSPSolver {
 
 	private ExplicitMDP mExplicitMDP;
-	private Double[] mUpperBounds;
+	private Double[] mHardUpperBounds;
+	private Double[] mSoftUpperBounds;
 
 	public SSPSolver(ExplicitMDP explicitMDP) {
 		mExplicitMDP = explicitMDP;
 	}
 
-	public SSPSolver(ExplicitMDP explicitMDP, Double[] upperBounds) {
+	public SSPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds) {
 		mExplicitMDP = explicitMDP;
-		mUpperBounds = upperBounds;
+		mHardUpperBounds = softUpperBounds;
+	}
+
+	public SSPSolver(ExplicitMDP explicitMDP, Double[] hardUpperBounds, Double[] softUpperBounds) {
+		mExplicitMDP = explicitMDP;
+		mHardUpperBounds = hardUpperBounds;
+		mSoftUpperBounds = softUpperBounds;
+		// TODO
 	}
 
 	public boolean solveOptimalPolicy(double[][] policy) throws GRBException {
@@ -117,8 +125,8 @@ public class SSPSolver {
 		GRBSolverUtils.addxDeltaConstraints(upperBoundOM, mExplicitMDP, xVars, deltaVars, model);
 
 		// Add upper-bound cost constraints, if any
-		if (mUpperBounds != null) {
-			GRBSolverUtils.addCostConstraints(mUpperBounds, mExplicitMDP, xVars, model);
+		if (mHardUpperBounds != null) {
+			GRBSolverUtils.addCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia and Delta_ia
@@ -237,8 +245,8 @@ public class SSPSolver {
 		assert consistencyCheckSinksFlowConstraint(xResults);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
-		if (mUpperBounds != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		if (mHardUpperBounds != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardUpperBounds, mExplicitMDP);
 		}
 	}
 
@@ -278,4 +286,5 @@ public class SSPSolver {
 		}
 		return GRBSolverUtils.approximatelyEquals(sum, 1);
 	}
+
 }

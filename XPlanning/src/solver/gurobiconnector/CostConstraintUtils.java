@@ -69,6 +69,36 @@ public class CostConstraintUtils {
 	}
 
 	/**
+	 * Add soft constraints on multiple cost functions.
+	 * 
+	 * @param softUpperBounds
+	 *            : Soft upper bounds on the expected total (or average) costs
+	 * @param hardUpperBounds
+	 *            : Hard upper bounds on the expected total (or average) costs
+	 * @param penaltyFunctions
+	 *            : Penalty functions
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param xVars
+	 *            : Occupation measure variables
+	 * @param model
+	 *            : GRB model to which to add the constraint
+	 * @throws GRBException
+	 */
+	public static void addSoftCostConstraints(Double[] softUpperBounds, Double[] hardUpperBounds,
+			IPenaltyFunction[] penaltyFunctions, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
+			throws GRBException {
+		for (int k = 0; k < softUpperBounds.length; k++) {
+			if (softUpperBounds[k] == null) {
+				// Skip -- there is no soft constraint on the k-th cost function
+			}
+
+			addSoftCostConstraint(k, softUpperBounds[k], hardUpperBounds[k], penaltyFunctions[k], explicitMDP, xVars,
+					model);
+		}
+	}
+
+	/**
 	 * Add a soft constraint on the k-th cost: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k, where 0 <= v <= HUP_k - SUP_k;
 	 * and add a penalty term: k_p * penalty(v), to the objective.
 	 * 
@@ -93,7 +123,7 @@ public class CostConstraintUtils {
 			IPenaltyFunction penaltyFunction, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
 			throws GRBException {
 		double vMax = hardUpperBound - softUpperBound;
-		GRBVar vVar = model.addVar(0.0, vMax, 0.0, GRB.CONTINUOUS, "v");
+		GRBVar vVar = model.addVar(0.0, vMax, 0.0, GRB.CONTINUOUS, "v_" + costFuncIndex);
 		addCostConstraint(costFuncIndex, softUpperBound, explicitMDP, xVars, vVar, model);
 
 		if (penaltyFunction.isNonLinear()) {
@@ -110,11 +140,13 @@ public class CostConstraintUtils {
 
 			// alpha_i variables, i = 1...m
 			// alpha_0 is not used
-			GRBVar[] alphaVars = GRBSolverUtils.createOptimizationVars("alpha", GRB.CONTINUOUS, m + 1, 0.0, 1.0, model);
+			GRBVar[] alphaVars = GRBSolverUtils.createOptimizationVars("alpha_" + costFuncIndex, GRB.CONTINUOUS, m + 1,
+					0.0, 1.0, model);
 
 			// h_i variables, i = 0...m
 			// h_0 and h_m are treated as constant 0
-			GRBVar[] hVars = GRBSolverUtils.createOptimizationVars("h", GRB.BINARY, m + 1, 0.0, 1.0, model);
+			GRBVar[] hVars = GRBSolverUtils.createOptimizationVars("h_" + costFuncIndex, GRB.BINARY, m + 1, 0.0, 1.0,
+					model);
 
 			// Violation and penalty samples
 			for (int i = 1; i <= m; i++) {
@@ -128,7 +160,7 @@ public class CostConstraintUtils {
 			addNonlinearPenaltyTerm(m, penaltySamples, penaltyFunction.getScalingConst(), alphaVars, model);
 
 			// Add constraints for approximating non-linear penalty function
-			addNonlinearPenaltyConstraints(m, vSamples, hVars, alphaVars, vVar, model);
+			addNonlinearPenaltyConstraints(costFuncIndex, m, vSamples, hVars, alphaVars, vVar, model);
 		} else {
 			// Add linear penalty term to the objective
 			addLinearPenaltyTerm(penaltyFunction.getScalingConst(), vVar, model);
@@ -195,7 +227,7 @@ public class CostConstraintUtils {
 	}
 
 	/**
-	 * Add a linear penalty term: k_p * v, to the objective function of the model.
+	 * Add a linear penalty term for a SINGLE soft constraint: k_p * v, to the objective function of the model.
 	 * 
 	 * @param scalingConst
 	 *            : Scaling constant k_p of the penalty term
@@ -211,10 +243,10 @@ public class CostConstraintUtils {
 	}
 
 	/**
-	 * Add a non-linear penalty term: k_p * sum_{i=1 to m} alpha_i * penalty_i, to the objective function. This is a
-	 * piecewise linear approximation of a non-linear penalty function.
+	 * Add a non-linear penalty term for a SINGLE soft constraint: k_p * sum_{i=1 to m} alpha_i * penalty_i, to the
+	 * objective function. This is a piecewise linear approximation of a non-linear penalty function.
 	 * 
-	 * @param m
+	 * @param numSamples
 	 *            : Number of sampled (v, penalty) points
 	 * @param penaltySamples
 	 *            : [ penalty_0 (not used), penalty_1, ..., penalty_m ]
@@ -226,16 +258,17 @@ public class CostConstraintUtils {
 	 *            : GRB model to add the penalty term to its objective function
 	 * @throws GRBException
 	 */
-	private static void addNonlinearPenaltyTerm(int m, Double[] penaltySamples, double scalingConst, GRBVar[] alphaVars,
-			GRBModel model) throws GRBException {
-		for (int i = 1; i <= m; i++) {
+	private static void addNonlinearPenaltyTerm(int numSamples, Double[] penaltySamples, double scalingConst,
+			GRBVar[] alphaVars, GRBModel model) throws GRBException {
+		for (int i = 1; i <= numSamples; i++) {
 			// Primary objective is at index 0
 			model.getObjective(0).addTerm(penaltySamples[i] * scalingConst, alphaVars[i]);
 		}
 	}
 
 	/**
-	 * Add the following constraints for piecewise linear approximation of a non-linear penalty function:
+	 * Add the following constraints for piecewise linear approximation of a non-linear penalty function for a SINGLE
+	 * soft constraint:
 	 * 
 	 * (1) sum_{i=1 to m-1} h_i = 1
 	 * 
@@ -245,7 +278,9 @@ public class CostConstraintUtils {
 	 * 
 	 * (4) v = sum_{i=1 to m} alpha_i * v_i
 	 * 
-	 * @param m
+	 * @param costFuncIndex
+	 *            : Index of the associated cost function; for constraint naming
+	 * @param numSamples
 	 *            : Number of sampled (v, penalty) points
 	 * @param vSamples
 	 *            : Violation amount samples
@@ -259,12 +294,12 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraints
 	 * @throws GRBException
 	 */
-	private static void addNonlinearPenaltyConstraints(int m, Double[] vSamples, GRBVar[] hVars, GRBVar[] alphaVars,
-			GRBVar vVar, GRBModel model) throws GRBException {
-		addHConstraint(m, hVars, model);
-		addAlphaHConstraints(m, hVars, alphaVars, model);
-		addAlphaConstraint(m, alphaVars, model);
-		addAlphaVConstraint(m, vSamples, alphaVars, vVar, model);
+	private static void addNonlinearPenaltyConstraints(int costFuncIndex, int numSamples, Double[] vSamples,
+			GRBVar[] hVars, GRBVar[] alphaVars, GRBVar vVar, GRBModel model) throws GRBException {
+		addHConstraint(costFuncIndex, numSamples, hVars, model);
+		addAlphaHConstraints(costFuncIndex, numSamples, hVars, alphaVars, model);
+		addAlphaConstraint(costFuncIndex, numSamples, alphaVars, model);
+		addAlphaVConstraint(costFuncIndex, numSamples, vSamples, alphaVars, vVar, model);
 	}
 
 	/**
@@ -272,22 +307,25 @@ public class CostConstraintUtils {
 	 * 
 	 * Only one h_i takes the value 1.
 	 * 
-	 * @param m
+	 * @param costFuncIndex
+	 *            : Index of the associated cost function; for constraint naming
+	 * @param numSamples
 	 * @param hVars
 	 * @param model
 	 * @throws GRBException
 	 */
-	private static void addHConstraint(int m, GRBVar[] hVars, GRBModel model) throws GRBException {
+	private static void addHConstraint(int costFuncIndex, int numSamples, GRBVar[] hVars, GRBModel model)
+			throws GRBException {
 		// Constraint: sum_{i=1 to m-1} h_i = 1
 
 		// Expression: sum_{i=1 to m-1} h_i
 		GRBLinExpr hConstraintLinExpr = new GRBLinExpr();
-		for (int i = 1; i <= m - 1; i++) {
+		for (int i = 1; i <= numSamples - 1; i++) {
 			hConstraintLinExpr.addTerm(1, hVars[i]);
 		}
 
 		// Add constraint: sum_{i=1 to m-1} h_i = 1
-		model.addConstr(hConstraintLinExpr, GRB.EQUAL, 1, "constraint_h");
+		model.addConstr(hConstraintLinExpr, GRB.EQUAL, 1, "constraint_h_" + costFuncIndex);
 	}
 
 	/**
@@ -295,18 +333,20 @@ public class CostConstraintUtils {
 	 * 
 	 * Only one pair of alpha_i and alpha_i+1, associated with h_i, can be non-zero.
 	 * 
-	 * @param m
+	 * @param costFuncIndex
+	 *            : Index of the associated cost function; for constraint naming
+	 * @param numSamples
 	 * @param hVars
 	 * @param alphaVars
 	 * @param model
 	 * @throws GRBException
 	 */
-	private static void addAlphaHConstraints(int m, GRBVar[] hVars, GRBVar[] alphaVars, GRBModel model)
-			throws GRBException {
+	private static void addAlphaHConstraints(int costFuncIndex, int numSamples, GRBVar[] hVars, GRBVar[] alphaVars,
+			GRBModel model) throws GRBException {
 		// Constraints: alpha_i <= h_{i-1} + h_i, for i = 1,...,m
 
-		for (int i = 1; i <= m; i++) {
-			String constraintName = "constraint_alphah_" + i;
+		for (int i = 1; i <= numSamples; i++) {
+			String constraintName = "constraint_alphah_" + costFuncIndex + "_" + i;
 
 			// LHS expression: alpha_i
 			GRBLinExpr alphaLinExpr = new GRBLinExpr();
@@ -319,7 +359,7 @@ public class CostConstraintUtils {
 				hLinExpr.addTerm(1, hVars[i - 1]);
 			} // Dummy variable: h_0 = 0
 
-			if (i < m) {
+			if (i < numSamples) {
 				hLinExpr.addTerm(1, hVars[i]);
 			} // Dummy variable: h_m = 0
 
@@ -333,22 +373,25 @@ public class CostConstraintUtils {
 	 * 
 	 * The non-zero pair of alpha_i and alpha_i+1 are the coefficients of convex combination of v_i and v_i+1.
 	 * 
-	 * @param m
+	 * @param costFuncIndex
+	 *            : Index of the associated cost function; for constraint naming
+	 * @param numSamples
 	 * @param alphaVars
 	 * @param model
 	 * @throws GRBException
 	 */
-	private static void addAlphaConstraint(int m, GRBVar[] alphaVars, GRBModel model) throws GRBException {
+	private static void addAlphaConstraint(int costFuncIndex, int numSamples, GRBVar[] alphaVars, GRBModel model)
+			throws GRBException {
 		// Constraint: sum_{i=1 to m} alpha_i = 1
 
 		// Expression: sum_{i=1 to m} alpha_i
 		GRBLinExpr alphaConstraintLinExpr = new GRBLinExpr();
-		for (int i = 1; i <= m; i++) {
+		for (int i = 1; i <= numSamples; i++) {
 			alphaConstraintLinExpr.addTerm(1, alphaVars[i]);
 		}
 
 		// Add constraint: sum_{i=1 to m} alpha_i = 1
-		model.addConstr(alphaConstraintLinExpr, GRB.EQUAL, 1, "constraint_alpha");
+		model.addConstr(alphaConstraintLinExpr, GRB.EQUAL, 1, "constraint_alpha_" + costFuncIndex);
 	}
 
 	/**
@@ -356,15 +399,17 @@ public class CostConstraintUtils {
 	 * 
 	 * The non-zero pair of alpha_i and alpha_i+1 are the coefficients of convex combination of v_i and v_i+1.
 	 * 
-	 * @param m
+	 * @param costFuncIndex
+	 *            : Index of the associated cost function; for constraint naming
+	 * @param numSamples
 	 * @param vSamples
 	 * @param alphaVars
 	 * @param vVar
 	 * @param model
 	 * @throws GRBException
 	 */
-	private static void addAlphaVConstraint(int m, Double[] vSamples, GRBVar[] alphaVars, GRBVar vVar, GRBModel model)
-			throws GRBException {
+	private static void addAlphaVConstraint(int costFuncIndex, int numSamples, Double[] vSamples, GRBVar[] alphaVars,
+			GRBVar vVar, GRBModel model) throws GRBException {
 		// Constraint: v = sum_{i=1 to m} alpha_i * v_i
 
 		// LHS expression: v
@@ -373,11 +418,11 @@ public class CostConstraintUtils {
 
 		// RHS expression: sum_{i=1 to m} alpha_i * v_i
 		GRBLinExpr alphavLinExpr = new GRBLinExpr();
-		for (int i = 1; i <= m; i++) {
+		for (int i = 1; i <= numSamples; i++) {
 			alphavLinExpr.addTerm(vSamples[i], alphaVars[i]);
 		}
 
 		// Add constraint: v = sum_{i=1 to m} alpha_i * v_i
-		model.addConstr(vLinExpr, GRB.EQUAL, alphavLinExpr, "constraint_alphav");
+		model.addConstr(vLinExpr, GRB.EQUAL, alphavLinExpr, "constraint_alphav_" + costFuncIndex);
 	}
 }

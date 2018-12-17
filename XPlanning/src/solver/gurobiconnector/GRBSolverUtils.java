@@ -65,57 +65,71 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Create n x m matrix of continuous optimization variables: v_ia, where v_ia >=0 for all i, a.
+	 * Create n-array of optimization variables, and add the variables to the model.
 	 * 
+	 * @param varName
+	 *            : Variable name prefix
+	 * @param grbVarType
+	 *            : Variable type (continuous or binary)
 	 * @param n
-	 *            : Number of states
-	 * @param m
-	 *            : Number of actions
+	 *            : Number of variables
+	 * @param lowerBound
+	 *            : Lower bound of the variables
+	 * @param upperBound
+	 *            : Upper bound of the variables
 	 * @param model
-	 *            : GRB model to which to add the variables v_ia
-	 * @return n x m matrix of continuous optimization variables: v_ia, where v_ia >=0 for all i, a
+	 *            : GRB model to which to add the variables
+	 * @return n-array of optimization variables
 	 * @throws GRBException
 	 */
-	public static GRBVar[][] createContinuousOptimizationVars(String varName, int n, int m, GRBModel model)
-			throws GRBException {
-		// Variables: {varName}_ia
-		// Lower bound on variables: {varName}_ia >= 0
-		GRBVar[][] vars = new GRBVar[n][m];
+	public static GRBVar[] createOptimizationVars(String varName, char grbVarType, int n, double lowerBound,
+			double upperBound, GRBModel model) throws GRBException {
+		double lb = Double.isInfinite(lowerBound) ? -1 * GRB.INFINITY : lowerBound;
+		double ub = Double.isInfinite(upperBound) ? GRB.INFINITY : upperBound;
+
+		GRBVar[] vars = new GRBVar[n];
 		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Add all variables v_ia to the model, but for action a that is not applicable in state i, the variable
-				// v_ia will be excluded from the objective and constraints
-				String elemVarName = varName + "_" + i + a;
-				vars[i][a] = model.addVar(0.0, GRB.INFINITY, 0.0, GRB.CONTINUOUS, elemVarName);
-			}
+			String variName = varName + "_" + i;
+			vars[i] = model.addVar(lb, ub, 0.0, grbVarType, variName);
 		}
 		return vars;
 	}
 
 	/**
-	 * Create n x m matrix of binary optimization variables: Delta_ia.
+	 * Create n x m matrix of optimization variables, and add the variables to the model.
 	 * 
+	 * @param varName
+	 *            : Variable name prefix
+	 * @param grbVarType
+	 *            : Variable type (continuous or binary)
 	 * @param n
-	 *            : Number of states
+	 *            : Number of rows (typically number of states)
 	 * @param m
-	 *            : Number of actions
+	 *            : Number of columns (typically number of actions)
+	 * @param lowerBound
+	 *            : Lower bound of the variables
+	 * @param upperBound
+	 *            : Upper bound of the variables
 	 * @param model
-	 *            : GRB model to which to add the variables Delta_ia
-	 * @return n x m matrix of binary optimization variables: Delta_ia
+	 *            : GRB model to which to add the variables
+	 * @return n x m matrix of optimization variables
 	 * @throws GRBException
 	 */
-	public static GRBVar[][] createBinaryOptimizationVars(String varName, int n, int m, GRBModel model)
-			throws GRBException {
-		GRBVar[][] deltaVars = new GRBVar[n][m];
+	public static GRBVar[][] createOptimizationVars(String varName, char grbVarType, int n, int m, double lowerBound,
+			double upperBound, GRBModel model) throws GRBException {
+		double lb = Double.isInfinite(lowerBound) ? -1 * GRB.INFINITY : lowerBound;
+		double ub = Double.isInfinite(upperBound) ? GRB.INFINITY : upperBound;
+
+		GRBVar[][] vars = new GRBVar[n][m];
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
-				// Add all variables Delta_ia to the model, but for action a that is not applicable in state i, the
-				// variable Delta_ia will be excluded from the objective and constraints
-				String deltaVarName = varName + "_" + i + a;
-				deltaVars[i][a] = model.addVar(0.0, 1.0, 0.0, GRB.BINARY, deltaVarName);
+				// Add all variables var_ia to the model, but for action a that is not applicable in state i, the
+				// variable var_ia will be excluded from the objective and constraints
+				String variaName = varName + "_" + i + a;
+				vars[i][a] = model.addVar(lb, ub, 0.0, grbVarType, variaName);
 			}
 		}
-		return deltaVars;
+		return vars;
 	}
 
 	/**

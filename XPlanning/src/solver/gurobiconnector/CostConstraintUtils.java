@@ -109,26 +109,19 @@ public class CostConstraintUtils {
 			Double[] penaltySamples = new Double[m + 1];
 
 			// alpha_i variables, i = 1...m
-			GRBVar[] alphaVars = new GRBVar[m + 1];
+			// alpha_0 is not used
+			GRBVar[] alphaVars = GRBSolverUtils.createOptimizationVars("alpha", GRB.CONTINUOUS, m + 1, 0.0, 1.0, model);
 
-			// h_i variables, i = 0...m, but h_0 and h_m are constant 0
-			// 0-th and m-th indices are not used; constant 0 are used instead
-			GRBVar[] hVars = new GRBVar[m + 1];
+			// h_i variables, i = 0...m
+			// h_0 and h_m are treated as constant 0
+			GRBVar[] hVars = GRBSolverUtils.createOptimizationVars("h", GRB.BINARY, m + 1, 0.0, 1.0, model);
 
+			// Violation and penalty samples
 			for (int i = 1; i <= m; i++) {
-				// Violation and penalty samples
 				double stepSize = vMax / (m - 1);
 				double vSample = stepSize * (i - 1);
 				vSamples[i] = vSample;
 				penaltySamples[i] = penaltyFunction.getPenalty(vSample);
-
-				// alpha_i variable
-				alphaVars[i] = model.addVar(0, 1.0, 0.0, GRB.CONTINUOUS, "alpha_" + i);
-
-				if (i < m) {
-					// h_i variable
-					hVars[i] = model.addVar(0, 1.0, 0.0, GRB.BINARY, "h_" + i);
-				} // h_m is a constant 0
 			}
 
 			// Add non-linear penalty term to the objective

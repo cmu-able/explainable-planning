@@ -104,10 +104,11 @@ public class SSPSolver {
 
 		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
-		GRBVar[][] xVars = GRBSolverUtils.createContinuousOptimizationVars("x", n, m, model);
+		GRBVar[][] xVars = GRBSolverUtils.createOptimizationVars("x", GRB.CONTINUOUS, n, m, 0.0,
+				Double.POSITIVE_INFINITY, model);
 
 		// Create variables: Delta_ia (binary)
-		GRBVar[][] deltaVars = GRBSolverUtils.createBinaryOptimizationVars("Delta", n, m, model);
+		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars("Delta", GRB.BINARY, n, m, 0.0, 1.0, model);
 
 		// Set optimization objective
 		GRBSolverUtils.setOptimizationObjective(mExplicitMDP, xVars, model);

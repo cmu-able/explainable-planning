@@ -68,7 +68,8 @@ public class UpperBoundOccupationMeasureSolver {
 
 		// Create variables: x_ia
 		// Lower bound on variables: x_ia >= 0
-		GRBVar[][] xVars = GRBSolverUtils.createContinuousOptimizationVars("x", n, m, model);
+		GRBVar[][] xVars = GRBSolverUtils.createOptimizationVars("x", GRB.CONTINUOUS, n, m, 0.0,
+				Double.POSITIVE_INFINITY, model);
 
 		// Set optimization objective
 		setOptimizationObjective(xVars, model, explicitMDP);

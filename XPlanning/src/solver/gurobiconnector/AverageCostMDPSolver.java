@@ -13,15 +13,25 @@ import solver.common.ExplicitMDP;
 public class AverageCostMDPSolver {
 
 	private ExplicitMDP mExplicitMDP;
-	private Double[] mUpperBounds;
+	private Double[] mHardUpperBounds;
+	private Double[] mSoftUpperBounds;
+	private IPenaltyFunction[] mPenaltyFunctions;
 
 	public AverageCostMDPSolver(ExplicitMDP explicitMDP) {
 		mExplicitMDP = explicitMDP;
 	}
 
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] upperBounds) {
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] hardUpperBounds) {
 		mExplicitMDP = explicitMDP;
-		mUpperBounds = upperBounds;
+		mHardUpperBounds = hardUpperBounds;
+	}
+
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, Double[] hardUpperBounds,
+			IPenaltyFunction[] penaltyFunctions) {
+		mExplicitMDP = explicitMDP;
+		mSoftUpperBounds = softUpperBounds;
+		mHardUpperBounds = hardUpperBounds;
+		mPenaltyFunctions = penaltyFunctions;
 	}
 
 	/**
@@ -184,8 +194,13 @@ public class AverageCostMDPSolver {
 		GRBSolverUtils.addxDeltaConstraints(1.0, mExplicitMDP, xVars, deltaVars, model);
 
 		// Add upper-bound cost constraints, if any
-		if (mUpperBounds != null) {
-			CostConstraintUtils.addHardCostConstraints(mUpperBounds, mExplicitMDP, xVars, model);
+		if (mSoftUpperBounds != null) {
+			// Soft constraints
+			CostConstraintUtils.addSoftCostConstraints(mSoftUpperBounds, mHardUpperBounds, mPenaltyFunctions,
+					mExplicitMDP, xVars, model);
+		} else if (mHardUpperBounds != null) {
+			// Hard constraints
+			CostConstraintUtils.addHardCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia, y_ia, and Delta_ia
@@ -286,8 +301,8 @@ public class AverageCostMDPSolver {
 		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, 1.0, mExplicitMDP);
-		if (mUpperBounds != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mUpperBounds, mExplicitMDP);
+		if (mHardUpperBounds != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardUpperBounds, mExplicitMDP);
 		}
 	}
 

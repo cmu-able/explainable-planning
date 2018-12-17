@@ -127,7 +127,7 @@ public class SSPSolver {
 
 		// Add upper-bound cost constraints, if any
 		if (mHardUpperBounds != null) {
-			GRBSolverUtils.addCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
+			CostConstraintUtils.addHardCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia and Delta_ia

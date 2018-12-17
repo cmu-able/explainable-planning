@@ -185,7 +185,7 @@ public class AverageCostMDPSolver {
 
 		// Add upper-bound cost constraints, if any
 		if (mUpperBounds != null) {
-			GRBSolverUtils.addCostConstraints(mUpperBounds, mExplicitMDP, xVars, model);
+			CostConstraintUtils.addHardCostConstraints(mUpperBounds, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia, y_ia, and Delta_ia

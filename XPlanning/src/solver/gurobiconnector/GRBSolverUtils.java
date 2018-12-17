@@ -125,7 +125,7 @@ public class GRBSolverUtils {
 			for (int a = 0; a < m; a++) {
 				// Add all variables var_ia to the model, but for action a that is not applicable in state i, the
 				// variable var_ia will be excluded from the objective and constraints
-				String variaName = varName + "_" + i + a;
+				String variaName = varName + "_" + i + "_" + a;
 				vars[i][a] = model.addVar(lb, ub, 0.0, grbVarType, variaName);
 			}
 		}

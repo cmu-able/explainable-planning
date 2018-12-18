@@ -8,6 +8,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import language.objectives.IPenaltyFunction;
 import solver.common.ExplicitMDP;
 
 public class AverageCostMDPSolver {

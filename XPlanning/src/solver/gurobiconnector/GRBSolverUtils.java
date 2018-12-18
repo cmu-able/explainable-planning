@@ -51,7 +51,7 @@ public class GRBSolverUtils {
 
 		for (AttributeConstraint<IQFunction<?, ?>> attrConstraint : attrConstraints) {
 			IQFunction<?, ?> qFunction = attrConstraint.getQFunction();
-			double upperBound = attrConstraint.getExpectedTotalUpperBound();
+			double upperBound = attrConstraint.getUpperBound();
 			int costFuncIndex = qFunctionEncoding.getRewardStructureIndex(qFunction);
 
 			if (attrConstraint.isStrictBound()) {

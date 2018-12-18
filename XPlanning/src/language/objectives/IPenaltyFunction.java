@@ -1,4 +1,4 @@
-package solver.gurobiconnector;
+package language.objectives;
 
 public interface IPenaltyFunction {
 

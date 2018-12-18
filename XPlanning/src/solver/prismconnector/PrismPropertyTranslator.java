@@ -52,7 +52,7 @@ public class PrismPropertyTranslator {
 	public String buildMDPConstrainedMinProperty(StateVarTuple goal, IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<? extends IQFunction<?, ?>> constraint) throws VarNotFoundException {
 		IQFunction<?, ?> qFunction = constraint.getQFunction();
-		double upperBound = constraint.getExpectedTotalUpperBound();
+		double upperBound = constraint.getUpperBound();
 		StringBuilder builder = new StringBuilder();
 		builder.append("multi(R{\"");
 		builder.append(objectiveFunction.getName());

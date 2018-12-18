@@ -27,8 +27,8 @@ public class SSPSolver {
 		mHardUpperBounds = hardUpperBounds;
 	}
 
-	public SSPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, Double[] hardUpperBounds,
-			IPenaltyFunction[] penaltyFunctions) {
+	public SSPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, IPenaltyFunction[] penaltyFunctions,
+			Double[] hardUpperBounds) {
 		mExplicitMDP = explicitMDP;
 		mSoftUpperBounds = softUpperBounds;
 		mHardUpperBounds = hardUpperBounds;

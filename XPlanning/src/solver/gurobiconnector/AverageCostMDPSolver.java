@@ -27,8 +27,8 @@ public class AverageCostMDPSolver {
 		mHardUpperBounds = hardUpperBounds;
 	}
 
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, Double[] hardUpperBounds,
-			IPenaltyFunction[] penaltyFunctions) {
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, IPenaltyFunction[] penaltyFunctions,
+			Double[] hardUpperBounds) {
 		mExplicitMDP = explicitMDP;
 		mSoftUpperBounds = softUpperBounds;
 		mHardUpperBounds = hardUpperBounds;

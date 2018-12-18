@@ -1,17 +1,116 @@
 package solver.gurobiconnector;
 
+import java.util.Arrays;
+import java.util.Set;
+
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import language.domain.metrics.IQFunction;
+import language.exceptions.QFunctionNotFoundException;
+import language.objectives.AttributeConstraint;
+import language.objectives.IPenaltyFunction;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
+import solver.prismconnector.QFunctionEncodingScheme;
 
 public class CostConstraintUtils {
 
+	/**
+	 * For approximating strict inequality for hard upper bounds.
+	 */
+	private static final double TOLERANCE_FACTOR = 0.99;
+
 	private CostConstraintUtils() {
 		throw new IllegalStateException("Utility class");
+	}
+
+	/**
+	 * Fill in the arrays hardUpperBounds according to attrSoftConstraints.
+	 * 
+	 * The indices of the upper-bounds are aligned with those of the cost functions in {@link ExplicitMDP}. An
+	 * upper-bound is null iff the corresponding cost function doesn't have a constraint.
+	 * 
+	 * @param attrHardConstraints
+	 *            : Upper-bound constraints on QA values
+	 * @param qFunctionEncoding
+	 *            : QA-function encoding scheme
+	 * @return Array of upper-bounds on QAs
+	 * @throws QFunctionNotFoundException
+	 */
+	public static void createHardUpperBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrHardConstraints,
+			QFunctionEncodingScheme qFunctionEncoding, Double[] hardUpperBounds) throws QFunctionNotFoundException {
+		IPenaltyFunction[] dummyPenaltyFunctions = new IPenaltyFunction[hardUpperBounds.length];
+		createUpperBounds(attrHardConstraints, qFunctionEncoding, hardUpperBounds, dummyPenaltyFunctions);
+	}
+
+	/**
+	 * Fill in the arrays softUpperBounds and penaltyFunctions according to attrSoftConstraints.
+	 * 
+	 * The indices of the upper-bounds are aligned with those of the cost functions in {@link ExplicitMDP}. An
+	 * upper-bound is null iff the corresponding cost function doesn't have a constraint.
+	 * 
+	 * @param attrSoftConstraints
+	 *            : Upper-bound soft constraints on QA values
+	 * @param qFunctionEncoding
+	 *            : QA-function encoding scheme
+	 * @param softUpperBounds
+	 *            : Return parameter; array size must be numRewardStructures + 1
+	 * @param penaltyFunctions
+	 *            : Return parameter; array size must be numRewardStructures + 1
+	 * @throws QFunctionNotFoundException
+	 */
+	public static void createSoftUpperBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrSoftConstraints,
+			QFunctionEncodingScheme qFunctionEncoding, Double[] softUpperBounds, IPenaltyFunction[] penaltyFunctions)
+			throws QFunctionNotFoundException {
+		createUpperBounds(attrSoftConstraints, qFunctionEncoding, softUpperBounds, penaltyFunctions);
+	}
+
+	/**
+	 * Fill in the arrays upperBounds and penaltyFunctions.
+	 * 
+	 * Constraints are on the cost functions starting from index 1 in ExplicitMDP. Make sure to align the indices of the
+	 * constraints to those of the cost functions in ExplicitMDP.
+	 * 
+	 * @param attrConstraints
+	 *            : Upper-bound (hard or soft) constraints on QA values
+	 * @param qFunctionEncoding
+	 *            : QA-function encoding scheme
+	 * @param upperBounds
+	 *            : Return parameter; array size must be numRewardStructures + 1
+	 * @param penaltyFunctions
+	 *            : Return parameter; array size must be numRewardStructures + 1
+	 * @throws QFunctionNotFoundException
+	 */
+	private static void createUpperBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
+			QFunctionEncodingScheme qFunctionEncoding, Double[] upperBounds, IPenaltyFunction[] penaltyFunctions)
+			throws QFunctionNotFoundException {
+		// Set upper bounds to null for all cost-function indices that don't have constraints
+		Arrays.fill(upperBounds, null);
+
+		// Set penalty functions to null for all cost-function indices that don't have soft constraints
+		Arrays.fill(penaltyFunctions, null);
+
+		for (AttributeConstraint<IQFunction<?, ?>> attrConstraint : attrConstraints) {
+			IQFunction<?, ?> qFunction = attrConstraint.getQFunction();
+			double upperBound = attrConstraint.getUpperBound();
+			int costFuncIndex = qFunctionEncoding.getRewardStructureIndex(qFunction);
+
+			// Constraints are on the cost functions starting from index 1 in ExplicitMDP
+			// Make sure to align the indices of the constraints to those of the cost functions in ExplicitMDP
+
+			if (attrConstraint.isStrictBound()) {
+				upperBounds[costFuncIndex] = TOLERANCE_FACTOR * upperBound;
+			} else {
+				upperBounds[costFuncIndex] = upperBound;
+			}
+
+			if (attrConstraint.isSoftConstraint()) {
+				penaltyFunctions[costFuncIndex] = attrConstraint.getPenaltyFunction();
+			}
+		}
 	}
 
 	/**

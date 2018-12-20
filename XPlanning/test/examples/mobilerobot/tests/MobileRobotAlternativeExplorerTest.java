@@ -47,7 +47,7 @@ public class MobileRobotAlternativeExplorerTest {
 			IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
 					TravelTimeQFunction.NAME);
 
-			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(policy, qFunction);
+			Policy altPolicy = altExplorer.getParetoOptimalAlternative(policy, qFunction);
 
 			if (altPolicy == null) {
 				SimpleConsoleLogger
@@ -70,7 +70,7 @@ public class MobileRobotAlternativeExplorerTest {
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
 
 		try {
-			Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors(policy);
+			Set<Policy> altPolicies = altExplorer.getParetoOptimalAlternatives(policy);
 			String message;
 			if (altPolicies.isEmpty()) {
 				message = "There is no Pareto-optimal alternative.";

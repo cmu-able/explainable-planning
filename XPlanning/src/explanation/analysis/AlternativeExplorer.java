@@ -15,6 +15,8 @@ import language.objectives.AdditiveCostFunction;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
+import language.objectives.IPenaltyFunction;
+import language.objectives.QuadraticPenaltyFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
@@ -28,20 +30,42 @@ public class AlternativeExplorer {
 	private PrismConnector mPrismConnector;
 	private GRBConnector mGRBConnector;
 	private CostFunction mCostFunction;
+	private WeberScale mWeberScale;
 
+	/**
+	 * Generate Pareto-optimal alternative policies that are immediate neighbors of the original solution policy. This
+	 * kind of alternatives indicates the "inflection points" of the decision.
+	 * 
+	 * @param prismConnector
+	 * @param grbConnector
+	 */
 	public AlternativeExplorer(PrismConnector prismConnector, GRBConnector grbConnector) {
+		this(null, prismConnector, grbConnector);
+	}
+
+	/**
+	 * Generate Pareto-optimal alternative policies that are at some significant distance away from the the original
+	 * solution policy on the n-dimensional cost space.
+	 * 
+	 * @param weberScale
+	 *            : Weber-Fechner law of perception
+	 * @param prismConnector
+	 * @param grbConnector
+	 */
+	public AlternativeExplorer(WeberScale weberScale, PrismConnector prismConnector, GRBConnector grbConnector) {
+		mWeberScale = weberScale;
 		mPrismConnector = prismConnector;
 		mGRBConnector = grbConnector;
 		mCostFunction = prismConnector.getXMDP().getCostFunction();
 	}
 
 	/**
-	 * Generate alternative policies that are Pareto-optimal and are immediate neighbors of the original solution
-	 * policy. This kind of alternatives indicates the "inflection points" of the decision.
+	 * Generate Pareto-optimal alternative policies. Each alternative policy has an improvement in at least 1 QA
+	 * compared to the original solution policy.
 	 * 
 	 * @param policy
 	 *            : Original solution policy
-	 * @return Pareto-optimal alternative policies that are immediately next to the original solution policy.
+	 * @return Pareto-optimal alternative policies
 	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
@@ -49,7 +73,7 @@ public class AlternativeExplorer {
 	 * @throws GRBException
 	 * @throws InitialStateParsingException
 	 */
-	public Set<Policy> getParetoOptimalImmediateNeighbors(Policy policy) throws XMDPException, PrismException,
+	public Set<Policy> getParetoOptimalAlternatives(Policy policy) throws XMDPException, PrismException,
 			ResultParsingException, IOException, ExplicitModelParsingException, GRBException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
@@ -72,7 +96,7 @@ public class AlternativeExplorer {
 			}
 
 			// Find an alternative policy, if exists
-			Policy alternative = getParetoOptimalImmediateNeighbor(policy, qFunction);
+			Policy alternative = getParetoOptimalAlternative(policy, qFunction);
 
 			// Removed explored QA
 			frontierIter.remove();
@@ -88,29 +112,73 @@ public class AlternativeExplorer {
 		return alternatives;
 	}
 
-	public Policy getParetoOptimalImmediateNeighbor(Policy policy, IQFunction<?, ?> qFunction)
-			throws ResultParsingException, XMDPException, PrismException, IOException, ExplicitModelParsingException,
-			GRBException {
+	/**
+	 * Generate a Pareto-optimal alternative policy that has an improvement in the given QA compared to the original
+	 * solution policy.
+	 * 
+	 * @param policy
+	 *            : Original solution policy
+	 * @param qFunction
+	 *            : QA function to improve
+	 * @return Pareto-optimal alternative policy
+	 * @throws ResultParsingException
+	 * @throws XMDPException
+	 * @throws PrismException
+	 * @throws IOException
+	 * @throws ExplicitModelParsingException
+	 * @throws GRBException
+	 */
+	public Policy getParetoOptimalAlternative(Policy policy, IQFunction<?, ?> qFunction) throws ResultParsingException,
+			XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
+		// Create a new objective function of n-1 attributes that excludes this QA
+		AdditiveCostFunction objectiveFunction = createNewObjective(qFunction);
+
 		// QA value of the solution policy
 		double currQAValue = mPrismConnector.getQAValue(policy, qFunction);
 
 		// Set a new aspirational level of the QA; use this as a constraint for an alternative
-		AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue, true);
 
-		// Create a new objective function of n-1 attributes that excludes this QA
-		AdditiveCostFunction objectiveFunc = new AdditiveCostFunction("cost_no_" + qFunction.getName());
+		// Strict, hard upper-bound
+		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, currQAValue,
+				true);
+
+		if (mWeberScale != null) {
+			// Weber scaling
+			double softUpperBound = mWeberScale.getSignificantImprovement(qFunction, currQAValue);
+
+			// Non-strict, soft upper-bound
+			double penaltyScalingConst = mPrismConnector.getCost(policy);
+			IPenaltyFunction penaltyFunction = new QuadraticPenaltyFunction(penaltyScalingConst, 5);
+			AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint = new AttributeConstraint<>(qFunction,
+					softUpperBound, penaltyFunction);
+
+			// Find a constraint-satisfying, optimal policy (with soft constraint), if exists
+			return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrSoftConstraint, attrHardConstraint);
+		} else {
+			// Find a constraint-satisfying, optimal policy, if exists
+			return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrHardConstraint);
+		}
+	}
+
+	/**
+	 * Create a new objective function of n-1 attributes that excludes this QA
+	 * 
+	 * @param excludedQFunction
+	 *            : QA function to be excluded from the objective
+	 * @return (n-1)-attribute objective function
+	 */
+	private AdditiveCostFunction createNewObjective(IQFunction<?, ?> excludedQFunction) {
+		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_no_" + excludedQFunction.getName());
 
 		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : mCostFunction.getQFunctions()) {
-			if (!otherQFunction.equals(qFunction)) {
+			if (!otherQFunction.equals(excludedQFunction)) {
 				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = mCostFunction
 						.getAttributeCostFunction(otherQFunction);
 				double scalingConst = mCostFunction.getScalingConstant(otherAttrCostFunc);
-				objectiveFunc.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
+				objectiveFunction.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
 			}
 		}
-
-		// Find a constraint-satisfying, optimal policy, if exists
-		return mGRBConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
+		return objectiveFunction;
 	}
 
 	private boolean hasZeroAttributeCost(Policy policy, IQFunction<?, ?> qFunction)

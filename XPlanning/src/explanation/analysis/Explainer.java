@@ -49,7 +49,7 @@ public class Explainer {
 		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, prismExplicitModelReader);
 
 		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
-		Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors(policy);
+		Set<Policy> altPolicies = altExplorer.getParetoOptimalAlternatives(policy);
 		Set<Tradeoff> tradeoffs = new HashSet<>();
 		for (Policy altPolicy : altPolicies) {
 			PolicyInfo altPolicyInfo = buildPolicyInfo(altPolicy, xmdp.getQSpace(), xmdp.getCostFunction(),

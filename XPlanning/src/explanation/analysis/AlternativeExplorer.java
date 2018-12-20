@@ -28,19 +28,19 @@ public class AlternativeExplorer {
 	private PrismConnector mPrismConnector;
 	private GRBConnector mGRBConnector;
 	private CostFunction mCostFunction;
-	private Policy mPolicy;
 
-	public AlternativeExplorer(PrismConnector prismConnector, GRBConnector grbConnector, Policy policy) {
+	public AlternativeExplorer(PrismConnector prismConnector, GRBConnector grbConnector) {
 		mPrismConnector = prismConnector;
 		mGRBConnector = grbConnector;
 		mCostFunction = prismConnector.getXMDP().getCostFunction();
-		mPolicy = policy;
 	}
 
 	/**
 	 * Generate alternative policies that are Pareto-optimal and are immediate neighbors of the original solution
 	 * policy. This kind of alternatives indicates the "inflection points" of the decision.
 	 * 
+	 * @param policy
+	 *            : Original solution policy
 	 * @return Pareto-optimal alternative policies that are immediately next to the original solution policy.
 	 * @throws XMDPException
 	 * @throws PrismException
@@ -49,7 +49,7 @@ public class AlternativeExplorer {
 	 * @throws GRBException
 	 * @throws InitialStateParsingException
 	 */
-	public Set<Policy> getParetoOptimalImmediateNeighbors() throws XMDPException, PrismException,
+	public Set<Policy> getParetoOptimalImmediateNeighbors(Policy policy) throws XMDPException, PrismException,
 			ResultParsingException, IOException, ExplicitModelParsingException, GRBException {
 		Set<Policy> alternatives = new HashSet<>();
 		XMDP xmdp = mPrismConnector.getXMDP();
@@ -65,14 +65,14 @@ public class AlternativeExplorer {
 			Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 			IQFunction<?, ?> qFunction = frontierIter.next();
 
-			if (hasZeroAttributeCost(qFunction)) {
+			if (hasZeroAttributeCost(policy, qFunction)) {
 				// Skip -- This QA already has its best value (0 attribute-cost) in the solution policy
 				frontierIter.remove();
 				continue;
 			}
 
 			// Find an alternative policy, if exists
-			Policy alternative = getParetoOptimalImmediateNeighbor(qFunction);
+			Policy alternative = getParetoOptimalImmediateNeighbor(policy, qFunction);
 
 			// Removed explored QA
 			frontierIter.remove();
@@ -82,16 +82,17 @@ public class AlternativeExplorer {
 
 				// For other QAs that have been improved as a side effect, remove them from the set of QAs to be
 				// explored
-				update(frontierIter, alternative);
+				update(frontierIter, policy, alternative);
 			}
 		}
 		return alternatives;
 	}
 
-	public Policy getParetoOptimalImmediateNeighbor(IQFunction<?, ?> qFunction) throws ResultParsingException,
-			XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
+	public Policy getParetoOptimalImmediateNeighbor(Policy policy, IQFunction<?, ?> qFunction)
+			throws ResultParsingException, XMDPException, PrismException, IOException, ExplicitModelParsingException,
+			GRBException {
 		// QA value of the solution policy
-		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+		double currQAValue = mPrismConnector.getQAValue(policy, qFunction);
 
 		// Set a new aspirational level of the QA; use this as a constraint for an alternative
 		AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<>(qFunction, currQAValue, true);
@@ -112,19 +113,19 @@ public class AlternativeExplorer {
 		return mGRBConnector.generateOptimalPolicy(objectiveFunc, attrConstraint);
 	}
 
-	private boolean hasZeroAttributeCost(IQFunction<?, ?> qFunction)
+	private boolean hasZeroAttributeCost(Policy policy, IQFunction<?, ?> qFunction)
 			throws ResultParsingException, XMDPException, PrismException {
-		double currQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+		double currQAValue = mPrismConnector.getQAValue(policy, qFunction);
 		AttributeCostFunction<?> attrCostFunc = mCostFunction.getAttributeCostFunction(qFunction);
 		double currQACost = attrCostFunc.getCost(currQAValue);
 		return currQACost == 0;
 	}
 
-	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy alternative)
+	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy policy, Policy alternative)
 			throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
-			double solnQAValue = mPrismConnector.getQAValue(mPolicy, qFunction);
+			double solnQAValue = mPrismConnector.getQAValue(policy, qFunction);
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
 
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored

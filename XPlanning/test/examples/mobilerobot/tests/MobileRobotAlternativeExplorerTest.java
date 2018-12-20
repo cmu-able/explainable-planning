@@ -43,11 +43,11 @@ public class MobileRobotAlternativeExplorerTest {
 			GRBConnector grbConnector, Policy policy) {
 
 		try {
-			AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
+			AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
 			IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
 					TravelTimeQFunction.NAME);
 
-			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(qFunction);
+			Policy altPolicy = altExplorer.getParetoOptimalImmediateNeighbor(policy, qFunction);
 
 			if (altPolicy == null) {
 				SimpleConsoleLogger
@@ -67,10 +67,10 @@ public class MobileRobotAlternativeExplorerTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testAlternativeExplorer(File missionJsonFile, PrismConnector prismConnector, GRBConnector grbConnector,
 			Policy policy) {
-		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector, policy);
+		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
 
 		try {
-			Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors();
+			Set<Policy> altPolicies = altExplorer.getParetoOptimalImmediateNeighbors(policy);
 			String message;
 			if (altPolicies.isEmpty()) {
 				message = "There is no Pareto-optimal alternative.";

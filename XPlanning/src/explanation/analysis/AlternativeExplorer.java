@@ -197,7 +197,13 @@ public class AlternativeExplorer {
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
 
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
-			if (altQAValue < solnQAValue) {
+			if (mWeberScale != null) {
+				// Check if the side-effect improvement is significant
+				double softUpperBound = mWeberScale.getSignificantImprovement(qFunction, solnQAValue);
+				if (altQAValue <= softUpperBound) {
+					frontierIter.remove();
+				}
+			} else if (altQAValue < solnQAValue) {
 				frontierIter.remove();
 			}
 		}

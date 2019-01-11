@@ -1,67 +1,19 @@
 package solver.gurobiconnector;
 
-import java.util.Arrays;
-import java.util.Set;
-
 import gurobi.GRB;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-import language.domain.metrics.IQFunction;
-import language.exceptions.QFunctionNotFoundException;
-import language.objectives.AttributeConstraint;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
-import solver.prismconnector.QFunctionEncodingScheme;
 
 public class GRBSolverUtils {
 
 	private static final double DEFAULT_FEASIBILITY_TOL = 1e-6;
 
-	/**
-	 * For approximating strict inequality.
-	 */
-	private static final double TOLERANCE_FACTOR = 0.99;
-
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
-	}
-
-	/**
-	 * Create an array of upper-bounds on QAs. The indices of the upper-bounds are aligned with those of the cost
-	 * functions in {@link ExplicitMDP}. An upper-bound is null iff the corresponding cost function doesn't have a
-	 * constraint.
-	 * 
-	 * @param attrConstraints
-	 *            : Upper-bound constraints on QA values
-	 * @param qFunctionEncoding
-	 *            : QA-function encoding scheme
-	 * @return Array of upper-bounds on QAs
-	 * @throws QFunctionNotFoundException
-	 */
-	public static Double[] createUpperBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
-			QFunctionEncodingScheme qFunctionEncoding) throws QFunctionNotFoundException {
-		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
-		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		Double[] upperBoundConstraints = new Double[qFunctionEncoding.getNumRewardStructures() + 1];
-
-		// Set upper bound to null for all cost-function indices that don't have constraints
-		Arrays.fill(upperBoundConstraints, null);
-
-		for (AttributeConstraint<IQFunction<?, ?>> attrConstraint : attrConstraints) {
-			IQFunction<?, ?> qFunction = attrConstraint.getQFunction();
-			double upperBound = attrConstraint.getUpperBound();
-			int costFuncIndex = qFunctionEncoding.getRewardStructureIndex(qFunction);
-
-			if (attrConstraint.isStrictBound()) {
-				upperBoundConstraints[costFuncIndex] = TOLERANCE_FACTOR * upperBound;
-			} else {
-				upperBoundConstraints[costFuncIndex] = upperBound;
-			}
-		}
-
-		return upperBoundConstraints;
 	}
 
 	/**

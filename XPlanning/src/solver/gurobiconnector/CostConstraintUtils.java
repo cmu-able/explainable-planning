@@ -69,7 +69,8 @@ public class CostConstraintUtils {
 	}
 
 	/**
-	 * Fill in the arrays upperBounds and penaltyFunctions.
+	 * Fill in the arrays upperBounds and penaltyFunctions. Each index is null iff the corresponding cost function
+	 * doesn't have a constraint.
 	 * 
 	 * Constraints are on the cost functions starting from index 1 in ExplicitMDP. Make sure to align the indices of the
 	 * constraints to those of the cost functions in ExplicitMDP.

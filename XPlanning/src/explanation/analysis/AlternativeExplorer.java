@@ -13,6 +13,7 @@ import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.AdditiveCostFunction;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeConstraint.BOUND_TYPE;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.objectives.IPenaltyFunction;
@@ -138,23 +139,29 @@ public class AlternativeExplorer {
 
 		// Set a new aspirational level of the QA; use this as a constraint for an alternative
 
-		// Strict, hard upper-bound
-		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, currQAValue,
-				true);
+		double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
+
+		// Strict, hard upper/lower bound
+		BOUND_TYPE hardBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.STRICT_UPPER_BOUND
+				: BOUND_TYPE.STRICT_LOWER_BOUND;
+		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, hardBoundType,
+				currQAValue);
 
 		if (mWeberScale != null) {
-			double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
-					.getSlope();
+			// Non-strict, soft upper/lower bound
+			BOUND_TYPE softBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.UPPER_BOUND : BOUND_TYPE.LOWER_BOUND;
 
-			// Weber scaling -- increase or decrease in value for improvement
-			double softUpperBound = attrCostFuncSlope > 0 ? mWeberScale.getSignificantDecrease(qFunction, currQAValue)
+			// Weber scaling -- decrease or increase in value for improvement
+			double softBoundValue = attrCostFuncSlope > 0 ? mWeberScale.getSignificantDecrease(qFunction, currQAValue)
 					: mWeberScale.getSignificantIncrease(qFunction, currQAValue);
 
-			// Non-strict, soft upper-bound
+			// Penalty function for soft-constraint violation
+			// FIXME
 			double penaltyScalingConst = mPrismConnector.getCost(policy);
 			IPenaltyFunction penaltyFunction = new QuadraticPenaltyFunction(penaltyScalingConst, 5);
+
 			AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint = new AttributeConstraint<>(qFunction,
-					softUpperBound, penaltyFunction);
+					softBoundType, softBoundValue, penaltyFunction);
 
 			// Find a constraint-satisfying, optimal policy (with soft constraint), if exists
 			return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrSoftConstraint, attrHardConstraint);
@@ -197,8 +204,7 @@ public class AlternativeExplorer {
 			throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
-			double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
-					.getSlope();
+			double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
 
 			double solnQAValue = mPrismConnector.getQAValue(policy, qFunction);
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
@@ -217,8 +223,7 @@ public class AlternativeExplorer {
 	}
 
 	private boolean hasSignificantImprovement(IQFunction<?, ?> qFunction, double solnQAValue, double altQAValue) {
-		double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
-				.getSlope();
+		double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
 
 		if (attrCostFuncSlope > 0) {
 			// Decrease in value for improvement

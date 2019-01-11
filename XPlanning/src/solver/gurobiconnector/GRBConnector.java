@@ -10,6 +10,7 @@ import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeConstraint.BOUND_TYPE;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.objectives.IPenaltyFunction;
@@ -52,7 +53,7 @@ public class GRBConnector {
 		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP(mXMDP.getCostFunction());
 
 		// Compute optimal policy, without any cost constraint
-		return generateOptimalPolicy(explicitMDP, null, null, null);
+		return generateOptimalPolicy(explicitMDP, null, null, null, null);
 	}
 
 	/**
@@ -112,13 +113,18 @@ public class GRBConnector {
 
 		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
 		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		Double[] hardUpperBounds = new Double[mQFunctionEncoding.getNumRewardStructures() + 1];
+		int arrayLength = mQFunctionEncoding.getNumRewardStructures() + 1;
 
-		// Create hard upper-bounds on costs of ExplicitMDP
-		CostConstraintUtils.createHardUpperBounds(attrHardConstraints, mQFunctionEncoding, hardUpperBounds);
+		// Explicit hard (upper or lower) bounds
+		BOUND_TYPE[] boundTypes = new BOUND_TYPE[arrayLength]; // non-strict bounds
+		Double[] hardBoundValues = new Double[arrayLength];
+
+		// Create hard (upper or lower) bounds on costs of ExplicitMDP
+		CostConstraintUtils.createExplicitHardBounds(attrHardConstraints, mQFunctionEncoding, boundTypes,
+				hardBoundValues);
 
 		// Compute optimal policy, with the cost constraints
-		return generateOptimalPolicy(explicitMDP, null, null, hardUpperBounds);
+		return generateOptimalPolicy(explicitMDP, boundTypes, null, null, hardBoundValues);
 	}
 
 	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
@@ -131,23 +137,30 @@ public class GRBConnector {
 
 		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
 		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		Double[] softUpperBounds = new Double[mQFunctionEncoding.getNumRewardStructures() + 1];
-		IPenaltyFunction[] penaltyFunctions = new IPenaltyFunction[softUpperBounds.length];
-		Double[] hardUpperBounds = new Double[softUpperBounds.length];
+		int arrayLength = mQFunctionEncoding.getNumRewardStructures() + 1;
 
-		// Create soft upper-bounds (and penalty functions) on costs of Explicit MDP
-		CostConstraintUtils.createSoftUpperBounds(attrSoftConstraints, mQFunctionEncoding, softUpperBounds,
-				penaltyFunctions);
+		// Explicit soft (upper or lower) bounds
+		BOUND_TYPE[] boundTypes = new BOUND_TYPE[arrayLength]; // non-strict bounds
+		Double[] softBoundValues = new Double[arrayLength];
+		IPenaltyFunction[] penaltyFunctions = new IPenaltyFunction[arrayLength];
 
-		// Create hard upper-bounds on costs of ExplicitMDP
-		CostConstraintUtils.createHardUpperBounds(attrHardConstraints, mQFunctionEncoding, hardUpperBounds);
+		// Explicit hard (upper or lower) bounds
+		Double[] hardBoundValues = new Double[arrayLength];
+
+		// Create soft (upper or lower) bounds (and penalty functions) on costs of Explicit MDP
+		CostConstraintUtils.createExplicitSoftBounds(attrSoftConstraints, mQFunctionEncoding, boundTypes,
+				softBoundValues, penaltyFunctions);
+
+		// Create hard (upper or lower) bounds on costs of ExplicitMDP
+		CostConstraintUtils.createExplicitHardBounds(attrHardConstraints, mQFunctionEncoding, boundTypes,
+				hardBoundValues);
 
 		// Compute optimal policy, with the cost constraints
-		return generateOptimalPolicy(explicitMDP, softUpperBounds, penaltyFunctions, hardUpperBounds);
+		return generateOptimalPolicy(explicitMDP, boundTypes, softBoundValues, penaltyFunctions, hardBoundValues);
 	}
 
-	private Policy generateOptimalPolicy(ExplicitMDP explicitMDP, Double[] softUpperBounds,
-			IPenaltyFunction[] penaltyFunctions, Double[] hardUpperBounds)
+	private Policy generateOptimalPolicy(ExplicitMDP explicitMDP, BOUND_TYPE[] boundTypes, Double[] softBoundValues,
+			IPenaltyFunction[] penaltyFunctions, Double[] hardBoundValues)
 			throws GRBException, VarNotFoundException, IOException {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
@@ -156,20 +169,20 @@ public class GRBConnector {
 
 		if (mCostCriterion == CostCriterion.TOTAL_COST) {
 			SSPSolver solver;
-			if (softUpperBounds != null) {
-				solver = new SSPSolver(explicitMDP, softUpperBounds, penaltyFunctions, hardUpperBounds);
-			} else if (hardUpperBounds != null) {
-				solver = new SSPSolver(explicitMDP, hardUpperBounds);
+			if (softBoundValues != null) {
+				solver = new SSPSolver(explicitMDP, softBoundValues, penaltyFunctions, hardBoundValues);
+			} else if (hardBoundValues != null) {
+				solver = new SSPSolver(explicitMDP, hardBoundValues);
 			} else {
 				solver = new SSPSolver(explicitMDP);
 			}
 			solutionFound = solver.solveOptimalPolicy(policy);
 		} else if (mCostCriterion == CostCriterion.AVERAGE_COST) {
 			AverageCostMDPSolver solver;
-			if (softUpperBounds != null) {
-				solver = new AverageCostMDPSolver(explicitMDP, softUpperBounds, penaltyFunctions, hardUpperBounds);
-			} else if (hardUpperBounds != null) {
-				solver = new AverageCostMDPSolver(explicitMDP, hardUpperBounds);
+			if (softBoundValues != null) {
+				solver = new AverageCostMDPSolver(explicitMDP, softBoundValues, penaltyFunctions, hardBoundValues);
+			} else if (hardBoundValues != null) {
+				solver = new AverageCostMDPSolver(explicitMDP, hardBoundValues);
 			} else {
 				solver = new AverageCostMDPSolver(explicitMDP);
 			}

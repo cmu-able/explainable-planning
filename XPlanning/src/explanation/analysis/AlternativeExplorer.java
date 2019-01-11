@@ -144,7 +144,7 @@ public class AlternativeExplorer {
 
 		if (mWeberScale != null) {
 			// Weber scaling
-			double softUpperBound = mWeberScale.getSignificantImprovement(qFunction, currQAValue);
+			double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, currQAValue);
 
 			// Non-strict, soft upper-bound
 			double penaltyScalingConst = mPrismConnector.getCost(policy);
@@ -199,7 +199,7 @@ public class AlternativeExplorer {
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
 			if (mWeberScale != null) {
 				// Check if the side-effect improvement is significant
-				double softUpperBound = mWeberScale.getSignificantImprovement(qFunction, solnQAValue);
+				double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, solnQAValue);
 				if (altQAValue <= softUpperBound) {
 					frontierIter.remove();
 				}

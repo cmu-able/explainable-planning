@@ -17,22 +17,28 @@ public class AttributeConstraint<E extends IQFunction<?, ?>> {
 	 */
 	private volatile int hashCode;
 
+	public enum BOUND_TYPE {
+		UPPER_BOUND, STRICT_UPPER_BOUND, LOWER_BOUND, STRICT_LOWER_BOUND
+	}
+
 	private E mQFunction;
-	private double mUpperBound;
-	private boolean mIsStrictBound;
+	private BOUND_TYPE mBoundType;
+	private double mBoundValue;
 	private boolean mIsSoftConstraint;
 	private IPenaltyFunction mPenaltyFunction;
 
-	public AttributeConstraint(E qFunction, double hardUpperBound, boolean isStrictBound) {
+	public AttributeConstraint(E qFunction, BOUND_TYPE boundType, double hardBoundValue) {
 		mQFunction = qFunction;
-		mUpperBound = hardUpperBound;
-		mIsStrictBound = isStrictBound;
+		mBoundType = boundType;
+		mBoundValue = hardBoundValue;
 		mIsSoftConstraint = false;
 	}
 
-	public AttributeConstraint(E qFunction, double softUpperBound, IPenaltyFunction penaltyFunction) {
+	public AttributeConstraint(E qFunction, BOUND_TYPE boundType, double softBoundValue,
+			IPenaltyFunction penaltyFunction) {
 		mQFunction = qFunction;
-		mUpperBound = softUpperBound;
+		mBoundType = boundType;
+		mBoundValue = softBoundValue;
 		mIsSoftConstraint = true;
 		mPenaltyFunction = penaltyFunction;
 	}
@@ -41,12 +47,12 @@ public class AttributeConstraint<E extends IQFunction<?, ?>> {
 		return mQFunction;
 	}
 
-	public double getUpperBound() {
-		return mUpperBound;
+	public BOUND_TYPE getBoundType() {
+		return mBoundType;
 	}
 
-	public boolean isStrictBound() {
-		return mIsStrictBound;
+	public double getBoundValue() {
+		return mBoundValue;
 	}
 
 	public boolean isSoftConstraint() {
@@ -69,9 +75,9 @@ public class AttributeConstraint<E extends IQFunction<?, ?>> {
 			return false;
 		}
 		AttributeConstraint<?> constraint = (AttributeConstraint<?>) obj;
-		return constraint.mQFunction.equals(mQFunction) && Double.compare(constraint.mUpperBound, mUpperBound) == 0
-				&& constraint.mIsStrictBound == mIsStrictBound && constraint.mIsSoftConstraint == mIsSoftConstraint
-				&& (constraint.mPenaltyFunction == mPenaltyFunction
+		return constraint.mQFunction.equals(mQFunction) && constraint.mBoundType == mBoundType
+				&& Double.compare(constraint.mBoundValue, mBoundValue) == 0
+				&& constraint.mIsSoftConstraint == mIsSoftConstraint && (constraint.mPenaltyFunction == mPenaltyFunction
 						|| constraint.mPenaltyFunction != null && constraint.mPenaltyFunction.equals(mPenaltyFunction));
 	}
 
@@ -81,8 +87,8 @@ public class AttributeConstraint<E extends IQFunction<?, ?>> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mQFunction.hashCode();
-			result = 31 * result + Double.hashCode(mUpperBound);
-			result = 31 * result + Boolean.hashCode(mIsStrictBound);
+			result = 31 * result + mBoundType.hashCode();
+			result = 31 * result + Double.hashCode(mBoundValue);
 			result = 31 * result + Boolean.hashCode(mIsSoftConstraint);
 			result = 31 * result + (mPenaltyFunction == null ? 0 : mPenaltyFunction.hashCode());
 			hashCode = result;

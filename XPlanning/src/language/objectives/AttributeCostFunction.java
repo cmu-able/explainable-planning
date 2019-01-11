@@ -42,11 +42,11 @@ public class AttributeCostFunction<E extends IQFunction<?, ?>> implements ILinea
 		return mQFunction;
 	}
 
-	public double getaConst() {
+	public double getIntercept() {
 		return maConst;
 	}
 
-	public double getbConst() {
+	public double getSlope() {
 		return mbConst;
 	}
 

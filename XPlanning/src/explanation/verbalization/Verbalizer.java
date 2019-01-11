@@ -205,7 +205,7 @@ public class Verbalizer {
 					.getAttributeCostFunction(qFunction);
 
 			boolean isOptimal = true; // if there is no tradeoff, then all QAs have optimal values
-			boolean negativeSlope = attrCostFunc.getbConst() < 0;
+			boolean negativeSlope = attrCostFunc.getSlope() < 0;
 
 			for (Tradeoff tradeoff : tradeoffs) {
 				// Check each alternative in the tradeoff set if it has an improvement on this QA.

@@ -143,8 +143,12 @@ public class AlternativeExplorer {
 				true);
 
 		if (mWeberScale != null) {
-			// Weber scaling
-			double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, currQAValue);
+			double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
+					.getSlope();
+
+			// Weber scaling -- increase or decrease in value for improvement
+			double softUpperBound = attrCostFuncSlope > 0 ? mWeberScale.getSignificantDecrease(qFunction, currQAValue)
+					: mWeberScale.getSignificantIncrease(qFunction, currQAValue);
 
 			// Non-strict, soft upper-bound
 			double penaltyScalingConst = mPrismConnector.getCost(policy);
@@ -193,19 +197,37 @@ public class AlternativeExplorer {
 			throws XMDPException, PrismException, ResultParsingException {
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
+			double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
+					.getSlope();
+
 			double solnQAValue = mPrismConnector.getQAValue(policy, qFunction);
 			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
 
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
 			if (mWeberScale != null) {
 				// Check if the side-effect improvement is significant
-				double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, solnQAValue);
-				if (altQAValue <= softUpperBound) {
+				if (hasSignificantImprovement(qFunction, solnQAValue, altQAValue)) {
 					frontierIter.remove();
 				}
-			} else if (altQAValue < solnQAValue) {
+			} else if ((attrCostFuncSlope > 0 && altQAValue < solnQAValue)
+					|| (attrCostFuncSlope < 0 && altQAValue > solnQAValue)) {
 				frontierIter.remove();
 			}
+		}
+	}
+
+	private boolean hasSignificantImprovement(IQFunction<?, ?> qFunction, double solnQAValue, double altQAValue) {
+		double attrCostFuncSlope = mPrismConnector.getXMDP().getCostFunction().getAttributeCostFunction(qFunction)
+				.getSlope();
+
+		if (attrCostFuncSlope > 0) {
+			// Decrease in value for improvement
+			double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, solnQAValue);
+			return altQAValue <= softUpperBound;
+		} else {
+			// Increase in value for improvement
+			double softLowerBound = mWeberScale.getSignificantIncrease(qFunction, solnQAValue);
+			return altQAValue >= softLowerBound;
 		}
 	}
 }

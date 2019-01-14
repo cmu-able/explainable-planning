@@ -5,8 +5,10 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import language.objectives.AttributeConstraint.BOUND_TYPE;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
+import solver.common.NonStrictConstraint;
 
 public class GRBSolverUtils {
 
@@ -311,22 +313,24 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Check whether the results of x_ia satisfies the constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for
-	 * all k.
+	 * Check whether the results of x_ia satisfies the constraints: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k (or >=
+	 * lower bound of c^k), for all k.
 	 * 
 	 * @param xResults
-	 * @param upperBounds
+	 * @param hardConstraints
+	 *            : Non-strict hard constraints
 	 * @param explicitMDP
 	 * @return Whether the results of x_ia satisfies: sum_i,a(c^k_ia * x_ia) <= upper bound of c^k, for all k
 	 */
-	static boolean consistencyCheckCostConstraints(double[][] xResults, Double[] upperBounds, ExplicitMDP explicitMDP) {
-		for (int k = 1; k < upperBounds.length; k++) {
-			if (upperBounds[k] == null) {
+	static boolean consistencyCheckCostConstraints(double[][] xResults, NonStrictConstraint[] hardConstraints,
+			ExplicitMDP explicitMDP) {
+		for (int k = 1; k < hardConstraints.length; k++) {
+			if (hardConstraints[k] == null) {
 				// Skip -- there is no constraint on this cost function k
 				continue;
 			}
 
-			if (!GRBSolverUtils.consistencyCheckCostConstraint(xResults, explicitMDP, k, upperBounds[k])) {
+			if (!GRBSolverUtils.consistencyCheckCostConstraint(xResults, explicitMDP, k, hardConstraints[k])) {
 				return false;
 			}
 		}
@@ -334,7 +338,7 @@ public class GRBSolverUtils {
 	}
 
 	static boolean consistencyCheckCostConstraint(double[][] xResults, ExplicitMDP explicitMDP, int costFuncIndex,
-			double upperBound) {
+			NonStrictConstraint hardConstraint) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double sum = 0;
@@ -357,7 +361,8 @@ public class GRBSolverUtils {
 				}
 			}
 		}
-		return sum <= upperBound;
+		return hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND ? sum <= hardConstraint.getBoundValue()
+				: sum >= hardConstraint.getBoundValue();
 	}
 
 	/**

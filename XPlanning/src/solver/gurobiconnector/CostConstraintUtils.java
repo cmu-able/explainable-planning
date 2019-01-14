@@ -145,8 +145,13 @@ public class CostConstraintUtils {
 	}
 
 	/**
-	 * Add a soft constraint on the k-th cost: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k, where 0 <= v <= HUB_k - SUB_k (or
-	 * the corresponding lower-bound). Add a penalty term: k_p * penalty(v), to the objective.
+	 * Add a soft constraint on the k-th cost.
+	 * 
+	 * For upper-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k, where 0 <= v <= HUB_k - SUB_k.
+	 * 
+	 * For lower-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) + v >= SLB_k, where 0 <= v <= SLB_k - HLB_k.
+	 * 
+	 * Add a penalty term: k_p * penalty(v), to the objective.
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k

@@ -15,6 +15,7 @@ import language.objectives.AttributeConstraint.BOUND_TYPE;
 import language.objectives.IPenaltyFunction;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
+import solver.common.NonStrictConstraint;
 import solver.prismconnector.QFunctionEncodingScheme;
 
 public class CostConstraintUtils {
@@ -29,55 +30,7 @@ public class CostConstraintUtils {
 	}
 
 	/**
-	 * Fill in the arrays representing hard bounds (in non-strict form) according to attrHardConstraints.
-	 * 
-	 * The indices of the explicit bounds are aligned with those of the cost functions in {@link ExplicitMDP}. A bound
-	 * is null iff the corresponding cost function doesn't have a constraint.
-	 * 
-	 * @param attrHardConstraints
-	 *            : Upper/lower bound hard constraints on QA values
-	 * @param qFunctionEncoding
-	 *            : QA-function encoding scheme
-	 * @param boundTypes
-	 *            : Return parameter
-	 * @param hardBoundValues
-	 *            : Return parameter
-	 * @throws QFunctionNotFoundException
-	 */
-	public static void createExplicitHardBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrHardConstraints,
-			QFunctionEncodingScheme qFunctionEncoding, BOUND_TYPE[] boundTypes, Double[] hardBoundValues)
-			throws QFunctionNotFoundException {
-		IPenaltyFunction[] dummyPenaltyFunctions = new IPenaltyFunction[boundTypes.length];
-		createExplicitBounds(attrHardConstraints, qFunctionEncoding, boundTypes, hardBoundValues,
-				dummyPenaltyFunctions);
-	}
-
-	/**
-	 * Fill in the arrays representing soft bounds (in non-strict form) according to attrSoftConstraints.
-	 * 
-	 * The indices of the explicit bounds are aligned with those of the cost functions in {@link ExplicitMDP}. A bound
-	 * is null iff the corresponding cost function doesn't have a constraint.
-	 * 
-	 * @param attrSoftConstraints
-	 *            : Upper/lower bound soft constraints on QA values
-	 * @param qFunctionEncoding
-	 *            : QA-function encoding scheme
-	 * @param boundTypes
-	 *            : Return parameter
-	 * @param softBoundValues
-	 *            : Return parameter
-	 * @param penaltyFunctions
-	 *            : Return parameter
-	 * @throws QFunctionNotFoundException
-	 */
-	public static void createExplicitSoftBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrSoftConstraints,
-			QFunctionEncodingScheme qFunctionEncoding, BOUND_TYPE[] boundTypes, Double[] softBoundValues,
-			IPenaltyFunction[] penaltyFunctions) throws QFunctionNotFoundException {
-		createExplicitBounds(attrSoftConstraints, qFunctionEncoding, boundTypes, softBoundValues, penaltyFunctions);
-	}
-
-	/**
-	 * Fill in the arrays representing bounds (in non-strict form). Each index is null iff the corresponding cost
+	 * Fill in the array of indexed constraints, in non-strict form. Each index is null iff the corresponding cost
 	 * function doesn't have a constraint.
 	 * 
 	 * Constraints are on the cost functions starting from index 1 in ExplicitMDP. Make sure to align the indices of the
@@ -87,23 +40,15 @@ public class CostConstraintUtils {
 	 *            : Upper/lower (hard or soft) constraints on QA values
 	 * @param qFunctionEncoding
 	 *            : QA-function encoding scheme
-	 * @param boundTypes
-	 *            : Return parameter; array size must be numRewardStructures + 1
-	 * @param boundValues
-	 *            : Return parameter; array size must be numRewardStructures + 1
-	 * @param penaltyFunctions
-	 *            : Return parameter; array size must be numRewardStructures + 1
+	 * @param indexedNonStrictAttrConstraints
+	 *            : Return parameter of indexed, non-strict, attribute constraints
 	 * @throws QFunctionNotFoundException
 	 */
-	private static void createExplicitBounds(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
-			QFunctionEncodingScheme qFunctionEncoding, BOUND_TYPE[] boundTypes, Double[] boundValues,
-			IPenaltyFunction[] penaltyFunctions) throws QFunctionNotFoundException {
-		// Set bounds to null for all cost-function indices that don't have constraints
-		Arrays.fill(boundTypes, null);
-		Arrays.fill(boundValues, null);
-
-		// Set penalty functions to null for all cost-function indices that don't have soft constraints
-		Arrays.fill(penaltyFunctions, null);
+	public static void fillIndexedNonStrictConstraints(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
+			QFunctionEncodingScheme qFunctionEncoding, NonStrictConstraint[] indexedNonStrictAttrConstraints)
+			throws QFunctionNotFoundException {
+		// Set constraints to null for all cost-function indices that don't have constraints
+		Arrays.fill(indexedNonStrictAttrConstraints, null);
 
 		for (AttributeConstraint<IQFunction<?, ?>> attrConstraint : attrConstraints) {
 			IQFunction<?, ?> qFunction = attrConstraint.getQFunction();
@@ -112,25 +57,9 @@ public class CostConstraintUtils {
 			// Constraints are on the cost functions starting from index 1 in ExplicitMDP
 			// Make sure to align the indices of the constraints to those of the cost functions in ExplicitMDP
 
-			BOUND_TYPE boundType = attrConstraint.getBoundType();
-			double boundValue = attrConstraint.getBoundValue();
-
 			// Convert any strict bound to non-strict bound
-
-			if (boundType == BOUND_TYPE.STRICT_UPPER_BOUND) {
-				boundTypes[costFuncIndex] = BOUND_TYPE.UPPER_BOUND;
-				boundValues[costFuncIndex] = TOLERANCE_FACTOR * boundValue;
-			} else if (boundType == BOUND_TYPE.STRICT_LOWER_BOUND) {
-				boundTypes[costFuncIndex] = BOUND_TYPE.LOWER_BOUND;
-				boundValues[costFuncIndex] = (1 + 1 - TOLERANCE_FACTOR) * boundValue;
-			} else {
-				boundTypes[costFuncIndex] = boundType;
-				boundValues[costFuncIndex] = boundValue;
-			}
-
-			if (attrConstraint.isSoftConstraint()) {
-				penaltyFunctions[costFuncIndex] = attrConstraint.getPenaltyFunction();
-			}
+			NonStrictConstraint nonStrictConstraint = new NonStrictConstraint(attrConstraint, TOLERANCE_FACTOR);
+			indexedNonStrictAttrConstraints[costFuncIndex] = nonStrictConstraint;
 		}
 	}
 
@@ -228,13 +157,15 @@ public class CostConstraintUtils {
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k
-	 * @param softUpperBound
-	 *            : Soft upper bound on the expected total (or average) k-th cost
-	 * @param hardUpperBound
-	 *            : Hard upper bound on the expected total (or average) k-th cost; this is the value of the original
-	 *            solution policy
+	 * @param nonStrictBoundType
+	 *            : Upper (<=) or lower (>=) bound
+	 * @param softBoundValue
+	 *            : Soft bound on the expected total (or average) k-th cost
 	 * @param penaltyFunction
 	 *            : Penalty function
+	 * @param hardBoundValue
+	 *            : Hard bound on the expected total (or average) k-th cost; this is the value of the original solution
+	 *            policy
 	 * @param explicitMDP
 	 *            : Explicit MDP
 	 * @param xVars
@@ -243,12 +174,12 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraint
 	 * @throws GRBException
 	 */
-	public static void addSoftCostConstraint(int costFuncIndex, double softUpperBound, double hardUpperBound,
-			IPenaltyFunction penaltyFunction, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
-			throws GRBException {
-		double vMax = hardUpperBound - softUpperBound;
+	public static void addSoftCostConstraint(int costFuncIndex, BOUND_TYPE nonStrictBoundType, double softBoundValue,
+			IPenaltyFunction penaltyFunction, double hardBoundValue, ExplicitMDP explicitMDP, GRBVar[][] xVars,
+			GRBModel model) throws GRBException {
+		double vMax = Math.abs(softBoundValue - hardBoundValue);
 		GRBVar vVar = model.addVar(0.0, vMax, 0.0, GRB.CONTINUOUS, "v_" + costFuncIndex);
-		addCostConstraint(costFuncIndex, softUpperBound, explicitMDP, xVars, vVar, model);
+		addCostConstraint(costFuncIndex, nonStrictBoundType, softBoundValue, explicitMDP, xVars, vVar, model);
 
 		if (penaltyFunction.isNonLinear()) {
 			int m = penaltyFunction.getNumSamples();
@@ -296,7 +227,7 @@ public class CostConstraintUtils {
 	 * 
 	 * (a) for hard constraint: sum_i,a (x_ia * C_k(i,a)) <= HUB_k (or >= HLB_k), and
 	 * 
-	 * (b) for soft constraint: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k (or >= SLB_k).
+	 * (b) for soft constraint: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k (or [...] + v >= SLB_k).
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k
@@ -316,6 +247,25 @@ public class CostConstraintUtils {
 	 */
 	private static void addCostConstraint(int costFuncIndex, BOUND_TYPE nonStrictBoundType, double boundValue,
 			ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBVar vVar, GRBModel model) throws GRBException {
+		// Expression: sum_i,a (x_ia * C_k(i,a))
+		GRBLinExpr constraintLinExpr = createCostTerm(costFuncIndex, explicitMDP, xVars);
+
+		if (vVar != null && nonStrictBoundType == BOUND_TYPE.UPPER_BOUND) {
+			// For upper-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) - v
+			constraintLinExpr.addTerm(-1, vVar);
+		} else if (vVar != null && nonStrictBoundType == BOUND_TYPE.LOWER_BOUND) {
+			// For lower-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) + v
+			constraintLinExpr.addTerm(1, vVar);
+		}
+
+		String constraintName = "constraintC_" + costFuncIndex + (vVar == null ? "_hard" : "_soft");
+
+		// Add constraint: [...] <= UB_k or >= LB_k
+		char sense = nonStrictBoundType == BOUND_TYPE.UPPER_BOUND ? GRB.LESS_EQUAL : GRB.GREATER_EQUAL;
+		model.addConstr(constraintLinExpr, sense, boundValue, constraintName);
+	}
+
+	private static GRBLinExpr createCostTerm(int costFuncIndex, ExplicitMDP explicitMDP, GRBVar[][] xVars) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 
@@ -341,16 +291,7 @@ public class CostConstraintUtils {
 			}
 		}
 
-		if (vVar != null) {
-			// For soft constraint: sum_i,a (x_ia * C_k(i,a)) - v
-			constraintLinExpr.addTerm(-1, vVar);
-		}
-
-		String constraintName = "constraintC_" + costFuncIndex + (vVar == null ? "_hard" : "_soft");
-
-		// Add constraint: [...] <= UB_k or >= LB_k
-		char sense = nonStrictBoundType == BOUND_TYPE.UPPER_BOUND ? GRB.LESS_EQUAL : GRB.GREATER_EQUAL;
-		model.addConstr(constraintLinExpr, sense, boundValue, constraintName);
+		return constraintLinExpr;
 	}
 
 	/**

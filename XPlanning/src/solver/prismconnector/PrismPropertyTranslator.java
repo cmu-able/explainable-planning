@@ -5,10 +5,12 @@ import language.domain.metrics.IQFunction;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarTuple;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeConstraint.BOUND_TYPE;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
+import solver.common.NonStrictConstraint;
 
 public class PrismPropertyTranslator {
 
@@ -52,7 +54,11 @@ public class PrismPropertyTranslator {
 	public String buildMDPConstrainedMinProperty(StateVarTuple goal, IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<? extends IQFunction<?, ?>> constraint) throws VarNotFoundException {
 		IQFunction<?, ?> qFunction = constraint.getQFunction();
-		double upperBound = constraint.getUpperBound();
+
+		// Multi-objective properties cannot use strict inequalities on P/R operators
+		// Hack: Decrease the upper bound by 1% and use non-strict inequality
+		NonStrictConstraint nonStrictConstraint = new NonStrictConstraint(constraint, 0.99);
+
 		StringBuilder builder = new StringBuilder();
 		builder.append("multi(R{\"");
 		builder.append(objectiveFunction.getName());
@@ -60,15 +66,12 @@ public class PrismPropertyTranslator {
 		builder.append("R{\"");
 		builder.append(qFunction.getName());
 		builder.append("\"}");
-		if (constraint.isStrictBound()) {
-			// Multi-objective properties cannot use strict inequalities on P/R operators
-			// Hack: Decrease the upper bound by 1% and use non-strict inequality
-			double adjustedUpperBound = 0.99 * upperBound;
+		if (nonStrictConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND) {
 			builder.append("<=");
-			builder.append(adjustedUpperBound);
+			builder.append(nonStrictConstraint.getBoundValue());
 		} else {
-			builder.append("<=");
-			builder.append(upperBound);
+			builder.append(">=");
+			builder.append(nonStrictConstraint.getBoundValue());
 		}
 		builder.append(" [ C ], ");
 		builder.append("P>=1 [ F ");

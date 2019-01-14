@@ -12,14 +12,14 @@ public class NonStrictConstraint {
 	 */
 	private volatile int hashCode;
 
-	private AttributeConstraint<IQFunction<?, ?>> mAttrConstraint;
+	private AttributeConstraint<? extends IQFunction<?, ?>> mAttrConstraint;
 	private double mToleranceFactor;
 
 	// Derived fields
 	private BOUND_TYPE mBoundType;
 	private double mBoundValue;
 
-	public NonStrictConstraint(AttributeConstraint<IQFunction<?, ?>> attrConstraint, double toleranceFactor) {
+	public NonStrictConstraint(AttributeConstraint<? extends IQFunction<?, ?>> attrConstraint, double toleranceFactor) {
 		mAttrConstraint = attrConstraint;
 		mToleranceFactor = toleranceFactor;
 

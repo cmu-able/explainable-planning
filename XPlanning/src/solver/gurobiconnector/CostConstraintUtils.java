@@ -70,10 +70,8 @@ public class CostConstraintUtils {
 	 * 
 	 * For state costs: sum_i,a(c^k_i * x_ia) <= HUB_k (or >= HLB_k), for all k.
 	 * 
-	 * @param nonStrictBoundTypes
-	 *            : Upper (<=) or lower (>=) bounds
-	 * @param hardBoundValues
-	 *            : Hard bound values on the expected total (or average) costs
+	 * @param hardConstraints
+	 *            : Non-strict hard constraints on the expected total (or average) costs
 	 * @param explicitMDP
 	 *            : ExplicitMDP
 	 * @param xVars
@@ -82,20 +80,20 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraints
 	 * @throws GRBException
 	 */
-	public static void addHardCostConstraints(BOUND_TYPE[] nonStrictBoundTypes, Double[] hardBoundValues,
-			ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model) throws GRBException {
+	public static void addHardCostConstraints(NonStrictConstraint[] hardConstraints, ExplicitMDP explicitMDP,
+			GRBVar[][] xVars, GRBModel model) throws GRBException {
 		// Constraints: sum_i,a(c^k_ia * x_ia) <= HUB_k (or >= HLB_k), for all k
 		// OR
 		// sum_i,a(c^k_i * x_ia) <= HUB_k (or >= HLB_k), for all k
 
 		// Non-objective cost functions start at index 1 in ExplicitMDP
-		for (int k = 1; k < hardBoundValues.length; k++) {
-			if (hardBoundValues[k] == null) {
+		for (int k = 1; k < hardConstraints.length; k++) {
+			if (hardConstraints[k] == null) {
 				// Skip -- there is no constraint on this cost function k
 				continue;
 			}
 
-			addHardCostConstraint(k, nonStrictBoundTypes[k], hardBoundValues[k], explicitMDP, xVars, model);
+			addHardCostConstraint(k, hardConstraints[k], explicitMDP, xVars, model);
 		}
 	}
 
@@ -104,10 +102,8 @@ public class CostConstraintUtils {
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k
-	 * @param nonStrictBoundType
-	 *            : Upper (<=) or lower (>=) bound
-	 * @param hardBoundValue
-	 *            : Hard bound value on the expected total (or average) k-th cost
+	 * @param hardConstraint
+	 *            : Non-strict hard constraint on the expected total (or average) k-th cost
 	 * @param explicitMDP
 	 *            : Explicit MDP
 	 * @param xVars
@@ -116,20 +112,18 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraint
 	 * @throws GRBException
 	 */
-	public static void addHardCostConstraint(int costFuncIndex, BOUND_TYPE nonStrictBoundType, double hardBoundValue,
+	public static void addHardCostConstraint(int costFuncIndex, NonStrictConstraint hardConstraint,
 			ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model) throws GRBException {
-		addCostConstraint(costFuncIndex, nonStrictBoundType, hardBoundValue, explicitMDP, xVars, null, model);
+		addCostConstraint(costFuncIndex, hardConstraint, explicitMDP, xVars, null, model);
 	}
 
 	/**
 	 * Add soft constraints on multiple cost functions.
 	 * 
-	 * @param softUpperBounds
-	 *            : Soft upper bounds on the expected total (or average) costs
-	 * @param hardUpperBounds
-	 *            : Hard upper bounds on the expected total (or average) costs
-	 * @param penaltyFunctions
-	 *            : Penalty functions
+	 * @param softConstraints
+	 *            : Soft constraints (upper/lower bounds) on the expected total (or average) costs
+	 * @param hardConstraints
+	 *            : Hard constraints (upper/lower bounds) on the expected total (or average) costs
 	 * @param explicitMDP
 	 *            : Explicit MDP
 	 * @param xVars
@@ -138,34 +132,29 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraint
 	 * @throws GRBException
 	 */
-	public static void addSoftCostConstraints(Double[] softUpperBounds, Double[] hardUpperBounds,
-			IPenaltyFunction[] penaltyFunctions, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
+	public static void addSoftCostConstraints(NonStrictConstraint[] softConstraints,
+			NonStrictConstraint[] hardConstraints, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
 			throws GRBException {
-		for (int k = 0; k < softUpperBounds.length; k++) {
-			if (softUpperBounds[k] == null) {
+		for (int k = 0; k < softConstraints.length; k++) {
+			if (softConstraints[k] == null) {
 				// Skip -- there is no soft constraint on the k-th cost function
 			}
 
-			addSoftCostConstraint(k, softUpperBounds[k], hardUpperBounds[k], penaltyFunctions[k], explicitMDP, xVars,
-					model);
+			addSoftCostConstraint(k, softConstraints[k], hardConstraints[k], explicitMDP, xVars, model);
 		}
 	}
 
 	/**
-	 * Add a soft constraint on the k-th cost: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k, where 0 <= v <= HUB_k - SUB_k;
-	 * and add a penalty term: k_p * penalty(v), to the objective.
+	 * Add a soft constraint on the k-th cost: sum_i,a (x_ia * C_k(i,a)) - v <= SUB_k, where 0 <= v <= HUB_k - SUB_k (or
+	 * the corresponding lower-bound). Add a penalty term: k_p * penalty(v), to the objective.
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k
-	 * @param nonStrictBoundType
-	 *            : Upper (<=) or lower (>=) bound
-	 * @param softBoundValue
-	 *            : Soft bound on the expected total (or average) k-th cost
-	 * @param penaltyFunction
-	 *            : Penalty function
-	 * @param hardBoundValue
-	 *            : Hard bound on the expected total (or average) k-th cost; this is the value of the original solution
-	 *            policy
+	 * @param softConstraint
+	 *            : Soft constraint on the expected total (or average) k-th cost
+	 * @param hardConstraint
+	 *            : Non-strict hard constraint on the expected total (or average) k-th cost; this is the value of the
+	 *            original solution policy
 	 * @param explicitMDP
 	 *            : Explicit MDP
 	 * @param xVars
@@ -174,12 +163,19 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraint
 	 * @throws GRBException
 	 */
-	public static void addSoftCostConstraint(int costFuncIndex, BOUND_TYPE nonStrictBoundType, double softBoundValue,
-			IPenaltyFunction penaltyFunction, double hardBoundValue, ExplicitMDP explicitMDP, GRBVar[][] xVars,
-			GRBModel model) throws GRBException {
-		double vMax = Math.abs(softBoundValue - hardBoundValue);
+	public static void addSoftCostConstraint(int costFuncIndex, NonStrictConstraint softConstraint,
+			NonStrictConstraint hardConstraint, ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBModel model)
+			throws GRBException {
+		// Maximum violation
+		double vMax = Math.abs(hardConstraint.getBoundValue() - softConstraint.getBoundValue());
+
+		// Violation variable
 		GRBVar vVar = model.addVar(0.0, vMax, 0.0, GRB.CONTINUOUS, "v_" + costFuncIndex);
-		addCostConstraint(costFuncIndex, nonStrictBoundType, softBoundValue, explicitMDP, xVars, vVar, model);
+
+		// Soft constraint
+		addCostConstraint(costFuncIndex, softConstraint, explicitMDP, xVars, vVar, model);
+
+		IPenaltyFunction penaltyFunction = softConstraint.getPenaltyFunction();
 
 		if (penaltyFunction.isNonLinear()) {
 			int m = penaltyFunction.getNumSamples();
@@ -231,10 +227,8 @@ public class CostConstraintUtils {
 	 * 
 	 * @param costFuncIndex
 	 *            : Cost function index k
-	 * @param nonStrictBoundType
-	 *            : Upper (<=) or lower (>=) bound
-	 * @param boundValue
-	 *            : Bound value on the expected total (or average) k-th cost
+	 * @param constraint
+	 *            : Non-strict (hard or soft) constraint on the expected total (or average) k-th cost
 	 * @param explicitMDP
 	 *            : Explicit MDP
 	 * @param xVars
@@ -245,24 +239,24 @@ public class CostConstraintUtils {
 	 *            : GRB model to which to add the constraint
 	 * @throws GRBException
 	 */
-	private static void addCostConstraint(int costFuncIndex, BOUND_TYPE nonStrictBoundType, double boundValue,
-			ExplicitMDP explicitMDP, GRBVar[][] xVars, GRBVar vVar, GRBModel model) throws GRBException {
+	private static void addCostConstraint(int costFuncIndex, NonStrictConstraint constraint, ExplicitMDP explicitMDP,
+			GRBVar[][] xVars, GRBVar vVar, GRBModel model) throws GRBException {
 		// Expression: sum_i,a (x_ia * C_k(i,a))
 		GRBLinExpr constraintLinExpr = createCostTerm(costFuncIndex, explicitMDP, xVars);
 
-		if (vVar != null && nonStrictBoundType == BOUND_TYPE.UPPER_BOUND) {
+		if (constraint.isSoftConstraint() && constraint.getBoundType() == BOUND_TYPE.UPPER_BOUND) {
 			// For upper-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) - v
 			constraintLinExpr.addTerm(-1, vVar);
-		} else if (vVar != null && nonStrictBoundType == BOUND_TYPE.LOWER_BOUND) {
+		} else if (constraint.isSoftConstraint() && constraint.getBoundType() == BOUND_TYPE.LOWER_BOUND) {
 			// For lower-bound soft constraint: sum_i,a (x_ia * C_k(i,a)) + v
 			constraintLinExpr.addTerm(1, vVar);
 		}
 
-		String constraintName = "constraintC_" + costFuncIndex + (vVar == null ? "_hard" : "_soft");
+		String constraintName = "constraintC_" + costFuncIndex + (constraint.isSoftConstraint() ? "_soft" : "_hard");
 
 		// Add constraint: [...] <= UB_k or >= LB_k
-		char sense = nonStrictBoundType == BOUND_TYPE.UPPER_BOUND ? GRB.LESS_EQUAL : GRB.GREATER_EQUAL;
-		model.addConstr(constraintLinExpr, sense, boundValue, constraintName);
+		char sense = constraint.getBoundType() == BOUND_TYPE.UPPER_BOUND ? GRB.LESS_EQUAL : GRB.GREATER_EQUAL;
+		model.addConstr(constraintLinExpr, sense, constraint.getBoundValue(), constraintName);
 	}
 
 	private static GRBLinExpr createCostTerm(int costFuncIndex, ExplicitMDP explicitMDP, GRBVar[][] xVars) {

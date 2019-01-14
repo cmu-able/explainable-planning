@@ -8,31 +8,29 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-import language.objectives.IPenaltyFunction;
 import solver.common.ExplicitMDP;
+import solver.common.NonStrictConstraint;
 
 public class SSPSolver {
 
 	private ExplicitMDP mExplicitMDP;
-	private Double[] mHardUpperBounds;
-	private Double[] mSoftUpperBounds;
-	private IPenaltyFunction[] mPenaltyFunctions;
+	private NonStrictConstraint[] mSoftConstraints;
+	private NonStrictConstraint[] mHardConstraints;
 
-	public SSPSolver(ExplicitMDP explicitMDP) {
+	/**
+	 * SSP constructor.
+	 * 
+	 * @param explicitMDP
+	 * @param softConstraints
+	 *            : Null iff unconstrained
+	 * @param hardConstraints
+	 *            : Null iff unconstrained
+	 */
+	public SSPSolver(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
+			NonStrictConstraint[] hardConstraints) {
 		mExplicitMDP = explicitMDP;
-	}
-
-	public SSPSolver(ExplicitMDP explicitMDP, Double[] hardUpperBounds) {
-		mExplicitMDP = explicitMDP;
-		mHardUpperBounds = hardUpperBounds;
-	}
-
-	public SSPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, IPenaltyFunction[] penaltyFunctions,
-			Double[] hardUpperBounds) {
-		mExplicitMDP = explicitMDP;
-		mSoftUpperBounds = softUpperBounds;
-		mHardUpperBounds = hardUpperBounds;
-		mPenaltyFunctions = penaltyFunctions;
+		mSoftConstraints = softConstraints;
+		mHardConstraints = hardConstraints;
 	}
 
 	public boolean solveOptimalPolicy(double[][] policy) throws GRBException {
@@ -85,7 +83,13 @@ public class SSPSolver {
 	 * 
 	 * and optionally,
 	 * 
+	 * for upper-bound constraints:
+	 * 
 	 * (Ck) sum_i,a (c^k_ia * x_ia) <= beta_k, for all k
+	 * 
+	 * for lower-bound constraints:
+	 * 
+	 * (Ck) sum_i,a (c^k_ia * x_ia) >= beta_k, for all k
 	 * 
 	 * where:
 	 * 
@@ -128,14 +132,13 @@ public class SSPSolver {
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
 		GRBSolverUtils.addxDeltaConstraints(upperBoundOM, mExplicitMDP, xVars, deltaVars, model);
 
-		// Add upper-bound cost constraints, if any
-		if (mSoftUpperBounds != null) {
+		// Add (upper/lower bound) cost constraints, if any
+		if (mSoftConstraints != null) {
 			// Soft constraints
-			CostConstraintUtils.addSoftCostConstraints(mSoftUpperBounds, mHardUpperBounds, mPenaltyFunctions,
-					mExplicitMDP, xVars, model);
-		} else if (mHardUpperBounds != null) {
+			CostConstraintUtils.addSoftCostConstraints(mSoftConstraints, mHardConstraints, mExplicitMDP, xVars, model);
+		} else if (mHardConstraints != null) {
 			// Hard constraints
-			CostConstraintUtils.addHardCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
+			CostConstraintUtils.addHardCostConstraints(mHardConstraints, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia and Delta_ia
@@ -254,8 +257,8 @@ public class SSPSolver {
 		assert consistencyCheckSinksFlowConstraint(xResults);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
-		if (mHardUpperBounds != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardUpperBounds, mExplicitMDP);
+		if (mHardConstraints != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
 		}
 	}
 

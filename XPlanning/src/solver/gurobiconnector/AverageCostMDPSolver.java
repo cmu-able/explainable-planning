@@ -8,31 +8,20 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-import language.objectives.IPenaltyFunction;
 import solver.common.ExplicitMDP;
+import solver.common.NonStrictConstraint;
 
 public class AverageCostMDPSolver {
 
 	private ExplicitMDP mExplicitMDP;
-	private Double[] mHardUpperBounds;
-	private Double[] mSoftUpperBounds;
-	private IPenaltyFunction[] mPenaltyFunctions;
+	private NonStrictConstraint[] mSoftConstraints;
+	private NonStrictConstraint[] mHardConstraints;
 
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP) {
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
+			NonStrictConstraint[] hardConstraints) {
 		mExplicitMDP = explicitMDP;
-	}
-
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] hardUpperBounds) {
-		mExplicitMDP = explicitMDP;
-		mHardUpperBounds = hardUpperBounds;
-	}
-
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP, Double[] softUpperBounds, IPenaltyFunction[] penaltyFunctions,
-			Double[] hardUpperBounds) {
-		mExplicitMDP = explicitMDP;
-		mSoftUpperBounds = softUpperBounds;
-		mHardUpperBounds = hardUpperBounds;
-		mPenaltyFunctions = penaltyFunctions;
+		mSoftConstraints = softConstraints;
+		mHardConstraints = hardConstraints;
 	}
 
 	/**
@@ -194,14 +183,13 @@ public class AverageCostMDPSolver {
 		// For average-cost MDP, sum_i,a (x_ia) = 1; therefore, we can use X = 1
 		GRBSolverUtils.addxDeltaConstraints(1.0, mExplicitMDP, xVars, deltaVars, model);
 
-		// Add upper-bound cost constraints, if any
-		if (mSoftUpperBounds != null) {
+		// Add (upper/lower bound) cost constraints, if any
+		if (mSoftConstraints != null) {
 			// Soft constraints
-			CostConstraintUtils.addSoftCostConstraints(mSoftUpperBounds, mHardUpperBounds, mPenaltyFunctions,
-					mExplicitMDP, xVars, model);
-		} else if (mHardUpperBounds != null) {
+			CostConstraintUtils.addSoftCostConstraints(mSoftConstraints, mHardConstraints, mExplicitMDP, xVars, model);
+		} else if (mHardConstraints != null) {
 			// Hard constraints
-			CostConstraintUtils.addHardCostConstraints(mHardUpperBounds, mExplicitMDP, xVars, model);
+			CostConstraintUtils.addHardCostConstraints(mHardConstraints, mExplicitMDP, xVars, model);
 		}
 
 		// Solve optimization problem for x_ia, y_ia, and Delta_ia
@@ -302,8 +290,8 @@ public class AverageCostMDPSolver {
 		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
 		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, 1.0, mExplicitMDP);
-		if (mHardUpperBounds != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardUpperBounds, mExplicitMDP);
+		if (mHardConstraints != null) {
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
 		}
 	}
 

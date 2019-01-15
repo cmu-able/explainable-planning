@@ -221,7 +221,7 @@ public class AverageCostMDPSolver {
 	}
 
 	/**
-	 * Add the constraints: out_x(i) - in_x(i) = 0, for all i in S.
+	 * Add the constraints (C1): out_x(i) - in_x(i) = 0, for all i in S.
 	 * 
 	 * @param xVars
 	 *            : Optimization x variables
@@ -249,7 +249,7 @@ public class AverageCostMDPSolver {
 	}
 
 	/**
-	 * Add the constraints: out_x(i) + out_y(i) - in_y(i) = alpha_i, for all i in S.
+	 * Add the constraints (C2): out_x(i) + out_y(i) - in_y(i) = alpha_i, for all i in S.
 	 * 
 	 * @param alpha
 	 *            : Initial state distribution
@@ -295,6 +295,12 @@ public class AverageCostMDPSolver {
 		}
 	}
 
+	/**
+	 * Check constraints (C1): out_x(i) - in_x(i) = 0, for all i in S.
+	 * 
+	 * @param xResults
+	 * @return Whether (C1) is satisfied
+	 */
 	private boolean consistencyCheckC1Constraints(double[][] xResults) {
 		int n = mExplicitMDP.getNumStates();
 
@@ -309,12 +315,20 @@ public class AverageCostMDPSolver {
 		return true;
 	}
 
+	/**
+	 * Check constraints (C2): out_x(i) + out_y(i) - in_y(i) = alpha_i, for all i in S.
+	 * 
+	 * @param xResults
+	 * @param yResults
+	 * @param alpha
+	 * @return Whether (C2) is satisfied
+	 */
 	private boolean consistencyCheckC2Constraints(double[][] xResults, double[][] yResults, double[] alpha) {
 		int n = mExplicitMDP.getNumStates();
 
 		for (int i = 0; i < n; i++) {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
-			double outyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
+			double outyValue = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
 			double inyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
 
 			if (!GRBSolverUtils.approximatelyEquals(outxValue + outyValue - inyValue, alpha[i])) {

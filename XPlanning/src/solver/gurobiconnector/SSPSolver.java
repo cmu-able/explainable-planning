@@ -9,6 +9,7 @@ import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
 import solver.common.ExplicitMDP;
+import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
 
 public class SSPSolver {
@@ -33,14 +34,14 @@ public class SSPSolver {
 		mHardConstraints = hardConstraints;
 	}
 
-	public boolean solveOptimalPolicy(double[][] policy) throws GRBException {
+	public LPSolution solveOptimalPolicy(double[][] policy) throws GRBException {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
 		double[][] xResults = new double[n][m];
-		boolean solutionFound = solve(xResults);
+		LPSolution solution = solve(xResults);
 
-		if (solutionFound) {
+		if (solution.exists()) {
 			for (int i = 0; i < n; i++) {
 				// out(i) = sum_a (x_ia)
 				double denom = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
@@ -63,7 +64,7 @@ public class SSPSolver {
 			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(policy, mExplicitMDP);
 		}
 
-		return solutionFound;
+		return solution;
 	}
 
 	/**
@@ -99,10 +100,10 @@ public class SSPSolver {
 	 * 
 	 * @param xResults
 	 *            : Return parameter of x*_ia results
-	 * @return Whether a feasible solution exists
+	 * @return Whether a feasible solution exists, its objective value, and the solution
 	 * @throws GRBException
 	 */
-	public boolean solve(double[][] xResults) throws GRBException {
+	public LPSolution solve(double[][] xResults) throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
@@ -145,6 +146,7 @@ public class SSPSolver {
 		model.optimize();
 
 		int numSolutions = model.get(GRB.IntAttr.SolCount);
+		double objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
 
 		if (numSolutions > 0) {
 			// Solution found
@@ -164,7 +166,10 @@ public class SSPSolver {
 		model.dispose();
 		env.dispose();
 
-		return numSolutions > 0;
+		// LP solution
+		LPSolution solution = new LPSolution(numSolutions > 0, objectiveValue);
+		solution.addSolution("x", xResults);
+		return solution;
 	}
 
 	/**

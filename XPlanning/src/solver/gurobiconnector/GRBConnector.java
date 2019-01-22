@@ -14,6 +14,7 @@ import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import solver.common.ExplicitMDP;
+import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
 import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
@@ -154,17 +155,17 @@ public class GRBConnector {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double[][] policy = new double[n][m];
-		boolean solutionFound = false;
+		LPSolution solution = null;
 
 		if (mCostCriterion == CostCriterion.TOTAL_COST) {
 			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints);
-			solutionFound = solver.solveOptimalPolicy(policy);
+			solution = solver.solveOptimalPolicy(policy);
 		} else if (mCostCriterion == CostCriterion.AVERAGE_COST) {
 			AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, softConstraints, hardConstraints);
-			solutionFound = solver.solveOptimalPolicy(policy);
+			solution = solver.solveOptimalPolicy(policy);
 		}
 
-		if (solutionFound) {
+		if (solution != null && solution.exists()) {
 			return mPolicyReader.readPolicyFromPolicyMatrix(policy, explicitMDP);
 		}
 

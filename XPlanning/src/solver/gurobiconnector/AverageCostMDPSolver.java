@@ -9,6 +9,7 @@ import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
 import solver.common.ExplicitMDP;
+import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
 
 public class AverageCostMDPSolver {
@@ -29,18 +30,18 @@ public class AverageCostMDPSolver {
 	 * 
 	 * @param policy
 	 *            : Return parameter of optimal policy
-	 * @return Whether a solution policy exists
+	 * @return Whether a solution policy exists, its objective value, and the solution
 	 * @throws GRBException
 	 */
-	public boolean solveOptimalPolicy(double[][] policy) throws GRBException {
+	public LPSolution solveOptimalPolicy(double[][] policy) throws GRBException {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
 		double[][] xResults = new double[n][m];
 		double[][] yResults = new double[n][m];
-		boolean solutionFound = solve(xResults, yResults);
+		LPSolution solution = solve(xResults, yResults);
 
-		if (solutionFound) {
+		if (solution.exists()) {
 			for (int i = 0; i < n; i++) {
 				// out_x(i) = sum_a (x_ia)
 				double denom = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
@@ -57,7 +58,7 @@ public class AverageCostMDPSolver {
 			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(policy, mExplicitMDP);
 		}
 
-		return solutionFound;
+		return solution;
 	}
 
 	/**
@@ -143,10 +144,10 @@ public class AverageCostMDPSolver {
 	 *            : Return parameter of x*_ia results
 	 * @param yResults
 	 *            : Return parameter of y*_ia results
-	 * @return Whether a feasible solution exists
+	 * @return Whether a feasible solution exists, its objective value, and the solution
 	 * @throws GRBException
 	 */
-	public boolean solve(double[][] xResults, double[][] yResults) throws GRBException {
+	public LPSolution solve(double[][] xResults, double[][] yResults) throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
@@ -196,6 +197,7 @@ public class AverageCostMDPSolver {
 		model.optimize();
 
 		int numSolutions = model.get(GRB.IntAttr.SolCount);
+		double objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
 
 		if (numSolutions > 0) {
 			// Solution found
@@ -217,7 +219,11 @@ public class AverageCostMDPSolver {
 		model.dispose();
 		env.dispose();
 
-		return numSolutions > 0;
+		// LP solution
+		LPSolution solution = new LPSolution(numSolutions > 0, objectiveValue);
+		solution.addSolution("x", xResults);
+		solution.addSolution("y", yResults);
+		return solution;
 	}
 
 	/**

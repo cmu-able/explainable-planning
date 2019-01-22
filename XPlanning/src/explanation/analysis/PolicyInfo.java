@@ -16,12 +16,14 @@ public class PolicyInfo {
 	private volatile int hashCode;
 
 	private Policy mPolicy;
+	private double mCost;
 	private Map<IQFunction<?, ?>, Double> mQAValues = new HashMap<>();
 	private Map<NonStandardMetricQFunction<?, ?, ?>, EventBasedQAValue<?>> mEventBasedQAValues = new HashMap<>();
 	private Map<IQFunction<?, ?>, Double> mScaledQACosts = new HashMap<>();
 
-	public PolicyInfo(Policy policy) {
+	public PolicyInfo(Policy policy, double cost) {
 		mPolicy = policy;
+		mCost = cost;
 	}
 
 	public void putQAValue(IQFunction<?, ?> qFunction, double qaValue) {
@@ -64,8 +66,8 @@ public class PolicyInfo {
 			return false;
 		}
 		PolicyInfo policyInfo = (PolicyInfo) obj;
-		return policyInfo.mPolicy.equals(mPolicy) && policyInfo.mQAValues.equals(mQAValues)
-				&& policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
+		return policyInfo.mPolicy.equals(mPolicy) && Double.compare(policyInfo.mCost, mCost) == 0
+				&& policyInfo.mQAValues.equals(mQAValues) && policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
 				&& policyInfo.mScaledQACosts.equals(mScaledQACosts);
 	}
 
@@ -75,6 +77,7 @@ public class PolicyInfo {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mPolicy.hashCode();
+			result = 31 * result + Double.hashCode(mCost);
 			result = 31 * result + mQAValues.hashCode();
 			result = 31 * result + mEventBasedQAValues.hashCode();
 			result = 31 * result + mScaledQACosts.hashCode();

@@ -65,7 +65,8 @@ public class Explainer {
 
 	private PolicyInfo buildPolicyInfo(Policy policy, QSpace qSpace, CostFunction costFunction,
 			PrismConnector prismConnector) throws ResultParsingException, XMDPException, PrismException {
-		PolicyInfo policyInfo = new PolicyInfo(policy);
+		double cost = prismConnector.getCost(policy);
+		PolicyInfo policyInfo = new PolicyInfo(policy, cost);
 		for (IQFunction<?, ?> qFunction : qSpace) {
 			// QA value
 			double qaValue = prismConnector.getQAValue(policy, qFunction);

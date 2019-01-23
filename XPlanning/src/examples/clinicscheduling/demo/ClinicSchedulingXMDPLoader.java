@@ -44,7 +44,7 @@ public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 		mXMDPBuilder = new ClinicSchedulingXMDPBuilder(branchFactor);
 	}
 
-	public Set<XMDP> loadAllXMDPs() throws IOException, XMDPException, DSMException {
+	public Set<XMDP> loadAllXMDPs() throws XMDPException, DSMException {
 		Set<XMDP> xmdps = new HashSet<>();
 		File[] problemFiles = mProblemsDir.listFiles();
 		for (File problemFile : problemFiles) {
@@ -53,12 +53,14 @@ public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 		return xmdps;
 	}
 
-	public XMDP loadXMDP(File problemFile) throws IOException, XMDPException, DSMException {
+	public XMDP loadXMDP(File problemFile) throws XMDPException, DSMException {
 		String argsLine = null;
 
 		try (FileReader fileReader = new FileReader(problemFile);
 				BufferedReader buffReader = new BufferedReader(fileReader);) {
 			argsLine = buffReader.readLine();
+		} catch (IOException e) {
+			throw new DSMException(e.getMessage());
 		}
 
 		String[] argsArray = argsLine.split(" ");

@@ -12,9 +12,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.domain.metrics.IQFunction;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
@@ -115,8 +115,8 @@ public class MobileRobotXDTMCTest {
 	}
 
 	@DataProvider(name = "xdtmcSolutions")
-	public Object[][] generateAdversaries() throws IOException, ParseException, MapTopologyException,
-			ResultParsingException, XMDPException, PrismException {
+	public Object[][] generateAdversaries()
+			throws IOException, ParseException, ResultParsingException, XMDPException, PrismException, DSMException {
 		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
 

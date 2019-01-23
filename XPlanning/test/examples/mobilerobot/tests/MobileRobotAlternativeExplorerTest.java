@@ -7,15 +7,14 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
-import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import explanation.analysis.AlternativeExplorer;
 import gurobi.GRBException;
@@ -122,8 +121,8 @@ public class MobileRobotAlternativeExplorerTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] loadXMDPs() throws IOException, ParseException, MapTopologyException, PrismException,
-			ResultParsingException, XMDPException {
+	public Object[][] loadXMDPs()
+			throws IOException, PrismException, ResultParsingException, XMDPException, DSMException {
 		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
 

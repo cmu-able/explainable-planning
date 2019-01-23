@@ -4,17 +4,15 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
-import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
@@ -74,7 +72,7 @@ public class MobileRobotXMDPTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] loadXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
+	public Object[][] loadXMDPs() throws XMDPException, DSMException {
 		String mapJsonDirPath = MAPS_PATH;
 		String missionJsonDirPath = MISSIONS_PATH;
 

@@ -4,15 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
-import org.json.simple.parser.ParseException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.verbalization.Verbalizer;
@@ -57,9 +56,9 @@ public class MobileRobotExplanationTest {
 	}
 
 	@DataProvider(name = "xmdpProblems")
-	public Object[][] loadXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
-		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
-		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
+	public Object[][] loadXMDPs() throws XMDPException, DSMException {
+		String mapJsonDirPath = MobileRobotDemo.MAPS_PATH;
+		String missionJsonDirPath = MobileRobotDemo.MISSIONS_PATH;
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);

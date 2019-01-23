@@ -6,8 +6,8 @@ import java.io.IOException;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
+import examples.common.DSMException;
 import examples.common.Directories;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
@@ -35,8 +35,8 @@ import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.ExplanationWriter;
 
 public class MobileRobotDemo {
-	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
-	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
+	public static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
+	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 
 	private MobileRobotXMDPLoader mXMDPLoader;
 
@@ -45,7 +45,7 @@ public class MobileRobotDemo {
 	}
 
 	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
-			ExplicitModelParsingException, GRBException, ParseException, MapTopologyException {
+			ExplicitModelParsingException, GRBException, ParseException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
@@ -76,7 +76,7 @@ public class MobileRobotDemo {
 	}
 
 	public static void main(String[] args) throws ResultParsingException, PrismException, IOException, XMDPException,
-			ExplicitModelParsingException, GRBException, ParseException, MapTopologyException {
+			ExplicitModelParsingException, GRBException, ParseException, DSMException {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 

@@ -7,13 +7,14 @@ import java.util.Set;
 
 import org.json.simple.parser.ParseException;
 
+import examples.common.DSMException;
+import examples.common.IXMDPLoader;
 import examples.mobilerobot.dsm.IEdgeAttribute;
 import examples.mobilerobot.dsm.INodeAttribute;
 import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.Mission;
 import examples.mobilerobot.dsm.MobileRobotXMDPBuilder;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.parser.AreaParser;
 import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
 import examples.mobilerobot.dsm.parser.INodeAttributeParser;
@@ -23,7 +24,7 @@ import examples.mobilerobot.dsm.parser.OcclusionParser;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 
-public class MobileRobotXMDPLoader {
+public class MobileRobotXMDPLoader implements IXMDPLoader {
 
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
@@ -43,7 +44,7 @@ public class MobileRobotXMDPLoader {
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 	}
 
-	public Set<XMDP> loadAllXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
+	public Set<XMDP> loadAllXMDPs() throws DSMException, XMDPException {
 		Set<XMDP> xmdps = new HashSet<>();
 		File[] missionJsonFiles = mMissionJsonDir.listFiles();
 		for (File missionJsonFile : missionJsonFiles) {
@@ -52,11 +53,21 @@ public class MobileRobotXMDPLoader {
 		return xmdps;
 	}
 
-	public XMDP loadXMDP(File missionJsonFile) throws IOException, ParseException, MapTopologyException, XMDPException {
-		Mission mission = mMissionReader.readMission(missionJsonFile);
+	public XMDP loadXMDP(File missionJsonFile) throws DSMException, XMDPException {
+		Mission mission;
+		try {
+			mission = mMissionReader.readMission(missionJsonFile);
+		} catch (IOException | ParseException e) {
+			throw new DSMException(e.getMessage());
+		}
 		String mapJsonFilename = mission.getMapJSONFilename();
 		File mapJsonFile = new File(mMapJsonDir, mapJsonFilename);
-		MapTopology map = mMapReader.readMapTopology(mapJsonFile);
+		MapTopology map;
+		try {
+			map = mMapReader.readMapTopology(mapJsonFile);
+		} catch (IOException | ParseException e) {
+			throw new DSMException(e.getMessage());
+		}
 		LocationNode startNode = map.lookUpLocationNode(mission.getStartNodeID());
 		LocationNode goalNode = map.lookUpLocationNode(mission.getGoalNodeID());
 		return mXMDPBuilder.buildXMDP(map, startNode, goalNode, mission.getPreferenceInfo());

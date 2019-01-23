@@ -19,9 +19,22 @@ public class SSPSolver {
 	private NonStrictConstraint[] mHardConstraints;
 
 	/**
+	 * Constructor for unconstrained SSP.
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 */
+	public SSPSolver(ExplicitMDP explicitMDP) {
+		mExplicitMDP = explicitMDP;
+		mSoftConstraints = null;
+		mHardConstraints = null;
+	}
+
+	/**
 	 * SSP constructor.
 	 * 
 	 * @param explicitMDP
+	 *            : Explicit MDP
 	 * @param softConstraints
 	 *            : Null iff unconstrained
 	 * @param hardConstraints

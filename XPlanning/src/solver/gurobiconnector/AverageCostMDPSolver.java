@@ -18,6 +18,28 @@ public class AverageCostMDPSolver {
 	private NonStrictConstraint[] mSoftConstraints;
 	private NonStrictConstraint[] mHardConstraints;
 
+	/**
+	 * Constructor for unconstrained average-cost MDP.
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 */
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP) {
+		mExplicitMDP = explicitMDP;
+		mSoftConstraints = null;
+		mHardConstraints = null;
+	}
+
+	/**
+	 * Average-cost MDP constructor.
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param softConstraints
+	 *            : Null iff unconstrained
+	 * @param hardConstraints
+	 *            : Null iff unconstrained
+	 */
 	public AverageCostMDPSolver(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
 			NonStrictConstraint[] hardConstraints) {
 		mExplicitMDP = explicitMDP;

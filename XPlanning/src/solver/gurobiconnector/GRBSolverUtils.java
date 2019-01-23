@@ -8,6 +8,7 @@ import gurobi.GRBVar;
 import language.objectives.AttributeConstraint.BOUND_TYPE;
 import solver.common.CostType;
 import solver.common.ExplicitMDP;
+import solver.common.ExplicitModelChecker;
 import solver.common.NonStrictConstraint;
 
 public class GRBSolverUtils {
@@ -330,39 +331,17 @@ public class GRBSolverUtils {
 				continue;
 			}
 
-			if (!GRBSolverUtils.consistencyCheckCostConstraint(xResults, explicitMDP, k, hardConstraints[k])) {
+			NonStrictConstraint hardConstraint = hardConstraints[k];
+			double occupancyCost = ExplicitModelChecker.computeOccupancyCost(explicitMDP, k, xResults);
+			boolean satisfyConstraint = hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND
+					? occupancyCost <= hardConstraint.getBoundValue()
+					: occupancyCost >= hardConstraint.getBoundValue();
+
+			if (!satisfyConstraint) {
 				return false;
 			}
 		}
 		return true;
-	}
-
-	static boolean consistencyCheckCostConstraint(double[][] xResults, ExplicitMDP explicitMDP, int costFuncIndex,
-			NonStrictConstraint hardConstraint) {
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-		double sum = 0;
-
-		for (int i = 0; i < n; i++) {
-			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia term when action a is not applicable in state i
-				if (explicitMDP.isActionApplicable(i, a)) {
-					// Transition k-cost: c^k_ia
-					// OR
-					// State k-cost: c^k_i
-					double stepCost = explicitMDP.getCostType() == CostType.TRANSITION_COST
-							? explicitMDP.getTransitionCost(costFuncIndex, i, a)
-							: explicitMDP.getStateCost(costFuncIndex, i);
-
-					// c^k_ia * x_ia
-					// OR
-					// c^k_i * x_ia
-					sum += stepCost * xResults[i][a];
-				}
-			}
-		}
-		return hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND ? sum <= hardConstraint.getBoundValue()
-				: sum >= hardConstraint.getBoundValue();
 	}
 
 	/**

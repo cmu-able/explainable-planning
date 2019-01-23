@@ -12,6 +12,7 @@ import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
+import examples.utils.XMDPDataProvider;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.verbalization.Verbalizer;
@@ -61,17 +62,7 @@ public class MobileRobotExplanationTest {
 		String missionJsonDirPath = MobileRobotDemo.MISSIONS_PATH;
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
-		File missionJsonDir = new File(missionJsonDirPath);
-		File[] missionJsonFiles = missionJsonDir.listFiles();
-		Object[][] data = new Object[missionJsonFiles.length][2];
-
-		int i = 0;
-		for (File missionJsonFile : missionJsonFiles) {
-			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
-			data[i] = new Object[] { missionJsonFile, xmdp };
-			i++;
-		}
-		return data;
+		return XMDPDataProvider.loadXMDPs(missionJsonDirPath, testLoader);
 	}
 
 	@BeforeMethod

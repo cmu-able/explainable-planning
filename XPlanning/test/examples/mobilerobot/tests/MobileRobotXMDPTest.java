@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
+import examples.utils.XMDPDataProvider;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
@@ -80,17 +81,7 @@ public class MobileRobotXMDPTest {
 		SimpleConsoleLogger.log("Loading missions from", missionJsonDirPath, true);
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
-		File missionJsonDir = new File(missionJsonDirPath);
-		File[] missionJsonFiles = missionJsonDir.listFiles();
-		Object[][] data = new Object[missionJsonFiles.length][2];
-
-		int i = 0;
-		for (File missionJsonFile : missionJsonFiles) {
-			XMDP xmdp = testLoader.loadXMDP(missionJsonFile);
-			data[i] = new Object[] { missionJsonFile, xmdp };
-			i++;
-		}
-		return data;
+		return XMDPDataProvider.loadXMDPs(missionJsonDirPath, testLoader);
 	}
 
 	@BeforeMethod

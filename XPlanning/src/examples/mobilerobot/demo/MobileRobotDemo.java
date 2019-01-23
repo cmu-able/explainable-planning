@@ -37,10 +37,11 @@ import uiconnector.ExplanationWriter;
 public class MobileRobotDemo {
 	static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
 	static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
+
 	private MobileRobotXMDPLoader mXMDPLoader;
 
-	public MobileRobotDemo() {
-		mXMDPLoader = new MobileRobotXMDPLoader(MAPS_PATH, MISSIONS_PATH);
+	public MobileRobotDemo(String mapJsonDirPath, String missionJsonDirPath) {
+		mXMDPLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
 	}
 
 	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
@@ -79,11 +80,11 @@ public class MobileRobotDemo {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 
-		MobileRobotDemo demo = new MobileRobotDemo();
+		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, MISSIONS_PATH);
 		demo.run(missionJsonFile);
 	}
 
-	private static Vocabulary getVocabulary(XMDP xmdp) {
+	public static Vocabulary getVocabulary(XMDP xmdp) {
 		QSpace qSpace = xmdp.getQSpace();
 		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
 		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace

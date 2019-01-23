@@ -1,6 +1,8 @@
 package examples.mobilerobot.dsm.exceptions;
 
-public class MapTopologyException extends Exception {
+import examples.common.DSMException;
+
+public class MapTopologyException extends DSMException {
 
 	/**
 	 * 

@@ -2,7 +2,6 @@ package examples.clinicscheduling.demo;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashSet;
@@ -17,12 +16,12 @@ import org.apache.commons.cli.ParseException;
 import examples.clinicscheduling.dsm.ClinicCostProfile;
 import examples.clinicscheduling.dsm.ClinicSchedulingXMDPBuilder;
 import examples.clinicscheduling.dsm.SchedulingContext;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import language.exceptions.IncompatibleActionException;
+import examples.common.DSMException;
+import examples.common.IXMDPLoader;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 
-public class ClinicSchedulingXMDPLoader {
+public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 
 	private static final String CAPACITY_PARAM = "capacity";
 	private static final String MAX_ABP_PARAM = "maxABP";
@@ -45,7 +44,7 @@ public class ClinicSchedulingXMDPLoader {
 		mXMDPBuilder = new ClinicSchedulingXMDPBuilder(branchFactor);
 	}
 
-	public Set<XMDP> loadAllXMDPs() throws IOException, ParseException, MapTopologyException, XMDPException {
+	public Set<XMDP> loadAllXMDPs() throws IOException, XMDPException, DSMException {
 		Set<XMDP> xmdps = new HashSet<>();
 		File[] problemFiles = mProblemsDir.listFiles();
 		for (File problemFile : problemFiles) {
@@ -54,8 +53,7 @@ public class ClinicSchedulingXMDPLoader {
 		return xmdps;
 	}
 
-	public XMDP loadXMDP(File problemFile)
-			throws FileNotFoundException, IOException, ParseException, IncompatibleActionException {
+	public XMDP loadXMDP(File problemFile) throws IOException, XMDPException, DSMException {
 		String argsLine = null;
 
 		try (FileReader fileReader = new FileReader(problemFile);
@@ -81,7 +79,12 @@ public class ClinicSchedulingXMDPLoader {
 		options.addOption("y", INI_NEW_CLIENT_COUNT_PARAM, true, "Initial number of new patients");
 		options.addOption("l", CLIENT_ARRIVAL_RATE_PARAM, true, "Average patient arrival rate");
 
-		CommandLine line = parser.parse(options, argsArray);
+		CommandLine line = null;
+		try {
+			line = parser.parse(options, argsArray);
+		} catch (ParseException e) {
+			throw new DSMException(e.getMessage());
+		}
 		int capacity = Integer.parseInt(line.getOptionValue(CAPACITY_PARAM, "10"));
 		int maxABP = Integer.parseInt(line.getOptionValue(MAX_ABP_PARAM, "10"));
 		int maxQueueSize = Integer.parseInt(line.getOptionValue(MAX_QUEUE_SIZE_PARAM, "100"));

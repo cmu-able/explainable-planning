@@ -3,7 +3,6 @@ package examples.clinicscheduling.demo;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 
 import examples.clinicscheduling.metrics.IdleTimeQFunction;
@@ -11,6 +10,7 @@ import examples.clinicscheduling.metrics.LeadTimeQFunction;
 import examples.clinicscheduling.metrics.OvertimeQFunction;
 import examples.clinicscheduling.metrics.RevenueQFunction;
 import examples.clinicscheduling.metrics.SwitchABPQFunction;
+import examples.common.DSMException;
 import examples.common.Directories;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
@@ -36,8 +36,8 @@ import uiconnector.ExplanationWriter;
 
 public class ClinicSchedulingDemo {
 
-	private static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/clinicscheduling/missions";
-	private static final int DEFAULT_BRANCH_FACTOR = 3;
+	public static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/clinicscheduling/missions";
+	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
 	private ClinicSchedulingXMDPLoader mXMDPLoader;
 
@@ -46,7 +46,7 @@ public class ClinicSchedulingDemo {
 	}
 
 	public void run(File problemFile) throws PrismException, XMDPException, IOException, ExplicitModelParsingException,
-			GRBException, ResultParsingException, ParseException {
+			GRBException, ResultParsingException, DSMException {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
 		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
@@ -84,8 +84,8 @@ public class ClinicSchedulingDemo {
 		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());
 	}
 
-	public static void main(String[] args) throws ParseException, ResultParsingException, PrismException, XMDPException,
-			IOException, ExplicitModelParsingException, GRBException {
+	public static void main(String[] args) throws ResultParsingException, PrismException, XMDPException, IOException,
+			ExplicitModelParsingException, GRBException, DSMException {
 		String problemFilename = args[0];
 		File problemFile = new File(PROBLEMS_PATH, problemFilename);
 

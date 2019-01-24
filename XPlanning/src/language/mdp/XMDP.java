@@ -28,7 +28,7 @@ public class XMDP {
 		mStateSpace = stateSpace;
 		mActionSpace = actionSpace;
 		mInitialState = initialState;
-		mGoal = goal;
+		mGoal = goal; // nullable
 		mTransFunction = transFunction;
 		mQSpace = qSpace;
 		mCostFunction = costFunction;
@@ -72,7 +72,8 @@ public class XMDP {
 		}
 		XMDP mdp = (XMDP) obj;
 		return mdp.mStateSpace.equals(mStateSpace) && mdp.mActionSpace.equals(mActionSpace)
-				&& mdp.mInitialState.equals(mInitialState) && mdp.mGoal.equals(mGoal)
+				&& mdp.mInitialState.equals(mInitialState)
+				&& (mdp.mGoal == mGoal || mdp.mGoal != null && mdp.mGoal.equals(mGoal))
 				&& mdp.mTransFunction.equals(mTransFunction) && mdp.mQSpace.equals(mQSpace)
 				&& mdp.mCostFunction.equals(mCostFunction);
 	}
@@ -85,7 +86,7 @@ public class XMDP {
 			result = 31 * result + mStateSpace.hashCode();
 			result = 31 * result + mActionSpace.hashCode();
 			result = 31 * result + mInitialState.hashCode();
-			result = 31 * result + mGoal.hashCode();
+			result = 31 * result + (mGoal == null ? 0 : mGoal.hashCode());
 			result = 31 * result + mTransFunction.hashCode();
 			result = 31 * result + mQSpace.hashCode();
 			result = 31 * result + mCostFunction.hashCode();

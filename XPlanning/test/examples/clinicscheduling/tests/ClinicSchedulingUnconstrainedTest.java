@@ -42,6 +42,7 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class ClinicSchedulingUnconstrainedTest {
+	private static final double EQUALITY_TOL = 1e-6;
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testAverageQAValues(File problemFile, XMDP xmdp) throws PrismException, XMDPException, IOException,
@@ -83,14 +84,14 @@ public class ClinicSchedulingUnconstrainedTest {
 		double occupancyObjCost = occupancyCosts[0];
 		double objCost = policyInfo.getObjectiveCost();
 
-		assertEquals(objCost, occupancyObjCost, "Objective costs are not equal");
+		assertEquals(objCost, occupancyObjCost, EQUALITY_TOL, "Objective costs are not equal");
 
 		for (IQFunction<?, ?> qFunction : policyInfo.getQSpace()) {
 			int k = encodings.getRewardStructureIndex(qFunction);
 			double occupancyCost = occupancyCosts[k];
 			double qaValue = policyInfo.getQAValue(qFunction);
 
-			assertEquals(qaValue, occupancyCost, qFunction.getName() + " values are not equal");
+			assertEquals(qaValue, occupancyCost, EQUALITY_TOL, qFunction.getName() + " values are not equal");
 		}
 	}
 

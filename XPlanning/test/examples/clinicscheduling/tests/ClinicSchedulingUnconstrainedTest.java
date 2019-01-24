@@ -14,7 +14,7 @@ import examples.clinicscheduling.demo.ClinicSchedulingDemo;
 import examples.clinicscheduling.demo.ClinicSchedulingXMDPLoader;
 import examples.common.DSMException;
 import examples.common.Directories;
-import examples.mobilerobot.tests.SimpleConsoleLogger;
+import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;

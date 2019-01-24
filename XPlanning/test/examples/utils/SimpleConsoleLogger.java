@@ -1,4 +1,4 @@
-package examples.mobilerobot.tests;
+package examples.utils;
 
 public class SimpleConsoleLogger {
 

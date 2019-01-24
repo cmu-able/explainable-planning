@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
+import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;

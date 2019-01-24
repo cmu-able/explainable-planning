@@ -12,6 +12,7 @@ import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
+import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;

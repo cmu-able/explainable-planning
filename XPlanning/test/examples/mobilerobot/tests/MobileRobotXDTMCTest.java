@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
+import examples.utils.SimpleConsoleLogger;
 import language.domain.metrics.IQFunction;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;

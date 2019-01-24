@@ -16,6 +16,7 @@ import examples.common.DSMException;
 import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
+import examples.utils.SimpleConsoleLogger;
 import explanation.analysis.AlternativeExplorer;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;

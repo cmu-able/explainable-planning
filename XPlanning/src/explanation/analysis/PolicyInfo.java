@@ -6,6 +6,7 @@ import java.util.Map;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.NonStandardMetricQFunction;
+import language.mdp.QSpace;
 import language.policy.Policy;
 
 public class PolicyInfo {
@@ -16,17 +17,19 @@ public class PolicyInfo {
 	private volatile int hashCode;
 
 	private Policy mPolicy;
-	private double mCost;
+	private double mObjectiveCost;
+	private QSpace mQSpace = new QSpace();
 	private Map<IQFunction<?, ?>, Double> mQAValues = new HashMap<>();
 	private Map<NonStandardMetricQFunction<?, ?, ?>, EventBasedQAValue<?>> mEventBasedQAValues = new HashMap<>();
 	private Map<IQFunction<?, ?>, Double> mScaledQACosts = new HashMap<>();
 
-	public PolicyInfo(Policy policy, double cost) {
+	public PolicyInfo(Policy policy, double objectiveCost) {
 		mPolicy = policy;
-		mCost = cost;
+		mObjectiveCost = objectiveCost;
 	}
 
 	public void putQAValue(IQFunction<?, ?> qFunction, double qaValue) {
+		mQSpace.addQFunction(qFunction);
 		mQAValues.put(qFunction, qaValue);
 	}
 
@@ -41,6 +44,14 @@ public class PolicyInfo {
 
 	public Policy getPolicy() {
 		return mPolicy;
+	}
+
+	public double getObjectiveCost() {
+		return mObjectiveCost;
+	}
+
+	public QSpace getQSpace() {
+		return mQSpace;
 	}
 
 	public double getQAValue(IQFunction<?, ?> qFunction) {
@@ -66,8 +77,9 @@ public class PolicyInfo {
 			return false;
 		}
 		PolicyInfo policyInfo = (PolicyInfo) obj;
-		return policyInfo.mPolicy.equals(mPolicy) && Double.compare(policyInfo.mCost, mCost) == 0
-				&& policyInfo.mQAValues.equals(mQAValues) && policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
+		return policyInfo.mPolicy.equals(mPolicy) && Double.compare(policyInfo.mObjectiveCost, mObjectiveCost) == 0
+				&& policyInfo.mQSpace.equals(mQSpace) && policyInfo.mQAValues.equals(mQAValues)
+				&& policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
 				&& policyInfo.mScaledQACosts.equals(mScaledQACosts);
 	}
 
@@ -77,7 +89,8 @@ public class PolicyInfo {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mPolicy.hashCode();
-			result = 31 * result + Double.hashCode(mCost);
+			result = 31 * result + Double.hashCode(mObjectiveCost);
+			result = 31 * result + mQSpace.hashCode();
 			result = 31 * result + mQAValues.hashCode();
 			result = 31 * result + mEventBasedQAValues.hashCode();
 			result = 31 * result + mScaledQACosts.hashCode();

@@ -1,7 +1,10 @@
 package solver.prismconnector;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -139,6 +142,24 @@ public class PrismAPIWrapper {
 		}
 
 		return modulesFile;
+	}
+
+	/**
+	 * Export the PRISM MDP model file (.mdp) -- for debugging purposes.
+	 * 
+	 * @param mdpStr
+	 *            : : PRISM MDP String
+	 * @param outputExplicitModelPointer
+	 *            : PRISM MDP file will be in the same directory as the corresponding explicit model files
+	 * @throws IOException
+	 */
+	public void exportMDPModelFile(String mdpStr, PrismExplicitModelPointer outputExplicitModelPointer)
+			throws IOException {
+		File mdpOutputFile = outputExplicitModelPointer.getMDPFile();
+		FileWriter fileWriter = new FileWriter(mdpOutputFile);
+		try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+			bufferedWriter.write(mdpStr);
+		}
 	}
 
 	/**

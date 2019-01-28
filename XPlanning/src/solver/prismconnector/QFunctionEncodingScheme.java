@@ -10,6 +10,16 @@ import language.exceptions.QFunctionNotFoundException;
 import language.mdp.QSpace;
 import language.objectives.IAdditiveCostFunction;
 
+/**
+ * {@link QFunctionEncodingScheme} defines a mapping from QA functions ({@link IQFunction}s) to the indices of their
+ * corresponding PRISM reward-structures.
+ * 
+ * The mapping is defined arbitrarily, but the order in which the reward structures are written to PRISM MDP model file
+ * (in {@link PrismRewardTranslatorHelper} conforms to this encoding.
+ * 
+ * @author rsukkerd
+ *
+ */
 public class QFunctionEncodingScheme {
 
 	/*
@@ -26,7 +36,12 @@ public class QFunctionEncodingScheme {
 
 	public QFunctionEncodingScheme(IAdditiveCostFunction objectiveFunction, QSpace qSpace) {
 		mQSpace = qSpace;
+
+		// The objective function (which can be the cost function of XMDP or any objective function) is always the first
+		// reward structure
 		appendCostFunction(objectiveFunction);
+
+		// The order of reward structures representing the QA functions is defined arbitrarily
 		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
 			appendQFunction(qFunction);
 		}

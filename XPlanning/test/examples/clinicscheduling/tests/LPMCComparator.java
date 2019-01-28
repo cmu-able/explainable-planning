@@ -12,11 +12,13 @@ import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
+import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.common.ExplicitMDP;
 import solver.common.ExplicitModelChecker;
 import solver.common.LPSolution;
+import solver.common.NonStrictConstraint;
 import solver.gurobiconnector.AverageCostMDPSolver;
 import solver.gurobiconnector.GRBPolicyReader;
 import solver.prismconnector.PrismConnector;
@@ -24,65 +26,86 @@ import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.ExplicitMDPReader;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class LPMCComparator {
 
 	private PrismConnector mPrismConnector;
 	private PrismExplicitModelReader mPrismExplicitModelReader;
-	private GRBPolicyReader mPolicyReader;
 	private double mEqualityTol;
 
-	public LPMCComparator(PrismConnector prismConnector, PrismExplicitModelReader prismExplicitModelReader,
-			double equalityTol) {
+	public LPMCComparator(PrismConnector prismConnector, double equalityTol)
+			throws XMDPException, PrismException, IOException {
 		mPrismConnector = prismConnector;
-		mPrismExplicitModelReader = prismExplicitModelReader;
-		mPolicyReader = new GRBPolicyReader(prismExplicitModelReader);
 		mEqualityTol = equalityTol;
+
+		// Export XMDP to explicit model files
+		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
+		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+
+		// Create PRISM explicit model reader
+		mPrismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr, encodings);
+	}
+
+	public ExplicitMDP readExplicitMDP(IAdditiveCostFunction objectiveFunction)
+			throws QFunctionNotFoundException, IOException, ExplicitModelParsingException {
+		ExplicitMDPReader explicitMDPReader = new ExplicitMDPReader(mPrismExplicitModelReader,
+				CostCriterion.AVERAGE_COST);
+		ExplicitMDP explicitMDP = explicitMDPReader.readExplicitMDP(objectiveFunction);
+		return explicitMDP;
+	}
+
+	public double[][] computeOccupationMeasureResults(ExplicitMDP explicitMDP, NonStrictConstraint[] hardConstraints,
+			double[][] outputPolicyMatrix) throws GRBException {
+		AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, null, hardConstraints);
+		LPSolution solution = solver.solveOptimalPolicy(outputPolicyMatrix);
+		double[][] xResults = solution.getSolution("x");
+		return xResults;
 	}
 
 	/**
 	 * Compare the policy's average cost and QA values computed by GRBSolver (LP method), to those computed by PRISM (MC
 	 * method). The policy itself is computed by GRBSolver.
 	 * 
-	 * @throws XMDPException
-	 * @throws IOException
-	 * @throws ExplicitModelParsingException
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param xResults
+	 *            : x results from GRBSolver
+	 * @param policyMatrix
+	 *            : Policy matrix corresponding to x results
+	 * @return Occupancy costs
 	 * @throws GRBException
+	 * @throws IOException
 	 * @throws ResultParsingException
+	 * @throws XMDPException
 	 * @throws PrismException
 	 */
-	public void compare() throws XMDPException, IOException, ExplicitModelParsingException, GRBException,
-			ResultParsingException, PrismException {
-		// Use the cost functions and the QA functions from the XMDP
-		CostFunction costFunction = mPrismConnector.getXMDP().getCostFunction();
-		QSpace qFunctions = mPrismConnector.getXMDP().getQSpace();
-
+	public double[] checkLPMCConsistency(ExplicitMDP explicitMDP, double[][] xResults, double[][] policyMatrix)
+			throws GRBException, IOException, ResultParsingException, XMDPException, PrismException {
 		// From GRBSolver:
-		// First, compute an optimal policy
-		ExplicitMDPReader explicitMDPReader = new ExplicitMDPReader(mPrismExplicitModelReader,
-				CostCriterion.AVERAGE_COST);
-		ExplicitMDP explicitMDP = explicitMDPReader.readExplicitMDP(costFunction);
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-		double[][] outputPolicyMatrix = new double[n][m];
-		double[][] xResults = computeOccupationMeasureResults(explicitMDP, outputPolicyMatrix);
-
 		// Compute occupation costs of the optimal policy
 		double[] occupancyCosts = computeOccupancyCosts(xResults, explicitMDP);
 
 		// From PRISM:
-		Policy policy = mPolicyReader.readPolicyFromPolicyMatrix(outputPolicyMatrix, explicitMDP);
+		GRBPolicyReader policyReader = new GRBPolicyReader(mPrismExplicitModelReader);
+		Policy policy = policyReader.readPolicyFromPolicyMatrix(policyMatrix, explicitMDP);
+
+		// Use the cost functions and the QA functions from the XMDP
+		CostFunction costFunction = mPrismConnector.getXMDP().getCostFunction();
+		QSpace qFunctions = mPrismConnector.getXMDP().getQSpace();
 
 		// Compute the average cost and QA values of the optimal policy
 		PolicyInfo policyInfo = computePolicyInfo(policy, qFunctions);
 
 		compare(occupancyCosts, policyInfo, costFunction, qFunctions);
+
+		return occupancyCosts;
 	}
 
 	private void compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction, QSpace qFunctions)
 			throws QFunctionNotFoundException {
-		ValueEncodingScheme encodings = mPrismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+		ValueEncodingScheme encodings = mPrismExplicitModelReader.getValueEncodingScheme();
 
 		int objCostIndex = encodings.getRewardStructureIndex(costFunction);
 		double occupancyObjCost = occupancyCosts[objCostIndex];
@@ -97,14 +120,6 @@ public class LPMCComparator {
 
 			assertEquals(qaValue, occupancyCost, mEqualityTol, qFunction.getName() + " values are not equal");
 		}
-	}
-
-	private double[][] computeOccupationMeasureResults(ExplicitMDP explicitMDP, double[][] outputPolicy)
-			throws GRBException {
-		AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP);
-		LPSolution solution = solver.solveOptimalPolicy(outputPolicy);
-		double[][] xResults = solution.getSolution("x");
-		return xResults;
 	}
 
 	private double[] computeOccupancyCosts(double[][] xResults, ExplicitMDP explicitMDP) throws GRBException {

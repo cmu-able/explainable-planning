@@ -1,6 +1,7 @@
 package solver.gurobiconnector;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import gurobi.GRB;
@@ -23,14 +24,22 @@ public class CostConstraintUtils {
 	/**
 	 * For approximating strict inequality for hard upper bounds.
 	 */
-	private static final double TOLERANCE_FACTOR = 0.99;
+	public static final double TOLERANCE_FACTOR = 0.99;
 
 	private CostConstraintUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
+	public static NonStrictConstraint[] createIndexedNonStrictConstraints(
+			AttributeConstraint<IQFunction<?, ?>> attrConstraint, QFunctionEncodingScheme qFunctionEncoding)
+			throws QFunctionNotFoundException {
+		Set<AttributeConstraint<IQFunction<?, ?>>> singleton = new HashSet<>();
+		singleton.add(attrConstraint);
+		return createIndexedNonStrictConstraints(singleton, qFunctionEncoding);
+	}
+
 	/**
-	 * Fill in the array of indexed constraints, in non-strict form. Each index is null iff the corresponding cost
+	 * Create an array of indexed constraints, in non-strict form. Each index is null iff the corresponding cost
 	 * function doesn't have a constraint.
 	 * 
 	 * Constraints are on the cost functions starting from index 1 in ExplicitMDP. Make sure to align the indices of the
@@ -40,13 +49,18 @@ public class CostConstraintUtils {
 	 *            : Upper/lower (hard or soft) constraints on QA values
 	 * @param qFunctionEncoding
 	 *            : QA-function encoding scheme
-	 * @param indexedNonStrictAttrConstraints
-	 *            : Return parameter of indexed, non-strict, attribute constraints
 	 * @throws QFunctionNotFoundException
 	 */
-	public static void fillIndexedNonStrictConstraints(Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints,
-			QFunctionEncodingScheme qFunctionEncoding, NonStrictConstraint[] indexedNonStrictAttrConstraints)
+	public static NonStrictConstraint[] createIndexedNonStrictConstraints(
+			Set<AttributeConstraint<IQFunction<?, ?>>> attrConstraints, QFunctionEncodingScheme qFunctionEncoding)
 			throws QFunctionNotFoundException {
+		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
+		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
+		int arrayLength = qFunctionEncoding.getNumRewardStructures() + 1;
+
+		// Explicit (upper or lower) bounds
+		NonStrictConstraint[] indexedNonStrictAttrConstraints = new NonStrictConstraint[arrayLength];
+
 		// Set constraints to null for all cost-function indices that don't have constraints
 		Arrays.fill(indexedNonStrictAttrConstraints, null);
 
@@ -61,6 +75,8 @@ public class CostConstraintUtils {
 			NonStrictConstraint nonStrictConstraint = new NonStrictConstraint(attrConstraint, TOLERANCE_FACTOR);
 			indexedNonStrictAttrConstraints[costFuncIndex] = nonStrictConstraint;
 		}
+
+		return indexedNonStrictAttrConstraints;
 	}
 
 	/**

@@ -111,14 +111,9 @@ public class GRBConnector {
 		// ExplicitMDP with the objective costs
 		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP(objectiveFunction);
 
-		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
-		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		int arrayLength = mQFunctionEncoding.getNumRewardStructures() + 1;
-
 		// Explicit hard (upper or lower) bounds
-		NonStrictConstraint[] indexedHardConstraints = new NonStrictConstraint[arrayLength];
-		CostConstraintUtils.fillIndexedNonStrictConstraints(attrHardConstraints, mQFunctionEncoding,
-				indexedHardConstraints);
+		NonStrictConstraint[] indexedHardConstraints = CostConstraintUtils
+				.createIndexedNonStrictConstraints(attrHardConstraints, mQFunctionEncoding);
 
 		// Compute optimal policy, with the cost constraints
 		return generateOptimalPolicy(explicitMDP, null, indexedHardConstraints);
@@ -132,19 +127,13 @@ public class GRBConnector {
 		// ExplicitMDP with the objective costs
 		ExplicitMDP explicitMDP = mExplicitMDPReader.readExplicitMDP(objectiveFunction);
 
-		// Constraints are on the cost functions starting from index 1 in ExplicitMDP
-		// Align the indices of the constraints to those of the cost functions in ExplicitMDP
-		int arrayLength = mQFunctionEncoding.getNumRewardStructures() + 1;
-
 		// Explicit soft (upper or lower) bounds
-		NonStrictConstraint[] indexedSoftConstraints = new NonStrictConstraint[arrayLength];
-		CostConstraintUtils.fillIndexedNonStrictConstraints(attrSoftConstraints, mQFunctionEncoding,
-				indexedSoftConstraints);
+		NonStrictConstraint[] indexedSoftConstraints = CostConstraintUtils
+				.createIndexedNonStrictConstraints(attrSoftConstraints, mQFunctionEncoding);
 
 		// Explicit hard (upper or lower) bounds
-		NonStrictConstraint[] indexedHardConstraints = new NonStrictConstraint[arrayLength];
-		CostConstraintUtils.fillIndexedNonStrictConstraints(attrHardConstraints, mQFunctionEncoding,
-				indexedHardConstraints);
+		NonStrictConstraint[] indexedHardConstraints = CostConstraintUtils
+				.createIndexedNonStrictConstraints(attrHardConstraints, mQFunctionEncoding);
 
 		// Compute optimal policy, with the cost constraints
 		return generateOptimalPolicy(explicitMDP, indexedSoftConstraints, indexedHardConstraints);

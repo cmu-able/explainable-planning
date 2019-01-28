@@ -43,6 +43,7 @@ public class PrismRewardTranslator {
 	}
 
 	/**
+	 * The order of the reward structures conforms to the {@link QFunctionEncodingScheme}.
 	 * 
 	 * @param qFunctions
 	 *            : QA functions

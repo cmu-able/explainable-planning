@@ -91,6 +91,7 @@ public class PrismMDPTranslator {
 		builder.append(costStruct);
 
 		if (withQAFunctions) {
+			// The order of the reward structures conforms to the QFunction encoding scheme.
 			String qasRewards = mRewardTranslator.getQAFunctionsTranslation(mXMDP.getQSpace());
 			builder.append("\n\n");
 			builder.append(qasRewards);

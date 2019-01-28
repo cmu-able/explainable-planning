@@ -104,6 +104,8 @@ public class PrismRewardTranslatorHelper {
 	/**
 	 * Build a list of transition-reward structures for a given set of QA functions.
 	 * 
+	 * The order of the reward structures conforms to the {@link QFunctionEncodingScheme}.
+	 * 
 	 * @param qFunctions
 	 *            : QA functions
 	 * @return Reward structures for the QA functions

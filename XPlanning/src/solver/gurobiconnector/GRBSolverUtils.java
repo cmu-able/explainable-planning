@@ -334,8 +334,8 @@ public class GRBSolverUtils {
 			NonStrictConstraint hardConstraint = hardConstraints[k];
 			double occupancyCost = ExplicitModelChecker.computeOccupancyCost(explicitMDP, k, xResults);
 			boolean satisfyConstraint = hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND
-					? occupancyCost <= hardConstraint.getBoundValue()
-					: occupancyCost >= hardConstraint.getBoundValue();
+					? occupancyCost <= hardConstraint.getBoundValue() + DEFAULT_FEASIBILITY_TOL
+					: occupancyCost >= hardConstraint.getBoundValue() - DEFAULT_FEASIBILITY_TOL;
 
 			if (!satisfyConstraint) {
 				return false;

@@ -34,7 +34,7 @@ import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class ClinicSchedulingTest {
-	private static final double EQUALITY_TOL = 1e-6;
+	private static final double EQUALITY_TOL = 1e-4;
 
 	@Test(dataProvider = "xmdpProblems")
 	public void testUnconstrainedAverageCost(File problemFile, XMDP xmdp) throws PrismException, XMDPException,

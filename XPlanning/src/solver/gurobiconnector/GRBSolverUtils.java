@@ -13,7 +13,7 @@ import solver.common.NonStrictConstraint;
 
 public class GRBSolverUtils {
 
-	private static final double DEFAULT_FEASIBILITY_TOL = 1e-6;
+	private static final double DEFAULT_FEASIBILITY_TOL = 1e-4; // according to GRB log
 
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");

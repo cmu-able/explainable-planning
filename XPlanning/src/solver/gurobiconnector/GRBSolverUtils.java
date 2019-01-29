@@ -458,7 +458,8 @@ public class GRBSolverUtils {
 		return outValue;
 	}
 
-	static boolean approximatelyEquals(double valueA, double valueB) {
-		return Math.abs(valueA - valueB) <= DEFAULT_FEASIBILITY_TOL;
+	static boolean approximatelyEqual(double valueA, double valueB) {
+		double diff = Math.abs(valueA - valueB);
+		return diff <= DEFAULT_FEASIBILITY_TOL;
 	}
 }

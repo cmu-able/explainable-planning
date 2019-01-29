@@ -340,7 +340,7 @@ public class AverageCostMDPSolver {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double inxValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
 
-			if (!GRBSolverUtils.approximatelyEquals(outxValue, inxValue)) {
+			if (!GRBSolverUtils.approximatelyEqual(outxValue, inxValue)) {
 				return false;
 			}
 		}
@@ -363,7 +363,7 @@ public class AverageCostMDPSolver {
 			double outyValue = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
 			double inyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
 
-			if (!GRBSolverUtils.approximatelyEquals(outxValue + outyValue - inyValue, alpha[i])) {
+			if (!GRBSolverUtils.approximatelyEqual(outxValue + outyValue - inyValue, alpha[i])) {
 				return false;
 			}
 		}

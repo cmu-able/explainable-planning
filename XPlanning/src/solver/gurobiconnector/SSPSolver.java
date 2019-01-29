@@ -294,7 +294,7 @@ public class SSPSolver {
 			double outValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double inValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
 
-			if (!GRBSolverUtils.approximatelyEquals(outValue, inValue)) {
+			if (!GRBSolverUtils.approximatelyEqual(outValue, inValue)) {
 				return false;
 			}
 		}
@@ -305,7 +305,7 @@ public class SSPSolver {
 		int iniState = mExplicitMDP.getInitialState();
 		double outValue = GRBSolverUtils.getOutValue(iniState, xResults, mExplicitMDP);
 		double inValue = GRBSolverUtils.getInValue(iniState, xResults, mExplicitMDP);
-		return GRBSolverUtils.approximatelyEquals(outValue - inValue, 1);
+		return GRBSolverUtils.approximatelyEqual(outValue - inValue, 1);
 	}
 
 	private boolean consistencyCheckSinksFlowConstraint(double[][] xResults) {
@@ -314,7 +314,7 @@ public class SSPSolver {
 			double inValue = GRBSolverUtils.getInValue(goal, xResults, mExplicitMDP);
 			sum += inValue;
 		}
-		return GRBSolverUtils.approximatelyEquals(sum, 1);
+		return GRBSolverUtils.approximatelyEqual(sum, 1);
 	}
 
 }

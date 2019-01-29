@@ -174,7 +174,7 @@ public class UpperBoundOccupationMeasureSolver {
 			double diff = outValue - gamma * inValue;
 
 			// GRB FeasibilityTol
-			if (!GRBSolverUtils.approximatelyEquals(diff, alpha[i])) {
+			if (!GRBSolverUtils.approximatelyEqual(diff, alpha[i])) {
 				return false;
 			}
 		}

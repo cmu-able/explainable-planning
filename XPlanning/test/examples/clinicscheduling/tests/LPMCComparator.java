@@ -1,8 +1,8 @@
 package examples.clinicscheduling.tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.io.IOException;
+
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
@@ -98,28 +98,53 @@ public class LPMCComparator {
 		// Compute the average cost and QA values of the optimal policy
 		PolicyInfo policyInfo = computePolicyInfo(policy, qFunctions);
 
-		compare(occupancyCosts, policyInfo, costFunction, qFunctions);
-
+		double[] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
+		printSummaryStatistics(diffs);
 		return occupancyCosts;
 	}
 
-	private void compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction, QSpace qFunctions)
-			throws QFunctionNotFoundException {
+	private void printSummaryStatistics(double[] diffs) {
+		DescriptiveStatistics stats = new DescriptiveStatistics();
+		for (double diff : diffs) {
+			stats.addValue(diff);
+		}
+		double min = stats.getMin();
+		double max = stats.getMax();
+		double mean = stats.getMean();
+		double std = stats.getStandardDeviation();
+		System.out.println("min: " + min);
+		System.out.println("max: " + max);
+		System.out.println("mean: " + mean);
+		System.out.println("std: " + std);
+	}
+
+	private double[] compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction,
+			QSpace qFunctions) throws QFunctionNotFoundException {
+		double[] diffs = new double[occupancyCosts.length];
+
 		ValueEncodingScheme encodings = mPrismExplicitModelReader.getValueEncodingScheme();
 
 		int objCostIndex = encodings.getRewardStructureIndex(costFunction);
 		double occupancyObjCost = occupancyCosts[objCostIndex];
 		double objCost = policyInfo.getObjectiveCost();
+		// assertEquals(objCost, occupancyObjCost, mEqualityTol, "Objective costs are not equal");
 
-		assertEquals(objCost, occupancyObjCost, mEqualityTol, "Objective costs are not equal");
+		if (Math.abs(occupancyObjCost - objCost) > mEqualityTol) {
+			diffs[objCostIndex] = occupancyObjCost - objCost;
+		}
 
 		for (IQFunction<?, ?> qFunction : policyInfo.getQSpace()) {
 			int k = encodings.getRewardStructureIndex(qFunction);
 			double occupancyCost = occupancyCosts[k];
 			double qaValue = policyInfo.getQAValue(qFunction);
+			// assertEquals(qaValue, occupancyCost, mEqualityTol, qFunction.getName() + " values are not equal");
 
-			assertEquals(qaValue, occupancyCost, mEqualityTol, qFunction.getName() + " values are not equal");
+			if (Math.abs(occupancyCost - qaValue) > mEqualityTol) {
+				diffs[k] = occupancyCost - qaValue;
+			}
 		}
+
+		return diffs;
 	}
 
 	private double[] computeOccupancyCosts(double[][] xResults, ExplicitMDP explicitMDP) throws GRBException {

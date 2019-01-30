@@ -436,9 +436,10 @@ public class GRBSolverUtils {
 				// Exclude any pi_ia term when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
 					double pi = policy[i][a];
+					boolean isDeterministic = approximatelyEqual(pi, 0.0) || approximatelyEqual(pi, 1.0);
 
 					// Check for any randomized decision
-					if (pi > 0 && pi < 1) {
+					if (!isDeterministic) {
 						return false;
 					}
 				}

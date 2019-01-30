@@ -67,16 +67,14 @@ public class AverageCostMDPSolver {
 			for (int i = 0; i < n; i++) {
 				// out_x(i) = sum_a (x_ia)
 				double xDenom = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
+				// out_y(i) = sum_a (y_ia)
+				double yDenom = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
 
 				if (xDenom > 0) {
 					// Recurrent states: S_x = states i such that sum_a (x_ia) > 0
 					fillPolicyMatrix(policy, i, xResults, xDenom);
 				} else {
 					// Transient states: S/S_x = states i such that sum_a (x_ia) = 0
-
-					// out_y(i) = sum_a (y_ia)
-					double yDenom = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
-
 					fillPolicyMatrix(policy, i, yResults, yDenom);
 				}
 			}

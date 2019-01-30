@@ -129,7 +129,7 @@ public class SSPSolver {
 				Double.POSITIVE_INFINITY, model);
 
 		// Create variables: Delta_ia (binary)
-		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars("Delta", GRB.BINARY, n, m, 0.0, 1.0, model);
+		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars("Deltax", GRB.BINARY, n, m, 0.0, 1.0, model);
 
 		// Set optimization objective
 		GRBSolverUtils.setOptimizationObjective(mExplicitMDP, xVars, model);
@@ -140,11 +140,11 @@ public class SSPSolver {
 		addSinksFlowConstraint(xVars, model);
 
 		// Add constraints to ensure deterministic solution policy
-		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaVars, model);
+		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, "Deltax", deltaVars, model);
 
 		// For SSP, X is an upper-bound on occupation measure
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
-		GRBSolverUtils.addxDeltaConstraints(upperBoundOM, mExplicitMDP, xVars, deltaVars, model);
+		GRBSolverUtils.addVarDeltaConstraints(upperBoundOM, mExplicitMDP, "x", xVars, "Deltax", deltaVars, model);
 
 		// Add (upper/lower bound) cost constraints, if any
 		if (mSoftConstraints != null) {
@@ -274,7 +274,7 @@ public class SSPSolver {
 		assert consistencyCheckSourceFlowConstraint(xResults);
 		assert consistencyCheckSinksFlowConstraint(xResults);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
 		if (mHardConstraints != null) {
 			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
 		}

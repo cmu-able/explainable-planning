@@ -66,14 +66,18 @@ public class AverageCostMDPSolver {
 		if (solution.exists()) {
 			for (int i = 0; i < n; i++) {
 				// out_x(i) = sum_a (x_ia)
-				double denom = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
+				double xDenom = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 
-				if (denom > 0) {
+				if (xDenom > 0) {
 					// Recurrent states: S_x = states i such that sum_a (x_ia) > 0
-					fillPolicyForRecurrentState(policy, i, xResults, denom);
+					fillPolicyMatrix(policy, i, xResults, xDenom);
 				} else {
 					// Transient states: S/S_x = states i such that sum_a (x_ia) = 0
-					fillPolicyForTransientState(policy, i, yResults);
+
+					// out_y(i) = sum_a (y_ia)
+					double yDenom = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
+
+					fillPolicyMatrix(policy, i, yResults, yDenom);
 				}
 			}
 
@@ -84,55 +88,32 @@ public class AverageCostMDPSolver {
 	}
 
 	/**
-	 * Fill in action for a given recurrent state in the policy.
+	 * Fill in an action for a given state in the policy.
 	 * 
-	 * It is guaranteed that, for any recurrent state i, x*_ia > 0 for only one a in A_i. Therefore, the policy is
-	 * deterministic.
+	 * It is guaranteed that, for any state i, v*_ia > 0 for only one a in A_i. Therefore, the policy is deterministic.
 	 * 
-	 * @param policy
-	 *            : Policy (return parameter)
+	 * @param policyMatrix
+	 *            : Policy matrix (return parameter)
 	 * @param i
-	 *            : Recurrent state
-	 * @param xResults
-	 *            : Optimal values of x_ia
-	 * @param denom
-	 *            : sum_a (x_ia)
+	 *            : State
+	 * @param vResults
+	 *            : Optimal values of v_ia
+	 * @param vDenom
+	 *            : sum_a (v_ia)
 	 */
-	private void fillPolicyForRecurrentState(double[][] policy, int i, double[][] xResults, double denom) {
+	private void fillPolicyMatrix(double[][] policyMatrix, int i, double[][] vResults, double vDenom) {
 		int m = mExplicitMDP.getNumActions();
 
 		// Interpret x_ia as the limiting probability under a stationary (deterministic) policy that the
 		// system occupies state i and chooses action a when the initial state distribution is alpha.
 
 		for (int a = 0; a < m; a++) {
-			// Exclude any x_ia value when action a is not applicable in state i
+			// Exclude any v_ia value when action a is not applicable in state i
 			if (mExplicitMDP.isActionApplicable(i, a)) {
-				// pi_ia = x_ia / sum_a (x_ia)
-				policy[i][a] = xResults[i][a] / denom;
-			}
-		}
-	}
-
-	/**
-	 * Fill in action for a given transient state in the policy.
-	 * 
-	 * If, for any transient state i, there are more than one y*_ia > 0, this method chooses the action for i to be that
-	 * of the first non-zero y*_ia. Therefore, the policy is deterministic.
-	 * 
-	 * @param policy
-	 *            : Policy (return parameter)
-	 * @param i
-	 *            : Transient state
-	 * @param yResults
-	 *            : Optimal values of y_ia
-	 */
-	private void fillPolicyForTransientState(double[][] policy, int i, double[][] yResults) {
-		int m = mExplicitMDP.getNumActions();
-		for (int a = 0; a < m; a++) {
-			if (mExplicitMDP.isActionApplicable(i, a) && yResults[i][a] > 0) {
-				// First non-zero y*_ia
-				policy[i][a] = 1;
-				break;
+				// pi_ia = x_ia / sum_a (x_ia) for recurrent states
+				// OR
+				// pi_ia = y_ia / sum_a (y_ia) for transient states
+				policyMatrix[i][a] = vResults[i][a] / vDenom;
 			}
 		}
 	}
@@ -148,9 +129,13 @@ public class AverageCostMDPSolver {
 	 * 
 	 * (C4) y_ia >= 0, for all i in S, a in A_i
 	 * 
-	 * (C5) sum_a (Delta_ia) <= 1, for all i in S
+	 * (C5) sum_a (Deltax_ia) <= 1, for all i in S
 	 * 
-	 * (C6) x_ia / X <= Delta_ia, for all i, a, where X >= x_ia
+	 * (C6) x_ia / X <= Deltax_ia, for all i, a, where X >= x_ia
+	 * 
+	 * (C7) sum_a (Deltay_ia) <= 1, for all i in S
+	 * 
+	 * (C8) y_ia / Y <= Deltay_ia, for all i, a, where Y >= y_ia
 	 * 
 	 * and optionally,
 	 * 
@@ -190,8 +175,13 @@ public class AverageCostMDPSolver {
 		GRBVar[][] yVars = GRBSolverUtils.createOptimizationVars("y", GRB.CONTINUOUS, n, m, 0.0,
 				Double.POSITIVE_INFINITY, model);
 
-		// Create variables: Delta_ia (binary)
-		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars("Delta", GRB.BINARY, n, m, 0.0, 1.0, model);
+		// Create variables: Deltax_ia (binary)
+		String deltaxVarName = "Deltax";
+		GRBVar[][] deltaxVars = GRBSolverUtils.createOptimizationVars(deltaxVarName, GRB.BINARY, n, m, 0.0, 1.0, model);
+
+		// Create variables: Deltay_ia (binary)
+		String deltayVarName = "Deltay";
+		GRBVar[][] deltayVars = GRBSolverUtils.createOptimizationVars(deltayVarName, GRB.BINARY, n, m, 0.0, 1.0, model);
 
 		// Set optimization objective
 		GRBSolverUtils.setOptimizationObjective(mExplicitMDP, xVars, model);
@@ -201,10 +191,14 @@ public class AverageCostMDPSolver {
 		addC2Constraints(alpha, xVars, yVars, model);
 
 		// Add constraints to ensure deterministic solution policy
-		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaVars, model);
+		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaxVarName, deltaxVars, model);
+		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltayVarName, deltayVars, model);
 
 		// For average-cost MDP, sum_i,a (x_ia) = 1; therefore, we can use X = 1
-		GRBSolverUtils.addxDeltaConstraints(1.0, mExplicitMDP, xVars, deltaVars, model);
+		GRBSolverUtils.addVarDeltaConstraints(1.0, mExplicitMDP, "x", xVars, deltaxVarName, deltaxVars, model);
+
+		// Similarly, we use Y = 1
+		GRBSolverUtils.addVarDeltaConstraints(1.0, mExplicitMDP, "y", yVars, deltayVarName, deltayVars, model);
 
 		// Add (upper/lower bound) cost constraints, if any
 		if (mSoftConstraints != null) {
@@ -230,15 +224,17 @@ public class AverageCostMDPSolver {
 			// Query results: optimal values of x_ia, y_ia, and Delta_ia
 			double[][] grbXResults = model.get(GRB.DoubleAttr.X, xVars);
 			double[][] grbYResults = model.get(GRB.DoubleAttr.X, yVars);
-			double[][] grbDeltaResults = model.get(GRB.DoubleAttr.X, deltaVars);
+			double[][] grbDeltaxResults = model.get(GRB.DoubleAttr.X, deltaxVars);
+			double[][] grbDeltayResults = model.get(GRB.DoubleAttr.X, deltayVars);
 
 			// Copy x_ia and y_ia results to the return parameters
 			System.arraycopy(grbXResults, 0, xResults, 0, grbXResults.length);
 			System.arraycopy(grbYResults, 0, yResults, 0, grbYResults.length);
 
 			// Consistency checks
-			verifyAllConstraints(grbXResults, grbYResults, grbDeltaResults, alpha);
-			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaResults, mExplicitMDP);
+			verifyAllConstraints(grbXResults, grbYResults, grbDeltaxResults, grbDeltayResults, alpha);
+			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaxResults, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckResults(grbYResults, grbDeltayResults, mExplicitMDP);
 		}
 
 		// Dispose of model and environment
@@ -316,12 +312,14 @@ public class AverageCostMDPSolver {
 		}
 	}
 
-	private void verifyAllConstraints(double[][] xResults, double[][] yResults, double[][] deltaResults,
-			double[] alpha) {
+	private void verifyAllConstraints(double[][] xResults, double[][] yResults, double[][] deltaxResults,
+			double[][] deltayResults, double[] alpha) {
 		assert consistencyCheckC1Constraints(xResults);
 		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
-		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckxDeltaConstraints(xResults, deltaResults, 1.0, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaxResults, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaxResults, 1.0, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltayResults, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(yResults, deltayResults, 1.0, mExplicitMDP);
 		if (mHardConstraints != null) {
 			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
 		}

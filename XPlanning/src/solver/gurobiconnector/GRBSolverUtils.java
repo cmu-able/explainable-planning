@@ -136,18 +136,19 @@ public class GRBSolverUtils {
 	 * Add Delta constraints: sum_a (Delta_ia) <= 1, for all i.
 	 * 
 	 * @param explicitMDP
+	 * @param deltaVarName
 	 * @param deltaVars
 	 * @param model
 	 * @throws GRBException
 	 */
-	public static void addDeltaConstraints(ExplicitMDP explicitMDP, GRBVar[][] deltaVars, GRBModel model)
-			throws GRBException {
+	public static void addDeltaConstraints(ExplicitMDP explicitMDP, String deltaVarName, GRBVar[][] deltaVars,
+			GRBModel model) throws GRBException {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 
 		// Constraints: sum_a (Delta_ia) <= 1, for all i
 		for (int i = 0; i < n; i++) {
-			String constraintName = "constraintDelta_" + i;
+			String constraintName = "constraint_" + deltaVarName + "_" + i;
 			GRBLinExpr constraintLinExpr = new GRBLinExpr();
 
 			// sum_a (Delta_ia)
@@ -164,35 +165,45 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Add x-Delta constraints: x_ia / X <= Delta_ia, for all i, a.
+	 * Add {var}-Delta{var} constraints: {var}_ia / V <= Delta{var}_ia, for all i, a.
 	 * 
-	 * @param xMax
-	 *            : Constant X >= x_ia for all i, a
+	 * @param vUpperBound
+	 *            : Constant V >= {var}_ia for all i, a
 	 * @param explicitMDP
-	 * @param xVars
-	 * @param deltaVars
+	 *            : Explicit MDP
+	 * @param vVarName
+	 *            : Continuous variable name
+	 * @param vVars
+	 *            : Continuous variables
+	 * @param deltavVarName
+	 *            : Binary variable name
+	 * @param deltavVars
+	 *            : Binary variables
 	 * @param model
+	 *            : GRB model
 	 * @throws GRBException
 	 */
-	public static void addxDeltaConstraints(double xMax, ExplicitMDP explicitMDP, GRBVar[][] xVars,
-			GRBVar[][] deltaVars, GRBModel model) throws GRBException {
+	public static void addVarDeltaConstraints(double vUpperBound, ExplicitMDP explicitMDP, String vVarName,
+			GRBVar[][] vVars, String deltavVarName, GRBVar[][] deltavVars, GRBModel model) throws GRBException {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 
-		// Constraints: x_ia / X <= Delta_ia, for all i, a
+		// Constraints: x_ia / X <= Deltax_ia, for all i, a
+		// OR
+		// y_ia / Y <= Deltay_ia, for all i, a
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
 				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
-					String constaintName = "constraintxDelta_" + i + a;
+					String constaintName = "constraint_" + vVarName + "_" + deltavVarName + "_" + i + "_" + a;
 
 					// x_ia / X
 					GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();
-					lhsConstraintLinExpr.addTerm(1.0 / xMax, xVars[i][a]);
+					lhsConstraintLinExpr.addTerm(1.0 / vUpperBound, vVars[i][a]);
 
 					// Delta_ia
 					GRBLinExpr rhsConstraintLinExpr = new GRBLinExpr();
-					rhsConstraintLinExpr.addTerm(1.0, deltaVars[i][a]);
+					rhsConstraintLinExpr.addTerm(1.0, deltavVars[i][a]);
 
 					// Add constraint
 					model.addConstr(lhsConstraintLinExpr, GRB.LESS_EQUAL, rhsConstraintLinExpr, constaintName);
@@ -286,25 +297,27 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Check whether the results of x_ia and Delta_ia satisfy the constraints: x_ia / X <= Delta_ia, for all i, a.
+	 * Check whether the results of v_ia and Deltav_ia satisfy the constraints: v_ia / V <= Deltav_ia, for all i, a.
 	 * 
-	 * @param xResults
-	 * @param deltaResults
-	 * @param xMax
+	 * @param vResults
+	 * @param deltavResults
+	 * @param vUpperBound
 	 * @param explicitMDP
 	 * @return Whether the results of x_ia and Delta_ia satisfy: x_ia / X <= Delta_ia, for all i, a
 	 */
-	static boolean consistencyCheckxDeltaConstraints(double[][] xResults, double[][] deltaResults, double xMax,
-			ExplicitMDP explicitMDP) {
+	static boolean consistencyCheckVarDeltaConstraints(double[][] vResults, double[][] deltavResults,
+			double vUpperBound, ExplicitMDP explicitMDP) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
 				if (explicitMDP.isActionApplicable(i, a)) {
-					double xResult = xResults[i][a];
-					double deltaResult = deltaResults[i][a];
-					if (xResult / xMax > deltaResult) {
+					double vResult = vResults[i][a];
+					double deltavResult = deltavResults[i][a];
+					boolean satisfyConstraint = vResult / vUpperBound <= deltavResult + DEFAULT_FEASIBILITY_TOL;
+
+					if (!satisfyConstraint) {
 						return false;
 					}
 				}
@@ -356,16 +369,18 @@ public class GRBSolverUtils {
 		int m = explicitMDP.getNumActions();
 
 		for (int i = 0; i < n; i++) {
-			if (hasNonZeroProbVisited(i, xResults, explicitMDP)) {
-				// sum_a(x_ia) > 0
+			double probVisited = computeProbVisited(i, xResults, explicitMDP);
 
+			// Check whether the state i has non-zero probability of being visited, i.e., sum_a(x_ia) > 0
+			if (probVisited > DEFAULT_FEASIBILITY_TOL) {
 				for (int a = 0; a < m; a++) {
 					// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
 					if (explicitMDP.isActionApplicable(i, a)) {
 						double deltaResult = deltaResults[i][a];
 						double xResult = xResults[i][a];
+						boolean consistent = checkResultsConsistency(deltaResult, xResult);
 
-						if (!checkResultsConsistency(deltaResult, xResult)) {
+						if (!consistent) {
 							return false;
 						}
 					}
@@ -376,14 +391,14 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Check whether the state i has non-zero probability of being visited, i.e., sum_a(x_ia) > 0.
+	 * Compute the probability of state i being visited, i.e., sum_a(x_ia) > 0.
 	 * 
 	 * @param i
 	 * @param xResults
 	 * @param explicitMDP
 	 * @return Whether the state i has non-zero probability of being visited
 	 */
-	private static boolean hasNonZeroProbVisited(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+	private static double computeProbVisited(int i, double[][] xResults, ExplicitMDP explicitMDP) {
 		int m = explicitMDP.getNumActions();
 
 		// sum_a(x_ia)
@@ -393,13 +408,19 @@ public class GRBSolverUtils {
 				probVisited += xResults[i][a];
 			}
 		}
-
-		// Check whether sum_a(x_ia) > 0
-		return probVisited > 0;
+		return probVisited;
 	}
 
+	/**
+	 * Check if (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0).
+	 * 
+	 * @param deltaResult
+	 * @param xResult
+	 * @return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0)
+	 */
 	private static boolean checkResultsConsistency(double deltaResult, double xResult) {
-		return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0);
+		return (approximatelyEqual(deltaResult, 1) && xResult > 0)
+				|| (approximatelyEqual(deltaResult, 0) && approximatelyEqual(xResult, 0));
 	}
 
 	/**

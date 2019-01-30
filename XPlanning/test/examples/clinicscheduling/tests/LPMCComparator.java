@@ -1,6 +1,7 @@
 package examples.clinicscheduling.tests;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -99,23 +100,30 @@ public class LPMCComparator {
 		PolicyInfo policyInfo = computePolicyInfo(policy, qFunctions);
 
 		double[] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
-		printSummaryStatistics(diffs);
+		// Excluding the element at index 0 since we don't compute its value
+		double[] tailDiffs = Arrays.copyOfRange(diffs, 1, diffs.length);
+		printSummaryStatistics(tailDiffs);
 		return occupancyCosts;
 	}
 
 	private void printSummaryStatistics(double[] diffs) {
 		DescriptiveStatistics stats = new DescriptiveStatistics();
 		for (double diff : diffs) {
-			stats.addValue(diff);
+			double absDiff = Math.abs(diff);
+			stats.addValue(absDiff);
 		}
 		double min = stats.getMin();
 		double max = stats.getMax();
 		double mean = stats.getMean();
 		double std = stats.getStandardDeviation();
-		System.out.println("min: " + min);
-		System.out.println("max: " + max);
-		System.out.println("mean: " + mean);
-		System.out.println("std: " + std);
+
+		if (max > 0) {
+			System.out.println("Differences in policy values computed from LP and MC:");
+			System.out.println("min: " + min);
+			System.out.println("max: " + max);
+			System.out.println("mean: " + mean);
+			System.out.println("std: " + std);
+		}
 	}
 
 	private double[] compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction,

@@ -172,9 +172,10 @@ public class UpperBoundOccupationMeasureSolver {
 			double outValue = GRBSolverUtils.getOutValue(i, xResults, explicitMDP);
 			double inValue = GRBSolverUtils.getInValue(i, xResults, explicitMDP);
 			double diff = outValue - gamma * inValue;
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(diff, alpha[i],
+					GRBSolverUtils.DEFAULT_FEASIBILITY_TOL);
 
-			// GRB FeasibilityTol
-			if (!GRBSolverUtils.approximatelyEqual(diff, alpha[i])) {
+			if (!satisfied) {
 				return false;
 			}
 		}

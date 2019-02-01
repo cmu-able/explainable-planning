@@ -13,7 +13,8 @@ import solver.common.NonStrictConstraint;
 
 public class GRBSolverUtils {
 
-	private static final double DEFAULT_FEASIBILITY_TOL = 1e-4; // according to GRB log
+	static final double DEFAULT_FEASIBILITY_TOL = 1e-6;
+	static final double DEFAULT_INT_FEAS_TOL = 1e-5;
 
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
@@ -271,6 +272,11 @@ public class GRBSolverUtils {
 		}
 	}
 
+	public static void configureToleranceParameters(GRBModel model) throws GRBException {
+		model.set(GRB.DoubleParam.FeasibilityTol, DEFAULT_FEASIBILITY_TOL);
+		model.set(GRB.DoubleParam.IntFeasTol, DEFAULT_INT_FEAS_TOL);
+	}
+
 	/**
 	 * Check whether the results of Delta_ia satisfy the constraints: sum_a (Delta_ia) <= 1, for all i.
 	 * 
@@ -315,9 +321,9 @@ public class GRBSolverUtils {
 				if (explicitMDP.isActionApplicable(i, a)) {
 					double vResult = vResults[i][a];
 					double deltavResult = deltavResults[i][a];
-					boolean satisfyConstraint = vResult / vUpperBound <= deltavResult + DEFAULT_FEASIBILITY_TOL;
+					boolean satisfiedConstraint = vResult / vUpperBound <= deltavResult + DEFAULT_FEASIBILITY_TOL;
 
-					if (!satisfyConstraint) {
+					if (!satisfiedConstraint) {
 						return false;
 					}
 				}
@@ -346,11 +352,11 @@ public class GRBSolverUtils {
 
 			NonStrictConstraint hardConstraint = hardConstraints[k];
 			double occupancyCost = ExplicitModelChecker.computeOccupancyCost(explicitMDP, k, xResults);
-			boolean satisfyConstraint = hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND
+			boolean satisfiedConstraint = hardConstraint.getBoundType() == BOUND_TYPE.UPPER_BOUND
 					? occupancyCost <= hardConstraint.getBoundValue() + DEFAULT_FEASIBILITY_TOL
 					: occupancyCost >= hardConstraint.getBoundValue() - DEFAULT_FEASIBILITY_TOL;
 
-			if (!satisfyConstraint) {
+			if (!satisfiedConstraint) {
 				return false;
 			}
 		}
@@ -419,8 +425,9 @@ public class GRBSolverUtils {
 	 * @return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0)
 	 */
 	private static boolean checkResultsConsistency(double deltaResult, double xResult) {
-		return (approximatelyEqual(deltaResult, 1) && xResult > 0)
-				|| (approximatelyEqual(deltaResult, 0) && approximatelyEqual(xResult, 0));
+		return (approximatelyEqual(deltaResult, 1, DEFAULT_INT_FEAS_TOL) && xResult > 0)
+				|| (approximatelyEqual(deltaResult, 0, DEFAULT_INT_FEAS_TOL)
+						&& approximatelyEqual(xResult, 0, DEFAULT_INT_FEAS_TOL));
 	}
 
 	/**
@@ -436,7 +443,8 @@ public class GRBSolverUtils {
 				// Exclude any pi_ia term when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
 					double pi = policy[i][a];
-					boolean isDeterministic = approximatelyEqual(pi, 0.0) || approximatelyEqual(pi, 1.0);
+					boolean isDeterministic = approximatelyEqual(pi, 0, DEFAULT_INT_FEAS_TOL)
+							|| approximatelyEqual(pi, 1, DEFAULT_INT_FEAS_TOL);
 
 					// Check for any randomized decision
 					if (!isDeterministic) {
@@ -480,8 +488,8 @@ public class GRBSolverUtils {
 		return outValue;
 	}
 
-	static boolean approximatelyEqual(double valueA, double valueB) {
+	static boolean approximatelyEqual(double valueA, double valueB, double tolerance) {
 		double diff = Math.abs(valueA - valueB);
-		return diff <= DEFAULT_FEASIBILITY_TOL;
+		return diff <= tolerance;
 	}
 }

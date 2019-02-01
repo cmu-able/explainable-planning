@@ -156,6 +156,8 @@ public class AverageCostMDPSolver {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
+		GRBSolverUtils.configureToleranceParameters(model);
+
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
@@ -335,8 +337,10 @@ public class AverageCostMDPSolver {
 		for (int i = 0; i < n; i++) {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double inxValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue, inxValue,
+					GRBSolverUtils.DEFAULT_FEASIBILITY_TOL);
 
-			if (!GRBSolverUtils.approximatelyEqual(outxValue, inxValue)) {
+			if (!satisfied) {
 				return false;
 			}
 		}
@@ -358,8 +362,10 @@ public class AverageCostMDPSolver {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double outyValue = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
 			double inyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue + outyValue - inyValue, alpha[i],
+					GRBSolverUtils.DEFAULT_FEASIBILITY_TOL);
 
-			if (!GRBSolverUtils.approximatelyEqual(outxValue + outyValue - inyValue, alpha[i])) {
+			if (!satisfied) {
 				return false;
 			}
 		}

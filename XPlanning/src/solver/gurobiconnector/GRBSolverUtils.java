@@ -13,8 +13,8 @@ import solver.common.NonStrictConstraint;
 
 public class GRBSolverUtils {
 
-	static final double DEFAULT_FEASIBILITY_TOL = 1e-6;
-	static final double DEFAULT_INT_FEAS_TOL = 1e-5;
+	static final double DEFAULT_FEASIBILITY_TOL = 1e-7;
+	static final double DEFAULT_INT_FEAS_TOL = 1e-7;
 
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
@@ -194,15 +194,15 @@ public class GRBSolverUtils {
 		// y_ia / Y <= Deltay_ia, for all i, a
 		for (int i = 0; i < n; i++) {
 			for (int a = 0; a < m; a++) {
-				// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+				// Exclude any v_ia and Deltav_ia terms when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
 					String constaintName = "constraint_" + vVarName + "_" + deltavVarName + "_" + i + "_" + a;
 
-					// x_ia / X
+					// v_ia / V
 					GRBLinExpr lhsConstraintLinExpr = new GRBLinExpr();
 					lhsConstraintLinExpr.addTerm(1.0 / vUpperBound, vVars[i][a]);
 
-					// Delta_ia
+					// Deltav_ia
 					GRBLinExpr rhsConstraintLinExpr = new GRBLinExpr();
 					rhsConstraintLinExpr.addTerm(1.0, deltavVars[i][a]);
 
@@ -364,27 +364,28 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Check, for all states i such that sum_a(x_ia) > 0, whether the property Delta_ia = 1 <=> x_ia > 0 holds.
+	 * Check, for all states i such that sum_a(v_ia) > 0, whether the property Deltav_ia = 1 <=> v_ia > 0 holds.
 	 * 
-	 * @param xResults
-	 * @param deltaResults
-	 * @return Whether the property Delta_ia = 1 <=> x_ia > 0 holds for all states i such that sum_a(x_ia) > 0
+	 * @param vResults
+	 * @param deltavResults
+	 * @return Whether the property Deltav_ia = 1 <=> v_ia > 0 holds for all states i such that sum_a(v_ia) > 0
 	 */
-	static boolean consistencyCheckResults(double[][] xResults, double[][] deltaResults, ExplicitMDP explicitMDP) {
+	static boolean consistencyCheckResults(double[][] vResults, double[][] deltavResults, ExplicitMDP explicitMDP) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 
 		for (int i = 0; i < n; i++) {
-			double probVisited = computeProbVisited(i, xResults, explicitMDP);
+			// For x: sum_a(x_ia) = probability of state i being visited
+			double outValue = getOutValue(i, vResults, explicitMDP);
 
-			// Check whether the state i has non-zero probability of being visited, i.e., sum_a(x_ia) > 0
-			if (probVisited > DEFAULT_FEASIBILITY_TOL) {
+			// For all states i such that sum_a(v_ia) > 0
+			if (outValue > 0 + DEFAULT_FEASIBILITY_TOL) {
 				for (int a = 0; a < m; a++) {
-					// Exclude any x_ia and Delta_ia terms when action a is not applicable in state i
+					// Exclude any v_ia and Deltav_ia terms when action a is not applicable in state i
 					if (explicitMDP.isActionApplicable(i, a)) {
-						double deltaResult = deltaResults[i][a];
-						double xResult = xResults[i][a];
-						boolean consistent = checkResultsConsistency(deltaResult, xResult);
+						double deltavResult = deltavResults[i][a];
+						double vResult = vResults[i][a];
+						boolean consistent = checkResultsConsistency(deltavResult, vResult);
 
 						if (!consistent) {
 							return false;
@@ -397,27 +398,6 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Compute the probability of state i being visited, i.e., sum_a(x_ia) > 0.
-	 * 
-	 * @param i
-	 * @param xResults
-	 * @param explicitMDP
-	 * @return Whether the state i has non-zero probability of being visited
-	 */
-	private static double computeProbVisited(int i, double[][] xResults, ExplicitMDP explicitMDP) {
-		int m = explicitMDP.getNumActions();
-
-		// sum_a(x_ia)
-		double probVisited = 0;
-		for (int a = 0; a < m; a++) {
-			if (explicitMDP.isActionApplicable(i, a)) {
-				probVisited += xResults[i][a];
-			}
-		}
-		return probVisited;
-	}
-
-	/**
 	 * Check if (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0).
 	 * 
 	 * @param deltaResult
@@ -425,9 +405,8 @@ public class GRBSolverUtils {
 	 * @return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0)
 	 */
 	private static boolean checkResultsConsistency(double deltaResult, double xResult) {
-		return (approximatelyEqual(deltaResult, 1, DEFAULT_INT_FEAS_TOL) && xResult > 0)
-				|| (approximatelyEqual(deltaResult, 0, DEFAULT_INT_FEAS_TOL)
-						&& approximatelyEqual(xResult, 0, DEFAULT_INT_FEAS_TOL));
+		return (approximatelyEqual(deltaResult, 1) && xResult > 0)
+				|| (approximatelyEqual(deltaResult, 0) && approximatelyEqual(xResult, 0));
 	}
 
 	/**
@@ -443,8 +422,7 @@ public class GRBSolverUtils {
 				// Exclude any pi_ia term when action a is not applicable in state i
 				if (explicitMDP.isActionApplicable(i, a)) {
 					double pi = policy[i][a];
-					boolean isDeterministic = approximatelyEqual(pi, 0, DEFAULT_INT_FEAS_TOL)
-							|| approximatelyEqual(pi, 1, DEFAULT_INT_FEAS_TOL);
+					boolean isDeterministic = approximatelyEqual(pi, 0) || approximatelyEqual(pi, 1);
 
 					// Check for any randomized decision
 					if (!isDeterministic) {
@@ -456,40 +434,58 @@ public class GRBSolverUtils {
 		return true;
 	}
 
-	static double getInValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+	/**
+	 * Compute in_v(i) = sum_j,a (v_ja * P(i|j,a)).
+	 * 
+	 * @param i
+	 *            : State
+	 * @param vResults
+	 * @param explicitMDP
+	 * @return in_v(i) = sum_j,a (v_ja * P(i|j,a))
+	 */
+	static double getInValue(int i, double[][] vResults, ExplicitMDP explicitMDP) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double inValue = 0;
 
-		// in(i) = sum_j,a (x_ja * P(i|j,a))
+		// in_v(i) = sum_j,a (v_ja * P(i|j,a))
 		for (int j = 0; j < n; j++) {
 			for (int a = 0; a < m; a++) {
-				// Exclude any x_ja term when action a is not applicable in state j
+				// Exclude any v_ja term when action a is not applicable in state j
 				if (explicitMDP.isActionApplicable(j, a)) {
 					double prob = explicitMDP.getTransitionProbability(j, a, i);
-					inValue += prob * xResults[j][a];
+					inValue += prob * vResults[j][a];
 				}
 			}
 		}
 		return inValue;
 	}
 
-	static double getOutValue(int i, double[][] xResults, ExplicitMDP explicitMDP) {
+	/**
+	 * Compute out_v(i) = sum_a (v_ia).
+	 * 
+	 * @param i
+	 *            : State
+	 * @param vResults
+	 * @param explicitMDP
+	 * @return out_v(i) = sum_a (v_ia)
+	 */
+	static double getOutValue(int i, double[][] vResults, ExplicitMDP explicitMDP) {
 		int m = explicitMDP.getNumActions();
 		double outValue = 0;
 
-		// out(i) = sum_a (x_ia)
+		// out_v(i) = sum_a (v_ia)
 		for (int a = 0; a < m; a++) {
-			// Exclude any x_ia term when action a is not applicable in state i
+			// Exclude any v_ia term when action a is not applicable in state i
 			if (explicitMDP.isActionApplicable(i, a)) {
-				outValue += xResults[i][a];
+				outValue += vResults[i][a];
 			}
 		}
 		return outValue;
 	}
 
-	static boolean approximatelyEqual(double valueA, double valueB, double tolerance) {
+	static boolean approximatelyEqual(double valueA, double valueB) {
 		double diff = Math.abs(valueA - valueB);
-		return diff <= tolerance;
+		return diff <= DEFAULT_FEASIBILITY_TOL;
 	}
 }

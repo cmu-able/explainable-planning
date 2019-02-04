@@ -99,36 +99,48 @@ public class LPMCComparator {
 		// Compute the average cost and QA values of the optimal policy
 		PolicyInfo policyInfo = computePolicyInfo(policy, qFunctions);
 
-		double[] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
+		double[][] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
 		// Excluding the element at index 0 since we don't compute its value
-		double[] tailDiffs = Arrays.copyOfRange(diffs, 1, diffs.length);
+		double[][] tailDiffs = Arrays.copyOfRange(diffs, 1, diffs.length);
 		printSummaryStatistics(tailDiffs);
 		return occupancyCosts;
 	}
 
-	private void printSummaryStatistics(double[] diffs) {
-		DescriptiveStatistics stats = new DescriptiveStatistics();
-		for (double diff : diffs) {
-			double absDiff = Math.abs(diff);
-			stats.addValue(absDiff);
-		}
-		double min = stats.getMin();
-		double max = stats.getMax();
-		double mean = stats.getMean();
-		double std = stats.getStandardDeviation();
+	private void printSummaryStatistics(double[][] diffs) {
+		DescriptiveStatistics diffStats = new DescriptiveStatistics();
+		DescriptiveStatistics percentDiffStats = new DescriptiveStatistics();
 
-		if (max > 0) {
+		for (int k = 0; k < diffs.length; k++) {
+			double diff = diffs[k][0];
+			double percentDiff = diffs[k][1];
+			double absDiff = Math.abs(diff);
+			double absPercentDiff = Math.abs(percentDiff);
+			diffStats.addValue(absDiff);
+			percentDiffStats.addValue(absPercentDiff);
+		}
+
+		double minDiff = diffStats.getMin();
+		double maxDiff = diffStats.getMax();
+		double meanDiff = diffStats.getMean();
+		double stdDiff = diffStats.getStandardDeviation();
+
+		double minPercentDiff = percentDiffStats.getMin();
+		double maxPercentDiff = percentDiffStats.getMax();
+		double meanPercentDiff = percentDiffStats.getMean();
+		double stdPercentDiff = percentDiffStats.getStandardDeviation();
+
+		if (maxDiff > 0) {
 			System.out.println("Differences in policy values computed from LP and MC:");
-			System.out.println("min: " + min);
-			System.out.println("max: " + max);
-			System.out.println("mean: " + mean);
-			System.out.println("std: " + std);
+			System.out.println("minDiff: " + minDiff + ", minPercentDiff: " + minPercentDiff);
+			System.out.println("maxDiff: " + maxDiff + ", maxPercentDiff: " + maxPercentDiff);
+			System.out.println("meanDiff: " + meanDiff + ", meanPercentDiff: " + meanPercentDiff);
+			System.out.println("stdDiff: " + stdDiff + ", stdPercentDiff: " + stdPercentDiff);
 		}
 	}
 
-	private double[] compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction,
+	private double[][] compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction,
 			QSpace qFunctions) throws QFunctionNotFoundException {
-		double[] diffs = new double[occupancyCosts.length];
+		double[][] diffs = new double[occupancyCosts.length][2];
 
 		ValueEncodingScheme encodings = mPrismExplicitModelReader.getValueEncodingScheme();
 
@@ -136,9 +148,12 @@ public class LPMCComparator {
 		double occupancyObjCost = occupancyCosts[objCostIndex];
 		double objCost = policyInfo.getObjectiveCost();
 		// assertEquals(objCost, occupancyObjCost, mEqualityTol, "Objective costs are not equal");
+		double objCostDiff = occupancyObjCost - objCost;
 
-		if (Math.abs(occupancyObjCost - objCost) > mEqualityTol) {
-			diffs[objCostIndex] = occupancyObjCost - objCost;
+		if (Math.abs(objCostDiff) > mEqualityTol) {
+			double percentObjCostDiff = objCost != 0 ? objCostDiff / objCost : Double.POSITIVE_INFINITY;
+			diffs[objCostIndex][0] = objCostDiff;
+			diffs[objCostIndex][1] = percentObjCostDiff;
 		}
 
 		for (IQFunction<?, ?> qFunction : policyInfo.getQSpace()) {
@@ -146,9 +161,12 @@ public class LPMCComparator {
 			double occupancyCost = occupancyCosts[k];
 			double qaValue = policyInfo.getQAValue(qFunction);
 			// assertEquals(qaValue, occupancyCost, mEqualityTol, qFunction.getName() + " values are not equal");
+			double qaValueDiff = occupancyCost - qaValue;
 
-			if (Math.abs(occupancyCost - qaValue) > mEqualityTol) {
-				diffs[k] = occupancyCost - qaValue;
+			if (Math.abs(qaValueDiff) > mEqualityTol) {
+				double percentQAValueDiff = qaValue != 0 ? qaValueDiff / qaValue : Double.POSITIVE_INFINITY;
+				diffs[k][0] = qaValueDiff;
+				diffs[k][1] = percentQAValueDiff;
 			}
 		}
 

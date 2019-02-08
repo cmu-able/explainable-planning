@@ -18,6 +18,26 @@ public class ExplicitModelChecker {
 	 * @return sum_i,a (x(i,a) * c_k(i,a))
 	 */
 	public static double computeOccupancyCost(ExplicitMDP explicitMDP, int costFuncIndex, double[][] xResults) {
+		return computeOccupancyCost(explicitMDP, costFuncIndex, 0, 1, xResults);
+	}
+
+	/**
+	 * Compute transformed occupancy cost: sum_i,a (x(i,a) * (shift + multiplier * c_k(i,a))).
+	 * 
+	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param costFuncIndex
+	 *            : Index of the cost function to compute transformed occupancy cost
+	 * @param costShift
+	 *            : Cost shift
+	 * @param costMultiplier
+	 *            : Cost multiplier
+	 * @param xResults
+	 *            : Occupation measure
+	 * @return sum_i,a (x(i,a) * (shift + multiplier * c_k(i,a)))
+	 */
+	public static double computeOccupancyCost(ExplicitMDP explicitMDP, int costFuncIndex, double costShift,
+			double costMultiplier, double[][] xResults) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double sum = 0;
@@ -33,10 +53,15 @@ public class ExplicitModelChecker {
 							? explicitMDP.getTransitionCost(costFuncIndex, i, a)
 							: explicitMDP.getStateCost(costFuncIndex, i);
 
-					// c^k_ia * x_ia
+					// shift + multiplier * c^k_ia
 					// OR
-					// c^k_i * x_ia
-					sum += stepCost * xResults[i][a];
+					// shift + multiplier * c^k_i
+					double transformedStepCost = costShift + costMultiplier * stepCost;
+
+					// (transformed c^k_ia) * x_ia
+					// OR
+					// (transformed c^k_i) * x_ia
+					sum += transformedStepCost * xResults[i][a];
 				}
 			}
 		}

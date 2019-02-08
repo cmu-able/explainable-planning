@@ -18,30 +18,22 @@ import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
 import language.objectives.IPenaltyFunction;
 import language.objectives.QuadraticPenaltyFunction;
-import language.policy.Policy;
-import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
-import solver.prismconnector.PrismConnector;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
-import solver.prismconnector.exceptions.InitialStateParsingException;
-import solver.prismconnector.exceptions.ResultParsingException;
 
 public class AlternativeExplorer {
 
-	private PrismConnector mPrismConnector;
 	private GRBConnector mGRBConnector;
-	private CostFunction mCostFunction;
 	private WeberScale mWeberScale;
 
 	/**
 	 * Generate Pareto-optimal alternative policies that are immediate neighbors of the original solution policy. This
 	 * kind of alternatives indicates the "inflection points" of the decision.
 	 * 
-	 * @param prismConnector
 	 * @param grbConnector
 	 */
-	public AlternativeExplorer(PrismConnector prismConnector, GRBConnector grbConnector) {
-		this(null, prismConnector, grbConnector);
+	public AlternativeExplorer(GRBConnector grbConnector) {
+		this(null, grbConnector);
 	}
 
 	/**
@@ -50,34 +42,29 @@ public class AlternativeExplorer {
 	 * 
 	 * @param weberScale
 	 *            : Weber-Fechner law of perception
-	 * @param prismConnector
 	 * @param grbConnector
 	 */
-	public AlternativeExplorer(WeberScale weberScale, PrismConnector prismConnector, GRBConnector grbConnector) {
+	public AlternativeExplorer(WeberScale weberScale, GRBConnector grbConnector) {
 		mWeberScale = weberScale;
-		mPrismConnector = prismConnector;
 		mGRBConnector = grbConnector;
-		mCostFunction = prismConnector.getXMDP().getCostFunction();
 	}
 
 	/**
 	 * Generate Pareto-optimal alternative policies. Each alternative policy has an improvement in at least 1 QA
 	 * compared to the original solution policy.
 	 * 
-	 * @param policy
-	 *            : Original solution policy
+	 * @param policyInfo
+	 *            : Original solution policy information
 	 * @return Pareto-optimal alternative policies
 	 * @throws XMDPException
-	 * @throws PrismException
-	 * @throws ResultParsingException
 	 * @throws IOException
+	 * @throws ExplicitModelParsingException
 	 * @throws GRBException
-	 * @throws InitialStateParsingException
 	 */
-	public Set<Policy> getParetoOptimalAlternatives(Policy policy) throws XMDPException, PrismException,
-			ResultParsingException, IOException, ExplicitModelParsingException, GRBException {
-		Set<Policy> alternatives = new HashSet<>();
-		XMDP xmdp = mPrismConnector.getXMDP();
+	public Set<PolicyInfo> getParetoOptimalAlternatives(PolicyInfo policyInfo)
+			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
+		Set<PolicyInfo> alternatives = new HashSet<>();
+		XMDP xmdp = policyInfo.getXMDP();
 
 		// QAs to be explored
 		Set<IQFunction<?, ?>> frontier = new HashSet<>();
@@ -90,24 +77,24 @@ public class AlternativeExplorer {
 			Iterator<IQFunction<?, ?>> frontierIter = frontier.iterator();
 			IQFunction<?, ?> qFunction = frontierIter.next();
 
-			if (hasZeroAttributeCost(policy, qFunction)) {
+			if (hasZeroAttributeCost(policyInfo, qFunction)) {
 				// Skip -- This QA already has its best value (0 attribute-cost) in the solution policy
 				frontierIter.remove();
 				continue;
 			}
 
 			// Find an alternative policy, if exists
-			Policy alternative = getParetoOptimalAlternative(policy, qFunction);
+			PolicyInfo alternativeInfo = getParetoOptimalAlternative(policyInfo, qFunction);
 
 			// Removed explored QA
 			frontierIter.remove();
 
-			if (alternative != null) {
-				alternatives.add(alternative);
+			if (alternativeInfo != null) {
+				alternatives.add(alternativeInfo);
 
 				// For other QAs that have been improved as a side effect, remove them from the set of QAs to be
 				// explored
-				update(frontierIter, policy, alternative);
+				update(frontierIter, policyInfo, alternativeInfo);
 			}
 		}
 		return alternatives;
@@ -117,29 +104,29 @@ public class AlternativeExplorer {
 	 * Generate a Pareto-optimal alternative policy that has an improvement in the given QA compared to the original
 	 * solution policy.
 	 * 
-	 * @param policy
-	 *            : Original solution policy
+	 * @param policyInfo
+	 *            : Original solution policy information
 	 * @param qFunction
 	 *            : QA function to improve
 	 * @return Pareto-optimal alternative policy
-	 * @throws ResultParsingException
 	 * @throws XMDPException
-	 * @throws PrismException
 	 * @throws IOException
 	 * @throws ExplicitModelParsingException
 	 * @throws GRBException
 	 */
-	public Policy getParetoOptimalAlternative(Policy policy, IQFunction<?, ?> qFunction) throws ResultParsingException,
-			XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
+	public PolicyInfo getParetoOptimalAlternative(PolicyInfo policyInfo, IQFunction<?, ?> qFunction)
+			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
+		CostFunction costFunction = policyInfo.getXMDP().getCostFunction();
+
 		// Create a new objective function of n-1 attributes that excludes this QA
-		AdditiveCostFunction objectiveFunction = createNewObjective(qFunction);
+		AdditiveCostFunction objectiveFunction = createNewObjective(costFunction, qFunction);
 
 		// QA value of the solution policy
-		double currQAValue = mPrismConnector.getQAValue(policy, qFunction);
+		double currQAValue = policyInfo.getQAValue(qFunction);
 
 		// Set a new aspirational level of the QA; use this as a constraint for an alternative
 
-		double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
+		double attrCostFuncSlope = costFunction.getAttributeCostFunction(qFunction).getSlope();
 
 		// Strict, hard upper/lower bound
 		BOUND_TYPE hardBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.STRICT_UPPER_BOUND
@@ -157,7 +144,7 @@ public class AlternativeExplorer {
 
 			// Penalty function for soft-constraint violation
 			// FIXME
-			double penaltyScalingConst = mPrismConnector.getCost(policy);
+			double penaltyScalingConst = policyInfo.getObjectiveCost();
 			IPenaltyFunction penaltyFunction = new QuadraticPenaltyFunction(penaltyScalingConst, 5);
 
 			AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint = new AttributeConstraint<>(qFunction,
@@ -174,45 +161,48 @@ public class AlternativeExplorer {
 	/**
 	 * Create a new objective function of n-1 attributes that excludes this QA
 	 * 
+	 * @param costFunction
+	 *            : Cost function of the XMDP
 	 * @param excludedQFunction
 	 *            : QA function to be excluded from the objective
 	 * @return (n-1)-attribute objective function
 	 */
-	private AdditiveCostFunction createNewObjective(IQFunction<?, ?> excludedQFunction) {
+	private AdditiveCostFunction createNewObjective(CostFunction costFunction, IQFunction<?, ?> excludedQFunction) {
 		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_no_" + excludedQFunction.getName());
 
-		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : mCostFunction.getQFunctions()) {
+		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
 			if (!otherQFunction.equals(excludedQFunction)) {
-				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = mCostFunction
+				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
 						.getAttributeCostFunction(otherQFunction);
-				double scalingConst = mCostFunction.getScalingConstant(otherAttrCostFunc);
+				double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
 				objectiveFunction.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
 			}
 		}
 		return objectiveFunction;
 	}
 
-	private boolean hasZeroAttributeCost(Policy policy, IQFunction<?, ?> qFunction)
-			throws ResultParsingException, XMDPException, PrismException {
-		double currQAValue = mPrismConnector.getQAValue(policy, qFunction);
-		AttributeCostFunction<?> attrCostFunc = mCostFunction.getAttributeCostFunction(qFunction);
+	private boolean hasZeroAttributeCost(PolicyInfo policyInfo, IQFunction<?, ?> qFunction) {
+		double currQAValue = policyInfo.getQAValue(qFunction);
+		CostFunction costFunction = policyInfo.getXMDP().getCostFunction();
+		AttributeCostFunction<?> attrCostFunc = costFunction.getAttributeCostFunction(qFunction);
 		double currQACost = attrCostFunc.getCost(currQAValue);
 		return currQACost == 0;
 	}
 
-	private void update(Iterator<IQFunction<?, ?>> frontierIter, Policy policy, Policy alternative)
-			throws XMDPException, PrismException, ResultParsingException {
+	private void update(Iterator<IQFunction<?, ?>> frontierIter, PolicyInfo policyInfo, PolicyInfo alternativeInfo) {
+		CostFunction costFunction = policyInfo.getXMDP().getCostFunction();
+
 		while (frontierIter.hasNext()) {
 			IQFunction<?, ?> qFunction = frontierIter.next();
-			double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
+			double attrCostFuncSlope = costFunction.getAttributeCostFunction(qFunction).getSlope();
 
-			double solnQAValue = mPrismConnector.getQAValue(policy, qFunction);
-			double altQAValue = mPrismConnector.getQAValue(alternative, qFunction);
+			double solnQAValue = policyInfo.getQAValue(qFunction);
+			double altQAValue = alternativeInfo.getQAValue(qFunction);
 
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
 			if (mWeberScale != null) {
 				// Check if the side-effect improvement is significant
-				if (hasSignificantImprovement(qFunction, solnQAValue, altQAValue)) {
+				if (hasSignificantImprovement(qFunction, attrCostFuncSlope, solnQAValue, altQAValue)) {
 					frontierIter.remove();
 				}
 			} else if ((attrCostFuncSlope > 0 && altQAValue < solnQAValue)
@@ -222,9 +212,8 @@ public class AlternativeExplorer {
 		}
 	}
 
-	private boolean hasSignificantImprovement(IQFunction<?, ?> qFunction, double solnQAValue, double altQAValue) {
-		double attrCostFuncSlope = mCostFunction.getAttributeCostFunction(qFunction).getSlope();
-
+	private boolean hasSignificantImprovement(IQFunction<?, ?> qFunction, double attrCostFuncSlope, double solnQAValue,
+			double altQAValue) {
 		if (attrCostFuncSlope > 0) {
 			// Decrease in value for improvement
 			double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, solnQAValue);

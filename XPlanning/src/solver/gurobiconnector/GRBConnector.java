@@ -6,15 +6,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
 import language.exceptions.QFunctionNotFoundException;
-import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
+import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import solver.common.ExplicitMDP;
@@ -61,7 +62,7 @@ public class GRBConnector {
 	 * @throws XMDPException
 	 * @throws GRBException
 	 */
-	public Policy generateOptimalPolicy()
+	public PolicyInfo generateOptimalPolicy()
 			throws IOException, ExplicitModelParsingException, XMDPException, GRBException {
 		// Create a new ExplicitMDP for every new objective function, because this method will fill in the
 		// ExplicitMDP with the objective costs
@@ -84,7 +85,7 @@ public class GRBConnector {
 	 * @throws ExplicitModelParsingException
 	 * @throws GRBException
 	 */
-	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+	public PolicyInfo generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<IQFunction<?, ?>> attrHardConstraint)
 			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		Set<AttributeConstraint<IQFunction<?, ?>>> attrHardConstraints = new HashSet<>();
@@ -108,7 +109,7 @@ public class GRBConnector {
 	 * @throws ExplicitModelParsingException
 	 * @throws GRBException
 	 */
-	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+	public PolicyInfo generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint,
 			AttributeConstraint<IQFunction<?, ?>> attrHardConstraint)
 			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
@@ -119,7 +120,7 @@ public class GRBConnector {
 		return generateOptimalPolicy(objectiveFunction, attrSoftConstraints, attrHardConstraints);
 	}
 
-	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+	public PolicyInfo generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrHardConstraints)
 			throws IOException, ExplicitModelParsingException, XMDPException, GRBException {
 		// Create a new ExplicitMDP for every new objective function, because this method will fill in the
@@ -134,7 +135,7 @@ public class GRBConnector {
 		return generateOptimalPolicy(explicitMDP, null, indexedHardConstraints);
 	}
 
-	public Policy generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
+	public PolicyInfo generateOptimalPolicy(IAdditiveCostFunction objectiveFunction,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrSoftConstraints,
 			Set<AttributeConstraint<IQFunction<?, ?>>> attrHardConstraints)
 			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
@@ -154,8 +155,8 @@ public class GRBConnector {
 		return generateOptimalPolicy(explicitMDP, indexedSoftConstraints, indexedHardConstraints);
 	}
 
-	private Policy generateOptimalPolicy(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
-			NonStrictConstraint[] hardConstraints) throws GRBException, VarNotFoundException, IOException {
+	private PolicyInfo generateOptimalPolicy(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
+			NonStrictConstraint[] hardConstraints) throws GRBException, XMDPException, IOException {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double[][] policyMatrix = new double[n][m];
@@ -173,10 +174,31 @@ public class GRBConnector {
 			Policy policy = mPolicyReader.readPolicyFromPolicyMatrix(policyMatrix, explicitMDP);
 			// Keep track of LP solution corresponding to each policy computed by GRBSolver
 			mPolicyToLPSolution.put(policy, solution);
-			return policy;
+			return buildPolicyInfo(policy);
 		}
 
 		return null;
+	}
+
+	private PolicyInfo buildPolicyInfo(Policy policy) throws QFunctionNotFoundException {
+		double objectiveCost = computeCost(policy);
+		PolicyInfo policyInfo = new PolicyInfo(mXMDP, policy, objectiveCost);
+		CostFunction costFunction = mXMDP.getCostFunction();
+
+		for (IQFunction<?, ?> qFunction : mXMDP.getQSpace()) {
+			// QA value
+			double qaValue = computeQAValue(policy, qFunction);
+			policyInfo.putQAValue(qFunction, qaValue);
+
+			// Scaled QA cost
+			AttributeCostFunction<?> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
+			double nonScaledQACost = computeQACost(policy, qFunction);
+			double scaledQACost = nonScaledQACost * costFunction.getScalingConstant(attrCostFunction);
+			policyInfo.putScaledQACost(qFunction, scaledQACost);
+
+			// TODO: compute event-based QA values
+		}
+		return policyInfo;
 	}
 
 	public double computeCost(Policy policy) {

@@ -1,19 +1,24 @@
 package solver.gurobiconnector;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
+import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.AttributeConstraint;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.IAdditiveCostFunction;
 import language.policy.Policy;
 import solver.common.ExplicitMDP;
+import solver.common.ExplicitModelChecker;
 import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
 import solver.prismconnector.QFunctionEncodingScheme;
@@ -29,12 +34,22 @@ public class GRBConnector {
 	private ExplicitMDPReader mExplicitMDPReader;
 	private GRBPolicyReader mPolicyReader;
 
-	public GRBConnector(XMDP xmdp, CostCriterion costCriterion, PrismExplicitModelReader prismExplicitModelReader) {
+	// Explicit MDP corresponding to the given XMDP but with empty slots for objective costs (unused)
+	private ExplicitMDP mExplicitMDP;
+
+	// Keep track of LP solution corresponding to each policy computed by GRBSolver
+	private Map<Policy, LPSolution> mPolicyToLPSolution = new HashMap<>();
+
+	public GRBConnector(XMDP xmdp, CostCriterion costCriterion, PrismExplicitModelReader prismExplicitModelReader)
+			throws IOException, ExplicitModelParsingException {
 		mXMDP = xmdp;
 		mCostCriterion = costCriterion;
 		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
 		mExplicitMDPReader = new ExplicitMDPReader(prismExplicitModelReader, costCriterion);
 		mPolicyReader = new GRBPolicyReader(prismExplicitModelReader);
+
+		// Explicit MDP corresponding to the given XMDP but with empty slots for objective costs (unused)
+		mExplicitMDP = mExplicitMDPReader.readExplicitMDP();
 	}
 
 	/**
@@ -143,21 +158,49 @@ public class GRBConnector {
 			NonStrictConstraint[] hardConstraints) throws GRBException, VarNotFoundException, IOException {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
-		double[][] policy = new double[n][m];
+		double[][] policyMatrix = new double[n][m];
 		LPSolution solution = null;
 
 		if (mCostCriterion == CostCriterion.TOTAL_COST) {
 			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints);
-			solution = solver.solveOptimalPolicy(policy);
+			solution = solver.solveOptimalPolicy(policyMatrix);
 		} else if (mCostCriterion == CostCriterion.AVERAGE_COST) {
 			AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, softConstraints, hardConstraints);
-			solution = solver.solveOptimalPolicy(policy);
+			solution = solver.solveOptimalPolicy(policyMatrix);
 		}
 
 		if (solution != null && solution.exists()) {
-			return mPolicyReader.readPolicyFromPolicyMatrix(policy, explicitMDP);
+			Policy policy = mPolicyReader.readPolicyFromPolicyMatrix(policyMatrix, explicitMDP);
+			// Keep track of LP solution corresponding to each policy computed by GRBSolver
+			mPolicyToLPSolution.put(policy, solution);
+			return policy;
 		}
 
 		return null;
+	}
+
+	public double computeCost(Policy policy) {
+		int costFuncIndex = mQFunctionEncoding.getRewardStructureIndex(mXMDP.getCostFunction());
+		return computeOccupancyCost(policy, costFuncIndex, 0, 1);
+	}
+
+	public double computeQAValue(Policy policy, IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
+		int costFuncIndex = mQFunctionEncoding.getRewardStructureIndex(qFunction);
+		return computeOccupancyCost(policy, costFuncIndex, 0, 1);
+	}
+
+	public double computeQACost(Policy policy, IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
+		int costFuncIndex = mQFunctionEncoding.getRewardStructureIndex(qFunction);
+		AttributeCostFunction<?> attrCostFunction = mXMDP.getCostFunction().getAttributeCostFunction(qFunction);
+		double costShift = attrCostFunction.getIntercept();
+		double costMultiplier = attrCostFunction.getSlope();
+		return computeOccupancyCost(policy, costFuncIndex, costShift, costMultiplier);
+	}
+
+	private double computeOccupancyCost(Policy policy, int costFuncIndex, double costShift, double costMultiplier) {
+		LPSolution solution = mPolicyToLPSolution.get(policy);
+		double[][] xResults = solution.getSolution("x");
+		return ExplicitModelChecker.computeOccupancyCost(mExplicitMDP, costFuncIndex, costShift, costMultiplier,
+				xResults);
 	}
 }

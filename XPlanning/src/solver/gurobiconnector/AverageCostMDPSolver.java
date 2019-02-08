@@ -50,12 +50,12 @@ public class AverageCostMDPSolver {
 	/**
 	 * Solve for an optimal policy for the average-cost MDP.
 	 * 
-	 * @param policy
+	 * @param outputPolicy
 	 *            : Return parameter of optimal policy
 	 * @return Whether a solution policy exists, its objective value, and the solution
 	 * @throws GRBException
 	 */
-	public LPSolution solveOptimalPolicy(double[][] policy) throws GRBException {
+	public LPSolution solveOptimalPolicy(double[][] outputPolicy) throws GRBException {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
@@ -72,14 +72,14 @@ public class AverageCostMDPSolver {
 
 				if (xDenom > 0) {
 					// Recurrent states: S_x = states i such that sum_a (x_ia) > 0
-					fillPolicyMatrix(policy, i, xResults, xDenom);
+					fillPolicyMatrix(outputPolicy, i, xResults, xDenom);
 				} else {
 					// Transient states: S/S_x = states i such that sum_a (x_ia) = 0
-					fillPolicyMatrix(policy, i, yResults, yDenom);
+					fillPolicyMatrix(outputPolicy, i, yResults, yDenom);
 				}
 			}
 
-			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(policy, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP);
 		}
 
 		return solution;

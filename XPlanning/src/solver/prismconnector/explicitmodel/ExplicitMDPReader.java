@@ -68,7 +68,8 @@ public class ExplicitMDPReader {
 
 		// Create an additional slot for cost function to:
 		// (1) Align the indices of the cost functions (starts at 0) to the PRISM reward indices (starts at 1), and
-		// (2) Reserve the first slot for the optimization objective function
+		// (2) Reserve the first slot for the optimization objective function (which is NOT necessarily the XMDP's cost
+		// function)
 		int numCostFunctions = mQFunctionEncoding.getNumRewardStructures() + 1;
 
 		CostType costType = mPrismModelPointer.getPrismRewardType() == PrismRewardType.STATE_REWARD

@@ -47,7 +47,7 @@ public class SSPSolver {
 		mHardConstraints = hardConstraints;
 	}
 
-	public LPSolution solveOptimalPolicy(double[][] policy) throws GRBException {
+	public LPSolution solveOptimalPolicy(double[][] outputPolicy) throws GRBException {
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
 
@@ -68,13 +68,13 @@ public class SSPSolver {
 						// Exclude any x_ia value when action a is not applicable in state i
 						if (mExplicitMDP.isActionApplicable(i, a)) {
 							// pi_ia = x_ia / sum_a (x_ia)
-							policy[i][a] = xResults[i][a] / denom;
+							outputPolicy[i][a] = xResults[i][a] / denom;
 						}
 					}
 				}
 			}
 
-			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(policy, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP);
 		}
 
 		return solution;
@@ -129,7 +129,8 @@ public class SSPSolver {
 				Double.POSITIVE_INFINITY, model);
 
 		// Create variables: Delta_ia (binary)
-		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars("Deltax", GRB.BINARY, n, m, 0.0, 1.0, model);
+		String deltaxVarName = "Deltax";
+		GRBVar[][] deltaVars = GRBSolverUtils.createOptimizationVars(deltaxVarName, GRB.BINARY, n, m, 0.0, 1.0, model);
 
 		// Set optimization objective
 		GRBSolverUtils.setOptimizationObjective(mExplicitMDP, xVars, model);
@@ -140,11 +141,11 @@ public class SSPSolver {
 		addSinksFlowConstraint(xVars, model);
 
 		// Add constraints to ensure deterministic solution policy
-		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, "Deltax", deltaVars, model);
+		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaxVarName, deltaVars, model);
 
 		// For SSP, X is an upper-bound on occupation measure
 		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
-		GRBSolverUtils.addVarDeltaConstraints(upperBoundOM, mExplicitMDP, "x", xVars, "Deltax", deltaVars, model);
+		GRBSolverUtils.addVarDeltaConstraints(upperBoundOM, mExplicitMDP, "x", xVars, deltaxVarName, deltaVars, model);
 
 		// Add (upper/lower bound) cost constraints, if any
 		if (mSoftConstraints != null) {

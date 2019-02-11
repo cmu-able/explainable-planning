@@ -23,7 +23,6 @@ import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
-import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
@@ -68,10 +67,9 @@ public class ClinicSchedulingDemo {
 		// GRBConnector reads from explicit model files
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, prismExplicitModelReader);
 		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
-		Policy policy = policyInfo.getPolicy();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
-		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policy);
+		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policyInfo);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();

@@ -27,7 +27,6 @@ import language.exceptions.XMDPException;
 import language.mdp.QSpace;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
-import language.policy.Policy;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
@@ -54,15 +53,14 @@ public class MobileRobotDemo {
 		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
 
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
-		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-		PolicyInfo policyInfo = prismConn.generateOptimalPolicy();
-		Policy policy = policyInfo.getPolicy();
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
-		prismConn.terminate();
+		prismConnector.terminate();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
-		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
+		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();

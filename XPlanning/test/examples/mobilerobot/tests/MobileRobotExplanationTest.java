@@ -24,7 +24,6 @@ import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
-import language.policy.Policy;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
@@ -42,13 +41,12 @@ public class MobileRobotExplanationTest {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
-		Policy policy = policyInfo.getPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConnector.terminate();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
-		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);
+		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
 		Vocabulary vocabulary = MobileRobotDemo.getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();

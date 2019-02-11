@@ -251,7 +251,7 @@ public class PrismConnector {
 		return propertyStr.startsWith("multi");
 	}
 
-	private PolicyInfo buildPolicyInfo(Policy policy) throws ResultParsingException, XMDPException, PrismException {
+	public PolicyInfo buildPolicyInfo(Policy policy) throws ResultParsingException, XMDPException, PrismException {
 		double objectiveCost = computeCost(policy);
 		PolicyInfo policyInfo = new PolicyInfo(mXMDP, policy, objectiveCost);
 

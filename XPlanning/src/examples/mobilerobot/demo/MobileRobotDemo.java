@@ -16,6 +16,7 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
+import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
@@ -45,7 +46,7 @@ public class MobileRobotDemo {
 	}
 
 	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
-			ExplicitModelParsingException, GRBException, ParseException, DSMException {
+			ExplicitModelParsingException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
@@ -54,7 +55,8 @@ public class MobileRobotDemo {
 
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-		Policy policy = prismConn.generateOptimalPolicy();
+		PolicyInfo policyInfo = prismConn.generateOptimalPolicy();
+		Policy policy = policyInfo.getPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConn.terminate();

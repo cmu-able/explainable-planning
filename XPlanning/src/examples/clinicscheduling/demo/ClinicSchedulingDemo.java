@@ -14,6 +14,7 @@ import examples.common.DSMException;
 import examples.common.Directories;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
+import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
@@ -66,7 +67,8 @@ public class ClinicSchedulingDemo {
 
 		// GRBConnector reads from explicit model files
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, prismExplicitModelReader);
-		Policy policy = grbConnector.generateOptimalPolicy();
+		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
+		Policy policy = policyInfo.getPolicy();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policy);

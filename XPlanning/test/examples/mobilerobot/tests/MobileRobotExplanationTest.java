@@ -16,6 +16,7 @@ import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
+import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
@@ -39,11 +40,12 @@ public class MobileRobotExplanationTest {
 		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
-		PrismConnector prismConn = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-		Policy policy = prismConn.generateOptimalPolicy();
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
+		Policy policy = policyInfo.getPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
-		prismConn.terminate();
+		prismConnector.terminate();
 
 		Explainer explainer = new Explainer(prismConnSetttings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policy);

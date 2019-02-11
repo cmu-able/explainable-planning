@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
-import org.junit.AfterClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -18,13 +17,13 @@ import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.utils.SimpleConsoleLogger;
 import explanation.analysis.AlternativeExplorer;
+import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
 import language.dtmc.XDTMC;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
-import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
@@ -39,21 +38,21 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 public class MobileRobotAlternativeExplorerTest {
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testGenerateTravelTimeAlternative(File missionJsonFile, PrismConnector prismConnector,
-			GRBConnector grbConnector, Policy policy) {
+	public void testGenerateTravelTimeAlternative(File missionJsonFile, GRBConnector grbConnector,
+			PolicyInfo policyInfo) {
+		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 
 		try {
-			AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
-			IQFunction<?, ?> qFunction = prismConnector.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
+			IQFunction<?, ?> qFunction = policyInfo.getXMDP().getQSpace().getQFunction(TravelTimeQFunction.class,
 					TravelTimeQFunction.NAME);
 
-			Policy altPolicy = altExplorer.getParetoOptimalAlternative(policy, qFunction);
+			PolicyInfo altPolicyInfo = altExplorer.getParetoOptimalAlternative(policyInfo, qFunction);
 
-			if (altPolicy == null) {
+			if (altPolicyInfo == null) {
 				SimpleConsoleLogger
 						.log(String.format("No alternative found that improves %s.", TravelTimeQFunction.NAME));
 			} else {
-				printPrismDTMCAndProperties(prismConnector, altPolicy);
+				printPrismDTMCAndProperties(altPolicyInfo);
 			}
 
 			SimpleConsoleLogger.newLine();
@@ -65,12 +64,11 @@ public class MobileRobotAlternativeExplorerTest {
 	}
 
 	@Test(dataProvider = "xmdpProblems")
-	public void testAlternativeExplorer(File missionJsonFile, PrismConnector prismConnector, GRBConnector grbConnector,
-			Policy policy) {
-		AlternativeExplorer altExplorer = new AlternativeExplorer(prismConnector, grbConnector);
+	public void testAlternativeExplorer(File missionJsonFile, GRBConnector grbConnector, PolicyInfo policyInfo) {
+		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 
 		try {
-			Set<Policy> altPolicies = altExplorer.getParetoOptimalAlternatives(policy);
+			Set<PolicyInfo> altPolicies = altExplorer.getParetoOptimalAlternatives(policyInfo);
 			String message;
 			if (altPolicies.isEmpty()) {
 				message = "There is no Pareto-optimal alternative.";
@@ -82,8 +80,8 @@ public class MobileRobotAlternativeExplorerTest {
 			SimpleConsoleLogger.log(message);
 			SimpleConsoleLogger.newLine();
 
-			for (Policy altPolicy : altPolicies) {
-				printPrismDTMCAndProperties(prismConnector, altPolicy);
+			for (PolicyInfo altPolicyInfo : altPolicies) {
+				printPrismDTMCAndProperties(altPolicyInfo);
 				SimpleConsoleLogger.newLine();
 			}
 		} catch (ResultParsingException | XMDPException | PrismException | IOException | ExplicitModelParsingException
@@ -93,9 +91,9 @@ public class MobileRobotAlternativeExplorerTest {
 		}
 	}
 
-	private void printPrismDTMCAndProperties(PrismConnector prismConnector, Policy policy)
+	private void printPrismDTMCAndProperties(PolicyInfo policyInfo)
 			throws XMDPException, ResultParsingException, PrismException {
-		XDTMC xdtmc = new XDTMC(prismConnector.getXMDP(), policy);
+		XDTMC xdtmc = new XDTMC(policyInfo.getXMDP(), policyInfo.getPolicy());
 		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
 		String dtmcWithQAs = dtmcTranslator.getDTMCTranslation(true, false);
 
@@ -103,7 +101,7 @@ public class MobileRobotAlternativeExplorerTest {
 		SimpleConsoleLogger.newLine();
 
 		for (IQFunction<?, ?> qFunction : xdtmc.getXMDP().getQSpace()) {
-			double qaValue = prismConnector.getQAValue(policy, qFunction);
+			double qaValue = policyInfo.getQAValue(qFunction);
 
 			SimpleConsoleLogger.log(String.format("QA value of %s", qFunction.getName()), qaValue, true);
 		}
@@ -112,12 +110,11 @@ public class MobileRobotAlternativeExplorerTest {
 	@BeforeMethod
 	public void printMissionFilename(Object[] data) throws ResultParsingException, XMDPException, PrismException {
 		File missionJsonFile = (File) data[0];
-		PrismConnector prismConnector = (PrismConnector) data[1];
-		Policy policy = (Policy) data[3];
+		PolicyInfo policyInfo = (PolicyInfo) data[2];
 
 		SimpleConsoleLogger.log("Mission", missionJsonFile.getName(), true);
 		SimpleConsoleLogger.logHeader("Solution Policy");
-		printPrismDTMCAndProperties(prismConnector, policy);
+		printPrismDTMCAndProperties(policyInfo);
 		SimpleConsoleLogger.newLine();
 	}
 
@@ -130,7 +127,7 @@ public class MobileRobotAlternativeExplorerTest {
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
-		Object[][] data = new Object[missionJsonFiles.length][4];
+		Object[][] data = new Object[missionJsonFiles.length][3];
 
 		int i = 0;
 		for (File missionJsonFile : missionJsonFiles) {
@@ -151,20 +148,16 @@ public class MobileRobotAlternativeExplorerTest {
 					encodings);
 			GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.TOTAL_COST, prismExplicitModelReader);
 
-			// Optimal policy
-			Policy policy = prismConnector.generateOptimalPolicy();
+			// Compute optimal policy
+			PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
 
-			// Pass mission.json, PRISM connector, GRB connector, and policy as data
-			data[i] = new Object[] { missionJsonFile, prismConnector, grbConnector, policy };
+			// Close down PRISM
+			prismConnector.terminate();
+
+			// Pass mission.json, GRB connector, and policy info as data
+			data[i] = new Object[] { missionJsonFile, grbConnector, policyInfo };
 			i++;
 		}
 		return data;
-	}
-
-	@AfterClass
-	private void terminatePrismConnector(Object[] data) {
-		PrismConnector prismConnector = (PrismConnector) data[1];
-		// Close down PRISM
-		prismConnector.terminate();
 	}
 }

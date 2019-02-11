@@ -97,7 +97,7 @@ public class LPMCComparator {
 		QSpace qFunctions = mPrismConnector.getXMDP().getQSpace();
 
 		// Compute the average cost and QA values of the optimal policy
-		PolicyInfo policyInfo = computePolicyInfo(policy, qFunctions);
+		PolicyInfo policyInfo = mPrismConnector.buildPolicyInfo(policy);
 
 		double[][] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
 		// Excluding the element at index 0 since we don't compute its value
@@ -156,7 +156,7 @@ public class LPMCComparator {
 			diffs[objCostIndex][1] = percentObjCostDiff;
 		}
 
-		for (IQFunction<?, ?> qFunction : policyInfo.getQSpace()) {
+		for (IQFunction<?, ?> qFunction : qFunctions) {
 			int k = encodings.getRewardStructureIndex(qFunction);
 			double occupancyCost = occupancyCosts[k];
 			double qaValue = policyInfo.getQAValue(qFunction);
@@ -185,19 +185,5 @@ public class LPMCComparator {
 			occupancyCosts[k] = occupancyCost;
 		}
 		return occupancyCosts;
-	}
-
-	private PolicyInfo computePolicyInfo(Policy policy, QSpace qFunctions)
-			throws ResultParsingException, XMDPException, PrismException {
-		double objectiveCost = mPrismConnector.getCost(policy);
-		// For now, policyInfo only has the policy's cost and QA values
-		PolicyInfo policyInfo = new PolicyInfo(policy, objectiveCost);
-
-		for (IQFunction<?, ?> qFunction : qFunctions) {
-			// For now, only put QA values into policyInfo
-			double qaValue = mPrismConnector.getQAValue(policy, qFunction);
-			policyInfo.putQAValue(qFunction, qaValue);
-		}
-		return policyInfo;
 	}
 }

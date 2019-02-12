@@ -76,7 +76,7 @@ public class ClinicSchedulingDemo {
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST,
 				Directories.POLICIES_OUTPUT_PATH + "/" + problemName, verbalizerSettings);
 
-		String explanationJsonFilename = String.format("%s_explanation.json", problemFile);
+		String explanationJsonFilename = String.format("%s_explanation.json", problemName);
 		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(problemName, explanation,
 				explanationJsonFilename);

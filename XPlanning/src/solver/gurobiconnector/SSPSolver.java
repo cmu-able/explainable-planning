@@ -160,10 +160,14 @@ public class SSPSolver {
 		model.optimize();
 
 		int numSolutions = model.get(GRB.IntAttr.SolCount);
-		double objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
+		double objectiveValue = -1;
 
 		if (numSolutions > 0) {
 			// Solution found
+
+			// Objective value: sum_i,a (c_ia * x_ia)
+			objectiveValue = model.get(GRB.DoubleAttr.ObjVal);
+
 			// Query results: optimal values of x_ia and Delta_ia
 			double[][] grbXResults = model.get(GRB.DoubleAttr.X, xVars);
 			double[][] grbDeltaResults = model.get(GRB.DoubleAttr.X, deltaVars);

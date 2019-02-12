@@ -52,6 +52,7 @@ public class MobileRobotAlternativeExplorerTest {
 				SimpleConsoleLogger
 						.log(String.format("No alternative found that improves %s.", TravelTimeQFunction.NAME));
 			} else {
+				SimpleConsoleLogger.logHeader(String.format("Alternative that improves %s", TravelTimeQFunction.NAME));
 				printPrismDTMCAndProperties(altPolicyInfo);
 			}
 

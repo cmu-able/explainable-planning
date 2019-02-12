@@ -29,6 +29,7 @@ import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
+import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 import uiconnector.ExplanationWriter;
@@ -45,7 +46,7 @@ public class ClinicSchedulingDemo {
 	}
 
 	public void run(File problemFile) throws PrismException, XMDPException, IOException, ExplicitModelParsingException,
-			GRBException, DSMException {
+			GRBException, DSMException, ResultParsingException {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
 		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
@@ -84,7 +85,7 @@ public class ClinicSchedulingDemo {
 	}
 
 	public static void main(String[] args) throws PrismException, XMDPException, IOException,
-			ExplicitModelParsingException, GRBException, DSMException {
+			ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
 		String problemFilename = args[0];
 		File problemFile = new File(PROBLEMS_PATH, problemFilename);
 

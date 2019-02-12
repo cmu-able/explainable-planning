@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
-import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.Directories;
@@ -76,7 +75,7 @@ public class MobileRobotDemo {
 	}
 
 	public static void main(String[] args) throws ResultParsingException, PrismException, IOException, XMDPException,
-			ExplicitModelParsingException, GRBException, ParseException, DSMException {
+			ExplicitModelParsingException, GRBException, DSMException {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 

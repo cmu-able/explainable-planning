@@ -9,35 +9,35 @@ public class ExplicitModelChecker {
 	/**
 	 * Compute occupancy cost: sum_i,a (x(i,a) * c_k(i,a)).
 	 * 
-	 * @param explicitMDP
-	 *            : Explicit MDP
-	 * @param costFuncIndex
-	 *            : Index of the cost function to compute occupancy cost
 	 * @param xResults
 	 *            : Occupation measure
+	 * @param costFuncIndex
+	 *            : Index of the cost function to compute occupancy cost
+	 * @param explicitMDP
+	 *            : Explicit MDP
 	 * @return sum_i,a (x(i,a) * c_k(i,a))
 	 */
-	public static double computeOccupancyCost(ExplicitMDP explicitMDP, int costFuncIndex, double[][] xResults) {
-		return computeOccupancyCost(explicitMDP, costFuncIndex, 0, 1, xResults);
+	public static double computeOccupancyCost(double[][] xResults, int costFuncIndex, ExplicitMDP explicitMDP) {
+		return computeOccupancyCost(xResults, costFuncIndex, 0, 1, explicitMDP);
 	}
 
 	/**
 	 * Compute transformed occupancy cost: sum_i,a (x(i,a) * (shift + multiplier * c_k(i,a))).
 	 * 
-	 * @param explicitMDP
-	 *            : Explicit MDP
+	 * @param xResults
+	 *            : Occupation measure
 	 * @param costFuncIndex
 	 *            : Index of the cost function to compute transformed occupancy cost
 	 * @param costShift
 	 *            : Cost shift
 	 * @param costMultiplier
 	 *            : Cost multiplier
-	 * @param xResults
-	 *            : Occupation measure
+	 * @param explicitMDP
+	 *            : Explicit MDP
 	 * @return sum_i,a (x(i,a) * (shift + multiplier * c_k(i,a)))
 	 */
-	public static double computeOccupancyCost(ExplicitMDP explicitMDP, int costFuncIndex, double costShift,
-			double costMultiplier, double[][] xResults) {
+	public static double computeOccupancyCost(double[][] xResults, int costFuncIndex, double costShift,
+			double costMultiplier, ExplicitMDP explicitMDP) {
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		double sum = 0;

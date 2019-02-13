@@ -222,7 +222,7 @@ public class GRBConnector {
 	private double computeOccupancyCost(Policy policy, int costFuncIndex, double costShift, double costMultiplier) {
 		LPSolution solution = mPolicyToLPSolution.get(policy);
 		double[][] xResults = solution.getSolution("x");
-		return ExplicitModelChecker.computeOccupancyCost(mExplicitMDP, costFuncIndex, costShift, costMultiplier,
-				xResults);
+		return ExplicitModelChecker.computeOccupancyCost(xResults, costFuncIndex, costShift, costMultiplier,
+				mExplicitMDP);
 	}
 }

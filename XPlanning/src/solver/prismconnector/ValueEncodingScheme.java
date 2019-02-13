@@ -16,6 +16,7 @@ import language.exceptions.VarNotFoundException;
 import language.mdp.ActionSpace;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
+import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 
 /**
@@ -41,10 +42,10 @@ public class ValueEncodingScheme {
 	private ActionSpace mActionSpace;
 
 	public ValueEncodingScheme(StateSpace stateSpace, ActionSpace actionSpace, QSpace qSpace,
-			IAdditiveCostFunction objectiveFunction) {
+			CostFunction costFunction) {
 		mStateSpace = stateSpace;
 		mActionSpace = actionSpace;
-		mQFunctionEncoding = new QFunctionEncodingScheme(objectiveFunction, qSpace);
+		mQFunctionEncoding = new QFunctionEncodingScheme(costFunction, qSpace);
 		encodeStates(stateSpace);
 	}
 

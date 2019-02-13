@@ -8,6 +8,7 @@ import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
 import language.exceptions.QFunctionNotFoundException;
 import language.mdp.QSpace;
+import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
 
 /**
@@ -27,19 +28,26 @@ public class QFunctionEncodingScheme {
 	 */
 	private volatile int hashCode;
 
-	// Index of .srew/.trew file starts at 1
-	private static final int START_REW_STRUCT_INDEX = 1;
+	// PRISM index of .srew/.trew file starts at 1
+	public static final int START_REW_STRUCT_INDEX = 1;
+
+	// PRISM index of .srew/.trew file corresponding to QA function starts at 2
+	public static final int START_QA_REW_STRUCT_INDEX = 2;
 
 	private QSpace mQSpace;
+
+	// Fixed-order all PRISM reward structures
 	private List<Object> mOrderedRewardStructs = new ArrayList<>();
+
+	// Fixed-order of PRISM reward structures representing QA functions
+	// This is a sub-list of mOrderedRewardStructs
 	private List<IQFunction<IAction, ITransitionStructure<IAction>>> mOrderedQFunctions = new ArrayList<>();
 
-	public QFunctionEncodingScheme(IAdditiveCostFunction objectiveFunction, QSpace qSpace) {
+	public QFunctionEncodingScheme(CostFunction costFunction, QSpace qSpace) {
 		mQSpace = qSpace;
 
-		// The objective function (which can be the cost function of XMDP or any objective function) is always the first
-		// reward structure
-		appendCostFunction(objectiveFunction);
+		// The cost function is always the first reward structure in PRISM model
+		appendCostFunction(costFunction);
 
 		// The order of reward structures representing the QA functions is defined arbitrarily
 		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
@@ -47,8 +55,8 @@ public class QFunctionEncodingScheme {
 		}
 	}
 
-	private void appendCostFunction(IAdditiveCostFunction objectiveFunction) {
-		mOrderedRewardStructs.add(objectiveFunction);
+	private void appendCostFunction(CostFunction costFunction) {
+		mOrderedRewardStructs.add(costFunction);
 	}
 
 	private void appendQFunction(IQFunction<IAction, ITransitionStructure<IAction>> qFunction) {
@@ -60,11 +68,18 @@ public class QFunctionEncodingScheme {
 		return mQSpace;
 	}
 
+	/**
+	 * Get the total number of reward structures in the PRISM model. These include: 1 reward structure for the XMDP's
+	 * cost function, followed by 1 reward structure for each QA function.
+	 * 
+	 * @return Total number of reward structures in the PRISM model
+	 */
 	public int getNumRewardStructures() {
 		return mOrderedRewardStructs.size();
 	}
 
 	/**
+	 * Get the PRISM index of the reward structure representing a given QA function.
 	 * 
 	 * @param qFunction
 	 *            : QA function
@@ -102,6 +117,18 @@ public class QFunctionEncodingScheme {
 	}
 
 	/**
+	 * Get the QFunction at a given PRISM reward-structure index.
+	 * 
+	 * @param rewStructIndex
+	 *            : Reward-structure index (starts at 2)
+	 * @return QFunction at the given index
+	 */
+	public IQFunction<IAction, ITransitionStructure<IAction>> getQFunctionAtRewardStructureIndex(int rewStructIndex) {
+		int index = rewStructIndex - START_QA_REW_STRUCT_INDEX;
+		return mOrderedQFunctions.get(index);
+	}
+
+	/**
 	 * 
 	 * @param objectiveFunction
 	 * @return Whether a given objective function has a corresponding reward structure
@@ -119,7 +146,8 @@ public class QFunctionEncodingScheme {
 			return false;
 		}
 		QFunctionEncodingScheme scheme = (QFunctionEncodingScheme) obj;
-		return scheme.mQSpace.equals(mQSpace) && scheme.mOrderedRewardStructs.equals(mOrderedRewardStructs);
+		return scheme.mQSpace.equals(mQSpace) && scheme.mOrderedRewardStructs.equals(mOrderedRewardStructs)
+				&& scheme.mOrderedQFunctions.equals(mOrderedQFunctions);
 	}
 
 	@Override
@@ -129,6 +157,7 @@ public class QFunctionEncodingScheme {
 			result = 17;
 			result = 31 * result + mQSpace.hashCode();
 			result = 31 * result + mOrderedRewardStructs.hashCode();
+			result = 31 * result + mOrderedQFunctions.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

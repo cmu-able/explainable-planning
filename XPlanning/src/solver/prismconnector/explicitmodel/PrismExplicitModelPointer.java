@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import solver.prismconnector.PrismRewardType;
+import solver.prismconnector.QFunctionEncodingScheme;
 
 public class PrismExplicitModelPointer {
 
@@ -101,7 +102,7 @@ public class PrismExplicitModelPointer {
 				mLabFile = prismFile;
 			} else if ((mRewardType == PrismRewardType.STATE_REWARD && filename.endsWith(SREW_EXTENSION)
 					|| mRewardType == PrismRewardType.TRANSITION_REWARD && filename.endsWith(TREW_EXTENSION))) {
-				// "{filename}.srew or .trew
+				// "{filename}k.srew or .trew
 				mIndexedRewFiles.add(prismFile);
 			} else if (filename.endsWith(MDP_EXTENSION)) { // "{filename}.mdp"
 				mMDPFile = prismFile;
@@ -130,6 +131,14 @@ public class PrismExplicitModelPointer {
 		return Arrays.asList(rewFiles);
 	}
 
+	/**
+	 * If there are multiple reward structures, this file "pointer" doesn't correspond to any actual file. It is only
+	 * used as an input parameter to PRISM's explicit reward export.
+	 * 
+	 * @param modelPath
+	 * @param rewExtension
+	 * @return {reward filename}.srew/trew
+	 */
 	private File getRewardFile(String modelPath, String rewExtension) {
 		if (mIndexedRewFiles.size() > 1) {
 			File rew1File = mIndexedRewFiles.get(0);
@@ -224,11 +233,18 @@ public class PrismExplicitModelPointer {
 		return getIndexRewardsFile(rewardStructIndex);
 	}
 
+	/**
+	 * Get the .srew/.trew file at a given PRISM reward-structure index.
+	 * 
+	 * @param rewardStructIndex
+	 *            : PRISM reward-structure index (starts at 1)
+	 * @return Reward structure (.srew/.trew) file at the given index
+	 */
 	private File getIndexRewardsFile(int rewardStructIndex) {
 		if (mIndexedRewFiles.isEmpty()) {
 			mIndexedRewFiles.addAll(getSortedRewardsFiles());
 		}
-		return mIndexedRewFiles.get(rewardStructIndex - 1);
+		return mIndexedRewFiles.get(rewardStructIndex - QFunctionEncodingScheme.START_REW_STRUCT_INDEX);
 	}
 
 	private void checkRewardType(PrismRewardType prismRewardType) {

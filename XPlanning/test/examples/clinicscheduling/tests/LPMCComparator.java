@@ -8,9 +8,12 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.models.IAction;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.QSpace;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
 import language.objectives.IAdditiveCostFunction;
@@ -23,6 +26,7 @@ import solver.common.NonStrictConstraint;
 import solver.gurobiconnector.AverageCostMDPSolver;
 import solver.gurobiconnector.GRBPolicyReader;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
@@ -84,22 +88,28 @@ public class LPMCComparator {
 	 */
 	public double[] checkLPMCConsistency(ExplicitMDP explicitMDP, double[][] xResults, double[][] policyMatrix)
 			throws GRBException, IOException, ResultParsingException, XMDPException, PrismException {
+		// Objective cost function for ExplicitMDP (not necessarily the same as the cost function of XMDP) is always
+		// at index 0
+		int numCostFunctions = explicitMDP.getNumCostFunctions();
+		double[] occupancyCosts = new double[numCostFunctions]; // Cost and QA values
+		double[] occupancyQACosts = new double[numCostFunctions]; // (non-scaled) QA costs
+
 		// From GRBSolver:
-		// Compute occupation costs of the optimal policy
-		double[] occupancyCosts = computeOccupancyCosts(xResults, explicitMDP);
+		// Compute occupancy QA values and costs of the optimal policy
+		computeOccupancyCosts(xResults, explicitMDP, occupancyCosts, occupancyQACosts);
 
 		// From PRISM:
 		GRBPolicyReader policyReader = new GRBPolicyReader(mPrismExplicitModelReader);
 		Policy policy = policyReader.readPolicyFromPolicyMatrix(policyMatrix, explicitMDP);
 
+		// Compute the average cost and QA values of the optimal policy
+		PolicyInfo policyInfo = mPrismConnector.buildPolicyInfo(policy);
+
 		// Use the cost functions and the QA functions from the XMDP
 		CostFunction costFunction = mPrismConnector.getXMDP().getCostFunction();
 		QSpace qFunctions = mPrismConnector.getXMDP().getQSpace();
 
-		// Compute the average cost and QA values of the optimal policy
-		PolicyInfo policyInfo = mPrismConnector.buildPolicyInfo(policy);
-
-		double[][] diffs = compare(occupancyCosts, policyInfo, costFunction, qFunctions);
+		double[][] diffs = compare(occupancyCosts, occupancyQACosts, policyInfo, costFunction, qFunctions);
 		// Excluding the element at index 0 since we don't compute its value
 		double[][] tailDiffs = Arrays.copyOfRange(diffs, 1, diffs.length);
 		printSummaryStatistics(tailDiffs);
@@ -138,9 +148,9 @@ public class LPMCComparator {
 		}
 	}
 
-	private double[][] compare(double[] occupancyCosts, PolicyInfo policyInfo, CostFunction costFunction,
-			QSpace qFunctions) throws QFunctionNotFoundException {
-		double[][] diffs = new double[occupancyCosts.length][2];
+	private double[][] compare(double[] occupancyCosts, double[] occupancyQACosts, PolicyInfo policyInfo,
+			CostFunction costFunction, QSpace qFunctions) throws QFunctionNotFoundException {
+		double[][] diffs = new double[occupancyCosts.length][3];
 
 		ValueEncodingScheme encodings = mPrismExplicitModelReader.getValueEncodingScheme();
 
@@ -156,34 +166,59 @@ public class LPMCComparator {
 			diffs[objCostIndex][1] = percentObjCostDiff;
 		}
 
-		for (IQFunction<?, ?> qFunction : qFunctions) {
+		for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qFunctions) {
 			int k = encodings.getRewardStructureIndex(qFunction);
-			double occupancyCost = occupancyCosts[k];
+
+			// From LP method:
+			double occupancyQAValue = occupancyCosts[k];
+			double nonScaledOccupancyQACost = occupancyQACosts[k];
+			double scalingConst = costFunction.getScalingConstant(costFunction.getAttributeCostFunction(qFunction));
+			double scaledOccupancyQACost = scalingConst * nonScaledOccupancyQACost;
+
+			// From MC method:
 			double qaValue = policyInfo.getQAValue(qFunction);
+			double scaledQACost = policyInfo.getScaledQACost(qFunction);
+
 			// assertEquals(qaValue, occupancyCost, mEqualityTol, qFunction.getName() + " values are not equal");
-			double qaValueDiff = occupancyCost - qaValue;
+			double qaValueDiff = occupancyQAValue - qaValue;
+			double scaledQACostDiff = scaledOccupancyQACost - scaledQACost;
 
 			if (Math.abs(qaValueDiff) > mEqualityTol) {
 				double percentQAValueDiff = qaValue != 0 ? qaValueDiff / qaValue : Double.POSITIVE_INFINITY;
 				diffs[k][0] = qaValueDiff;
 				diffs[k][1] = percentQAValueDiff;
 			}
+
+			if (Math.abs(scaledQACostDiff) > mEqualityTol) {
+				diffs[k][2] = scaledQACostDiff;
+			}
 		}
 
 		return diffs;
 	}
 
-	private double[] computeOccupancyCosts(double[][] xResults, ExplicitMDP explicitMDP) throws GRBException {
-		int numCostFunctions = explicitMDP.getNumCostFunctions();
+	private void computeOccupancyCosts(double[][] xResults, ExplicitMDP explicitMDP, double[] outputOccupancyCosts,
+			double[] outputOccupancyQACosts) throws GRBException {
+		CostFunction costFunction = mPrismConnector.getXMDP().getCostFunction();
+		QFunctionEncodingScheme qFunctionEncoding = mPrismExplicitModelReader.getValueEncodingScheme()
+				.getQFunctionEncodingScheme();
 
-		// Objective cost function for ExplicitMDP (not necessarily the same as the cost function of XMDP) is always
-		// at index 0
-		double[] occupancyCosts = new double[numCostFunctions];
+		for (int k = QFunctionEncodingScheme.START_REW_STRUCT_INDEX; k < explicitMDP.getNumCostFunctions(); k++) {
+			// Cost or QA value
+			double occupancyCost = ExplicitModelChecker.computeOccupancyCost(xResults, k, explicitMDP);
+			outputOccupancyCosts[k] = occupancyCost;
 
-		for (int k = 0; k < explicitMDP.getNumCostFunctions(); k++) {
-			double occupancyCost = ExplicitModelChecker.computeOccupancyCost(explicitMDP, k, xResults);
-			occupancyCosts[k] = occupancyCost;
+			if (k >= QFunctionEncodingScheme.START_QA_REW_STRUCT_INDEX) {
+				IQFunction<?, ?> qFunction = qFunctionEncoding.getQFunctionAtRewardStructureIndex(k);
+				AttributeCostFunction<?> attrCostFunction = costFunction.getAttributeCostFunction(qFunction);
+				double costShift = attrCostFunction.getIntercept();
+				double costMultiplier = attrCostFunction.getSlope();
+
+				// QA cost
+				double occupancyQACost = ExplicitModelChecker.computeOccupancyCost(xResults, k, costShift,
+						costMultiplier, explicitMDP);
+				outputOccupancyQACosts[k] = occupancyQACost;
+			}
 		}
-		return occupancyCosts;
 	}
 }

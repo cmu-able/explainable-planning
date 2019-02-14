@@ -311,7 +311,7 @@ public class GRBSolverUtils {
 	 * @param vUpperBound
 	 * @param explicitMDP
 	 * @param feasibilityTol
-	 * @return Whether the results of x_ia and Delta_ia satisfy: x_ia / X <= Delta_ia, for all i, a
+	 * @return Whether the results of v_ia and Deltav_ia satisfy: v_ia / V <= Deltav_ia, for all i, a
 	 */
 	static boolean consistencyCheckVarDeltaConstraints(double[][] vResults, double[][] deltavResults,
 			double vUpperBound, ExplicitMDP explicitMDP, double feasibilityTol) {
@@ -404,17 +404,17 @@ public class GRBSolverUtils {
 	}
 
 	/**
-	 * Check if (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0).
+	 * Check if (deltavResult == 1 && vResult > 0) || (deltavResult == 0 && vResult == 0).
 	 * 
-	 * @param deltaResult
-	 * @param xResult
+	 * @param deltavResult
+	 * @param vResult
 	 * @param feasibilityTol
-	 * @return (deltaResult == 1 && xResult > 0) || (deltaResult == 0 && xResult == 0)
+	 * @return (deltavResult == 1 && vResult > 0) || (deltavResult == 0 && vResult == 0)
 	 */
-	private static boolean checkResultsConsistency(double deltaResult, double xResult, double feasibilityTol) {
-		return (approximatelyEqual(deltaResult, 1, feasibilityTol) && xResult > 0)
-				|| (approximatelyEqual(deltaResult, 0, feasibilityTol)
-						&& approximatelyEqual(xResult, 0, feasibilityTol));
+	private static boolean checkResultsConsistency(double deltavResult, double vResult, double feasibilityTol) {
+		return (approximatelyEqual(deltavResult, 1, feasibilityTol) && vResult > 0)
+				|| (approximatelyEqual(deltavResult, 0, feasibilityTol)
+						&& approximatelyEqual(vResult, 0, feasibilityTol));
 	}
 
 	/**

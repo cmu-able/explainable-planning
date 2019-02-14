@@ -22,11 +22,15 @@ public class UpperBoundOccupationMeasureSolver {
 	 * Solve for X >= x_ia for all i, a, where x_ia is the occupation measure corresponding to a policy of a given MDP.
 	 * 
 	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
 	 * @return Upper bound of occupation measure
 	 * @throws GRBException
 	 */
-	public static double getUpperBoundOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
-		double[][] xResults = solveMaximumOccupationMeasure(explicitMDP);
+	public static double computeUpperBoundOccupationMeasure(ExplicitMDP explicitMDP, double feasibilityTol)
+			throws GRBException {
+		double[][] xResults = solveMaximumOccupationMeasure(explicitMDP, feasibilityTol);
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
 		// From the constraint: x_ia >=0 for all i, a
@@ -56,12 +60,18 @@ public class UpperBoundOccupationMeasureSolver {
 	 * out(i) = sum_a (x_ia).
 	 * 
 	 * @param explicitMDP
+	 *            : Explicit MDP
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
 	 * @return Occupation measure
 	 * @throws GRBException
 	 */
-	public static double[][] solveMaximumOccupationMeasure(ExplicitMDP explicitMDP) throws GRBException {
+	public static double[][] solveMaximumOccupationMeasure(ExplicitMDP explicitMDP, double feasibilityTol)
+			throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
+
+		GRBSolverUtils.configureToleranceParameters(model, feasibilityTol, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();
@@ -86,7 +96,7 @@ public class UpperBoundOccupationMeasureSolver {
 		model.dispose();
 		env.dispose();
 
-		assert consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP);
+		assert consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP, feasibilityTol);
 
 		return xResults;
 	}
@@ -157,7 +167,7 @@ public class UpperBoundOccupationMeasureSolver {
 	}
 
 	private static boolean consistencyCheckDiscountedFlowConservationConstraints(double[][] xResults,
-			ExplicitMDP explicitMDP) {
+			ExplicitMDP explicitMDP, double feasibilityTol) {
 		int n = explicitMDP.getNumStates();
 
 		// Initial state distribution
@@ -172,7 +182,7 @@ public class UpperBoundOccupationMeasureSolver {
 			double outValue = GRBSolverUtils.getOutValue(i, xResults, explicitMDP);
 			double inValue = GRBSolverUtils.getInValue(i, xResults, explicitMDP);
 			double diff = outValue - gamma * inValue;
-			boolean satisfied = GRBSolverUtils.approximatelyEqual(diff, alpha[i]);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(diff, alpha[i], feasibilityTol);
 
 			if (!satisfied) {
 				return false;

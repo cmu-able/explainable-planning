@@ -160,7 +160,8 @@ public class SSPSolver {
 		GRBSolverUtils.addDeltaConstraints(mExplicitMDP, deltaxVarName, deltaVars, model);
 
 		// For SSP, X is an upper-bound on occupation measure
-		double upperBoundOM = UpperBoundOccupationMeasureSolver.getUpperBoundOccupationMeasure(mExplicitMDP);
+		double upperBoundOM = UpperBoundOccupationMeasureSolver.computeUpperBoundOccupationMeasure(mExplicitMDP,
+				mFeasibilityTol);
 		GRBSolverUtils.addVarDeltaConstraints(upperBoundOM, mExplicitMDP, "x", xVars, deltaxVarName, deltaVars, model);
 
 		// Add (upper/lower bound) cost constraints, if any

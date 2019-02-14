@@ -25,6 +25,8 @@ import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
+import solver.gurobiconnector.GRBConnectorSettings;
+import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
@@ -65,7 +67,9 @@ public class ClinicSchedulingDemo {
 		prismConnector.terminate();
 
 		// GRBConnector reads from explicit model files
-		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, prismExplicitModelReader);
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
+				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
 
 		Explainer explainer = new Explainer(prismConnSetttings);

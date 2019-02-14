@@ -25,6 +25,7 @@ import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
 import solver.gurobiconnector.AverageCostMDPSolver;
 import solver.gurobiconnector.GRBPolicyReader;
+import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.QFunctionEncodingScheme;
 import solver.prismconnector.ValueEncodingScheme;
@@ -63,7 +64,8 @@ public class LPMCComparator {
 
 	public double[][] computeOccupationMeasureResults(ExplicitMDP explicitMDP, NonStrictConstraint[] hardConstraints,
 			double[][] outputPolicyMatrix) throws GRBException {
-		AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, null, hardConstraints);
+		AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, null, hardConstraints,
+				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 		LPSolution solution = solver.solveOptimalPolicy(outputPolicyMatrix);
 		double[][] xResults = solution.getSolution("x");
 		return xResults;

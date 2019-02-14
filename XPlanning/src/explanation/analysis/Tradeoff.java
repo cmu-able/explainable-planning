@@ -17,14 +17,16 @@ public class Tradeoff {
 
 	private PolicyInfo mSolnPolicyInfo;
 	private PolicyInfo mAltPolicyInfo;
+	private double mEqualityTol;
 	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAValueGains = new HashMap<>();
 	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQAValueLosses = new HashMap<>();
 	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQACostGains = new HashMap<>();
 	private Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> mQACostLosses = new HashMap<>();
 
-	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace) {
+	public Tradeoff(PolicyInfo solnPolicyInfo, PolicyInfo altPolicyInfo, QSpace qSpace, double equalityTol) {
 		mSolnPolicyInfo = solnPolicyInfo;
 		mAltPolicyInfo = altPolicyInfo;
+		mEqualityTol = equalityTol;
 		computeTradeoff(qSpace);
 	}
 
@@ -40,14 +42,34 @@ public class Tradeoff {
 			double altScaledQACost = mAltPolicyInfo.getScaledQACost(qFunction);
 			double diffScaledQACost = altScaledQACost - solnScaledQACost;
 
-			if (altScaledQACost < solnScaledQACost) {
+			if (isSignificantGain(solnQAValue, solnScaledQACost, altQAValue, altScaledQACost)) {
 				mQAValueGains.put(qFunction, diffQAValue);
 				mQACostGains.put(qFunction, diffScaledQACost);
-			} else if (altScaledQACost > solnScaledQACost) {
+			} else if (isSignificantLoss(solnQAValue, solnScaledQACost, altQAValue, altScaledQACost)) {
 				mQAValueLosses.put(qFunction, diffQAValue);
 				mQACostLosses.put(qFunction, diffScaledQACost);
 			}
 		}
+	}
+
+	private boolean isSignificantGain(double solnQAValue, double solnScaledQACost, double altQAValue,
+			double altScaledQACost) {
+		return significantlyLessThan(altScaledQACost, solnScaledQACost)
+				&& significantlyDifferent(altQAValue, solnQAValue);
+	}
+
+	private boolean isSignificantLoss(double solnQAValue, double solnScaledQACost, double altQAValue,
+			double altScaledQACost) {
+		return significantlyLessThan(solnScaledQACost, altScaledQACost)
+				&& significantlyDifferent(altQAValue, solnQAValue);
+	}
+
+	private boolean significantlyLessThan(double lhs, double rhs) {
+		return lhs < rhs && Math.abs(lhs - rhs) > mEqualityTol;
+	}
+
+	private boolean significantlyDifferent(double valueA, double valueB) {
+		return Math.abs(valueA - valueB) > mEqualityTol;
 	}
 
 	public PolicyInfo getSolutionPolicyInfo() {
@@ -84,6 +106,7 @@ public class Tradeoff {
 		}
 		Tradeoff tradeoff = (Tradeoff) obj;
 		return tradeoff.mSolnPolicyInfo.equals(mSolnPolicyInfo) && tradeoff.mAltPolicyInfo.equals(mAltPolicyInfo)
+				&& Double.compare(tradeoff.mEqualityTol, mEqualityTol) == 0
 				&& tradeoff.mQAValueGains.equals(mQAValueGains) && tradeoff.mQAValueLosses.equals(mQAValueLosses)
 				&& tradeoff.mQACostGains.equals(mQACostGains) && tradeoff.mQACostLosses.equals(mQACostLosses);
 	}
@@ -95,6 +118,7 @@ public class Tradeoff {
 			result = 17;
 			result = 31 * result + mSolnPolicyInfo.hashCode();
 			result = 31 * result + mAltPolicyInfo.hashCode();
+			result = 31 * result + Double.hashCode(mEqualityTol);
 			result = 31 * result + mQAValueGains.hashCode();
 			result = 31 * result + mQAValueLosses.hashCode();
 			result = 31 * result + mQACostGains.hashCode();

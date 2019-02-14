@@ -14,6 +14,8 @@ import language.objectives.CostCriterion;
 import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
+import solver.gurobiconnector.GRBConnectorSettings;
+import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
@@ -24,10 +26,12 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class Explainer {
 
-	private PrismConnectorSettings mConnSettings;
+	private static final double DEFAULT_EQUALITY_TOL = 1e-6;
+
+	private PrismConnectorSettings mPrismConnSettings;
 
 	public Explainer(PrismConnectorSettings prismConnectorSettings) {
-		mConnSettings = prismConnectorSettings;
+		mPrismConnSettings = prismConnectorSettings;
 	}
 
 	public Explanation explain(XMDP xmdp, CostCriterion costCriterion, PolicyInfo policyInfo) throws PrismException,
@@ -35,7 +39,7 @@ public class Explainer {
 		// PrismConnector
 		// Create a new PrismConnector to export PRISM explicit model files from the XMDP
 		// so that GRBConnector can create the corresponding ExplicitMDP
-		PrismConnector prismConnector = new PrismConnector(xmdp, costCriterion, mConnSettings);
+		PrismConnector prismConnector = new PrismConnector(xmdp, costCriterion, mPrismConnSettings);
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
@@ -43,7 +47,9 @@ public class Explainer {
 
 		// GRBConnector
 		// GRBConnector is used in AlternativeExplorer
-		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, prismExplicitModelReader);
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
+				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, grbConnSettings);
 		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 		Set<PolicyInfo> altPolicies = altExplorer.getParetoOptimalAlternatives(policyInfo);
 
@@ -55,7 +61,7 @@ public class Explainer {
 			// Temporary solution: altPolicyInfo might not have its event-based QA values computed yet
 			computeEventBasedQAValues(altPolicyInfo, prismConnector);
 
-			Tradeoff tradeoff = new Tradeoff(policyInfo, altPolicyInfo, xmdp.getQSpace());
+			Tradeoff tradeoff = new Tradeoff(policyInfo, altPolicyInfo, xmdp.getQSpace(), DEFAULT_EQUALITY_TOL);
 			tradeoffs.add(tradeoff);
 		}
 

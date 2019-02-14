@@ -31,6 +31,7 @@ public class GRBConnector {
 
 	private XMDP mXMDP;
 	private CostCriterion mCostCriterion;
+	private GRBConnectorSettings mSettings;
 	private QFunctionEncodingScheme mQFunctionEncoding;
 	private ExplicitMDPReader mExplicitMDPReader;
 	private GRBPolicyReader mPolicyReader;
@@ -41,10 +42,13 @@ public class GRBConnector {
 	// Keep track of LP solution corresponding to each policy computed by GRBSolver
 	private Map<Policy, LPSolution> mPolicyToLPSolution = new HashMap<>();
 
-	public GRBConnector(XMDP xmdp, CostCriterion costCriterion, PrismExplicitModelReader prismExplicitModelReader)
+	public GRBConnector(XMDP xmdp, CostCriterion costCriterion, GRBConnectorSettings settings)
 			throws IOException, ExplicitModelParsingException {
 		mXMDP = xmdp;
 		mCostCriterion = costCriterion;
+		mSettings = settings;
+
+		PrismExplicitModelReader prismExplicitModelReader = settings.getPrismExplicitModelReader();
 		mQFunctionEncoding = prismExplicitModelReader.getValueEncodingScheme().getQFunctionEncodingScheme();
 		mExplicitMDPReader = new ExplicitMDPReader(prismExplicitModelReader, costCriterion);
 		mPolicyReader = new GRBPolicyReader(prismExplicitModelReader);
@@ -161,12 +165,15 @@ public class GRBConnector {
 		int m = explicitMDP.getNumActions();
 		double[][] policyMatrix = new double[n][m];
 		LPSolution solution = null;
+		double feasibilityTol = mSettings.getFeasibilityTolerance();
+		double intFeasTol = mSettings.getIntegralityTolerance();
 
 		if (mCostCriterion == CostCriterion.TOTAL_COST) {
-			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints);
+			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints, feasibilityTol, intFeasTol);
 			solution = solver.solveOptimalPolicy(policyMatrix);
 		} else if (mCostCriterion == CostCriterion.AVERAGE_COST) {
-			AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, softConstraints, hardConstraints);
+			AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, softConstraints, hardConstraints,
+					feasibilityTol, intFeasTol);
 			solution = solver.solveOptimalPolicy(policyMatrix);
 		}
 

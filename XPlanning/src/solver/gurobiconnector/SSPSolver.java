@@ -17,17 +17,25 @@ public class SSPSolver {
 	private ExplicitMDP mExplicitMDP;
 	private NonStrictConstraint[] mSoftConstraints;
 	private NonStrictConstraint[] mHardConstraints;
+	private double mFeasibilityTol;
+	private double mIntFeasTol;
 
 	/**
 	 * Constructor for unconstrained SSP.
 	 * 
 	 * @param explicitMDP
 	 *            : Explicit MDP
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
+	 * @param intFeasTol
+	 *            : Integrality tolerance
 	 */
-	public SSPSolver(ExplicitMDP explicitMDP) {
+	public SSPSolver(ExplicitMDP explicitMDP, double feasibilityTol, double intFeasTol) {
 		mExplicitMDP = explicitMDP;
 		mSoftConstraints = null;
 		mHardConstraints = null;
+		mFeasibilityTol = feasibilityTol;
+		mIntFeasTol = intFeasTol;
 	}
 
 	/**
@@ -39,12 +47,18 @@ public class SSPSolver {
 	 *            : Null iff unconstrained
 	 * @param hardConstraints
 	 *            : Null iff unconstrained
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
+	 * @param intFeasTol
+	 *            : Integrality tolerance
 	 */
 	public SSPSolver(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
-			NonStrictConstraint[] hardConstraints) {
+			NonStrictConstraint[] hardConstraints, double feasibilityTol, double intFeasTol) {
 		mExplicitMDP = explicitMDP;
 		mSoftConstraints = softConstraints;
 		mHardConstraints = hardConstraints;
+		mFeasibilityTol = feasibilityTol;
+		mIntFeasTol = intFeasTol;
 	}
 
 	public LPSolution solveOptimalPolicy(double[][] outputPolicy) throws GRBException {
@@ -74,7 +88,7 @@ public class SSPSolver {
 				}
 			}
 
-			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP, mFeasibilityTol);
 		}
 
 		return solution;
@@ -119,6 +133,8 @@ public class SSPSolver {
 	public LPSolution solve(double[][] xResults) throws GRBException {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
+
+		GRBSolverUtils.configureToleranceParameters(model, mFeasibilityTol, mIntFeasTol);
 
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
@@ -177,7 +193,7 @@ public class SSPSolver {
 
 			// Consistency checks
 			verifyAllConstraints(grbXResults, grbDeltaResults, upperBoundOM);
-			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaResults, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaResults, mExplicitMDP, mFeasibilityTol);
 		}
 
 		// Dispose of model and environment
@@ -279,9 +295,11 @@ public class SSPSolver {
 		assert consistencyCheckSourceFlowConstraint(xResults);
 		assert consistencyCheckSinksFlowConstraint(xResults);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaResults, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaResults, upperBoundOM, mExplicitMDP,
+				mFeasibilityTol);
 		if (mHardConstraints != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP,
+					mFeasibilityTol);
 		}
 	}
 
@@ -298,7 +316,7 @@ public class SSPSolver {
 
 			double outValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double inValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
-			boolean satisfied = GRBSolverUtils.approximatelyEqual(outValue, inValue);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(outValue, inValue, mFeasibilityTol);
 
 			if (!satisfied) {
 				return false;
@@ -311,7 +329,7 @@ public class SSPSolver {
 		int iniState = mExplicitMDP.getInitialState();
 		double outValue = GRBSolverUtils.getOutValue(iniState, xResults, mExplicitMDP);
 		double inValue = GRBSolverUtils.getInValue(iniState, xResults, mExplicitMDP);
-		return GRBSolverUtils.approximatelyEqual(outValue - inValue, 1);
+		return GRBSolverUtils.approximatelyEqual(outValue - inValue, 1, mFeasibilityTol);
 	}
 
 	private boolean consistencyCheckSinksFlowConstraint(double[][] xResults) {
@@ -320,7 +338,7 @@ public class SSPSolver {
 			double inValue = GRBSolverUtils.getInValue(goal, xResults, mExplicitMDP);
 			sum += inValue;
 		}
-		return GRBSolverUtils.approximatelyEqual(sum, 1);
+		return GRBSolverUtils.approximatelyEqual(sum, 1, mFeasibilityTol);
 	}
 
 }

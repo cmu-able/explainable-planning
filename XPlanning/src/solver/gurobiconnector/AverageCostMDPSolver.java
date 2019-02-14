@@ -17,17 +17,25 @@ public class AverageCostMDPSolver {
 	private ExplicitMDP mExplicitMDP;
 	private NonStrictConstraint[] mSoftConstraints;
 	private NonStrictConstraint[] mHardConstraints;
+	private double mFeasibilityTol;
+	private double mIntFeasTol;
 
 	/**
 	 * Constructor for unconstrained average-cost MDP.
 	 * 
 	 * @param explicitMDP
 	 *            : Explicit MDP
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
+	 * @param intFeasTol
+	 *            : Integrality tolerance
 	 */
-	public AverageCostMDPSolver(ExplicitMDP explicitMDP) {
+	public AverageCostMDPSolver(ExplicitMDP explicitMDP, double feasibilityTol, double intFeasTol) {
 		mExplicitMDP = explicitMDP;
 		mSoftConstraints = null;
 		mHardConstraints = null;
+		mFeasibilityTol = feasibilityTol;
+		mIntFeasTol = intFeasTol;
 	}
 
 	/**
@@ -39,12 +47,18 @@ public class AverageCostMDPSolver {
 	 *            : Null iff unconstrained
 	 * @param hardConstraints
 	 *            : Null iff unconstrained
+	 * @param feasibilityTol
+	 *            : Feasibility tolerance
+	 * @param intFeasTol
+	 *            : Integrality tolerance
 	 */
 	public AverageCostMDPSolver(ExplicitMDP explicitMDP, NonStrictConstraint[] softConstraints,
-			NonStrictConstraint[] hardConstraints) {
+			NonStrictConstraint[] hardConstraints, double feasibilityTol, double intFeasTol) {
 		mExplicitMDP = explicitMDP;
 		mSoftConstraints = softConstraints;
 		mHardConstraints = hardConstraints;
+		mFeasibilityTol = feasibilityTol;
+		mIntFeasTol = intFeasTol;
 	}
 
 	/**
@@ -79,7 +93,7 @@ public class AverageCostMDPSolver {
 				}
 			}
 
-			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckDeterministicPolicy(outputPolicy, mExplicitMDP, mFeasibilityTol);
 		}
 
 		return solution;
@@ -156,7 +170,7 @@ public class AverageCostMDPSolver {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
-		GRBSolverUtils.configureToleranceParameters(model);
+		GRBSolverUtils.configureToleranceParameters(model, mFeasibilityTol, mIntFeasTol);
 
 		int n = mExplicitMDP.getNumStates();
 		int m = mExplicitMDP.getNumActions();
@@ -233,8 +247,8 @@ public class AverageCostMDPSolver {
 
 			// Consistency checks
 			verifyAllConstraints(grbXResults, grbYResults, grbDeltaxResults, grbDeltayResults, alpha);
-			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaxResults, mExplicitMDP);
-			assert GRBSolverUtils.consistencyCheckResults(grbYResults, grbDeltayResults, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckResults(grbXResults, grbDeltaxResults, mExplicitMDP, mFeasibilityTol);
+			assert GRBSolverUtils.consistencyCheckResults(grbYResults, grbDeltayResults, mExplicitMDP, mFeasibilityTol);
 		}
 
 		// Dispose of model and environment
@@ -317,11 +331,14 @@ public class AverageCostMDPSolver {
 		assert consistencyCheckC1Constraints(xResults);
 		assert consistencyCheckC2Constraints(xResults, yResults, alpha);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltaxResults, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaxResults, 1.0, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(xResults, deltaxResults, 1.0, mExplicitMDP,
+				mFeasibilityTol);
 		assert GRBSolverUtils.consistencyCheckDeltaConstraints(deltayResults, mExplicitMDP);
-		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(yResults, deltayResults, 1.0, mExplicitMDP);
+		assert GRBSolverUtils.consistencyCheckVarDeltaConstraints(yResults, deltayResults, 1.0, mExplicitMDP,
+				mFeasibilityTol);
 		if (mHardConstraints != null) {
-			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP);
+			assert GRBSolverUtils.consistencyCheckCostConstraints(xResults, mHardConstraints, mExplicitMDP,
+					mFeasibilityTol);
 		}
 	}
 
@@ -337,7 +354,7 @@ public class AverageCostMDPSolver {
 		for (int i = 0; i < n; i++) {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double inxValue = GRBSolverUtils.getInValue(i, xResults, mExplicitMDP);
-			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue, inxValue);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue, inxValue, mFeasibilityTol);
 
 			if (!satisfied) {
 				return false;
@@ -361,7 +378,8 @@ public class AverageCostMDPSolver {
 			double outxValue = GRBSolverUtils.getOutValue(i, xResults, mExplicitMDP);
 			double outyValue = GRBSolverUtils.getOutValue(i, yResults, mExplicitMDP);
 			double inyValue = GRBSolverUtils.getInValue(i, yResults, mExplicitMDP);
-			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue + outyValue - inyValue, alpha[i]);
+			boolean satisfied = GRBSolverUtils.approximatelyEqual(outxValue + outyValue - inyValue, alpha[i],
+					mFeasibilityTol);
 
 			if (!satisfied) {
 				return false;

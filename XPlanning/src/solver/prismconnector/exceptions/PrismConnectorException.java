@@ -1,4 +1,4 @@
-package language.exceptions;
+package solver.prismconnector.exceptions;
 
 public class PrismConnectorException extends Exception {
 

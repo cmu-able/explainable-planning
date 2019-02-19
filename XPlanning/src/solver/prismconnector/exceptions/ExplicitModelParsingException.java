@@ -1,6 +1,6 @@
 package solver.prismconnector.exceptions;
 
-public class ExplicitModelParsingException extends Exception {
+public class ExplicitModelParsingException extends PrismConnectorException {
 
 	/**
 	 * 

@@ -12,6 +12,7 @@ import examples.clinicscheduling.demo.ClinicSchedulingDemo;
 import examples.clinicscheduling.demo.ClinicSchedulingXMDPLoader;
 import examples.common.DSMException;
 import examples.common.Directories;
+import examples.utils.LPMCComparator;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import explanation.analysis.PolicyInfo;
@@ -65,7 +66,7 @@ public class ClinicSchedulingTest {
 				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 
-		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL, false);
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
 		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();
@@ -109,7 +110,7 @@ public class ClinicSchedulingTest {
 				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 
-		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL, false);
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
 		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();

@@ -1,6 +1,4 @@
-package examples.clinicscheduling.tests;
-
-import static org.testng.Assert.assertEquals;
+package examples.utils;
 
 import java.io.IOException;
 
@@ -26,14 +24,11 @@ public class LPMCComparator {
 	private PrismConnector mPrismConnector;
 	private PrismExplicitModelReader mPrismExplicitModelReader;
 	private double mEqualityTol;
-	private boolean mEnableAssertEquals;
 
-	public LPMCComparator(GRBConnector grbConnector, PrismConnector prismConnector, double equalityTol,
-			boolean enableAssertEquals) {
+	public LPMCComparator(GRBConnector grbConnector, PrismConnector prismConnector, double equalityTol) {
 		mGRBConnector = grbConnector;
 		mPrismConnector = prismConnector;
 		mEqualityTol = equalityTol;
-		mEnableAssertEquals = enableAssertEquals;
 	}
 
 	/**
@@ -68,9 +63,7 @@ public class LPMCComparator {
 		// From MC method:
 		double objCostPrism = policyInfoPrism.getObjectiveCost();
 
-		if (mEnableAssertEquals) {
-			assertEquals(objCostPrism, objCostGRB, mEqualityTol, "Objective costs are not equal");
-		}
+		// assertEquals(objCostPrism, objCostGRB, mEqualityTol, "Objective costs are not equal");
 
 		double objCostDiff = objCostGRB - objCostPrism;
 
@@ -90,10 +83,8 @@ public class LPMCComparator {
 			double rawQAValuePrism = policyInfoPrism.getQAValue(qFunction);
 			double scaledQACostPrism = policyInfoPrism.getScaledQACost(qFunction);
 
-			if (mEnableAssertEquals) {
-				assertEquals(rawQAValuePrism, rawQAValueGRB, mEqualityTol,
-						qFunction.getName() + " values are not equal");
-			}
+			// assertEquals(rawQAValuePrism, rawQAValueGRB, mEqualityTol, qFunction.getName() + " values are not
+			// equal");
 
 			double rawQAValueDiff = rawQAValueGRB - rawQAValuePrism;
 			double scaledQACostDiff = scaledQACostGRB - scaledQACostPrism;

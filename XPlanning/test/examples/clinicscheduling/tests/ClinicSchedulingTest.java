@@ -65,7 +65,7 @@ public class ClinicSchedulingTest {
 				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 
-		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL, false);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
 		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();
@@ -109,7 +109,7 @@ public class ClinicSchedulingTest {
 				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 
-		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL, false);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
 		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();

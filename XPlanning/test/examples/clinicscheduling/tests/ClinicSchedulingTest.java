@@ -14,6 +14,7 @@ import examples.common.DSMException;
 import examples.common.Directories;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
+import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
 import language.exceptions.XMDPException;
@@ -23,15 +24,18 @@ import language.objectives.AttributeConstraint;
 import language.objectives.AttributeConstraint.BOUND_TYPE;
 import language.objectives.CostCriterion;
 import language.objectives.CostFunction;
+import language.policy.Policy;
 import prism.PrismException;
-import solver.common.ExplicitMDP;
-import solver.common.NonStrictConstraint;
-import solver.gurobiconnector.CostConstraintUtils;
+import solver.gurobiconnector.GRBConnector;
+import solver.gurobiconnector.GRBConnectorSettings;
+import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
+import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class ClinicSchedulingTest {
 	private static final double EQUALITY_TOL = 1e-6;
@@ -48,17 +52,30 @@ public class ClinicSchedulingTest {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSetttings);
 
-		LPMCComparator comparator = new LPMCComparator(prismConnector, EQUALITY_TOL);
+		// Export XMDP to explicit model files
+		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
+		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+
+		// Create PRISM explicit model reader
+		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
+				encodings);
+
+		// Create GRB connector
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
+				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
+
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
-		ExplicitMDP explicitMDP = comparator.readExplicitMDP(xmdp.getCostFunction());
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-		double[][] outputPolicyMatrix = new double[n][m];
-		double[][] xResults = comparator.computeOccupationMeasureResults(explicitMDP, null, outputPolicyMatrix);
+		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();
+		Policy solPolicy = solPolicyInfo.getPolicy();
 
-		// Check result consistency between LP method and MC method
-		comparator.checkLPMCConsistency(explicitMDP, xResults, outputPolicyMatrix);
+		// Compare policy evaluation between LP and MC methods
+		double[][] diffs = comparator.comparePolicyEvaluation(solPolicy, xmdp.getCostFunction(), xmdp.getQSpace());
+
+		// Print summary statistics
+		comparator.printSummaryStatistics(diffs);
 
 		// Close down PRISM
 		prismConnector.terminate();
@@ -79,19 +96,23 @@ public class ClinicSchedulingTest {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSetttings);
 
-		LPMCComparator comparator = new LPMCComparator(prismConnector, EQUALITY_TOL);
+		// Export XMDP to explicit model files
+		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
+		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+
+		// Create PRISM explicit model reader
+		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
+				encodings);
+
+		// Create GRB connector
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
+				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
+
+		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, EQUALITY_TOL);
 
 		// Compute an average-optimal policy using GRBSolver (LP method)
-		ExplicitMDP explicitMDP = comparator.readExplicitMDP(costFunction);
-		int n = explicitMDP.getNumStates();
-		int m = explicitMDP.getNumActions();
-		double[][] outputPolicyMatrix = new double[n][m];
-		double[][] xResults = comparator.computeOccupationMeasureResults(explicitMDP, null, outputPolicyMatrix);
-
-		// Check result consistency between LP method and MC method
-		double[] occupancyCosts = comparator.checkLPMCConsistency(explicitMDP, xResults, outputPolicyMatrix);
-
-		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
+		PolicyInfo solPolicyInfo = grbConnector.generateOptimalPolicy();
 
 		for (IQFunction<?, ?> qFunction : qFunctions) {
 			double attrCostFuncSlope = costFunction.getAttributeCostFunction(qFunction).getSlope();
@@ -99,20 +120,23 @@ public class ClinicSchedulingTest {
 			// Strict, hard upper/lower bound
 			BOUND_TYPE hardBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.STRICT_UPPER_BOUND
 					: BOUND_TYPE.STRICT_LOWER_BOUND;
-			int k = encodings.getRewardStructureIndex(qFunction);
-			double hardBoundValue = occupancyCosts[k];
-			AttributeConstraint<IQFunction<?, ?>> attrConstraint = new AttributeConstraint<IQFunction<?, ?>>(qFunction,
-					hardBoundType, hardBoundValue);
+			double hardBoundValue = solPolicyInfo.getQAValue(qFunction);
+			AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<IQFunction<?, ?>>(
+					qFunction, hardBoundType, hardBoundValue);
 
-			NonStrictConstraint[] hardConstraints = CostConstraintUtils
-					.createIndexedNonStrictConstraints(attrConstraint, encodings.getQFunctionEncodingScheme());
+			// Policy satisfying the QA constraint
+			PolicyInfo policyInfo = grbConnector.generateOptimalPolicy(costFunction, attrHardConstraint);
+			Policy policy = policyInfo.getPolicy();
 
-			double[][] constrainedOutputPolicyMatrix = new double[n][m];
-			double[][] constrainedxResults = comparator.computeOccupationMeasureResults(explicitMDP, hardConstraints,
-					constrainedOutputPolicyMatrix);
+			// Compare policy evaluation between LP and MC methods
+			double[][] diffs = comparator.comparePolicyEvaluation(policy, costFunction, qFunctions);
 
-			comparator.checkLPMCConsistency(explicitMDP, constrainedxResults, constrainedOutputPolicyMatrix);
+			// Print summary statistics
+			comparator.printSummaryStatistics(diffs);
 		}
+
+		// Close down PRISM
+		prismConnector.terminate();
 	}
 
 	@DataProvider(name = "xmdpProblems")

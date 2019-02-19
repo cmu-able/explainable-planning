@@ -163,6 +163,10 @@ public class ValueEncodingScheme {
 		throw new VarNotFoundException(stateVarName);
 	}
 
+	public int getNumRewardStructures() {
+		return mQFunctionEncoding.getNumRewardStructures();
+	}
+
 	public int getRewardStructureIndex(IQFunction<?, ?> qFunction) throws QFunctionNotFoundException {
 		return mQFunctionEncoding.getRewardStructureIndex(qFunction);
 	}

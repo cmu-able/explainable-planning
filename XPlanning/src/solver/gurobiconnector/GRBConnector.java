@@ -187,7 +187,7 @@ public class GRBConnector {
 		return null;
 	}
 
-	private PolicyInfo buildPolicyInfo(Policy policy) throws QFunctionNotFoundException {
+	public PolicyInfo buildPolicyInfo(Policy policy) throws QFunctionNotFoundException {
 		double objectiveCost = computeCost(policy);
 		PolicyInfo policyInfo = new PolicyInfo(mXMDP, policy, objectiveCost);
 		CostFunction costFunction = mXMDP.getCostFunction();

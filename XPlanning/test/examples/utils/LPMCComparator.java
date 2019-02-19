@@ -14,20 +14,21 @@ import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
-import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class LPMCComparator {
 
 	private GRBConnector mGRBConnector;
 	private PrismConnector mPrismConnector;
-	private PrismExplicitModelReader mPrismExplicitModelReader;
+	private ValueEncodingScheme mValueEncodings;
 	private double mEqualityTol;
 
 	public LPMCComparator(GRBConnector grbConnector, PrismConnector prismConnector, double equalityTol) {
 		mGRBConnector = grbConnector;
 		mPrismConnector = prismConnector;
+		mValueEncodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		mEqualityTol = equalityTol;
 	}
 
@@ -54,7 +55,7 @@ public class LPMCComparator {
 		PolicyInfo policyInfoGRB = mGRBConnector.buildPolicyInfo(policy);
 		PolicyInfo policyInfoPrism = mPrismConnector.buildPolicyInfo(policy);
 
-		int arrayLength = mPrismExplicitModelReader.getValueEncodingScheme().getNumRewardStructures() + 1;
+		int arrayLength = mValueEncodings.getNumRewardStructures() + 1;
 		double[][] diffs = new double[arrayLength][3];
 
 		// From LP method:
@@ -69,7 +70,7 @@ public class LPMCComparator {
 
 		if (Math.abs(objCostDiff) > mEqualityTol) {
 			double percentObjCostDiff = objCostPrism != 0 ? objCostDiff / objCostPrism : Double.POSITIVE_INFINITY;
-			int objCostIndex = mPrismExplicitModelReader.getValueEncodingScheme().getRewardStructureIndex(costFunction);
+			int objCostIndex = mValueEncodings.getRewardStructureIndex(costFunction);
 			diffs[objCostIndex][0] = objCostDiff;
 			diffs[objCostIndex][1] = percentObjCostDiff;
 		}
@@ -89,7 +90,7 @@ public class LPMCComparator {
 			double rawQAValueDiff = rawQAValueGRB - rawQAValuePrism;
 			double scaledQACostDiff = scaledQACostGRB - scaledQACostPrism;
 
-			int k = mPrismExplicitModelReader.getValueEncodingScheme().getRewardStructureIndex(qFunction);
+			int k = mValueEncodings.getRewardStructureIndex(qFunction);
 
 			if (Math.abs(rawQAValueDiff) > mEqualityTol) {
 				double percentQAValueDiff = rawQAValuePrism != 0 ? rawQAValueDiff / rawQAValuePrism

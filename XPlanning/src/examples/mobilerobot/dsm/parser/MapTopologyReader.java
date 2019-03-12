@@ -112,6 +112,18 @@ public class MapTopologyReader {
 		return pixelDistance / meterToPixelRatio;
 	}
 
+	/**
+	 * Parse any additional node attributes from a given JSONObject. An additional node attribute is not specified in
+	 * the node object, but is specified in a key-value pair in the JSONObject. Additional node attributes are for
+	 * features of the map that are sparse (e.g., placement of lights).
+	 * 
+	 * The key is the plural name of the additional node attribute. The value is an array of objects of the form {
+	 * "at-id" : [nodeID], [nodeAttributeName] : [nodeAttributeValue] }.
+	 * 
+	 * @param jsonObject
+	 * @param map
+	 * @throws NodeIDNotFoundException
+	 */
 	private void parseAdditionalNodeAttributes(JSONObject jsonObject, MapTopology map) throws NodeIDNotFoundException {
 		for (INodeAttributeParser<? extends INodeAttribute> parser : mNodeAttributeParsers) {
 			String attributeKey = parser.getJSONObjectKey();

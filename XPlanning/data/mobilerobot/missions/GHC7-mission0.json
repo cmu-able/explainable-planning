@@ -1,6 +1,6 @@
 {
-  "start-id" : "l0",
-  "goal-id" : "l1",
+  "start-id" : "L1",
+  "goal-id" : "L32",
   "map-file" : "GHC7-map.json",
   "preference-info" : [
     {

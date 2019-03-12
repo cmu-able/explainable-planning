@@ -176,6 +176,12 @@ public class MapTopologyReader {
 		for (IEdgeAttributeParser<? extends IEdgeAttribute> parser : mEdgeAttributeParsers) {
 			// Edge attributes: Array of edges
 			String attributeKey = parser.getJSONObjectKey();
+
+			if (!jsonObject.containsKey(attributeKey)) {
+				// This edge attribute is not specified in the map JSON
+				continue;
+			}
+
 			JSONArray edgeArray = (JSONArray) jsonObject.get(attributeKey);
 			for (Object obj : edgeArray) {
 				JSONObject edgeObject = (JSONObject) obj;

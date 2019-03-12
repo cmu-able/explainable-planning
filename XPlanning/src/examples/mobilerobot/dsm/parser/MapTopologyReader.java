@@ -126,7 +126,8 @@ public class MapTopologyReader {
 	 * features of the map that are sparse (e.g., placement of lights).
 	 * 
 	 * The key is the plural name of the additional node attribute. The value is an array of objects of the form {
-	 * "at-id" : [nodeID], [nodeAttributeName] : [nodeAttributeValue] }.
+	 * "at-id" : [nodeID], [nodeAttributeName] : [nodeAttributeValue] }. Some nodes may be omitted from the value array;
+	 * those nodes will have the default node-attribute value.
 	 * 
 	 * @param jsonObject
 	 *            : JSONObject defining the map
@@ -159,7 +160,8 @@ public class MapTopologyReader {
 	 * JSONObject.
 	 * 
 	 * The key is the plural name of the edge attribute. The value is an array of objects of the form { "from-id" :
-	 * [nodeID], "to-id" : [nodeID], [edgeAttributeName] : [edgeAttributeValue] }.
+	 * [nodeID], "to-id" : [nodeID], [edgeAttributeName] : [edgeAttributeValue] }. Some edges may be omitted from the
+	 * value array; those edges will have the default edge-attribute value.
 	 * 
 	 * @param jsonObject
 	 *            : JSONObject defining the map

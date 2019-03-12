@@ -2,7 +2,9 @@ package examples.mobilerobot.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.parser.ParseException;
@@ -21,16 +23,23 @@ import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
+import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Occlusion;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 
 public class MobileRobotXMDPLoader implements IXMDPLoader {
 
+	private static final Area DEFAULT_AREA = Area.PUBLIC;
+	private static final Occlusion DEFAULT_OCCLUSION = Occlusion.CLEAR;
+
+	private File mMapJsonDir;
+	private File mMissionJsonDir;
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
 	private MobileRobotXMDPBuilder mXMDPBuilder = new MobileRobotXMDPBuilder();
-	private File mMapJsonDir;
-	private File mMissionJsonDir;
+	private Map<String, INodeAttribute> mDefaultNodeAttributes = new HashMap<>();
+	private Map<String, IEdgeAttribute> mDefaultEdgeAttributes = new HashMap<>();
 
 	public MobileRobotXMDPLoader(String mapJsonDirPath, String missionJsonDirPath) {
 		mMapJsonDir = new File(mapJsonDirPath);
@@ -42,6 +51,10 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
 		edgeAttributeParsers.add(occlusionParser);
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
+
+		// Default node/edge attribute values
+		mDefaultNodeAttributes.put(areaParser.getAttributeName(), DEFAULT_AREA);
+		mDefaultEdgeAttributes.put(occlusionParser.getAttributeName(), DEFAULT_OCCLUSION);
 	}
 
 	public Set<XMDP> loadAllXMDPs() throws DSMException, XMDPException {
@@ -64,7 +77,7 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 		File mapJsonFile = new File(mMapJsonDir, mapJsonFilename);
 		MapTopology map;
 		try {
-			map = mMapReader.readMapTopology(mapJsonFile);
+			map = mMapReader.readMapTopology(mapJsonFile, mDefaultNodeAttributes, mDefaultEdgeAttributes);
 		} catch (IOException | ParseException e) {
 			throw new DSMException(e.getMessage());
 		}

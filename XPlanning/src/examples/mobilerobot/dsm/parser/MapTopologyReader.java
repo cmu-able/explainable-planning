@@ -47,8 +47,8 @@ public class MapTopologyReader {
 
 		JSONObject jsonObject = (JSONObject) object;
 
-		// MPR: Meter-to-Pixel ratio
-		int mpr = JSONSimpleParserUtils.parseInt(jsonObject, "mpr");
+		// MUR: Meter-to-Unit ratio
+		int mpr = JSONSimpleParserUtils.parseInt(jsonObject, "mur");
 
 		// Map: Array of nodes
 		JSONArray nodeArray = (JSONArray) jsonObject.get("map");
@@ -111,13 +111,13 @@ public class MapTopologyReader {
 		return locNode;
 	}
 
-	private double calculateDistance(LocationNode srcNode, LocationNode destNode, double meterToPixelRatio) {
+	private double calculateDistance(LocationNode srcNode, LocationNode destNode, double meterToUnitRatio) {
 		double srcX = srcNode.getNodeXCoordinate();
 		double srcY = srcNode.getNodeYCoordinate();
 		double destX = destNode.getNodeXCoordinate();
 		double destY = destNode.getNodeYCoordinate();
-		double pixelDistance = Math.sqrt(Math.pow(destX - srcX, 2) + Math.pow(destY - srcY, 2));
-		return pixelDistance / meterToPixelRatio;
+		double arbitraryUnitDistance = Math.sqrt(Math.pow(destX - srcX, 2) + Math.pow(destY - srcY, 2));
+		return arbitraryUnitDistance * meterToUnitRatio;
 	}
 
 	/**

@@ -29,7 +29,7 @@ public class MapJSONGenerator {
 	private static final String OUTPUT_PATH = "output";
 	private static final String OUTPUT_FILE_NAME = "GHC7-map.json";
 
-	private static final String MPR_KEY = "mpr";
+	private static final String MUR_KEY = "mur";
 	private static final String MAP_KEY = "map";
 
 	public static void main(String[] args) throws URISyntaxException, IOException {
@@ -70,7 +70,7 @@ public class MapJSONGenerator {
 		String[] columnNames = it.next().split(",");
 
 		JSONObject mapJSONObj = new JSONObject();
-		mapJSONObj.put(MPR_KEY, 20);
+		mapJSONObj.put(MUR_KEY, 10); // use default MUR value = 10
 
 		JSONArray nodesJSONArray = new JSONArray();
 		while (it.hasNext()) {

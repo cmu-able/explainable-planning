@@ -34,11 +34,11 @@ public class MissionReader {
 		for (Object obj : prefInfoJsonArray) {
 			JSONObject jsonObject = (JSONObject) obj;
 			String qaName = (String) jsonObject.get("objective");
-			double minValue = JSONSimpleParserUtils.parseDouble(jsonObject, "min-value");
-			double maxValue = JSONSimpleParserUtils.parseDouble(jsonObject, "max-value");
+			double minStepValue = JSONSimpleParserUtils.parseDouble(jsonObject, "min-step-value");
+			double maxStepValue = JSONSimpleParserUtils.parseDouble(jsonObject, "max-step-value");
 			double scalingConst = JSONSimpleParserUtils.parseDouble(jsonObject, "scaling-const");
-			prefInfo.putMinQAValue(qaName, minValue);
-			prefInfo.putMaxQAValue(qaName, maxValue);
+			prefInfo.putMinStepQAValue(qaName, minStepValue);
+			prefInfo.putMaxStepQAValue(qaName, maxStepValue);
 			prefInfo.putScalingConst(qaName, scalingConst);
 		}
 		return prefInfo;

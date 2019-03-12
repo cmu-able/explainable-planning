@@ -285,10 +285,8 @@ public class MobileRobotXMDPBuilder {
 
 	private <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void addAttributeCostFunctions(
 			S qFunction, PreferenceInfo prefInfo, CostFunction costFunction) {
-		double minValue = prefInfo.getMinQAValue(qFunction.getName());
-		double maxValue = prefInfo.getMaxQAValue(qFunction.getName());
-		double aConst = minValue / (maxValue - minValue);
-		double bConst = 1 / (maxValue - minValue);
+		double aConst = prefInfo.getaConst(qFunction.getName());
+		double bConst = prefInfo.getbConst(qFunction.getName());
 		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
 		costFunction.put(qFunction, attrCostFunction, prefInfo.getScalingConst(qFunction.getName()));
 	}

@@ -22,11 +22,17 @@ public class Connection {
 	private Map<String, IEdgeAttribute> mEdgeAttributes = new HashMap<>();
 
 	public Connection(LocationNode nodeA, LocationNode nodeB, double distance) {
+		this(nodeA, nodeB, distance, new HashMap<>());
+	}
+
+	public Connection(LocationNode nodeA, LocationNode nodeB, double distance,
+			Map<String, IEdgeAttribute> defaultEdgeAttributes) {
 		mNodeA = nodeA;
 		mNodeB = nodeB;
 		mNodes.add(nodeA);
 		mNodes.add(nodeB);
 		mDistance = distance;
+		mEdgeAttributes.putAll(defaultEdgeAttributes);
 	}
 
 	public void putConnectionAttribute(String name, IEdgeAttribute value) {

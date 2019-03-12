@@ -35,7 +35,12 @@ public class MapTopology implements Iterable<LocationNode> {
 	}
 
 	public void connect(LocationNode nodeA, LocationNode nodeB, double distance) {
-		Connection connection = new Connection(nodeA, nodeB, distance);
+		connect(nodeA, nodeB, distance, new HashMap<>());
+	}
+
+	public void connect(LocationNode nodeA, LocationNode nodeB, double distance,
+			Map<String, IEdgeAttribute> defaultEdgeAttributes) {
+		Connection connection = new Connection(nodeA, nodeB, distance, defaultEdgeAttributes);
 		mEdges.add(connection);
 		mConnections.get(nodeA).add(connection);
 		mConnections.get(nodeB).add(connection);

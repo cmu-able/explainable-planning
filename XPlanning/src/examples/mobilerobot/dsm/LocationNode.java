@@ -18,9 +18,15 @@ public class LocationNode {
 	private Map<String, INodeAttribute> mNodeAttributes = new HashMap<>();
 
 	public LocationNode(String nodeID, double xCoord, double yCoord) {
+		this(nodeID, xCoord, yCoord, new HashMap<>());
+	}
+
+	public LocationNode(String nodeID, double xCoord, double yCoord,
+			Map<String, INodeAttribute> defaultNodeAttributes) {
 		mNodeID = nodeID;
 		mXCoord = xCoord;
 		mYCoord = yCoord;
+		mNodeAttributes.putAll(defaultNodeAttributes);
 	}
 
 	public void putNodeAttribute(String name, INodeAttribute value) {

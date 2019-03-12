@@ -3,7 +3,9 @@ package examples.mobilerobot.dsm.parser;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.JSONArray;
@@ -33,7 +35,13 @@ public class MapTopologyReader {
 		mEdgeAttributeParsers = edgeAttributeParsers;
 	}
 
-	public MapTopology readMapTopology(File mapJsonFile) throws IOException, ParseException, MapTopologyException {
+	public MapTopology readMapTopology(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+		return readMapTopology(mapJsonFile, new HashMap<>(), new HashMap<>());
+	}
+
+	public MapTopology readMapTopology(File mapJsonFile, Map<String, INodeAttribute> defaultNodeAttributes,
+			Map<String, IEdgeAttribute> defaultEdgeAttributes)
+			throws IOException, ParseException, MapTopologyException {
 		FileReader reader = new FileReader(mapJsonFile);
 		Object object = mParser.parse(reader);
 
@@ -49,7 +57,7 @@ public class MapTopologyReader {
 
 		for (Object obj : nodeArray) {
 			JSONObject nodeObject = (JSONObject) obj;
-			LocationNode locNode = parseLocationNode(nodeObject);
+			LocationNode locNode = parseLocationNode(nodeObject, defaultNodeAttributes);
 			map.addLocationNode(locNode);
 		}
 
@@ -68,7 +76,7 @@ public class MapTopologyReader {
 
 				if (!visitedNodes.contains(neighborNode)) {
 					double distance = calculateDistance(locNode, neighborNode, mpr);
-					map.connect(locNode, neighborNode, distance);
+					map.connect(locNode, neighborNode, distance, defaultEdgeAttributes);
 				}
 			}
 
@@ -83,12 +91,12 @@ public class MapTopologyReader {
 		return map;
 	}
 
-	private LocationNode parseLocationNode(JSONObject nodeObject) {
+	private LocationNode parseLocationNode(JSONObject nodeObject, Map<String, INodeAttribute> defaultNodeAttributes) {
 		String nodeID = (String) nodeObject.get("node-id");
 		JSONObject coordsObject = (JSONObject) nodeObject.get("coords");
 		double xCoord = JSONSimpleParserUtils.parseDouble(coordsObject, "x");
 		double yCoord = JSONSimpleParserUtils.parseDouble(coordsObject, "y");
-		LocationNode locNode = new LocationNode(nodeID, xCoord, yCoord);
+		LocationNode locNode = new LocationNode(nodeID, xCoord, yCoord, defaultNodeAttributes);
 		for (INodeAttributeParser<? extends INodeAttribute> parser : mNodeAttributeParsers) {
 
 			if (!nodeObject.containsKey(parser.getJSONObjectKey())) {

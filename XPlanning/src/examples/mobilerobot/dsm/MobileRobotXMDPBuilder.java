@@ -161,7 +161,7 @@ public class MobileRobotXMDPBuilder {
 				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
 
 				// Occlusion
-				Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion", Occlusion.CLEAR);
+				Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
 				moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
 			}
 

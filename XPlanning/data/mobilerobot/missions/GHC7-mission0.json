@@ -1,0 +1,25 @@
+{
+  "start-id" : "l0",
+  "goal-id" : "l1",
+  "map-file" : "GHC7-map.json",
+  "preference-info" : [
+    {
+      "objective" : "travelTime",
+      "min-value" : 0,
+      "max-value" : 28.57,
+      "scaling-const" : 0.3
+    },
+    {
+      "objective" : "collision",
+      "min-value" : 0,
+      "max-value" : 1,
+      "scaling-const" : 0.4
+    },
+    {
+      "objective" : "intrusiveness",
+      "min-value" : 0,
+      "max-value" : 3,
+      "scaling-const" : 0.3
+    }
+  ]
+}

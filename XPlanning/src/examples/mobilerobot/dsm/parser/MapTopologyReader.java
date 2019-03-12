@@ -129,7 +129,9 @@ public class MapTopologyReader {
 	 * "at-id" : [nodeID], [nodeAttributeName] : [nodeAttributeValue] }.
 	 * 
 	 * @param jsonObject
+	 *            : JSONObject defining the map
 	 * @param map
+	 *            : MapTopology to set node-attribute values
 	 * @throws NodeIDNotFoundException
 	 */
 	private void parseAdditionalNodeAttributes(JSONObject jsonObject, MapTopology map) throws NodeIDNotFoundException {
@@ -152,6 +154,21 @@ public class MapTopologyReader {
 		}
 	}
 
+	/**
+	 * Parse edge attributes from a given JSONObject. An edge attribute is specified in a key-value pair in the
+	 * JSONObject.
+	 * 
+	 * The key is the plural name of the edge attribute. The value is an array of objects of the form { "from-id" :
+	 * [nodeID], "to-id" : [nodeID], [edgeAttributeName] : [edgeAttributeValue] }.
+	 * 
+	 * @param jsonObject
+	 *            : JSONObject defining the map
+	 * @param map
+	 *            : MapTopology to set edge-attribute values
+	 * @throws NodeIDNotFoundException
+	 * @throws LocationNodeNotFoundException
+	 * @throws ConnectionNotFoundException
+	 */
 	private void parseEdgeAttributes(JSONObject jsonObject, MapTopology map)
 			throws NodeIDNotFoundException, LocationNodeNotFoundException, ConnectionNotFoundException {
 		for (IEdgeAttributeParser<? extends IEdgeAttribute> parser : mEdgeAttributeParsers) {

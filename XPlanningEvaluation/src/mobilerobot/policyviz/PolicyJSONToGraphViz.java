@@ -44,8 +44,9 @@ public class PolicyJSONToGraphViz {
 		return policyGraph;
 	}
 
-	public void drawPolicyGraph(MutableGraph policyGraph, File outputFile) throws IOException {
-		Graphviz.fromGraph(policyGraph).width(200).render(Format.PNG).toFile(outputFile);
+	public void drawPolicyGraph(MutableGraph policyGraph, String outputName) throws IOException {
+		File outputPNGFile = new File(OUTPUT_PATH, outputName + ".png");
+		Graphviz.fromGraph(policyGraph).width(200).render(Format.PNG).toFile(outputPNGFile);
 	}
 
 	private MutableNode parseNodeLink(JSONObject decisionJsonObj) {
@@ -87,9 +88,8 @@ public class PolicyJSONToGraphViz {
 
 		PolicyJSONToGraphViz viz = new PolicyJSONToGraphViz();
 		MutableGraph policyGraph = viz.convertPolicyJsonToGraph(policyJsonFile);
-		String outputFilename = FilenameUtils.removeExtension(policyJsonFile.getName()) + ".png";
-		File outputFile = new File(OUTPUT_PATH, outputFilename);
-		viz.drawPolicyGraph(policyGraph, outputFile);
+		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
+		viz.drawPolicyGraph(policyGraph, outputName);
 	}
 
 }

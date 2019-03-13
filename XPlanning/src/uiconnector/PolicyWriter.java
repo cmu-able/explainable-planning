@@ -3,6 +3,8 @@ package uiconnector;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -71,10 +73,17 @@ public class PolicyWriter {
 	}
 
 	private JSONObject writeAction(IAction action) {
+		// Convert action parameters from type IStateVarValue to String for JSON output
+		List<String> actionParamStrArray = new ArrayList<>();
+		for (IStateVarValue paramValue : action.getParameters()) {
+			String paramValueStr = paramValue.toString();
+			actionParamStrArray.add(paramValueStr);
+		}
+
 		JSONObject actionJsonObj = new JSONObject();
 		actionJsonObj.put("type", action.getNamePrefix());
 		JSONArray paramArray = new JSONArray();
-		paramArray.addAll(action.getParameters());
+		paramArray.addAll(actionParamStrArray);
 		actionJsonObj.put("params", paramArray);
 		return actionJsonObj;
 	}

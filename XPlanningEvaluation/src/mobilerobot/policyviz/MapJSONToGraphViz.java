@@ -25,10 +25,17 @@ public class MapJSONToGraphViz {
 
 	private JSONParser mJsonParser = new JSONParser();
 
+	private double mMeterPerInch;
+
+	public MapJSONToGraphViz(double meterPerInch) {
+		mMeterPerInch = meterPerInch;
+	}
+
 	public MutableGraph convertMapJsonToGraph(File mapJsonFile) throws IOException, ParseException {
 		FileReader reader = new FileReader(mapJsonFile);
 		Object object = mJsonParser.parse(reader);
 		JSONObject mapJsonObj = (JSONObject) object;
+		double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
 		JSONArray nodeJsonArray = (JSONArray) mapJsonObj.get("map");
 		JSONArray obstacleJsonArray = (JSONArray) mapJsonObj.get("obstacles");
 
@@ -37,19 +44,28 @@ public class MapJSONToGraphViz {
 
 		for (Object obj : nodeJsonArray) {
 			JSONObject nodeJsonObj = (JSONObject) obj;
-			MutableNode nodeLink = parseNodeLink(nodeJsonObj, obstacleJsonArray, visitedNodeIDs);
+			MutableNode nodeLink = parseNodeLink(nodeJsonObj, obstacleJsonArray, visitedNodeIDs, mur);
 			mapGraph.add(nodeLink);
 		}
 
 		return mapGraph;
 	}
 
-	private MutableNode parseNodeLink(JSONObject nodeJsonObj, JSONArray obstacleJsonArray, Set<String> visitedNodeIDs) {
+	private MutableNode parseNodeLink(JSONObject nodeJsonObj, JSONArray obstacleJsonArray, Set<String> visitedNodeIDs,
+			double mur) {
 		String nodeID = (String) nodeJsonObj.get("node-id");
+		JSONObject coordsJsonObj = (JSONObject) nodeJsonObj.get("coords");
+		double xCoord = JSONSimpleParserUtils.parseDouble(coordsJsonObj, "x");
+		double yCoord = JSONSimpleParserUtils.parseDouble(coordsJsonObj, "y");
 		JSONArray connectedToJsonArray = (JSONArray) nodeJsonObj.get("connected-to");
 		String area = (String) nodeJsonObj.get("area");
 
 		MutableNode node = mutNode(nodeID);
+
+		double adjustedXCoord = xCoord * mur / mMeterPerInch;
+		double adjustedYCoord = yCoord * mur / mMeterPerInch;
+		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
+		node.add("pos", nodePos);
 
 		if (area.equals("PUBLIC")) {
 			node.add(Color.GREEN, Style.FILLED);

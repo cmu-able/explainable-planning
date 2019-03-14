@@ -7,12 +7,19 @@ import static guru.nidi.graphviz.model.Factory.to;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashSet;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.LocationNode;
+import examples.mobilerobot.dsm.MapTopology;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
+import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
+import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -20,9 +27,22 @@ import guru.nidi.graphviz.model.MutableNode;
 
 public class PolicyJSONToGraphViz {
 
+	private MapTopology mMapTopology;
+	private double mMeterUnitRatio;
+	private double mMeterPerInch;
 	private JSONParser mJsonParser = new JSONParser();
 
-	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile) throws IOException, ParseException {
+	public PolicyJSONToGraphViz(File mapJsonFile, double meterPerInch)
+			throws MapTopologyException, IOException, ParseException {
+		MapTopologyReader reader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
+		mMapTopology = reader.readMapTopology(mapJsonFile);
+		JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
+		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
+		mMeterPerInch = meterPerInch;
+	}
+
+	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile)
+			throws IOException, ParseException, NodeIDNotFoundException {
 		FileReader reader = new FileReader(policyJsonFile);
 		Object object = mJsonParser.parse(reader);
 		JSONArray policyJsonArray = (JSONArray) object;
@@ -35,7 +55,7 @@ public class PolicyJSONToGraphViz {
 		return policyGraph;
 	}
 
-	private MutableNode parseNodeLink(JSONObject decisionJsonObj) {
+	private MutableNode parseNodeLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
 		JSONObject stateJsonObj = (JSONObject) decisionJsonObj.get("state");
 		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get("action");
 
@@ -48,6 +68,10 @@ public class PolicyJSONToGraphViz {
 			MutableNode srcNode = mutNode(rLoc);
 			MutableNode destNode = mutNode(destLoc);
 			srcNode.addLink(destNode);
+
+			setNodePosition(srcNode, rLoc);
+			setNodePosition(destNode, destLoc);
+
 			return srcNode;
 		} else if (actionType.equals("setSpeed")) {
 			Double targetSpeed = Double.parseDouble((String) actionParamJsonArray.get(0));
@@ -63,4 +87,13 @@ public class PolicyJSONToGraphViz {
 		throw new IllegalArgumentException("Unknown action type: " + actionType);
 	}
 
+	private void setNodePosition(MutableNode node, String nodeID) throws NodeIDNotFoundException {
+		LocationNode locNode = mMapTopology.lookUpLocationNode(nodeID);
+		double xCoord = locNode.getNodeXCoordinate();
+		double yCoord = locNode.getNodeYCoordinate();
+		double adjustedXCoord = xCoord * mMeterUnitRatio / mMeterPerInch;
+		double adjustedYCoord = yCoord * mMeterUnitRatio / mMeterPerInch;
+		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
+		node.add("pos", nodePos);
+	}
 }

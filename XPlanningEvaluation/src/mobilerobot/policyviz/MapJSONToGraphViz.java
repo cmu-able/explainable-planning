@@ -15,6 +15,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
@@ -23,9 +24,8 @@ import guru.nidi.graphviz.model.MutableNode;
 
 public class MapJSONToGraphViz {
 
-	private JSONParser mJsonParser = new JSONParser();
-
 	private double mMeterPerInch;
+	private JSONParser mJsonParser = new JSONParser();
 
 	public MapJSONToGraphViz(double meterPerInch) {
 		mMeterPerInch = meterPerInch;

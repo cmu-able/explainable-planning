@@ -9,6 +9,7 @@ import java.net.URL;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import guru.nidi.graphviz.engine.Engine;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
@@ -26,35 +27,41 @@ public class GraphVizRenderer {
 		Graphviz.fromGraph(graph).engine(Engine.NEATO).render(Format.PNG).toFile(outputPNGFile);
 	}
 
-	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
+	public static void main(String[] args)
+			throws URISyntaxException, IOException, ParseException, MapTopologyException {
 		String option = args[0];
-		String jsonFilename = args[1];
-		URL resourceFolderURL;
+		File mapJsonFile;
+		File policyJsonFile;
+		MutableGraph graph = null;
+
 		if (option.equals("map")) {
-			resourceFolderURL = PolicyJSONToGraphViz.class.getResource(MAPS_RESOURCE_PATH);
+			String mapJsonFilename = args[1];
+			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
+			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(METER_PER_INCH);
+			graph = mapViz.convertMapJsonToGraph(mapJsonFile);
 		} else if (option.equals("policy")) {
-			resourceFolderURL = PolicyJSONToGraphViz.class.getResource(POLICIES_RESOURCE_PATH);
+			String mapJsonFilename = args[1];
+			String policyJsonFilename = args[2];
+			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
+			policyJsonFile = getFile(POLICIES_RESOURCE_PATH, policyJsonFilename);
+			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz(mapJsonFile, METER_PER_INCH);
+			graph = policyViz.convertPolicyJsonToGraph(policyJsonFile);
 		} else {
 			throw new IllegalArgumentException("Unknown option: " + option);
 		}
 
-		File resourceFolder = new File(resourceFolderURL.toURI());
-		File jsonFile = new File(resourceFolder, jsonFilename);
-		if (!jsonFile.exists()) {
-			throw new FileNotFoundException("File not found: " + jsonFile);
-		}
-
-		MutableGraph graph = null;
-		if (option.equals("map")) {
-			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(METER_PER_INCH);
-			graph = mapViz.convertMapJsonToGraph(jsonFile);
-		} else if (option.equals("policy")) {
-			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz();
-			graph = policyViz.convertPolicyJsonToGraph(jsonFile);
-		}
-
-		String outputName = FilenameUtils.removeExtension(jsonFile.getName());
+		String outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		drawGraph(graph, outputName);
+	}
+
+	private static File getFile(String resourcePath, String filename) throws URISyntaxException, FileNotFoundException {
+		URL resourceFolderURL = GraphVizRenderer.class.getResource(resourcePath);
+		File resourceFolder = new File(resourceFolderURL.toURI());
+		File file = new File(resourceFolder, filename);
+		if (!file.exists()) {
+			throw new FileNotFoundException("File not found: " + file);
+		}
+		return file;
 	}
 
 }

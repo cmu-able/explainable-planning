@@ -66,6 +66,6 @@ public class Location implements IStateVarValue {
 
 	@Override
 	public String toString() {
-		return "L" + mId;
+		return mId;
 	}
 }

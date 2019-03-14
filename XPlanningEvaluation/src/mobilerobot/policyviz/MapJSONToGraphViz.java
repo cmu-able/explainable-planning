@@ -5,15 +5,11 @@ import static guru.nidi.graphviz.model.Factory.mutNode;
 import static guru.nidi.graphviz.model.Factory.to;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -22,15 +18,10 @@ import org.json.simple.parser.ParseException;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
-import guru.nidi.graphviz.engine.Format;
-import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 
 public class MapJSONToGraphViz {
-
-	private static final String RESOURCE_PATH = "maps";
-	private static final String OUTPUT_PATH = "output";
 
 	private JSONParser mJsonParser = new JSONParser();
 
@@ -51,11 +42,6 @@ public class MapJSONToGraphViz {
 		}
 
 		return mapGraph;
-	}
-
-	public void drawMapGraph(MutableGraph mapGraph, String outputName) throws IOException {
-		File outputPNGFile = new File(OUTPUT_PATH, outputName + ".png");
-		Graphviz.fromGraph(mapGraph).width(200).render(Format.PNG).toFile(outputPNGFile);
 	}
 
 	private MutableNode parseNodeLink(JSONObject nodeJsonObj, JSONArray obstacleJsonArray, Set<String> visitedNodeIDs) {
@@ -111,21 +97,6 @@ public class MapJSONToGraphViz {
 			}
 		}
 		return "CLEAR";
-	}
-
-	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
-		String mapJsonFilename = args[0];
-		URL resourceFolderURL = PolicyJSONToGraphViz.class.getResource(RESOURCE_PATH);
-		File resourceFolder = new File(resourceFolderURL.toURI());
-		File mapJsonFile = new File(resourceFolder, mapJsonFilename);
-		if (!mapJsonFile.exists()) {
-			throw new FileNotFoundException("File not found: " + mapJsonFile);
-		}
-
-		MapJSONToGraphViz viz = new MapJSONToGraphViz();
-		MutableGraph mapGraph = viz.convertMapJsonToGraph(mapJsonFile);
-		String outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
-		viz.drawMapGraph(mapGraph, outputName);
 	}
 
 }

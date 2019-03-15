@@ -48,12 +48,14 @@ public class GraphVizRenderer {
 		File mapJsonFile;
 		File policyJsonFile;
 		MutableGraph graph = null;
+		String outputName;
 
 		if (option.equals("map")) {
 			String mapJsonFilename = args[1];
 			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
 			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(mapJsonFile);
 			graph = mapViz.convertMapJsonToGraph();
+			outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		} else if (option.equals("policy")) {
 			String mapJsonFilename = args[1];
 			String policyJsonFilename = args[2];
@@ -61,11 +63,11 @@ public class GraphVizRenderer {
 			policyJsonFile = getFile(POLICIES_RESOURCE_PATH, policyJsonFilename);
 			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz(mapJsonFile);
 			graph = policyViz.convertPolicyJsonToGraph(policyJsonFile);
+			outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
 		} else {
 			throw new IllegalArgumentException("Unknown option: " + option);
 		}
 
-		String outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		drawGraph(graph, outputName);
 	}
 

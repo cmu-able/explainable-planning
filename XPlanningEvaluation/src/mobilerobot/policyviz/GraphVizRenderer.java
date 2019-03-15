@@ -10,6 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.engine.Engine;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
@@ -34,6 +35,11 @@ public class GraphVizRenderer {
 		double adjustedYCoord = SCALING_FACTOR * yCoord * mur / METER_PER_INCH;
 		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
 		node.add("pos", nodePos);
+	}
+
+	public static void setNodeStyle(MutableNode node) {
+		node.add(Shape.CIRCLE);
+		node.add("width", "0.1");
 	}
 
 	public static void main(String[] args)

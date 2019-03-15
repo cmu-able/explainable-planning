@@ -32,7 +32,6 @@ import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
-import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
@@ -82,9 +81,10 @@ public class MapJSONToGraphViz {
 	private MutableNode parseNodeLink(LocationNode locNode, Set<LocationNode> visitedLocNodes)
 			throws MapTopologyException {
 		MutableNode node = mutNode(locNode.getNodeID());
-		setNodeStyle(node);
+
 		GraphVizRenderer.setRelativeNodePosition(node, locNode.getNodeXCoordinate(), locNode.getNodeYCoordinate(),
 				mMeterUnitRatio);
+		GraphVizRenderer.setNodeStyle(node);
 
 		Area area = locNode.getNodeAttribute(Area.class, "area");
 		if (area == Area.PUBLIC) {
@@ -116,10 +116,5 @@ public class MapJSONToGraphViz {
 		// Mark this node as visited: all of its neighbors are added to the graph
 		visitedLocNodes.add(locNode);
 		return node;
-	}
-
-	private void setNodeStyle(MutableNode node) {
-		node.add(Shape.CIRCLE);
-		node.add("width", "0.1");
 	}
 }

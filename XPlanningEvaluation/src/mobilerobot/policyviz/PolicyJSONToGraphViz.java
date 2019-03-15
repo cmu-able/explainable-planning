@@ -68,6 +68,8 @@ public class PolicyJSONToGraphViz {
 
 			setNodePosition(srcNode, rLoc);
 			setNodePosition(destNode, destLoc);
+			GraphVizRenderer.setNodeStyle(srcNode);
+			GraphVizRenderer.setNodeStyle(destNode);
 
 			return srcNode;
 		} else if (actionType.equals("setSpeed")) {

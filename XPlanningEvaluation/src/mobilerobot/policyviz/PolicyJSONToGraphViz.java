@@ -29,16 +29,13 @@ public class PolicyJSONToGraphViz {
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
-	private double mMeterPerInch;
 	private JSONParser mJsonParser = new JSONParser();
 
-	public PolicyJSONToGraphViz(File mapJsonFile, double meterPerInch)
-			throws MapTopologyException, IOException, ParseException {
+	public PolicyJSONToGraphViz(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
 		MapTopologyReader reader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
 		mMapTopology = reader.readMapTopology(mapJsonFile);
 		JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
 		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
-		mMeterPerInch = meterPerInch;
 	}
 
 	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile)
@@ -91,9 +88,6 @@ public class PolicyJSONToGraphViz {
 		LocationNode locNode = mMapTopology.lookUpLocationNode(nodeID);
 		double xCoord = locNode.getNodeXCoordinate();
 		double yCoord = locNode.getNodeYCoordinate();
-		double adjustedXCoord = xCoord * mMeterUnitRatio / mMeterPerInch;
-		double adjustedYCoord = yCoord * mMeterUnitRatio / mMeterPerInch;
-		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
-		node.add("pos", nodePos);
+		GraphVizRenderer.setRelativeNodePosition(node, xCoord, yCoord, mMeterUnitRatio);
 	}
 }

@@ -10,12 +10,24 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.Connection;
+import examples.mobilerobot.dsm.IEdgeAttribute;
+import examples.mobilerobot.dsm.INodeAttribute;
+import examples.mobilerobot.dsm.LocationNode;
+import examples.mobilerobot.dsm.MapTopology;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.dsm.parser.AreaParser;
+import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
+import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
+import examples.mobilerobot.dsm.parser.MapTopologyReader;
+import examples.mobilerobot.dsm.parser.OcclusionParser;
+import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
@@ -24,95 +36,75 @@ import guru.nidi.graphviz.model.MutableNode;
 
 public class MapJSONToGraphViz {
 
-	private double mMeterPerInch;
-	private JSONParser mJsonParser = new JSONParser();
+	private MapTopology mMapTopology;
+	private double mMeterUnitRatio;
 
-	public MapJSONToGraphViz(double meterPerInch) {
-		mMeterPerInch = meterPerInch;
+	public MapJSONToGraphViz(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+		mMapTopology = parseMapTopology(mapJsonFile);
+		JSONParser jsonParser = new JSONParser();
+		JSONObject mapJsonObj = (JSONObject) jsonParser.parse(new FileReader(mapJsonFile));
+		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
 	}
 
-	public MutableGraph convertMapJsonToGraph(File mapJsonFile) throws IOException, ParseException {
-		FileReader reader = new FileReader(mapJsonFile);
-		Object object = mJsonParser.parse(reader);
-		JSONObject mapJsonObj = (JSONObject) object;
-		double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
-		JSONArray nodeJsonArray = (JSONArray) mapJsonObj.get("map");
-		JSONArray obstacleJsonArray = (JSONArray) mapJsonObj.get("obstacles");
+	private MapTopology parseMapTopology(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+		AreaParser areaParser = new AreaParser();
+		OcclusionParser occlusionParser = new OcclusionParser();
+		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
+		nodeAttributeParsers.add(areaParser);
+		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
+		edgeAttributeParsers.add(occlusionParser);
+		MapTopologyReader reader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
+		return reader.readMapTopology(mapJsonFile);
+	}
 
+	public MutableGraph convertMapJsonToGraph() throws MapTopologyException {
 		MutableGraph mapGraph = mutGraph("map").setDirected(false);
-		Set<String> visitedNodeIDs = new HashSet<>();
+		Set<LocationNode> visitedLocNodes = new HashSet<>();
 
-		for (Object obj : nodeJsonArray) {
-			JSONObject nodeJsonObj = (JSONObject) obj;
-			MutableNode nodeLink = parseNodeLink(nodeJsonObj, obstacleJsonArray, visitedNodeIDs, mur);
+		for (LocationNode locNode : mMapTopology) {
+			MutableNode nodeLink = parseNodeLink(locNode, visitedLocNodes);
 			mapGraph.add(nodeLink);
 		}
 
 		return mapGraph;
 	}
 
-	private MutableNode parseNodeLink(JSONObject nodeJsonObj, JSONArray obstacleJsonArray, Set<String> visitedNodeIDs,
-			double mur) {
-		String nodeID = (String) nodeJsonObj.get("node-id");
-		JSONObject coordsJsonObj = (JSONObject) nodeJsonObj.get("coords");
-		double xCoord = JSONSimpleParserUtils.parseDouble(coordsJsonObj, "x");
-		double yCoord = JSONSimpleParserUtils.parseDouble(coordsJsonObj, "y");
-		JSONArray connectedToJsonArray = (JSONArray) nodeJsonObj.get("connected-to");
-		String area = (String) nodeJsonObj.get("area");
+	private MutableNode parseNodeLink(LocationNode locNode, Set<LocationNode> visitedLocNodes)
+			throws MapTopologyException {
+		MutableNode node = mutNode(locNode.getNodeID());
+		GraphVizRenderer.setRelativeNodePosition(node, locNode.getNodeXCoordinate(), locNode.getNodeYCoordinate(),
+				mMeterUnitRatio);
 
-		MutableNode node = mutNode(nodeID);
-
-		double adjustedXCoord = xCoord * mur / mMeterPerInch;
-		double adjustedYCoord = yCoord * mur / mMeterPerInch;
-		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
-		node.add("pos", nodePos);
-
-		if (area.equals("PUBLIC")) {
+		Area area = locNode.getNodeAttribute(Area.class, "area");
+		if (area == Area.PUBLIC) {
 			node.add(Color.GREEN, Style.FILLED);
-		} else if (area.equals("SEMI_PRIVATE")) {
+		} else if (area == Area.SEMI_PRIVATE) {
 			node.add(Color.YELLOW, Style.FILLED);
-		} else if (area.equals("PRIVATE")) {
+		} else if (area == Area.PRIVATE) {
 			node.add(Color.RED, Style.FILLED);
-		} else {
-			throw new IllegalArgumentException("Unknown area type: " + area);
 		}
 
-		for (Object obj : connectedToJsonArray) {
-			String neighborNodeID = (String) obj;
+		for (Connection connection : mMapTopology.getConnections(locNode)) {
+			LocationNode neighborLocNode = connection.getOtherNode(locNode);
 
-			if (visitedNodeIDs.contains(neighborNodeID)) {
+			if (visitedLocNodes.contains(neighborLocNode)) {
 				// This neighbor node has already been visited
 				// The link from the neighbor node to this node was already created
 				continue;
 			}
 
-			String occlusion = getOcclusion(nodeID, neighborNodeID, obstacleJsonArray);
-			MutableNode neighborNode = mutNode(neighborNodeID);
-			if (occlusion.equals("CLEAR")) {
+			Occlusion occlusion = connection.getConnectionAttribute(Occlusion.class, "occlusion");
+			MutableNode neighborNode = mutNode(neighborLocNode.getNodeID());
+			if (occlusion == Occlusion.CLEAR) {
 				node.addLink(neighborNode);
 			} else {
-				node.addLink(to(neighborNode).with(Label.of(occlusion)));
+				node.addLink(to(neighborNode).with(Label.of(occlusion.toString())));
 			}
 		}
 
 		// Mark this node as visited: all of its neighbors are added to the graph
-		visitedNodeIDs.add(nodeID);
+		visitedLocNodes.add(locNode);
 		return node;
-	}
-
-	private String getOcclusion(String nodeID, String neighborNodeID, JSONArray obstacleJsonArray) {
-		for (Object obj : obstacleJsonArray) {
-			JSONObject obstacleJsonObj = (JSONObject) obj;
-			String fromID = (String) obstacleJsonObj.get("from-id");
-			String toID = (String) obstacleJsonObj.get("to-id");
-			String occlusion = (String) obstacleJsonObj.get("occlusion");
-
-			if ((nodeID.equals(fromID)) && (neighborNodeID.equals(toID))
-					|| (nodeID.equals(toID) && (neighborNodeID.equals(fromID)))) {
-				return occlusion;
-			}
-		}
-		return "CLEAR";
 	}
 
 }

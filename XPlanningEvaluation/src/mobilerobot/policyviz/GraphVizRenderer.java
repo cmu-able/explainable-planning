@@ -14,6 +14,7 @@ import guru.nidi.graphviz.engine.Engine;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
+import guru.nidi.graphviz.model.MutableNode;
 
 public class GraphVizRenderer {
 
@@ -27,6 +28,13 @@ public class GraphVizRenderer {
 		Graphviz.fromGraph(graph).engine(Engine.NEATO).render(Format.PNG).toFile(outputPNGFile);
 	}
 
+	public static void setRelativeNodePosition(MutableNode node, double xCoord, double yCoord, double mur) {
+		double adjustedXCoord = xCoord * mur / METER_PER_INCH;
+		double adjustedYCoord = yCoord * mur / METER_PER_INCH;
+		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
+		node.add("pos", nodePos);
+	}
+
 	public static void main(String[] args)
 			throws URISyntaxException, IOException, ParseException, MapTopologyException {
 		String option = args[0];
@@ -37,14 +45,14 @@ public class GraphVizRenderer {
 		if (option.equals("map")) {
 			String mapJsonFilename = args[1];
 			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
-			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(METER_PER_INCH);
-			graph = mapViz.convertMapJsonToGraph(mapJsonFile);
+			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(mapJsonFile);
+			graph = mapViz.convertMapJsonToGraph();
 		} else if (option.equals("policy")) {
 			String mapJsonFilename = args[1];
 			String policyJsonFilename = args[2];
 			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
 			policyJsonFile = getFile(POLICIES_RESOURCE_PATH, policyJsonFilename);
-			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz(mapJsonFile, METER_PER_INCH);
+			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz(mapJsonFile);
 			graph = policyViz.convertPolicyJsonToGraph(policyJsonFile);
 		} else {
 			throw new IllegalArgumentException("Unknown option: " + option);

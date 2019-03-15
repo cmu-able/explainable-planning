@@ -7,7 +7,9 @@ import static guru.nidi.graphviz.model.Factory.to;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -53,8 +55,15 @@ public class MapJSONToGraphViz {
 		nodeAttributeParsers.add(areaParser);
 		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
 		edgeAttributeParsers.add(occlusionParser);
+
+		// Default node/edge attribute values
+		Map<String, INodeAttribute> defaultNodeAttributes = new HashMap<>();
+		Map<String, IEdgeAttribute> defaultEdgeAttributes = new HashMap<>();
+		defaultNodeAttributes.put(areaParser.getAttributeName(), Area.PUBLIC);
+		defaultEdgeAttributes.put(occlusionParser.getAttributeName(), Occlusion.CLEAR);
+
 		MapTopologyReader reader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
-		return reader.readMapTopology(mapJsonFile);
+		return reader.readMapTopology(mapJsonFile, defaultNodeAttributes, defaultEdgeAttributes);
 	}
 
 	public MutableGraph convertMapJsonToGraph() throws MapTopologyException {

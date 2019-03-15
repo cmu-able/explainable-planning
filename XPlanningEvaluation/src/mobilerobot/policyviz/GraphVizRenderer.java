@@ -22,6 +22,7 @@ public class GraphVizRenderer {
 	private static final String POLICIES_RESOURCE_PATH = "policies";
 	private static final String OUTPUT_PATH = "output";
 	private static final double METER_PER_INCH = 10;
+	private static final double SCALING_FACTOR = 4;
 
 	public static void drawGraph(MutableGraph graph, String outputName) throws IOException {
 		File outputPNGFile = new File(OUTPUT_PATH, outputName + ".png");
@@ -29,8 +30,8 @@ public class GraphVizRenderer {
 	}
 
 	public static void setRelativeNodePosition(MutableNode node, double xCoord, double yCoord, double mur) {
-		double adjustedXCoord = xCoord * mur / METER_PER_INCH;
-		double adjustedYCoord = yCoord * mur / METER_PER_INCH;
+		double adjustedXCoord = SCALING_FACTOR * xCoord * mur / METER_PER_INCH;
+		double adjustedYCoord = SCALING_FACTOR * yCoord * mur / METER_PER_INCH;
 		String nodePos = adjustedXCoord + "," + adjustedYCoord + "!";
 		node.add("pos", nodePos);
 	}

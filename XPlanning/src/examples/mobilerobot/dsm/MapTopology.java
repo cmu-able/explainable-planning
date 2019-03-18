@@ -71,6 +71,14 @@ public class MapTopology implements Iterable<LocationNode> {
 		throw new ConnectionNotFoundException(nodeA, nodeB);
 	}
 
+	public Iterator<LocationNode> nodeIterator() {
+		return mNodes.iterator();
+	}
+
+	public Iterator<Connection> connectionIterator() {
+		return mEdges.iterator();
+	}
+
 	@Override
 	public Iterator<LocationNode> iterator() {
 		return mNodes.iterator();

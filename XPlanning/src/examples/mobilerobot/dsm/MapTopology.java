@@ -79,6 +79,14 @@ public class MapTopology implements Iterable<LocationNode> {
 		return mEdges.iterator();
 	}
 
+	public int getNumNodes() {
+		return mNodes.size();
+	}
+
+	public int getNumConnections() {
+		return mEdges.size();
+	}
+
 	@Override
 	public Iterator<LocationNode> iterator() {
 		return mNodes.iterator();

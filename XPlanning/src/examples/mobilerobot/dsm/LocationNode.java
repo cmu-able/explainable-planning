@@ -60,6 +60,13 @@ public class LocationNode {
 		return attributeType.cast(mNodeAttributes.get(name));
 	}
 
+	public INodeAttribute getGenericNodeAttribute(String name) throws NodeAttributeNotFoundException {
+		if (!mNodeAttributes.containsKey(name)) {
+			throw new NodeAttributeNotFoundException(name);
+		}
+		return mNodeAttributes.get(name);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

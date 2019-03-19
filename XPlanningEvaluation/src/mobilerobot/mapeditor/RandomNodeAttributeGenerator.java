@@ -1,10 +1,17 @@
 package mobilerobot.mapeditor;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
+import examples.mobilerobot.dsm.Connection;
 import examples.mobilerobot.dsm.INodeAttribute;
 import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
+import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 
 public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 
@@ -33,6 +40,107 @@ public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 			E randomNodeAttrValue = mNodeAttrRandomizer.randomSample();
 			locNode.putNodeAttribute(mNodeAttrName, randomNodeAttrValue);
 		}
+	}
+
+	public void randomlyAssignNodeAttributeValues(MapTopology mapTopology, int groupSize, E[] nodeAttrFilter)
+			throws MapTopologyException {
+		List<LocationNode> iniNodes = randomlyAssignAttributeValuesToIniNodes(mapTopology, nodeAttrFilter, groupSize);
+		propagateAttributeValuesFromIniNodes(mapTopology, iniNodes, groupSize);
+	}
+
+	private List<LocationNode> randomlyAssignAttributeValuesToIniNodes(MapTopology mapTopology, E[] nodeAttrFilter,
+			int groupSize) {
+		LocationNode[] locNodes = getLocationNodeArray(mapTopology);
+		Randomizer<LocationNode> nodeRandomizer = new Randomizer<>(locNodes);
+		List<LocationNode> iniNodes = new ArrayList<>();
+
+		for (E nodeAttrValue : nodeAttrFilter) {
+			double prob = mNodeAttrRandomizer.getProbabilityOf(nodeAttrValue);
+			int numIniNodes = (int) Math.round(prob * mapTopology.getNumNodes() / groupSize);
+
+			for (int j = 0; j < numIniNodes; j++) {
+				LocationNode randomLocNode = nodeRandomizer.randomSample();
+				randomLocNode.putNodeAttribute(mNodeAttrName, nodeAttrValue);
+				iniNodes.add(randomLocNode);
+			}
+		}
+		return iniNodes;
+	}
+
+	private void propagateAttributeValuesFromIniNodes(MapTopology mapTopology, List<LocationNode> iniNodes,
+			int groupSize) throws MapTopologyException {
+		for (LocationNode iniNode : iniNodes) {
+			Set<LocationNode> visitedNodes = new HashSet<>();
+			INodeAttribute nodeAttrValue = iniNode.getGenericNodeAttribute(mNodeAttrName);
+			propagateAttributeValueFromNodeDFS(mapTopology, iniNode, nodeAttrValue, groupSize, groupSize - 1,
+					visitedNodes);
+		}
+	}
+
+	private int propagateAttributeValueFromNodeDFS(MapTopology mapTopology, LocationNode node,
+			INodeAttribute nodeAttrValue, int groupSize, int depth, Set<LocationNode> visitedNodes)
+			throws LocationNodeNotFoundException {
+		// Assign attribute value to node; mark node as visited
+		node.putNodeAttribute(mNodeAttrName, nodeAttrValue);
+		visitedNodes.add(node);
+
+		if (depth == 0) {
+			// Base case: Propagation finishes at the current node
+			return 0;
+		}
+
+		// Need to propagate to the next {depth} nodes
+
+		int remainingDepth = depth; // remaining number of nodes to propagate to
+		Set<Connection> connections = mapTopology.getConnections(node);
+
+		for (Connection connection : connections) {
+			LocationNode otherNode = connection.getOtherNode(node);
+
+			if (!visitedNodes.contains(otherNode)) {
+				// Adjacent node has not been visited; propagate attribute value to that node
+
+				if (remainingDepth == depth) {
+					// DFS-visit first adjacent node
+					remainingDepth = propagateAttributeValueFromNodeDFS(mapTopology, otherNode, nodeAttrValue,
+							groupSize, depth - 1, visitedNodes);
+				} else {
+					// DFS-visit 2nd, 3rd, ... adjacent node
+					remainingDepth = propagateAttributeValueFromNodeDFS(mapTopology, otherNode, nodeAttrValue,
+							groupSize, remainingDepth, visitedNodes);
+				}
+
+				if (depth + 1 < groupSize) {
+					// Current node is NOT the initial node of the propagation chain
+					// Send remainingDepth to the prior recursive caller
+					return remainingDepth;
+				}
+
+				// Current node is the initial node of the propagation chain
+
+				if (remainingDepth == 0) {
+					// Propagation is done
+					return 0;
+				}
+
+				// More nodes to propagate to
+				// Propagate to the unvisited next adjacent node of current node
+			}
+		}
+
+		// No more unvisited adjacent node
+		// Send remainingDepth to the prior recursive caller
+		return remainingDepth;
+	}
+
+	private LocationNode[] getLocationNodeArray(MapTopology mapTopology) {
+		LocationNode[] locNodes = new LocationNode[mapTopology.getNumNodes()];
+		int i = 0;
+		for (LocationNode locNode : mapTopology) {
+			locNodes[i] = locNode;
+			i++;
+		}
+		return locNodes;
 	}
 
 	@Override

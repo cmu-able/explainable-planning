@@ -32,6 +32,11 @@ public class Randomizer<E> {
 		return mObjects[i];
 	}
 
+	public double getProbabilityOf(E object) {
+		int i = Arrays.asList(mObjects).indexOf(object);
+		return mDistribution.probability(i);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

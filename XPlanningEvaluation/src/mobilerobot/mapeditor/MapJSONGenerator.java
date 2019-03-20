@@ -3,13 +3,11 @@ package mobilerobot.mapeditor;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -22,23 +20,18 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+import mobilerobot.utilities.FileIOUtils;
+
 public class MapJSONGenerator {
 
-	private static final String RESOURCE_PATH = "maps";
 	private static final String RESOURCE_FILE_NAME = "GHC7-waypoints.csv";
-	private static final String OUTPUT_PATH = "output";
 	private static final String OUTPUT_FILE_NAME = "GHC7-map.json";
 
 	private static final String MUR_KEY = "mur";
 	private static final String MAP_KEY = "map";
 
 	public static void main(String[] args) throws URISyntaxException, IOException {
-		URL resourceFolderURL = MapJSONGenerator.class.getResource(RESOURCE_PATH);
-		File resourceFolder = new File(resourceFolderURL.toURI());
-		File csvFile = new File(resourceFolder, RESOURCE_FILE_NAME);
-		if (!csvFile.exists()) {
-			throw new FileNotFoundException("File not found: " + csvFile);
-		}
+		File csvFile = FileIOUtils.getFile(MapJSONGenerator.class, FileIOUtils.MAPS_RESOURCE_PATH, RESOURCE_FILE_NAME);
 
 		List<String> csvLines = readLines(csvFile);
 		JSONObject mapJSONObj = convertCSVLinesToJSON(csvLines);
@@ -48,7 +41,7 @@ public class MapJSONGenerator {
 		JsonElement element = new JsonParser().parse(mapJSONObj.toJSONString());
 		String mapJSONStr = gson.toJson(element);
 
-		File outputFile = new File(OUTPUT_PATH, OUTPUT_FILE_NAME);
+		File outputFile = FileIOUtils.createOutputFile(OUTPUT_FILE_NAME);
 		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
 			out.print(mapJSONStr);
 		}

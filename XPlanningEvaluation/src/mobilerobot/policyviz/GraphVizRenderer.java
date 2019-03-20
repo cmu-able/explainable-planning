@@ -1,10 +1,8 @@
 package mobilerobot.policyviz;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
@@ -16,17 +14,15 @@ import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
+import mobilerobot.utilities.FileIOUtils;
 
 public class GraphVizRenderer {
 
-	private static final String MAPS_RESOURCE_PATH = "maps";
-	private static final String POLICIES_RESOURCE_PATH = "policies";
-	private static final String OUTPUT_PATH = "output";
 	private static final double METER_PER_INCH = 10;
 	private static final double SCALING_FACTOR = 4;
 
 	public static void drawGraph(MutableGraph graph, String outputName) throws IOException {
-		File outputPNGFile = new File(OUTPUT_PATH, outputName + ".png");
+		File outputPNGFile = FileIOUtils.createOutputFile(outputName + ".png");
 		Graphviz.fromGraph(graph).engine(Engine.NEATO).render(Format.PNG).toFile(outputPNGFile);
 	}
 
@@ -52,15 +48,16 @@ public class GraphVizRenderer {
 
 		if (option.equals("map")) {
 			String mapJsonFilename = args[1];
-			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
+			mapJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.MAPS_RESOURCE_PATH, mapJsonFilename);
 			MapJSONToGraphViz mapViz = new MapJSONToGraphViz(mapJsonFile);
 			graph = mapViz.convertMapJsonToGraph();
 			outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		} else if (option.equals("policy")) {
 			String mapJsonFilename = args[1];
 			String policyJsonFilename = args[2];
-			mapJsonFile = getFile(MAPS_RESOURCE_PATH, mapJsonFilename);
-			policyJsonFile = getFile(POLICIES_RESOURCE_PATH, policyJsonFilename);
+			mapJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.MAPS_RESOURCE_PATH, mapJsonFilename);
+			policyJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.POLICIES_RESOURCE_PATH,
+					policyJsonFilename);
 			PolicyJSONToGraphViz policyViz = new PolicyJSONToGraphViz(mapJsonFile);
 			graph = policyViz.convertPolicyJsonToGraph(policyJsonFile);
 			outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
@@ -69,16 +66,6 @@ public class GraphVizRenderer {
 		}
 
 		drawGraph(graph, outputName);
-	}
-
-	private static File getFile(String resourcePath, String filename) throws URISyntaxException, FileNotFoundException {
-		URL resourceFolderURL = GraphVizRenderer.class.getResource(resourcePath);
-		File resourceFolder = new File(resourceFolderURL.toURI());
-		File file = new File(resourceFolder, filename);
-		if (!file.exists()) {
-			throw new FileNotFoundException("File not found: " + file);
-		}
-		return file;
 	}
 
 }

@@ -19,6 +19,7 @@ public class Randomizer<E> {
 		double[] probabilities = new double[objects.length];
 		Arrays.fill(probabilities, 1.0 / objects.length);
 		int[] numsToSample = IntStream.range(0, objects.length).toArray();
+		mObjects = objects;
 		mDistribution = new EnumeratedIntegerDistribution(numsToSample, probabilities);
 	}
 

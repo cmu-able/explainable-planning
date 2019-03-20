@@ -19,9 +19,10 @@ import mobilerobot.utilities.MapTopologyUtils;
 public class MapRandomizer {
 
 	private RandomNodeAttributeGenerator<Area> mNodeAttrGenerator = new RandomNodeAttributeGenerator<>("area",
-			Area.values());
+			new Area[] { Area.PUBLIC, Area.SEMI_PRIVATE, Area.PRIVATE });
 	private RandomEdgeAttributeGenerator<Occlusion> mEdgeAttrGenerator = new RandomEdgeAttributeGenerator<>("occlusion",
-			Occlusion.values());
+			new Occlusion[] { Occlusion.CLEAR, Occlusion.PARTIALLY_OCCLUDED, Occlusion.BLOCKED },
+			new double[] { 0.7, 0.25, 0.05 });
 
 	public MapTopology generateMapWithRandomAttributes(File mapJsonFile)
 			throws MapTopologyException, IOException, ParseException {

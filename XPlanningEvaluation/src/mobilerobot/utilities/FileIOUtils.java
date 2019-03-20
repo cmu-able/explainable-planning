@@ -40,14 +40,12 @@ public class FileIOUtils {
 		return new File(OUTPUT_PATH, outputFilename);
 	}
 
-	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, String outputFilename)
-			throws FileNotFoundException {
+	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, File outputFile) throws FileNotFoundException {
 		// Pretty-Print JSON
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		JsonElement element = new JsonParser().parse(jsonObj.toJSONString());
 		String jsonStr = gson.toJson(element);
 
-		File outputFile = FileIOUtils.createOutputFile(outputFilename);
 		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
 			out.print(jsonStr);
 		}

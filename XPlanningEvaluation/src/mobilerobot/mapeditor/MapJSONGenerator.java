@@ -26,7 +26,8 @@ public class MapJSONGenerator {
 		File csvFile = FileIOUtils.getFile(MapJSONGenerator.class, FileIOUtils.MAPS_RESOURCE_PATH, RESOURCE_FILE_NAME);
 		List<String> csvLines = readLines(csvFile);
 		JSONObject mapJSONObj = convertCSVLinesToJSON(csvLines);
-		FileIOUtils.prettyPrintJSONObjectToFile(mapJSONObj, OUTPUT_FILE_NAME);
+		File outputFile = FileIOUtils.createOutputFile(OUTPUT_FILE_NAME);
+		FileIOUtils.prettyPrintJSONObjectToFile(mapJSONObj, outputFile);
 	}
 
 	private static List<String> readLines(File file) throws IOException {

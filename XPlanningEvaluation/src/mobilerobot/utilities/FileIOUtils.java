@@ -1,9 +1,19 @@
 package mobilerobot.utilities;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+
+import org.json.simple.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 
 public class FileIOUtils {
 
@@ -28,6 +38,19 @@ public class FileIOUtils {
 
 	public static File createOutputFile(String outputFilename) {
 		return new File(OUTPUT_PATH, outputFilename);
+	}
+
+	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, String outputFilename)
+			throws FileNotFoundException {
+		// Pretty-Print JSON
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		JsonElement element = new JsonParser().parse(jsonObj.toJSONString());
+		String jsonStr = gson.toJson(element);
+
+		File outputFile = FileIOUtils.createOutputFile(outputFilename);
+		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
+			out.print(jsonStr);
+		}
 	}
 
 }

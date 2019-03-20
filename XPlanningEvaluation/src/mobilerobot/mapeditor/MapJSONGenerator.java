@@ -1,12 +1,9 @@
 package mobilerobot.mapeditor;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -14,11 +11,6 @@ import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 
 import mobilerobot.utilities.FileIOUtils;
 
@@ -32,19 +24,9 @@ public class MapJSONGenerator {
 
 	public static void main(String[] args) throws URISyntaxException, IOException {
 		File csvFile = FileIOUtils.getFile(MapJSONGenerator.class, FileIOUtils.MAPS_RESOURCE_PATH, RESOURCE_FILE_NAME);
-
 		List<String> csvLines = readLines(csvFile);
 		JSONObject mapJSONObj = convertCSVLinesToJSON(csvLines);
-
-		// Pretty-Print JSON
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		JsonElement element = new JsonParser().parse(mapJSONObj.toJSONString());
-		String mapJSONStr = gson.toJson(element);
-
-		File outputFile = FileIOUtils.createOutputFile(OUTPUT_FILE_NAME);
-		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
-			out.print(mapJSONStr);
-		}
+		FileIOUtils.prettyPrintJSONObjectToFile(mapJSONObj, OUTPUT_FILE_NAME);
 	}
 
 	private static List<String> readLines(File file) throws IOException {

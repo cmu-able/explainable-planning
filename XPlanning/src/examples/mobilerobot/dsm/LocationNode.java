@@ -47,10 +47,7 @@ public class LocationNode {
 
 	public <E extends INodeAttribute> E getNodeAttribute(Class<E> attributeType, String name)
 			throws NodeAttributeNotFoundException {
-		if (!mNodeAttributes.containsKey(name)) {
-			throw new NodeAttributeNotFoundException(name);
-		}
-		return attributeType.cast(mNodeAttributes.get(name));
+		return attributeType.cast(getGenericNodeAttribute(name));
 	}
 
 	public <E extends INodeAttribute> E getNodeAttribute(Class<E> attributeType, String name, E defaultValue) {

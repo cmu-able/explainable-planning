@@ -53,10 +53,7 @@ public class Connection {
 
 	public <E extends IEdgeAttribute> E getConnectionAttribute(Class<E> attributeType, String name)
 			throws ConnectionAttributeNotFoundException {
-		if (!mEdgeAttributes.containsKey(name)) {
-			throw new ConnectionAttributeNotFoundException(name);
-		}
-		return attributeType.cast(mEdgeAttributes.get(name));
+		return attributeType.cast(getGenericConnectionAttribute(name));
 	}
 
 	public <E extends IEdgeAttribute> E getConnectionAttribute(Class<E> attributeType, String name, E defaultValue) {
@@ -64,6 +61,13 @@ public class Connection {
 			return defaultValue;
 		}
 		return attributeType.cast(mEdgeAttributes.get(name));
+	}
+
+	public IEdgeAttribute getGenericConnectionAttribute(String name) throws ConnectionAttributeNotFoundException {
+		if (!mEdgeAttributes.containsKey(name)) {
+			throw new ConnectionAttributeNotFoundException(name);
+		}
+		return mEdgeAttributes.get(name);
 	}
 
 	public LocationNode getOtherNode(LocationNode node) throws LocationNodeNotFoundException {

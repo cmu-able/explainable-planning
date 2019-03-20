@@ -25,6 +25,7 @@ public class Randomizer<E> {
 
 	public Randomizer(E[] objects, double[] probabilities) {
 		int[] numsToSample = IntStream.range(0, objects.length).toArray();
+		mObjects = objects;
 		mDistribution = new EnumeratedIntegerDistribution(numsToSample, probabilities);
 	}
 

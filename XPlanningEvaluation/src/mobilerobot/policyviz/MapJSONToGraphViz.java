@@ -7,9 +7,7 @@ import static guru.nidi.graphviz.model.Factory.to;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -17,17 +15,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import examples.mobilerobot.dsm.Connection;
-import examples.mobilerobot.dsm.IEdgeAttribute;
-import examples.mobilerobot.dsm.INodeAttribute;
 import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import examples.mobilerobot.dsm.parser.AreaParser;
-import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
-import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
-import examples.mobilerobot.dsm.parser.MapTopologyReader;
-import examples.mobilerobot.dsm.parser.OcclusionParser;
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
@@ -35,6 +26,7 @@ import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
+import mobilerobot.utilities.MapTopologyUtils;
 
 public class MapJSONToGraphViz {
 
@@ -42,28 +34,10 @@ public class MapJSONToGraphViz {
 	private double mMeterUnitRatio;
 
 	public MapJSONToGraphViz(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
-		mMapTopology = parseMapTopology(mapJsonFile);
+		mMapTopology = MapTopologyUtils.parseMapTopology(mapJsonFile, true);
 		JSONParser jsonParser = new JSONParser();
 		JSONObject mapJsonObj = (JSONObject) jsonParser.parse(new FileReader(mapJsonFile));
 		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
-	}
-
-	private MapTopology parseMapTopology(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
-		AreaParser areaParser = new AreaParser();
-		OcclusionParser occlusionParser = new OcclusionParser();
-		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
-		nodeAttributeParsers.add(areaParser);
-		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
-		edgeAttributeParsers.add(occlusionParser);
-
-		// Default node/edge attribute values
-		Map<String, INodeAttribute> defaultNodeAttributes = new HashMap<>();
-		Map<String, IEdgeAttribute> defaultEdgeAttributes = new HashMap<>();
-		defaultNodeAttributes.put(areaParser.getAttributeName(), Area.PUBLIC);
-		defaultEdgeAttributes.put(occlusionParser.getAttributeName(), Occlusion.CLEAR);
-
-		MapTopologyReader reader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
-		return reader.readMapTopology(mapJsonFile, defaultNodeAttributes, defaultEdgeAttributes);
 	}
 
 	public MutableGraph convertMapJsonToGraph() throws MapTopologyException {

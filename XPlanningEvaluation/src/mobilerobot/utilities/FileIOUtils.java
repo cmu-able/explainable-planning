@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 
 import com.google.gson.Gson;
@@ -49,6 +50,12 @@ public class FileIOUtils {
 		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
 			out.print(jsonStr);
 		}
+	}
+
+	public static String insertIndexToFilename(String originalFilename, int index) {
+		String name = FilenameUtils.removeExtension(originalFilename);
+		String extension = FilenameUtils.getExtension(originalFilename);
+		return name + index + "." + extension;
 	}
 
 }

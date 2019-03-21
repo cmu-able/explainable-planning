@@ -60,6 +60,16 @@ public class MapTopologyUtils {
 		return mapReader.readMapTopology(mapJsonFile, defaultNodeAttributes, defaultEdgeAttributes);
 	}
 
+	public static LocationNode[] getLocationNodeArray(MapTopology mapTopology) {
+		LocationNode[] locNodes = new LocationNode[mapTopology.getNumNodes()];
+		int i = 0;
+		for (LocationNode locNode : mapTopology) {
+			locNodes[i] = locNode;
+			i++;
+		}
+		return locNodes;
+	}
+
 	public static JSONObject convertMapTopologyToJSONObject(MapTopology mapTopology) throws MapTopologyException {
 		JSONObject mapJSONObj = new JSONObject();
 

@@ -30,12 +30,15 @@ public class PolicyJSONToGraphViz {
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
 	private JSONParser mJsonParser = new JSONParser();
+	private GraphVizRenderer mGraphRenderer;
 
-	public PolicyJSONToGraphViz(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+	public PolicyJSONToGraphViz(File mapJsonFile, GraphVizRenderer graphRenderer)
+			throws MapTopologyException, IOException, ParseException {
 		MapTopologyReader reader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
 		mMapTopology = reader.readMapTopology(mapJsonFile);
 		JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
 		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
+		mGraphRenderer = graphRenderer;
 	}
 
 	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile)
@@ -68,8 +71,8 @@ public class PolicyJSONToGraphViz {
 
 			setNodePosition(srcNode, rLoc);
 			setNodePosition(destNode, destLoc);
-			GraphVizRenderer.setNodeStyle(srcNode);
-			GraphVizRenderer.setNodeStyle(destNode);
+			mGraphRenderer.setNodeStyle(srcNode);
+			mGraphRenderer.setNodeStyle(destNode);
 
 			return srcNode;
 		} else if (actionType.equals("setSpeed")) {
@@ -90,6 +93,6 @@ public class PolicyJSONToGraphViz {
 		LocationNode locNode = mMapTopology.lookUpLocationNode(nodeID);
 		double xCoord = locNode.getNodeXCoordinate();
 		double yCoord = locNode.getNodeYCoordinate();
-		GraphVizRenderer.setRelativeNodePosition(node, xCoord, yCoord, mMeterUnitRatio);
+		mGraphRenderer.setRelativeNodePosition(node, xCoord, yCoord, mMeterUnitRatio);
 	}
 }

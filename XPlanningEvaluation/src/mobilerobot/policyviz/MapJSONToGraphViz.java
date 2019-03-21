@@ -32,12 +32,15 @@ public class MapJSONToGraphViz {
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
+	private GraphVizRenderer mGraphRenderer;
 
-	public MapJSONToGraphViz(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+	public MapJSONToGraphViz(File mapJsonFile, GraphVizRenderer graphRenderer)
+			throws MapTopologyException, IOException, ParseException {
 		mMapTopology = MapTopologyUtils.parseMapTopology(mapJsonFile, true);
 		JSONParser jsonParser = new JSONParser();
 		JSONObject mapJsonObj = (JSONObject) jsonParser.parse(new FileReader(mapJsonFile));
 		mMeterUnitRatio = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
+		mGraphRenderer = graphRenderer;
 	}
 
 	public MutableGraph convertMapJsonToGraph() throws MapTopologyException {
@@ -56,9 +59,9 @@ public class MapJSONToGraphViz {
 			throws MapTopologyException {
 		MutableNode node = mutNode(locNode.getNodeID());
 
-		GraphVizRenderer.setRelativeNodePosition(node, locNode.getNodeXCoordinate(), locNode.getNodeYCoordinate(),
+		mGraphRenderer.setRelativeNodePosition(node, locNode.getNodeXCoordinate(), locNode.getNodeYCoordinate(),
 				mMeterUnitRatio);
-		GraphVizRenderer.setNodeStyle(node);
+		mGraphRenderer.setNodeStyle(node);
 
 		Area area = locNode.getNodeAttribute(Area.class, "area");
 		if (area == Area.PUBLIC) {

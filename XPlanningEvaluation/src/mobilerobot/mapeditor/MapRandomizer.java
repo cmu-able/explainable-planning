@@ -9,6 +9,7 @@ import java.util.Set;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.models.Area;
@@ -18,26 +19,45 @@ import mobilerobot.utilities.MapTopologyUtils;
 
 public class MapRandomizer {
 
-	private RandomNodeAttributeGenerator<Area> mNodeAttrGenerator = new RandomNodeAttributeGenerator<>("area",
-			new Area[] { Area.PUBLIC, Area.SEMI_PRIVATE, Area.PRIVATE });
-	private RandomEdgeAttributeGenerator<Occlusion> mEdgeAttrGenerator = new RandomEdgeAttributeGenerator<>("occlusion",
-			new Occlusion[] { Occlusion.CLEAR, Occlusion.PARTIALLY_OCCLUDED, Occlusion.BLOCKED },
-			new double[] { 0.7, 0.25, 0.05 });
+	private static final Area[] AREA_LIST = new Area[] { Area.PUBLIC, Area.SEMI_PRIVATE, Area.PRIVATE };
+	private static final long AREA_SEED = 43;
 
-	public MapTopology generateMapWithRandomAttributes(File mapJsonFile)
+	private static final Occlusion[] OCCL_LIST = new Occlusion[] { Occlusion.CLEAR, Occlusion.PARTIALLY_OCCLUDED,
+			Occlusion.BLOCKED };
+	private static final double[] OCCL_PROBS = new double[] { 0.7, 0.25, 0.05 };
+	private static final long OCCL_SEED = 42;
+
+	private File mBareMapJsonFile;
+	private RandomNodeAttributeGenerator<Area> mNodeAttrGenerator;
+	private RandomEdgeAttributeGenerator<Occlusion> mEdgeAttrGenerator;
+
+	public MapRandomizer(File bareMapJsonFile, long areaSeed, long occlusionSeed)
 			throws MapTopologyException, IOException, ParseException {
-		MapTopology mapTopology = MapTopologyUtils.parseMapTopology(mapJsonFile, false);
+		mBareMapJsonFile = bareMapJsonFile;
+
+		// Get a fixed order of location nodes, to allow deterministic sequence of random-attribute maps
+		MapTopology mapTopology = MapTopologyUtils.parseMapTopology(bareMapJsonFile, false);
+		LocationNode[] auxLocNodes = MapTopologyUtils.getLocationNodeArray(mapTopology);
+
+		// Seeded node/edge-attribute generators must be created only once per bare map
+		// To produce deterministic sequence of random values, for reproducibility
+		mNodeAttrGenerator = new RandomNodeAttributeGenerator<>("area", AREA_LIST, auxLocNodes, areaSeed);
+		mEdgeAttrGenerator = new RandomEdgeAttributeGenerator<>("occlusion", OCCL_LIST, OCCL_PROBS, occlusionSeed);
+	}
+
+	public MapTopology generateMapWithRandomAttributes() throws MapTopologyException, IOException, ParseException {
+		MapTopology mapTopology = MapTopologyUtils.parseMapTopology(mBareMapJsonFile, false);
 		Area[] areaFilter = new Area[] { Area.SEMI_PRIVATE, Area.PRIVATE };
 		mNodeAttrGenerator.randomlyAssignNodeAttributeValues(mapTopology, 3, areaFilter);
 		mEdgeAttrGenerator.randomlyAssignEdgeAttributeValues(mapTopology);
 		return mapTopology;
 	}
 
-	public Set<MapTopology> generateMapsWithRandomAttributes(File mapJsonFile, int numMaps)
+	public Set<MapTopology> generateMapsWithRandomAttributes(int numMaps)
 			throws MapTopologyException, IOException, ParseException {
 		Set<MapTopology> maps = new HashSet<>();
 		for (int i = 0; i < numMaps; i++) {
-			MapTopology map = generateMapWithRandomAttributes(mapJsonFile);
+			MapTopology map = generateMapWithRandomAttributes();
 			maps.add(map);
 		}
 		return maps;
@@ -48,10 +68,10 @@ public class MapRandomizer {
 		String bareMapJsonFilename = args[0];
 		int numMapsToGenerate = Integer.parseInt(args[1]);
 
-		File mapJsonFile = FileIOUtils.getFile(MapRandomizer.class, FileIOUtils.MAPS_RESOURCE_PATH,
+		File bareMapJsonFile = FileIOUtils.getFile(MapRandomizer.class, FileIOUtils.MAPS_RESOURCE_PATH,
 				bareMapJsonFilename);
-		MapRandomizer mapRandomizer = new MapRandomizer();
-		Set<MapTopology> randomMaps = mapRandomizer.generateMapsWithRandomAttributes(mapJsonFile, numMapsToGenerate);
+		MapRandomizer mapRandomizer = new MapRandomizer(bareMapJsonFile, AREA_SEED, OCCL_SEED);
+		Set<MapTopology> randomMaps = mapRandomizer.generateMapsWithRandomAttributes(numMapsToGenerate);
 
 		int i = 0;
 		for (MapTopology map : randomMaps) {

@@ -16,14 +16,14 @@ public class RandomEdgeAttributeGenerator<E extends IEdgeAttribute> {
 	private String mEdgeAttrName;
 	private Randomizer<E> mEdgeAttrRandomizer;
 
-	public RandomEdgeAttributeGenerator(String edgeAttrName, E[] edgeAttrValues) {
+	public RandomEdgeAttributeGenerator(String edgeAttrName, E[] edgeAttrValues, long seed) {
 		mEdgeAttrName = edgeAttrName;
-		mEdgeAttrRandomizer = new Randomizer<>(edgeAttrValues);
+		mEdgeAttrRandomizer = new Randomizer<>(edgeAttrValues, seed);
 	}
 
-	public RandomEdgeAttributeGenerator(String edgeAttrName, E[] edgeAttrValues, double[] edgeAttrProbs) {
+	public RandomEdgeAttributeGenerator(String edgeAttrName, E[] edgeAttrValues, double[] edgeAttrProbs, long seed) {
 		mEdgeAttrName = edgeAttrName;
-		mEdgeAttrRandomizer = new Randomizer<>(edgeAttrValues, edgeAttrProbs);
+		mEdgeAttrRandomizer = new Randomizer<>(edgeAttrValues, edgeAttrProbs, seed);
 	}
 
 	public void randomlyAssignEdgeAttributeValues(MapTopology mapTopology) {

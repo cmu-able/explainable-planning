@@ -22,15 +22,19 @@ public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 
 	private String mNodeAttrName;
 	private Randomizer<E> mNodeAttrRandomizer;
+	private Randomizer<LocationNode> mNodeRandomizer;
 
-	public RandomNodeAttributeGenerator(String nodeAttrName, E[] nodeAttrValues) {
-		mNodeAttrName = nodeAttrName;
-		mNodeAttrRandomizer = new Randomizer<>(nodeAttrValues);
+	public RandomNodeAttributeGenerator(String nodeAttrName, E[] nodeAttrValues, LocationNode[] auxLocNodes,
+			long seed) {
+		this(nodeAttrName, nodeAttrValues, null, auxLocNodes, seed);
 	}
 
-	public RandomNodeAttributeGenerator(String nodeAttrName, E[] nodeAttrValues, double[] nodeAttrProbs) {
+	public RandomNodeAttributeGenerator(String nodeAttrName, E[] nodeAttrValues, double[] nodeAttrProbs,
+			LocationNode[] auxLocNodes, long seed) {
 		mNodeAttrName = nodeAttrName;
-		mNodeAttrRandomizer = new Randomizer<>(nodeAttrValues, nodeAttrProbs);
+		mNodeAttrRandomizer = nodeAttrProbs == null ? new Randomizer<>(nodeAttrValues, seed)
+				: new Randomizer<>(nodeAttrValues, nodeAttrProbs, seed);
+		mNodeRandomizer = new Randomizer<>(auxLocNodes, seed * seed);
 	}
 
 	public void randomlyAssignNodeAttributeValues(MapTopology mapTopology) {
@@ -44,14 +48,16 @@ public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 
 	public void randomlyAssignNodeAttributeValues(MapTopology mapTopology, int groupSize, E[] nodeAttrFilter)
 			throws MapTopologyException {
-		List<LocationNode> iniNodes = randomlyAssignAttributeValuesToIniNodes(mapTopology, nodeAttrFilter, groupSize);
-		propagateAttributeValuesFromIniNodes(mapTopology, iniNodes, groupSize);
+		// These auxIniNodes are NOT instances from the given mapTopology
+		// They were created at the construction of this random generator
+		List<LocationNode> auxIniNodes = randomlyAssignAttributeValuesToIniNodes(mapTopology, nodeAttrFilter,
+				groupSize);
+		List<LocationNode> mapIniNodes = retrieveMapNodesFromAuxNodes(auxIniNodes, mapTopology);
+		propagateAttributeValuesFromIniNodes(mapTopology, mapIniNodes, groupSize);
 	}
 
 	private List<LocationNode> randomlyAssignAttributeValuesToIniNodes(MapTopology mapTopology, E[] nodeAttrFilter,
 			int groupSize) {
-		LocationNode[] locNodes = getLocationNodeArray(mapTopology);
-		Randomizer<LocationNode> nodeRandomizer = new Randomizer<>(locNodes);
 		List<LocationNode> iniNodes = new ArrayList<>();
 
 		for (E nodeAttrValue : nodeAttrFilter) {
@@ -59,12 +65,24 @@ public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 			int numIniNodes = (int) Math.round(prob * mapTopology.getNumNodes() / groupSize);
 
 			for (int j = 0; j < numIniNodes; j++) {
-				LocationNode randomLocNode = nodeRandomizer.randomSample();
+				LocationNode randomLocNode = mNodeRandomizer.randomSample();
 				randomLocNode.putNodeAttribute(mNodeAttrName, nodeAttrValue);
 				iniNodes.add(randomLocNode);
 			}
 		}
 		return iniNodes;
+	}
+
+	private List<LocationNode> retrieveMapNodesFromAuxNodes(List<LocationNode> auxNodes, MapTopology mapTopology)
+			throws MapTopologyException {
+		List<LocationNode> mapNodes = new ArrayList<>();
+		for (LocationNode auxNode : auxNodes) {
+			LocationNode mapNode = mapTopology.lookUpLocationNode(auxNode.getNodeID());
+			// Copy the attribute value of auxNode to mapNode
+			mapNode.putNodeAttribute(mNodeAttrName, auxNode.getGenericNodeAttribute(mNodeAttrName));
+			mapNodes.add(mapNode);
+		}
+		return mapNodes;
 	}
 
 	private void propagateAttributeValuesFromIniNodes(MapTopology mapTopology, List<LocationNode> iniNodes,
@@ -131,16 +149,6 @@ public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 		// No more unvisited adjacent node
 		// Send remainingDepth to the prior recursive caller
 		return remainingDepth;
-	}
-
-	private LocationNode[] getLocationNodeArray(MapTopology mapTopology) {
-		LocationNode[] locNodes = new LocationNode[mapTopology.getNumNodes()];
-		int i = 0;
-		for (LocationNode locNode : mapTopology) {
-			locNodes[i] = locNode;
-			i++;
-		}
-		return locNodes;
 	}
 
 	@Override

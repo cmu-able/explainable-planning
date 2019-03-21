@@ -18,7 +18,7 @@ import language.mdp.ProbabilisticEffect;
 public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveToAction> {
 
 	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
-	private static final double BUMP_PROB_BLOCKED = 1.0;
+	private static final double BUMP_PROB_OCCLUDED = 0.4;
 	private static final double BUMP_PROB_CLEAR = 0.0;
 
 	/*
@@ -56,10 +56,14 @@ public class RobotBumpedFormula implements IProbabilisticTransitionFormula<MoveT
 		if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
 			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_PARTIALLY_OCCLUDED);
 			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_PARTIALLY_OCCLUDED);
-		} else if (occlusion == Occlusion.BLOCKED) {
-			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_BLOCKED);
-		} else {
+		} else if (occlusion == Occlusion.OCCLUDED) {
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_OCCLUDED);
+			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_OCCLUDED);
+		} else if (occlusion == Occlusion.CLEAR) {
+			rBumpedProbEffect.put(bumpedEffect, BUMP_PROB_CLEAR);
 			rBumpedProbEffect.put(notBumpedEffect, 1 - BUMP_PROB_CLEAR);
+		} else {
+			throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 		}
 
 		return rBumpedProbEffect;

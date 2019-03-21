@@ -17,8 +17,9 @@ import language.mdp.ProbabilisticEffect;
  */
 public class RobotLocationFormula implements IProbabilisticTransitionFormula<MoveToAction> {
 
-	private static final double MOVE_PROB_NONBLOCKED = 1.0;
-	private static final double MOVE_PROB_BLOCKED = 0.0;
+	// For now, assume that robot can successfully move through occluded path
+	private static final double MOVE_PROB_NON_OCCLUDED = 1.0;
+	private static final double MOVE_PROB_OCCLUDED = 1.0;
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -47,10 +48,12 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 		newLoc.add(mrLocDef.getStateVar(moveTo.getDestination()));
 		oldLoc.add(rLocSrc);
 
-		if (occlusion == Occlusion.BLOCKED) {
-			rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_BLOCKED);
+		if (occlusion == Occlusion.OCCLUDED) {
+			rLocProbEffect.put(newLoc, MOVE_PROB_OCCLUDED);
+			rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_OCCLUDED);
 		} else {
-			rLocProbEffect.put(newLoc, MOVE_PROB_NONBLOCKED);
+			rLocProbEffect.put(newLoc, MOVE_PROB_NON_OCCLUDED);
+			rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_NON_OCCLUDED);
 		}
 
 		return rLocProbEffect;

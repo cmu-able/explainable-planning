@@ -10,5 +10,5 @@ import language.domain.models.IActionAttribute;
  *
  */
 public enum Occlusion implements IActionAttribute, IEdgeAttribute {
-	BLOCKED, PARTIALLY_OCCLUDED, CLEAR
+	OCCLUDED, PARTIALLY_OCCLUDED, CLEAR
 }

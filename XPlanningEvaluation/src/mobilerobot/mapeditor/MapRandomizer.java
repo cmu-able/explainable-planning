@@ -23,7 +23,7 @@ public class MapRandomizer {
 	private static final long AREA_SEED = 43;
 
 	private static final Occlusion[] OCCL_LIST = new Occlusion[] { Occlusion.CLEAR, Occlusion.PARTIALLY_OCCLUDED,
-			Occlusion.BLOCKED };
+			Occlusion.OCCLUDED };
 	private static final double[] OCCL_PROBS = new double[] { 0.7, 0.25, 0.05 };
 	private static final long OCCL_SEED = 42;
 

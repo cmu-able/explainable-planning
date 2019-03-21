@@ -86,7 +86,7 @@ public class MapTopologyUtils {
 
 		// obstacles
 		ConnectionAttributeFilter<Occlusion> filter = new ConnectionAttributeFilter<>("occlusion",
-				Occlusion.PARTIALLY_OCCLUDED, Occlusion.BLOCKED);
+				Occlusion.PARTIALLY_OCCLUDED, Occlusion.OCCLUDED);
 		JSONArray obstacleJSONArray = convertConnectionAttributesToJSONArray(mapTopology.connectionIterator(),
 				"occlusion", filter);
 		mapJSONObj.put("obstacles", obstacleJSONArray);

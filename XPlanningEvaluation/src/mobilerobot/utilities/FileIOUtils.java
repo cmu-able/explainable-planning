@@ -28,8 +28,7 @@ public class FileIOUtils {
 
 	public static File getFile(Class<?> callerClass, String resourcePath, String filename)
 			throws URISyntaxException, FileNotFoundException {
-		URL resourceFolderURL = callerClass.getResource(resourcePath);
-		File resourceFolder = new File(resourceFolderURL.toURI());
+		File resourceFolder = getResourceDir(callerClass, resourcePath);
 		File file = new File(resourceFolder, filename);
 		if (!file.exists()) {
 			throw new FileNotFoundException("File not found: " + file);
@@ -47,8 +46,7 @@ public class FileIOUtils {
 
 	private static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {
 		URL resourceFolderURL = callerClass.getResource(resourcePath);
-		File resourceFolder = new File(resourceFolderURL.toURI());
-		return resourceFolder;
+		return new File(resourceFolderURL.toURI());
 	}
 
 	public static File createOutputFile(String outputFilename) {

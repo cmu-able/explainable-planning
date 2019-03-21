@@ -32,14 +32,14 @@ public class PolicyRenderer {
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
 		String mapJsonFilename = args[0];
 		File mapJsonFile = FileIOUtils.getFile(PolicyRenderer.class, FileIOUtils.MAPS_RESOURCE_PATH, mapJsonFilename);
-		String policiesPath;
+		File policiesDir;
 		if (args.length > 1) {
-			policiesPath = args[1];
+			String policiesPath = args[1];
+			policiesDir = new File(policiesPath);
 		} else {
-			policiesPath = FileIOUtils.POLICIES_RESOURCE_PATH;
+			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
 		}
 
-		File policiesDir = new File(policiesPath);
 		File[] policyJsonFiles = policiesDir.listFiles();
 		PolicyRenderer policyRenderer = new PolicyRenderer(mapJsonFile, GraphVizRenderer.METER_PER_INCH,
 				GraphVizRenderer.SCALING_FACTOR);

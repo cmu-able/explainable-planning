@@ -3,6 +3,7 @@ package mobilerobot.missiongen;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -73,5 +74,16 @@ public class MissionJSONGenerator {
 			maxStepTime = Math.max(maxStepTime, stepTime);
 		}
 		return maxStepTime;
+	}
+
+	public static void main(String[] args)
+			throws MapTopologyException, URISyntaxException, IOException, ParseException {
+		Map<String, Double> scalingConsts = new HashMap<>();
+		scalingConsts.put("travelTime", 0.3);
+		scalingConsts.put("collision", 0.4);
+		scalingConsts.put("intrusiveness", 0.3);
+		JSONObject missionJsonObj = createMissionJsonObject("GHC7-map0.json", scalingConsts);
+		File outputFile = FileIOUtils.createOutputFile("GHC7-mission0.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outputFile);
 	}
 }

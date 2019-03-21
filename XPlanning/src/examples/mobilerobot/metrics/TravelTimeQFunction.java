@@ -33,6 +33,17 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 		mDomain = domain;
 	}
 
+	public static double getDelayRate(Occlusion occlusion) {
+		if (occlusion == Occlusion.OCCLUDED) {
+			return OCCL_DELAY_RATE;
+		} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+			return PARTIAL_OCCL_DELAY_RATE;
+		} else if (occlusion == Occlusion.CLEAR) {
+			return 1;
+		}
+		throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
+	}
+
 	@Override
 	public double getValue(Transition<MoveToAction, TravelTimeDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {

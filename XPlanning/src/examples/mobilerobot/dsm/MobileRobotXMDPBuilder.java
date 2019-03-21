@@ -63,9 +63,12 @@ public class MobileRobotXMDPBuilder {
 	// ------ //
 
 	// --- Speed setting --- //
+	public static final double HALF_SPEED = 0.35;
+	public static final double FULL_SPEED = 0.68;
+
 	// Speed settings (known, fixed)
-	private RobotSpeed halfSpeed = new RobotSpeed(0.35);
-	private RobotSpeed fullSpeed = new RobotSpeed(0.68);
+	private RobotSpeed halfSpeed = new RobotSpeed(HALF_SPEED);
+	private RobotSpeed fullSpeed = new RobotSpeed(FULL_SPEED);
 
 	// Robot's speed state variable
 	private StateVarDefinition<RobotSpeed> rSpeedDef = new StateVarDefinition<>("rSpeed", halfSpeed, fullSpeed);
@@ -96,9 +99,9 @@ public class MobileRobotXMDPBuilder {
 	private static final double SAFE_SPEED = 0.6;
 
 	// --- Intrusiveness --- //
-	private static final double NON_INTRUSIVE_PENALTY = 0;
-	private static final double SEMI_INTRUSIVE_PEANLTY = 1;
-	private static final double VERY_INTRUSIVE_PENALTY = 3;
+	public static final double NON_INTRUSIVE_PENALTY = 0;
+	public static final double SEMI_INTRUSIVE_PEANLTY = 1;
+	public static final double VERY_INTRUSIVE_PENALTY = 3;
 
 	// ------ //
 

@@ -3,6 +3,7 @@ package examples.mobilerobot.metrics;
 import examples.mobilerobot.models.Distance;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
@@ -46,6 +47,13 @@ public class TravelTimeDomain implements ITransitionStructure<MoveToAction> {
 		MoveToAction moveTo = transition.getAction();
 		Location locSrc = transition.getSrcStateVarValue(Location.class, mrLocSrcDef);
 		return moveTo.getDistance(mrLocSrcDef.getStateVar(locSrc));
+	}
+
+	public Occlusion getOcclusion(Transition<MoveToAction, TravelTimeDomain> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException {
+		MoveToAction moveTo = transition.getAction();
+		Location locSrc = transition.getSrcStateVarValue(Location.class, mrLocSrcDef);
+		return moveTo.getOcclusion(mrLocSrcDef.getStateVar(locSrc));
 	}
 
 	@Override

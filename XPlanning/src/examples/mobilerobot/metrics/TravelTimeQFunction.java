@@ -2,6 +2,7 @@ package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.models.Distance;
 import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.IStandardMetricQFunction;
 import language.domain.metrics.Transition;
@@ -18,6 +19,9 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 
 	public static final String NAME = "travelTime";
 
+	private static final double OCCL_DELAY_RATE = 1.5;
+	private static final double PARTIAL_OCCL_DELAY_RATE = 1.2;
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -33,8 +37,19 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 	public double getValue(Transition<MoveToAction, TravelTimeDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		Distance distance = mDomain.getDistance(transition);
+		Occlusion occlusion = mDomain.getOcclusion(transition);
 		RobotSpeed speed = mDomain.getRobotSpeed(transition);
-		return distance.getDistance() / speed.getSpeed();
+		double normalTime = distance.getDistance() / speed.getSpeed();
+
+		if (occlusion == Occlusion.OCCLUDED) {
+			return normalTime * OCCL_DELAY_RATE;
+		} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+			return normalTime * PARTIAL_OCCL_DELAY_RATE;
+		} else if (occlusion == Occlusion.CLEAR) {
+			return normalTime;
+		}
+
+		throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 	}
 
 	@Override

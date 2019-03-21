@@ -53,7 +53,7 @@ public class GraphVizRenderer {
 
 		if (option.equals("map")) {
 			String mapJsonFilename = args[1];
-			mapJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.MAPS_RESOURCE_PATH, mapJsonFilename);
+			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);
 
 			// Render map
 			MapRenderer mapRenderer = new MapRenderer(METER_PER_INCH, SCALING_FACTOR);
@@ -61,9 +61,8 @@ public class GraphVizRenderer {
 		} else if (option.equals("policy")) {
 			String mapJsonFilename = args[1];
 			String policyJsonFilename = args[2];
-			mapJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.MAPS_RESOURCE_PATH, mapJsonFilename);
-			policyJsonFile = FileIOUtils.getFile(GraphVizRenderer.class, FileIOUtils.POLICIES_RESOURCE_PATH,
-					policyJsonFilename);
+			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);
+			policyJsonFile = FileIOUtils.getPolicyFile(GraphVizRenderer.class, policyJsonFilename);
 
 			// Render policy
 			PolicyRenderer policyRenderer = new PolicyRenderer(mapJsonFile, METER_PER_INCH, SCALING_FACTOR);

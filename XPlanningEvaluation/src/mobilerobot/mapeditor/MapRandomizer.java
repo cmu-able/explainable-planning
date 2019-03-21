@@ -68,8 +68,7 @@ public class MapRandomizer {
 		String bareMapJsonFilename = args[0];
 		int numMapsToGenerate = Integer.parseInt(args[1]);
 
-		File bareMapJsonFile = FileIOUtils.getFile(MapRandomizer.class, FileIOUtils.MAPS_RESOURCE_PATH,
-				bareMapJsonFilename);
+		File bareMapJsonFile = FileIOUtils.getMapFile(MapRandomizer.class, bareMapJsonFilename);
 		MapRandomizer mapRandomizer = new MapRandomizer(bareMapJsonFile, AREA_SEED, OCCL_SEED);
 		Set<MapTopology> randomMaps = mapRandomizer.generateMapsWithRandomAttributes(numMapsToGenerate);
 

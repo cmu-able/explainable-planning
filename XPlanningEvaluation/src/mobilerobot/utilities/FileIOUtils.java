@@ -26,6 +26,16 @@ public class FileIOUtils {
 		throw new IllegalStateException("Utility class");
 	}
 
+	public static File getMapFile(Class<?> callerClass, String mapFilename)
+			throws FileNotFoundException, URISyntaxException {
+		return getFile(callerClass, MAPS_RESOURCE_PATH, mapFilename);
+	}
+
+	public static File getPolicyFile(Class<?> callerClass, String policyFilename)
+			throws FileNotFoundException, URISyntaxException {
+		return getFile(callerClass, POLICIES_RESOURCE_PATH, policyFilename);
+	}
+
 	public static File getFile(Class<?> callerClass, String resourcePath, String filename)
 			throws URISyntaxException, FileNotFoundException {
 		File resourceFolder = getResourceDir(callerClass, resourcePath);

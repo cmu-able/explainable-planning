@@ -2,6 +2,7 @@ package mobilerobot.policyviz;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
@@ -25,15 +26,16 @@ public class MapRenderer {
 		GraphVizRenderer.drawGraph(mapGraph, outputName);
 	}
 
-	public static void main(String[] args) throws MapTopologyException, IOException, ParseException {
-		String mapsPath;
+	public static void main(String[] args)
+			throws MapTopologyException, IOException, ParseException, URISyntaxException {
+		File mapsDir;
 		if (args.length > 0) {
-			mapsPath = args[0];
+			String mapsPath = args[0];
+			mapsDir = new File(mapsPath);
 		} else {
-			mapsPath = FileIOUtils.MAPS_RESOURCE_PATH;
+			mapsDir = FileIOUtils.getMapsResourceDir(MapRenderer.class);
 		}
 
-		File mapsDir = new File(mapsPath);
 		File[] mapJsonFiles = mapsDir.listFiles();
 		MapRenderer mapRenderer = new MapRenderer(GraphVizRenderer.METER_PER_INCH, GraphVizRenderer.SCALING_FACTOR);
 

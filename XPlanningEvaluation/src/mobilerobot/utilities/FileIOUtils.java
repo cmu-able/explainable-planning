@@ -37,6 +37,20 @@ public class FileIOUtils {
 		return file;
 	}
 
+	public static File getMapsResourceDir(Class<?> callerClass) throws URISyntaxException {
+		return getResourceDir(callerClass, MAPS_RESOURCE_PATH);
+	}
+
+	public static File getPoliciesResourceDir(Class<?> callerClass) throws URISyntaxException {
+		return getResourceDir(callerClass, POLICIES_RESOURCE_PATH);
+	}
+
+	private static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {
+		URL resourceFolderURL = callerClass.getResource(resourcePath);
+		File resourceFolder = new File(resourceFolderURL.toURI());
+		return resourceFolder;
+	}
+
 	public static File createOutputFile(String outputFilename) {
 		return new File(OUTPUT_PATH, outputFilename);
 	}

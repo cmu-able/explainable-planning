@@ -24,7 +24,7 @@ public class MapRandomizer {
 
 	private static final Occlusion[] OCCL_LIST = new Occlusion[] { Occlusion.CLEAR, Occlusion.PARTIALLY_OCCLUDED,
 			Occlusion.OCCLUDED };
-	private static final double[] OCCL_PROBS = new double[] { 0.7, 0.25, 0.05 };
+	private static final double[] OCCL_PROBS = new double[] { 0.65, 0.2, 0.15 };
 	private static final long OCCL_SEED = 42;
 
 	private File mBareMapJsonFile;

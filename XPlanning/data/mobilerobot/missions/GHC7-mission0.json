@@ -1,25 +1,25 @@
 {
-  "start-id" : "L1",
-  "goal-id" : "L32",
-  "map-file" : "GHC7-map.json",
-  "preference-info" : [
+  "goal-id": "L32",
+  "map-file": "GHC7-map0.json",
+  "preference-info": [
     {
-      "objective" : "travelTime",
-      "min-step-value" : 0,
-      "max-step-value" : 28.57,
-      "scaling-const" : 0.3
+      "scaling-const": 0.4,
+      "min-step-value": 0.0,
+      "max-step-value": 33.92488701799425,
+      "objective": "travelTime"
     },
     {
-      "objective" : "collision",
-      "min-step-value" : 0,
-      "max-step-value" : 1,
-      "scaling-const" : 0.4
+      "scaling-const": 0.3,
+      "min-step-value": 0.0,
+      "max-step-value": 1.0,
+      "objective": "collision"
     },
     {
-      "objective" : "intrusiveness",
-      "min-step-value" : 0,
-      "max-step-value" : 3,
-      "scaling-const" : 0.3
+      "scaling-const": 0.3,
+      "min-step-value": 0.0,
+      "max-step-value": 3.0,
+      "objective": "intrusiveness"
     }
-  ]
+  ],
+  "start-id": "L1"
 }

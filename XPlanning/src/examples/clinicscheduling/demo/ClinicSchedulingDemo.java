@@ -2,6 +2,8 @@ package examples.clinicscheduling.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -42,21 +44,24 @@ public class ClinicSchedulingDemo {
 	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
 	private ClinicSchedulingXMDPLoader mXMDPLoader;
+	private Directories mOutputDirs;
 
-	public ClinicSchedulingDemo(String problemsPath, int branchFactor) {
+	public ClinicSchedulingDemo(String problemsPath, int branchFactor, Directories outputDirs) {
 		mXMDPLoader = new ClinicSchedulingXMDPLoader(problemsPath, branchFactor);
+		mOutputDirs = outputDirs;
 	}
 
 	public void run(File problemFile) throws PrismException, XMDPException, IOException, ExplicitModelParsingException,
 			GRBException, DSMException, ResultParsingException {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
-		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
+		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(problemName);
+		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(problemName);
 
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
 
 		// Use PrismConnector to export XMDP to explicit model files
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+				advOutputPath.toString());
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSetttings);
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
@@ -77,11 +82,13 @@ public class ClinicSchedulingDemo {
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST,
-				Directories.POLICIES_OUTPUT_PATH + "/" + problemName, verbalizerSettings);
+		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(problemName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST, policyJsonPath.toString(),
+				verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", problemName);
-		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);
+		Path explanationOutputPath = mOutputDirs.getExplanationOutputPath();
+		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toString(), verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(problemName, explanation,
 				explanationJsonFilename);
 
@@ -93,7 +100,12 @@ public class ClinicSchedulingDemo {
 		String problemFilename = args[0];
 		File problemFile = new File(PROBLEMS_PATH, problemFilename);
 
-		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(PROBLEMS_PATH, DEFAULT_BRANCH_FACTOR);
+		Path policiesOutputPath = Paths.get(Directories.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(Directories.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
+		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+
+		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(PROBLEMS_PATH, DEFAULT_BRANCH_FACTOR, outputDirs);
 		demo.run(problemFile);
 	}
 

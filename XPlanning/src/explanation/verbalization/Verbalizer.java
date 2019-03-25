@@ -33,7 +33,7 @@ public class Verbalizer {
 	private Map<Policy, File> mPolicyJsonFiles = new HashMap<>();
 	private VerbalizerSettings mSettings;
 
-	public Verbalizer(Vocabulary vocabulary, CostCriterion costCriterion, String policyJsonDir,
+	public Verbalizer(Vocabulary vocabulary, CostCriterion costCriterion, File policyJsonDir,
 			VerbalizerSettings settings) {
 		mVocabulary = vocabulary;
 		mCostCriterion = costCriterion;

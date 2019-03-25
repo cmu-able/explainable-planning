@@ -69,12 +69,12 @@ public class MobileRobotDemo {
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toString(),
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toFile(),
 				verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		Path explanationOutputPath = mOutputDirs.getExplanationOutputPath();
-		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toString(), verbalizer);
+		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(missionName, explanation,
 				explanationJsonFilename);
 

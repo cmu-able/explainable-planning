@@ -15,10 +15,10 @@ import language.policy.Policy;
 
 public class ExplanationWriter {
 
-	private String mExplanationJsonDir;
+	private File mExplanationJsonDir;
 	private Verbalizer mVerbalizer;
 
-	public ExplanationWriter(String explanationJsonDir, Verbalizer verbalizer) {
+	public ExplanationWriter(File explanationJsonDir, Verbalizer verbalizer) {
 		mExplanationJsonDir = explanationJsonDir;
 		mVerbalizer = verbalizer;
 	}

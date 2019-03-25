@@ -23,8 +23,8 @@ public class PolicyWriter {
 
 	private File mPolicyJsonDir;
 
-	public PolicyWriter(String policyJsonPath) {
-		mPolicyJsonDir = new File(policyJsonPath);
+	public PolicyWriter(File policyJsonDir) {
+		mPolicyJsonDir = policyJsonDir;
 		if (!mPolicyJsonDir.exists()) {
 			mPolicyJsonDir.mkdirs();
 		}

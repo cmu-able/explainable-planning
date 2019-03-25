@@ -25,9 +25,8 @@ public class PolicyWriter {
 
 	public PolicyWriter(File policyJsonDir) {
 		mPolicyJsonDir = policyJsonDir;
-		if (!mPolicyJsonDir.exists()) {
-			mPolicyJsonDir.mkdirs();
-		}
+		mPolicyJsonDir.mkdirs(); // only make directories when ones don't exist
+
 	}
 
 	public File writePolicy(Policy policy, String policyJsonFilename) throws IOException {

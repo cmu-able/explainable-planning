@@ -20,6 +20,7 @@ public class ExplanationWriter {
 
 	public ExplanationWriter(File explanationJsonDir, Verbalizer verbalizer) {
 		mExplanationJsonDir = explanationJsonDir;
+		mExplanationJsonDir.mkdirs(); // only make directories when ones don't exist
 		mVerbalizer = verbalizer;
 	}
 

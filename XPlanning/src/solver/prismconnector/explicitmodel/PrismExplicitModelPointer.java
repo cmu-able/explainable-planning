@@ -57,9 +57,8 @@ public class PrismExplicitModelPointer {
 	 */
 	public PrismExplicitModelPointer(String modelPath, String modelFilenamePrefix, PrismRewardType prismRewardType) {
 		mModelDir = new File(modelPath);
-		if (!mModelDir.exists()) {
-			mModelDir.mkdirs();
-		}
+		mModelDir.mkdirs(); // only make directories when ones don't exist
+
 		mStaFile = new File(modelPath, modelFilenamePrefix + STA_EXTENSION);
 		mProdStaFile = new File(modelPath, modelFilenamePrefix + PROD_STA_FILENAME_SUFFIX);
 		mTraFile = new File(modelPath, modelFilenamePrefix + TRA_EXTENSION);
@@ -84,6 +83,11 @@ public class PrismExplicitModelPointer {
 	 */
 	public PrismExplicitModelPointer(String modelPath, PrismRewardType prismRewardType) {
 		mModelDir = new File(modelPath);
+
+		if (!mModelDir.exists()) {
+			throw new IllegalStateException("Directory " + modelPath + " must already exist");
+		}
+
 		mRewardType = prismRewardType;
 
 		File[] prismFiles = mModelDir.listFiles((dir, filename) -> filterFilename(filename));

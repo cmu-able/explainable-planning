@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -38,7 +39,7 @@ public class MissionJSONGenerator {
 		mObjectivesInfo = objectivesInfo;
 	}
 
-	public Set<JSONObject> createAllMissionObjects(File mapsDir, String startNodeID, String goalNodeID)
+	public Set<JSONObject> createAllMissions(File mapsDir, String startNodeID, String goalNodeID)
 			throws MapTopologyException, URISyntaxException, IOException, ParseException {
 		Set<JSONObject> allMissions = new HashSet<>();
 		for (File mapFile : mapsDir.listFiles()) {
@@ -181,12 +182,18 @@ public class MissionJSONGenerator {
 		objectivesInfo.add(intrusiveInfo);
 
 		MissionJSONGenerator missionGen = new MissionJSONGenerator(objectivesInfo);
-		Set<JSONObject> missionJsonObjs = missionGen.createAllMissionObjects(mapsDir, startNodeID, goalNodeID);
+		Set<JSONObject> missionJsonObjs = missionGen.createAllMissions(mapsDir, startNodeID, goalNodeID);
+		writeMissionsToJSONFiles(missionJsonObjs);
+	}
 
+	private static final void writeMissionsToJSONFiles(Set<JSONObject> missionJsonObjs) throws IOException {
 		int i = 0;
 		for (JSONObject missionJsonObj : missionJsonObjs) {
+			String mapFilename = (String) missionJsonObj.get("map-file");
+			String mapName = FilenameUtils.removeExtension(mapFilename);
+			String outputSubDirname = "missions-of-" + mapName;
 			String outputFilename = FileIOUtils.insertIndexToFilename("mission.json", i);
-			File outputFile = FileIOUtils.createOutputFile(outputFilename);
+			File outputFile = FileIOUtils.createOutputFile(outputSubDirname, outputFilename);
 			FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outputFile);
 			i++;
 		}

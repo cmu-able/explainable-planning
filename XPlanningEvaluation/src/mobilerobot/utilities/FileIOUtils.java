@@ -4,9 +4,11 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
@@ -61,6 +63,17 @@ public class FileIOUtils {
 
 	public static File createOutputFile(String outputFilename) {
 		return new File(OUTPUT_PATH, outputFilename);
+	}
+
+	public static File createOutputFile(String outputSubDirname, String outputFilename) throws IOException {
+		File outputSubDir = getOutputSubDir(outputSubDirname);
+		return new File(outputSubDir, outputFilename);
+	}
+
+	public static File getOutputSubDir(String outputSubDirname) throws IOException {
+		File outputSubDir = new File(OUTPUT_PATH, outputSubDirname);
+		Files.createDirectories(outputSubDir.toPath());
+		return outputSubDir;
 	}
 
 	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, File outputFile) throws FileNotFoundException {

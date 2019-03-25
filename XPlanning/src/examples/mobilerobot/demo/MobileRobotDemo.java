@@ -2,6 +2,8 @@ package examples.mobilerobot.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -38,20 +40,23 @@ public class MobileRobotDemo {
 	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 
 	private MobileRobotXMDPLoader mXMDPLoader;
+	private Directories mOutputDirs;
 
-	public MobileRobotDemo(String mapJsonDirPath, String missionJsonDirPath) {
+	public MobileRobotDemo(String mapJsonDirPath, String missionJsonDirPath, Directories outputDirs) {
 		mXMDPLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
+		mOutputDirs = outputDirs;
 	}
 
 	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
 			ExplicitModelParsingException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-		String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
+		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
 
 		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
 
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+				advOutputPath.toString());
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
 
@@ -63,11 +68,13 @@ public class MobileRobotDemo {
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST,
-				Directories.POLICIES_OUTPUT_PATH + "/" + missionName, verbalizerSettings);
+		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
+		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toString(),
+				verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
-		ExplanationWriter explanationWriter = new ExplanationWriter(Directories.EXPLANATIONS_OUTPUT_PATH, verbalizer);
+		Path explanationOutputPath = mOutputDirs.getExplanationOutputPath();
+		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toString(), verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(missionName, explanation,
 				explanationJsonFilename);
 
@@ -79,7 +86,12 @@ public class MobileRobotDemo {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 
-		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, MISSIONS_PATH);
+		Path policiesOutputPath = Paths.get(Directories.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(Directories.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
+		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+
+		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, MISSIONS_PATH, outputDirs);
 		demo.run(missionJsonFile);
 	}
 

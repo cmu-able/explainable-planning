@@ -34,16 +34,14 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 	private static final Occlusion DEFAULT_OCCLUSION = Occlusion.CLEAR;
 
 	private File mMapJsonDir;
-	private File mMissionJsonDir;
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
 	private MobileRobotXMDPBuilder mXMDPBuilder = new MobileRobotXMDPBuilder();
 	private Map<String, INodeAttribute> mDefaultNodeAttributes = new HashMap<>();
 	private Map<String, IEdgeAttribute> mDefaultEdgeAttributes = new HashMap<>();
 
-	public MobileRobotXMDPLoader(String mapJsonDirPath, String missionJsonDirPath) {
+	public MobileRobotXMDPLoader(String mapJsonDirPath) {
 		mMapJsonDir = new File(mapJsonDirPath);
-		mMissionJsonDir = new File(missionJsonDirPath);
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
@@ -57,15 +55,7 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 		mDefaultEdgeAttributes.put(occlusionParser.getAttributeName(), DEFAULT_OCCLUSION);
 	}
 
-	public Set<XMDP> loadAllXMDPs() throws DSMException, XMDPException {
-		Set<XMDP> xmdps = new HashSet<>();
-		File[] missionJsonFiles = mMissionJsonDir.listFiles();
-		for (File missionJsonFile : missionJsonFiles) {
-			xmdps.add(loadXMDP(missionJsonFile));
-		}
-		return xmdps;
-	}
-
+	@Override
 	public XMDP loadXMDP(File missionJsonFile) throws DSMException, XMDPException {
 		Mission mission;
 		try {

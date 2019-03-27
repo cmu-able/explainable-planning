@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -37,22 +35,12 @@ public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 	private static final String CLIENT_ARRIVAL_RATE_PARAM = "clientArrivalRate";
 
 	private ClinicSchedulingXMDPBuilder mXMDPBuilder;
-	private File mProblemsDir;
 
-	public ClinicSchedulingXMDPLoader(String problemsPath, int branchFactor) {
-		mProblemsDir = new File(problemsPath);
+	public ClinicSchedulingXMDPLoader(int branchFactor) {
 		mXMDPBuilder = new ClinicSchedulingXMDPBuilder(branchFactor);
 	}
 
-	public Set<XMDP> loadAllXMDPs() throws XMDPException, DSMException {
-		Set<XMDP> xmdps = new HashSet<>();
-		File[] problemFiles = mProblemsDir.listFiles();
-		for (File problemFile : problemFiles) {
-			xmdps.add(loadXMDP(problemFile));
-		}
-		return xmdps;
-	}
-
+	@Override
 	public XMDP loadXMDP(File problemFile) throws XMDPException, DSMException {
 		String argsLine = null;
 

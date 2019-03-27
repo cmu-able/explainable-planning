@@ -75,14 +75,15 @@ public class MobileRobotXMDPTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String mapJsonDirPath = MAPS_PATH;
-		String missionJsonDirPath = MISSIONS_PATH;
+		String mapsJsonDirPath = MAPS_PATH;
+		String missionsJsonDirPath = MISSIONS_PATH;
+		File mapsJsonDir = new File(mapsJsonDirPath);
 
-		SimpleConsoleLogger.log("Loading maps from", mapJsonDirPath, true);
-		SimpleConsoleLogger.log("Loading missions from", missionJsonDirPath, true);
+		SimpleConsoleLogger.log("Loading maps from", mapsJsonDirPath, true);
+		SimpleConsoleLogger.log("Loading missions from", missionsJsonDirPath, true);
 
-		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
-		return XMDPDataProvider.loadXMDPs(missionJsonDirPath, testLoader);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);
+		return XMDPDataProvider.loadXMDPs(missionsJsonDirPath, testLoader);
 	}
 
 	@BeforeMethod

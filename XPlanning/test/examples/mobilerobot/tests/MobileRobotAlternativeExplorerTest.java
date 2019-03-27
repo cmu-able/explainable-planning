@@ -124,11 +124,12 @@ public class MobileRobotAlternativeExplorerTest {
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws IOException, PrismException, ResultParsingException, XMDPException,
 			DSMException, ExplicitModelParsingException {
-		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
-		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
+		String mapsJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
+		String missionsJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
+		File mapsJsonDir = new File(mapsJsonDirPath);
 
-		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
-		File missionJsonDir = new File(missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);
+		File missionJsonDir = new File(missionsJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
 		Object[][] data = new Object[missionJsonFiles.length][3];
 

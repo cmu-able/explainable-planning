@@ -42,8 +42,8 @@ public class MobileRobotDemo {
 	private MobileRobotXMDPLoader mXMDPLoader;
 	private Directories mOutputDirs;
 
-	public MobileRobotDemo(String mapJsonDirPath, Directories outputDirs) {
-		mXMDPLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
+	public MobileRobotDemo(File mapsJsonDir, Directories outputDirs) {
+		mXMDPLoader = new MobileRobotXMDPLoader(mapsJsonDir);
 		mOutputDirs = outputDirs;
 	}
 
@@ -85,13 +85,14 @@ public class MobileRobotDemo {
 			ExplicitModelParsingException, GRBException, DSMException {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
+		File mapsJsonDir = new File(MAPS_PATH);
 
 		Path policiesOutputPath = Paths.get(Directories.POLICIES_OUTPUT_PATH);
 		Path explanationOutputPath = Paths.get(Directories.EXPLANATIONS_OUTPUT_PATH);
 		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
 		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 
-		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, outputDirs);
+		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		demo.run(missionJsonFile);
 	}
 

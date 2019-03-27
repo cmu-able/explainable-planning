@@ -33,15 +33,15 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 	private static final Area DEFAULT_AREA = Area.PUBLIC;
 	private static final Occlusion DEFAULT_OCCLUSION = Occlusion.CLEAR;
 
-	private File mMapJsonDir;
+	private File mMapsJsonDir;
 	private MapTopologyReader mMapReader;
 	private MissionReader mMissionReader = new MissionReader();
 	private MobileRobotXMDPBuilder mXMDPBuilder = new MobileRobotXMDPBuilder();
 	private Map<String, INodeAttribute> mDefaultNodeAttributes = new HashMap<>();
 	private Map<String, IEdgeAttribute> mDefaultEdgeAttributes = new HashMap<>();
 
-	public MobileRobotXMDPLoader(String mapJsonDirPath) {
-		mMapJsonDir = new File(mapJsonDirPath);
+	public MobileRobotXMDPLoader(File mapsJsonDir) {
+		mMapsJsonDir = mapsJsonDir;
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
@@ -64,7 +64,7 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 			throw new DSMException(e.getMessage());
 		}
 		String mapJsonFilename = mission.getMapJSONFilename();
-		File mapJsonFile = new File(mMapJsonDir, mapJsonFilename);
+		File mapJsonFile = new File(mMapsJsonDir, mapJsonFilename);
 		MapTopology map;
 		try {
 			map = mMapReader.readMapTopology(mapJsonFile, mDefaultNodeAttributes, mDefaultEdgeAttributes);

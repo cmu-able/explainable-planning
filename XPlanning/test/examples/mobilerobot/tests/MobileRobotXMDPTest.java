@@ -81,7 +81,7 @@ public class MobileRobotXMDPTest {
 		SimpleConsoleLogger.log("Loading maps from", mapJsonDirPath, true);
 		SimpleConsoleLogger.log("Loading missions from", missionJsonDirPath, true);
 
-		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
 		return XMDPDataProvider.loadXMDPs(missionJsonDirPath, testLoader);
 	}
 

@@ -121,7 +121,7 @@ public class MobileRobotXDTMCTest {
 		String mapJsonDirPath = MobileRobotXMDPTest.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotXMDPTest.MISSIONS_PATH;
 
-		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
 		File missionJsonDir = new File(missionJsonDirPath);
 		File[] missionJsonFiles = missionJsonDir.listFiles();
 		Object[][] data = new Object[missionJsonFiles.length][2];

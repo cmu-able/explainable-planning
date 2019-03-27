@@ -46,8 +46,8 @@ public class ClinicSchedulingDemo {
 	private ClinicSchedulingXMDPLoader mXMDPLoader;
 	private Directories mOutputDirs;
 
-	public ClinicSchedulingDemo(String problemsPath, int branchFactor, Directories outputDirs) {
-		mXMDPLoader = new ClinicSchedulingXMDPLoader(problemsPath, branchFactor);
+	public ClinicSchedulingDemo(int branchFactor, Directories outputDirs) {
+		mXMDPLoader = new ClinicSchedulingXMDPLoader(branchFactor);
 		mOutputDirs = outputDirs;
 	}
 
@@ -105,7 +105,7 @@ public class ClinicSchedulingDemo {
 		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
 		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 
-		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(PROBLEMS_PATH, DEFAULT_BRANCH_FACTOR, outputDirs);
+		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
 		demo.run(problemFile);
 	}
 

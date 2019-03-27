@@ -61,7 +61,7 @@ public class ClinicSchedulingTest {
 		String problemsPath = ClinicSchedulingDemo.PROBLEMS_PATH;
 		int branchFactor = ClinicSchedulingDemo.DEFAULT_BRANCH_FACTOR;
 
-		ClinicSchedulingXMDPLoader testLoader = new ClinicSchedulingXMDPLoader(problemsPath, branchFactor);
+		ClinicSchedulingXMDPLoader testLoader = new ClinicSchedulingXMDPLoader(branchFactor);
 		return XMDPDataProvider.loadXMDPs(problemsPath, testLoader);
 	}
 

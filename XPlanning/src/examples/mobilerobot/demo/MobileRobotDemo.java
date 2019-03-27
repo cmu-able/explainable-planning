@@ -42,8 +42,8 @@ public class MobileRobotDemo {
 	private MobileRobotXMDPLoader mXMDPLoader;
 	private Directories mOutputDirs;
 
-	public MobileRobotDemo(String mapJsonDirPath, String missionJsonDirPath, Directories outputDirs) {
-		mXMDPLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
+	public MobileRobotDemo(String mapJsonDirPath, Directories outputDirs) {
+		mXMDPLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
 		mOutputDirs = outputDirs;
 	}
 
@@ -91,7 +91,7 @@ public class MobileRobotDemo {
 		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
 		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 
-		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, MISSIONS_PATH, outputDirs);
+		MobileRobotDemo demo = new MobileRobotDemo(MAPS_PATH, outputDirs);
 		demo.run(missionJsonFile);
 	}
 

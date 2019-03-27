@@ -60,7 +60,7 @@ public class MobileRobotLPMCComparisonTest {
 		String mapJsonDirPath = MobileRobotDemo.MAPS_PATH;
 		String missionJsonDirPath = MobileRobotDemo.MISSIONS_PATH;
 
-		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath, missionJsonDirPath);
+		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapJsonDirPath);
 		return XMDPDataProvider.loadXMDPs(missionJsonDirPath, testLoader);
 	}
 

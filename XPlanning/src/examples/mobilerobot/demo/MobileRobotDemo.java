@@ -31,8 +31,7 @@ import language.objectives.CostCriterion;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
-import solver.prismconnector.exceptions.ExplicitModelParsingException;
-import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 import uiconnector.ExplanationWriter;
 
 public class MobileRobotDemo {
@@ -47,8 +46,8 @@ public class MobileRobotDemo {
 		mOutputDirs = outputDirs;
 	}
 
-	public void run(File missionJsonFile) throws PrismException, IOException, ResultParsingException, XMDPException,
-			ExplicitModelParsingException, GRBException, DSMException {
+	public void run(File missionJsonFile)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
@@ -81,8 +80,8 @@ public class MobileRobotDemo {
 		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());
 	}
 
-	public static void main(String[] args) throws ResultParsingException, PrismException, IOException, XMDPException,
-			ExplicitModelParsingException, GRBException, DSMException {
+	public static void main(String[] args)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionFilename = args[0];
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 		File mapsJsonDir = new File(MAPS_PATH);

@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 public class FileIOUtils {
 
 	public static final String MAPS_RESOURCE_PATH = "maps";
+	public static final String MISSIONS_RESOURCE_PATH = "missions";
 	public static final String POLICIES_RESOURCE_PATH = "policies";
 	public static final String OUTPUT_PATH = "output";
 
@@ -50,6 +51,10 @@ public class FileIOUtils {
 
 	public static File getMapsResourceDir(Class<?> callerClass) throws URISyntaxException {
 		return getResourceDir(callerClass, MAPS_RESOURCE_PATH);
+	}
+
+	public static File getMissionsResourceDir(Class<?> callerClass) throws URISyntaxException {
+		return getResourceDir(callerClass, MISSIONS_RESOURCE_PATH);
 	}
 
 	public static File getPoliciesResourceDir(Class<?> callerClass) throws URISyntaxException {

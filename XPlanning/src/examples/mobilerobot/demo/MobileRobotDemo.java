@@ -74,7 +74,7 @@ public class MobileRobotDemo {
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
 		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
 		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
-		File explanationJsonFile = explanationWriter.writeExplanation(missionName, explanation,
+		File explanationJsonFile = explanationWriter.writeExplanation(missionJsonFile.getName(), explanation,
 				explanationJsonFilename);
 
 		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());

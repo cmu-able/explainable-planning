@@ -24,7 +24,7 @@ public class ExplanationWriter {
 		mVerbalizer = verbalizer;
 	}
 
-	public File writeExplanation(String missionName, Explanation explanation, String explanationJsonFilename)
+	public File writeExplanation(String missionJsonFilename, Explanation explanation, String explanationJsonFilename)
 			throws IOException {
 		String verbalization = mVerbalizer.verbalize(explanation);
 
@@ -41,7 +41,7 @@ public class ExplanationWriter {
 		}
 
 		JSONObject explanationJsonObj = new JSONObject();
-		explanationJsonObj.put("Mission", missionName);
+		explanationJsonObj.put("Mission", missionJsonFilename);
 		explanationJsonObj.put("Solution Policy", solnPolicyJsonFile.getAbsolutePath());
 		explanationJsonObj.put("Alternative Policies", altPolicyJsonArray);
 		explanationJsonObj.put("Explanation", verbalization);

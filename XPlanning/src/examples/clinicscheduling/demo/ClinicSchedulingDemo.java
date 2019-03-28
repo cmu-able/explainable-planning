@@ -89,7 +89,7 @@ public class ClinicSchedulingDemo {
 		String explanationJsonFilename = String.format("%s_explanation.json", problemName);
 		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
 		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
-		File explanationJsonFile = explanationWriter.writeExplanation(problemName, explanation,
+		File explanationJsonFile = explanationWriter.writeExplanation(problemFile.getName(), explanation,
 				explanationJsonFilename);
 
 		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());

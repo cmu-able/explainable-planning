@@ -30,24 +30,31 @@ public class PolicyWriter {
 	}
 
 	public File writePolicy(Policy policy, String policyJsonFilename) throws IOException {
-		JSONArray policyArray = new JSONArray();
+		JSONObject policyJsonObj = writePolicyJSONObject(policy);
 
+		File policyJsonFile = new File(mPolicyJsonDir, policyJsonFilename);
+		try (FileWriter writer = new FileWriter(policyJsonFile)) {
+			writer.write(policyJsonObj.toJSONString());
+			writer.flush();
+		}
+
+		return policyJsonFile;
+	}
+
+	private JSONObject writePolicyJSONObject(Policy policy) {
+		JSONArray policyJsonArray = new JSONArray();
 		for (Decision decision : policy) {
 			JSONObject stateJsonObj = writeState(decision.getState());
 			JSONObject actionJsonObj = writeAction(decision.getAction());
 			JSONObject decisionJsonObj = new JSONObject();
 			decisionJsonObj.put("state", stateJsonObj);
 			decisionJsonObj.put("action", actionJsonObj);
-			policyArray.add(decisionJsonObj);
+			policyJsonArray.add(decisionJsonObj);
 		}
 
-		File policyJsonFile = new File(mPolicyJsonDir, policyJsonFilename);
-		try (FileWriter writer = new FileWriter(policyJsonFile)) {
-			writer.write(policyArray.toJSONString());
-			writer.flush();
-		}
-
-		return policyJsonFile;
+		JSONObject policyJsonObj = new JSONObject();
+		policyJsonObj.put("policy", policyJsonArray);
+		return policyJsonObj;
 	}
 
 	private JSONObject writeState(StateVarTuple stateVarTuple) {

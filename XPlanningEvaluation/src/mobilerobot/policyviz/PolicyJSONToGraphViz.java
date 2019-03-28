@@ -42,7 +42,8 @@ public class PolicyJSONToGraphViz {
 		double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
 
 		FileReader policyReader = new FileReader(policyJsonFile);
-		JSONArray policyJsonArray = (JSONArray) mJsonParser.parse(policyReader);
+		JSONObject policyJsonObj = (JSONObject) mJsonParser.parse(policyReader);
+		JSONArray policyJsonArray = (JSONArray) policyJsonObj.get("policy");
 		MutableGraph policyGraph = mutGraph("policy").setDirected(true);
 		for (Object obj : policyJsonArray) {
 			JSONObject decisionJsonObj = (JSONObject) obj;

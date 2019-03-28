@@ -8,7 +8,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 import guru.nidi.graphviz.model.MutableGraph;
 import mobilerobot.utilities.FileIOUtils;
 
@@ -16,14 +15,13 @@ public class PolicyRenderer {
 
 	private PolicyJSONToGraphViz mPolicyToGraph;
 
-	public PolicyRenderer(File mapJsonFile, double meterPerInch, double scalingFactor)
-			throws MapTopologyException, IOException, ParseException {
+	public PolicyRenderer(double meterPerInch, double scalingFactor) {
 		GraphVizRenderer graphRenderer = new GraphVizRenderer(meterPerInch, scalingFactor);
-		mPolicyToGraph = new PolicyJSONToGraphViz(mapJsonFile, graphRenderer);
+		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer);
 	}
 
-	public void render(File policyJsonFile) throws NodeIDNotFoundException, IOException, ParseException {
-		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile);
+	public void render(File policyJsonFile, File mapJsonFile) throws IOException, ParseException, MapTopologyException {
+		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile);
 		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
 		GraphVizRenderer.drawGraph(policyGraph, outputName);
 	}
@@ -41,11 +39,11 @@ public class PolicyRenderer {
 		}
 
 		File[] policyJsonFiles = policiesDir.listFiles();
-		PolicyRenderer policyRenderer = new PolicyRenderer(mapJsonFile, GraphVizRenderer.METER_PER_INCH,
+		PolicyRenderer policyRenderer = new PolicyRenderer(GraphVizRenderer.METER_PER_INCH,
 				GraphVizRenderer.SCALING_FACTOR);
 
 		for (File policyJsonFile : policyJsonFiles) {
-			policyRenderer.render(policyJsonFile);
+			policyRenderer.render(policyJsonFile, mapJsonFile);
 		}
 	}
 }

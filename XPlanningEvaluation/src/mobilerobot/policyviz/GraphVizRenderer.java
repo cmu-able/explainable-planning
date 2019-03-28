@@ -65,8 +65,8 @@ public class GraphVizRenderer {
 			policyJsonFile = FileIOUtils.getPolicyFile(GraphVizRenderer.class, policyJsonFilename);
 
 			// Render policy
-			PolicyRenderer policyRenderer = new PolicyRenderer(mapJsonFile, METER_PER_INCH, SCALING_FACTOR);
-			policyRenderer.render(policyJsonFile);
+			PolicyRenderer policyRenderer = new PolicyRenderer(METER_PER_INCH, SCALING_FACTOR);
+			policyRenderer.render(policyJsonFile, mapJsonFile);
 		} else {
 			throw new IllegalArgumentException("Unknown option: " + option);
 		}

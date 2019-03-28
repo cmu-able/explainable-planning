@@ -72,7 +72,7 @@ public class MobileRobotDemo {
 				verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
-		Path explanationOutputPath = mOutputDirs.getExplanationOutputPath();
+		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
 		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(missionName, explanation,
 				explanationJsonFilename);

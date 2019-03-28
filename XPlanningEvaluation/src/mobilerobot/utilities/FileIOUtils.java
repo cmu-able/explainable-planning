@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
@@ -66,16 +67,23 @@ public class FileIOUtils {
 		return new File(resourceFolderURL.toURI());
 	}
 
-	public static File createOutputFile(String outputFilename) {
+	public static File getOutputDir() {
+		return new File(OUTPUT_PATH);
+	}
+
+	public static File createOutputFile(String outputFilename) throws IOException {
+		// Create /output/ directory if not already exist
+		Files.createDirectories(Paths.get(OUTPUT_PATH));
 		return new File(OUTPUT_PATH, outputFilename);
 	}
 
 	public static File createOutputFile(String outputSubDirname, String outputFilename) throws IOException {
-		File outputSubDir = getOutputSubDir(outputSubDirname);
+		// Create /output/subdir/ if not already exist
+		File outputSubDir = createOutputSubDir(outputSubDirname);
 		return new File(outputSubDir, outputFilename);
 	}
 
-	public static File getOutputSubDir(String outputSubDirname) throws IOException {
+	private static File createOutputSubDir(String outputSubDirname) throws IOException {
 		File outputSubDir = new File(OUTPUT_PATH, outputSubDirname);
 		Files.createDirectories(outputSubDir.toPath());
 		return outputSubDir;

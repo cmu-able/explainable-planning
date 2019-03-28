@@ -38,10 +38,11 @@ public class XPlanningRunner {
 
 	public static void main(String[] args) throws URISyntaxException, PrismException, IOException, XMDPException,
 			PrismConnectorException, GRBException, DSMException {
-		Path policiesOutputPath = null;
-		Path explanationOutputPath = null;
-		Path prismOutputPath = null;
-		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+		Path outputPath = FileIOUtils.getOutputDir().toPath();
+		Path policiesOutputPath = outputPath.resolve("policies");
+		Path explanationsOutputPath = outputPath.resolve("explanations");
+		Path prismOutputPath = outputPath.resolve("prism");
+		Directories outputDirs = new Directories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
 
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		File missionsJsonRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);

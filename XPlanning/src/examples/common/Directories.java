@@ -1,5 +1,7 @@
 package examples.common;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Directories {
@@ -16,23 +18,31 @@ public class Directories {
 	private volatile int hashCode;
 
 	private Path mPoliciesOutputPath;
-	private Path mExplanationOutputPath;
+	private Path mExplanationsOutputPath;
 	private Path mPrismOutputModelsPath;
 	private Path mPrismOutputAdvsPath;
 
-	public Directories(Path policiesOutputPath, Path explanationOutputPath, Path prismOutputPath) {
+	public Directories(Path policiesOutputPath, Path explanationsOutputPath, Path prismOutputPath) throws IOException {
 		mPoliciesOutputPath = policiesOutputPath;
-		mExplanationOutputPath = explanationOutputPath;
+		mExplanationsOutputPath = explanationsOutputPath;
 		mPrismOutputModelsPath = prismOutputPath.resolve("models");
 		mPrismOutputAdvsPath = prismOutputPath.resolve("advs");
+		createDirectories();
+	}
+
+	private void createDirectories() throws IOException {
+		Files.createDirectories(mPoliciesOutputPath);
+		Files.createDirectories(mExplanationsOutputPath);
+		Files.createDirectories(mPrismOutputModelsPath);
+		Files.createDirectories(mPrismOutputAdvsPath);
 	}
 
 	public Path getPoliciesOutputPath() {
 		return mPoliciesOutputPath;
 	}
 
-	public Path getExplanationOutputPath() {
-		return mExplanationOutputPath;
+	public Path getExplanationsOutputPath() {
+		return mExplanationsOutputPath;
 	}
 
 	public Path getPrismModelsOutputPath() {
@@ -53,7 +63,7 @@ public class Directories {
 		}
 		Directories dirs = (Directories) obj;
 		return dirs.mPoliciesOutputPath.equals(mPoliciesOutputPath)
-				&& dirs.mExplanationOutputPath.equals(mExplanationOutputPath)
+				&& dirs.mExplanationsOutputPath.equals(mExplanationsOutputPath)
 				&& dirs.mPrismOutputModelsPath.equals(mPrismOutputModelsPath)
 				&& dirs.mPrismOutputAdvsPath.equals(mPrismOutputAdvsPath);
 	}
@@ -64,7 +74,7 @@ public class Directories {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mPoliciesOutputPath.hashCode();
-			result = 31 * result + mExplanationOutputPath.hashCode();
+			result = 31 * result + mExplanationsOutputPath.hashCode();
 			result = 31 * result + mPrismOutputModelsPath.hashCode();
 			result = 31 * result + mPrismOutputAdvsPath.hashCode();
 			hashCode = result;

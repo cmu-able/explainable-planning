@@ -87,7 +87,7 @@ public class ClinicSchedulingDemo {
 				verbalizerSettings);
 
 		String explanationJsonFilename = String.format("%s_explanation.json", problemName);
-		Path explanationOutputPath = mOutputDirs.getExplanationOutputPath();
+		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
 		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
 		File explanationJsonFile = explanationWriter.writeExplanation(problemName, explanation,
 				explanationJsonFilename);

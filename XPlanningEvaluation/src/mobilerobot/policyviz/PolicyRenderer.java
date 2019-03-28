@@ -1,7 +1,6 @@
 package mobilerobot.policyviz;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,6 +14,7 @@ import org.json.simple.parser.ParseException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import guru.nidi.graphviz.model.MutableGraph;
 import mobilerobot.utilities.FileIOUtils;
+import mobilerobot.xplanning.XPlanningRunner;
 
 public class PolicyRenderer {
 
@@ -26,12 +26,19 @@ public class PolicyRenderer {
 		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer);
 	}
 
-	public void renderAll(File policyDirOrFile, File mapsJsonDir) {
-		if (!policyDirOrFile.isDirectory()) {
-			Path policyPath = policyDirOrFile.toPath();
+	public void renderAll(File policiesDirOrFile)
+			throws IOException, ParseException, URISyntaxException, MapTopologyException {
+		if (!policiesDirOrFile.isDirectory()) {
+			Path policyPath = policiesDirOrFile.toPath();
 			int nameCount = policyPath.getNameCount();
 			String missionName = policyPath.getName(nameCount - 2).toString();
-			// TODO
+			File mapJsonFile = getMapJsonFile(missionName + ".json",
+					FileIOUtils.getMissionsResourceDir(XPlanningRunner.class));
+			render(policiesDirOrFile, mapJsonFile);
+		} else {
+			for (File policiesSubDirOrFile : policiesDirOrFile.listFiles()) {
+				renderAll(policiesSubDirOrFile);
+			}
 		}
 	}
 
@@ -42,7 +49,7 @@ public class PolicyRenderer {
 	}
 
 	private File getMapJsonFile(String missionJsonFilename, File missionsJsonRootDir)
-			throws FileNotFoundException, IOException, ParseException, URISyntaxException {
+			throws IOException, ParseException, URISyntaxException {
 		File missionJsonFile = searchFile(missionJsonFilename, missionsJsonRootDir);
 		JSONObject missionJsonObj = (JSONObject) mJsonParser.parse(new FileReader(missionJsonFile));
 		String mapJsonFilename = (String) missionJsonObj.get("map-file");
@@ -79,8 +86,10 @@ public class PolicyRenderer {
 		PolicyRenderer policyRenderer = new PolicyRenderer(GraphVizRenderer.METER_PER_INCH,
 				GraphVizRenderer.SCALING_FACTOR);
 
-		for (File policyJsonFile : policyJsonFiles) {
-			policyRenderer.render(policyJsonFile, mapJsonFile);
-		}
+		policyRenderer.renderAll(policiesDir);
+
+		//		for (File policyJsonFile : policyJsonFiles) {
+		//			policyRenderer.render(policyJsonFile, mapJsonFile);
+		//		}
 	}
 }

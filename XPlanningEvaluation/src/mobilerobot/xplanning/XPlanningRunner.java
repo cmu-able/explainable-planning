@@ -1,7 +1,6 @@
 package mobilerobot.xplanning;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -28,10 +27,16 @@ public class XPlanningRunner {
 
 	public void runAllMissions()
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		FileFilter dirFilter = File::isDirectory;
-		for (File missionsJsonSubDir : mMissionsJsonRootDir.listFiles(dirFilter)) {
-			for (File missionJsonFile : missionsJsonSubDir.listFiles()) {
-				mDemo.run(missionJsonFile);
+		runAllMissions(mMissionsJsonRootDir);
+	}
+
+	private void runAllMissions(File dirOrFile)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		if (!dirOrFile.isDirectory()) {
+			mDemo.run(dirOrFile);
+		} else {
+			for (File subDirOrFile : dirOrFile.listFiles()) {
+				runAllMissions(subDirOrFile);
 			}
 		}
 	}

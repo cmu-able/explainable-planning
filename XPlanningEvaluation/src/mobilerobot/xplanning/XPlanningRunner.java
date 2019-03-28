@@ -30,7 +30,7 @@ public class XPlanningRunner {
 		runAllMissions(mMissionsJsonRootDir);
 	}
 
-	private void runAllMissions(File dirOrFile)
+	public void runAllMissions(File dirOrFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		if (!dirOrFile.isDirectory()) {
 			mDemo.run(dirOrFile);

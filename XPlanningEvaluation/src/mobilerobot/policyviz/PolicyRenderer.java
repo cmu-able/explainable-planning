@@ -34,7 +34,7 @@ public class PolicyRenderer {
 			String missionName = policyPath.getName(nameCount - 2).toString();
 			File mapJsonFile = getMapJsonFile(missionName + ".json",
 					FileIOUtils.getMissionsResourceDir(XPlanningRunner.class));
-			render(policiesDirOrFile, mapJsonFile);
+			render(policiesDirOrFile, mapJsonFile, missionName);
 		} else {
 			for (File policiesSubDirOrFile : policiesDirOrFile.listFiles()) {
 				renderAll(policiesSubDirOrFile);
@@ -42,10 +42,15 @@ public class PolicyRenderer {
 		}
 	}
 
-	public void render(File policyJsonFile, File mapJsonFile) throws IOException, ParseException, MapTopologyException {
+	public void render(File policyJsonFile, File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+		render(policyJsonFile, mapJsonFile, null);
+	}
+
+	public void render(File policyJsonFile, File mapJsonFile, String outputSubDirname)
+			throws IOException, ParseException, MapTopologyException {
 		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile);
 		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
-		GraphVizRenderer.drawGraph(policyGraph, outputName);
+		GraphVizRenderer.drawGraph(policyGraph, outputSubDirname, outputName);
 	}
 
 	private File getMapJsonFile(String missionJsonFilename, File missionsJsonRootDir)
@@ -72,8 +77,6 @@ public class PolicyRenderer {
 
 	public static void main(String[] args)
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
-		String mapJsonFilename = args[0];
-		File mapJsonFile = FileIOUtils.getMapFile(PolicyRenderer.class, mapJsonFilename);
 		File policiesDir;
 		if (args.length > 1) {
 			String policiesPath = args[1];
@@ -82,14 +85,9 @@ public class PolicyRenderer {
 			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
 		}
 
-		File[] policyJsonFiles = policiesDir.listFiles();
 		PolicyRenderer policyRenderer = new PolicyRenderer(GraphVizRenderer.METER_PER_INCH,
 				GraphVizRenderer.SCALING_FACTOR);
 
 		policyRenderer.renderAll(policiesDir);
-
-		//		for (File policyJsonFile : policyJsonFiles) {
-		//			policyRenderer.render(policyJsonFile, mapJsonFile);
-		//		}
 	}
 }

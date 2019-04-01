@@ -21,8 +21,6 @@ import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import guru.nidi.graphviz.attribute.Color;
-import guru.nidi.graphviz.attribute.Label;
-import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -98,11 +96,7 @@ public class PolicyJSONToGraphViz {
 			Double targetSpeed = Double.parseDouble((String) actionParamJsonArray.get(0));
 			String actionLabel = "setSpeed(" + targetSpeed + ")";
 			MutableNode rLocNode = mutNode(rLoc);
-			MutableNode actionNode = mutNode(actionLabel + "@" + rLoc);
-			actionNode.add(Label.of(actionLabel));
-			actionNode.add(Shape.RECTANGLE);
-			rLocNode.addLink(to(actionNode).with(Style.DOTTED));
-			actionNode.addLink(to(rLocNode).with(Style.DOTTED));
+			rLocNode.add("xlabel", actionLabel);
 			return rLocNode;
 		}
 

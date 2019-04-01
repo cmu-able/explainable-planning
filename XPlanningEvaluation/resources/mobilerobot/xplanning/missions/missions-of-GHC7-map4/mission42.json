@@ -1,0 +1,25 @@
+{
+  "goal-id": "L32",
+  "map-file": "GHC7-map4.json",
+  "preference-info": [
+    {
+      "scaling-const": 0.6,
+      "min-step-value": 0.0,
+      "max-step-value": 33.92488701799425,
+      "objective": "travelTime"
+    },
+    {
+      "scaling-const": 0.2,
+      "min-step-value": 0.0,
+      "max-step-value": 1.0,
+      "objective": "collision"
+    },
+    {
+      "scaling-const": 0.2,
+      "min-step-value": 0.0,
+      "max-step-value": 3.0,
+      "objective": "intrusiveness"
+    }
+  ],
+  "start-id": "L1"
+}

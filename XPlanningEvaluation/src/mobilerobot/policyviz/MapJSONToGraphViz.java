@@ -24,6 +24,7 @@ import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
+import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.MapTopologyUtils;
@@ -72,6 +73,15 @@ public class MapJSONToGraphViz {
 			node.add(Color.RED, Style.FILLED);
 		}
 
+		parseLinks(node, locNode, visitedLocNodes);
+
+		// Mark this node as visited: all of its neighbors are added to the graph
+		visitedLocNodes.add(locNode);
+		return node;
+	}
+
+	private void parseLinks(MutableNode graphNode, LocationNode locNode, Set<LocationNode> visitedLocNodes)
+			throws MapTopologyException {
 		for (Connection connection : mMapTopology.getConnections(locNode)) {
 			LocationNode neighborLocNode = connection.getOtherNode(locNode);
 
@@ -83,17 +93,17 @@ public class MapJSONToGraphViz {
 
 			Occlusion occlusion = connection.getConnectionAttribute(Occlusion.class, "occlusion");
 			MutableNode neighborNode = mutNode(neighborLocNode.getNodeID());
+			Link neighborLink;
 			if (occlusion == Occlusion.CLEAR) {
-				node.addLink(neighborNode);
+				neighborLink = to(neighborNode);
 			} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-				node.addLink(to(neighborNode).with(Label.of("PO")));
+				neighborLink = to(neighborNode).with(Label.of("PO"));
 			} else if (occlusion == Occlusion.OCCLUDED) {
-				node.addLink(to(neighborNode).with(Label.of("O")));
+				neighborLink = to(neighborNode).with(Label.of("O"));
+			} else {
+				throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 			}
+			graphNode.addLink(neighborLink);
 		}
-
-		// Mark this node as visited: all of its neighbors are added to the graph
-		visitedLocNodes.add(locNode);
-		return node;
 	}
 }

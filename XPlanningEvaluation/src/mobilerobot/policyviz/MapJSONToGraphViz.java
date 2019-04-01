@@ -85,8 +85,10 @@ public class MapJSONToGraphViz {
 			MutableNode neighborNode = mutNode(neighborLocNode.getNodeID());
 			if (occlusion == Occlusion.CLEAR) {
 				node.addLink(neighborNode);
-			} else {
-				node.addLink(to(neighborNode).with(Label.of(occlusion.toString())));
+			} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+				node.addLink(to(neighborNode).with(Label.of("PO")));
+			} else if (occlusion == Occlusion.OCCLUDED) {
+				node.addLink(to(neighborNode).with(Label.of("O")));
 			}
 		}
 

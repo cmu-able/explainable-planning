@@ -20,8 +20,11 @@ import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
+import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.attribute.Style;
+import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 
@@ -34,26 +37,48 @@ public class PolicyJSONToGraphViz {
 		mGraphRenderer = graphRenderer;
 	}
 
-	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile, File mapJsonFile)
+	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile, File mapJsonFile, boolean withMap)
 			throws IOException, ParseException, MapTopologyException {
-		MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
-		MapTopology map = mapReader.readMapTopology(mapJsonFile);
-		JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
-		double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
-
 		FileReader policyReader = new FileReader(policyJsonFile);
 		JSONObject policyJsonObj = (JSONObject) mJsonParser.parse(policyReader);
 		JSONArray policyJsonArray = (JSONArray) policyJsonObj.get("policy");
-		MutableGraph policyGraph = mutGraph("policy").setDirected(true);
+
+		MutableGraph policyGraph;
+		INodeLinkFormatter nodeLinkFormatter;
+
+		if (withMap) {
+			MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
+			policyGraph = mapToGraph.convertMapJsonToGraph();
+			nodeLinkFormatter = (srcNode, destNode) -> to(destNode).with(Style.lineWidth(5), Color.BLUE);
+		} else {
+			MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
+			MapTopology map = mapReader.readMapTopology(mapJsonFile);
+			JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
+			double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
+			policyGraph = mutGraph("policy").setDirected(true);
+			nodeLinkFormatter = new INodeLinkFormatter() {
+
+				@Override
+				public Link createMoveToLink(MutableNode srcNode, MutableNode destNode) throws NodeIDNotFoundException {
+					setNodePosition(srcNode, map, mur);
+					setNodePosition(destNode, map, mur);
+					mGraphRenderer.setNodeStyle(srcNode);
+					mGraphRenderer.setNodeStyle(destNode);
+					return to(destNode);
+				}
+			};
+		}
+
 		for (Object obj : policyJsonArray) {
 			JSONObject decisionJsonObj = (JSONObject) obj;
-			MutableNode nodeLink = parseNodeLink(decisionJsonObj, map, mur);
+			MutableNode nodeLink = parseNodeLink(decisionJsonObj, nodeLinkFormatter);
 			policyGraph.add(nodeLink);
 		}
+
 		return policyGraph;
 	}
 
-	private MutableNode parseNodeLink(JSONObject decisionJsonObj, MapTopology map, double mur)
+	private MutableNode parseNodeLink(JSONObject decisionJsonObj, INodeLinkFormatter nodeLinkFormatter)
 			throws NodeIDNotFoundException {
 		JSONObject stateJsonObj = (JSONObject) decisionJsonObj.get("state");
 		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get("action");
@@ -66,19 +91,15 @@ public class PolicyJSONToGraphViz {
 			String destLoc = (String) actionParamJsonArray.get(0);
 			MutableNode srcNode = mutNode(rLoc);
 			MutableNode destNode = mutNode(destLoc);
-			srcNode.addLink(destNode);
-
-			setNodePosition(srcNode, rLoc, map, mur);
-			setNodePosition(destNode, destLoc, map, mur);
-			mGraphRenderer.setNodeStyle(srcNode);
-			mGraphRenderer.setNodeStyle(destNode);
-
+			Link moveToLink = nodeLinkFormatter.createMoveToLink(srcNode, destNode);
+			srcNode.addLink(moveToLink);
 			return srcNode;
 		} else if (actionType.equals("setSpeed")) {
 			Double targetSpeed = Double.parseDouble((String) actionParamJsonArray.get(0));
 			String actionLabel = "setSpeed(" + targetSpeed + ")";
 			MutableNode rLocNode = mutNode(rLoc);
 			MutableNode actionNode = mutNode(actionLabel + "@" + rLoc);
+			actionNode.add(Label.of(actionLabel));
 			actionNode.add(Shape.RECTANGLE);
 			rLocNode.addLink(to(actionNode).with(Style.DOTTED));
 			actionNode.addLink(to(rLocNode).with(Style.DOTTED));
@@ -88,11 +109,15 @@ public class PolicyJSONToGraphViz {
 		throw new IllegalArgumentException("Unknown action type: " + actionType);
 	}
 
-	private void setNodePosition(MutableNode node, String nodeID, MapTopology map, double mur)
-			throws NodeIDNotFoundException {
+	private void setNodePosition(MutableNode node, MapTopology map, double mur) throws NodeIDNotFoundException {
+		String nodeID = node.name().toString();
 		LocationNode locNode = map.lookUpLocationNode(nodeID);
 		double xCoord = locNode.getNodeXCoordinate();
 		double yCoord = locNode.getNodeYCoordinate();
 		mGraphRenderer.setRelativeNodePosition(node, xCoord, yCoord, mur);
+	}
+
+	private interface INodeLinkFormatter {
+		Link createMoveToLink(MutableNode srcNode, MutableNode destNode) throws NodeIDNotFoundException;
 	}
 }

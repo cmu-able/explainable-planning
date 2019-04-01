@@ -48,7 +48,7 @@ public class PolicyRenderer {
 
 	public void render(File policyJsonFile, File mapJsonFile, String outputSubDirname)
 			throws IOException, ParseException, MapTopologyException {
-		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile);
+		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile, true);
 		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
 		GraphVizRenderer.drawGraph(policyGraph, outputSubDirname, outputName);
 	}

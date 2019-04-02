@@ -25,6 +25,7 @@ import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
+import mobilerobot.utilities.PolicyJSONParserUtils;
 
 public class PolicyJSONToGraphViz {
 
@@ -47,7 +48,20 @@ public class PolicyJSONToGraphViz {
 		if (withMap) {
 			MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
 			policyGraph = mapToGraph.convertMapJsonToGraph();
-			nodeLinkFormatter = (srcNode, destNode) -> to(destNode).with(Style.lineWidth(5), Color.BLUE);
+			//nodeLinkFormatter = (srcNode, destNode) -> to(destNode).with(Style.lineWidth(5), Color.BLUE);
+			nodeLinkFormatter = new INodeLinkFormatter() {
+
+				@Override
+				public Link createMoveToLink(MutableNode srcNode, MutableNode destNode) throws NodeIDNotFoundException {
+					return to(destNode).with(Style.lineWidth(5), Color.BLUE);
+				}
+
+				@Override
+				public String createSetSpeedLabel(double targetSpeed, boolean rBumped) {
+					// TODO Auto-generated method stub
+					return null;
+				}
+			};
 		} else {
 			MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
 			MapTopology map = mapReader.readMapTopology(mapJsonFile);
@@ -63,6 +77,11 @@ public class PolicyJSONToGraphViz {
 					mGraphRenderer.setNodeStyle(srcNode);
 					mGraphRenderer.setNodeStyle(destNode);
 					return to(destNode);
+				}
+
+				@Override
+				public String createSetSpeedLabel(double targetSpeed, boolean rBumped) {
+					return "setSpeed(" + targetSpeed + ")";
 				}
 			};
 		}
@@ -111,7 +130,34 @@ public class PolicyJSONToGraphViz {
 		mGraphRenderer.setRelativeNodePosition(node, xCoord, yCoord, mur);
 	}
 
+	private String createSetSpeedLabel(JSONObject decisionJsonObj, JSONArray policyJsonArray) {
+		String rLoc = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObj);
+		double rSpeed = PolicyJSONParserUtils.parseDoubleVar("rSpeed", decisionJsonObj);
+		boolean rBumped = PolicyJSONParserUtils.parseBooleanVar("rBumped", decisionJsonObj);
+		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get("action");
+		double targetSpeed = PolicyJSONParserUtils.parseDoubleActionParameter(0, decisionJsonObj);
+		StringBuilder builder = new StringBuilder();
+		builder.append("setSpeed(" + targetSpeed + ")");
+
+		for (Object obj : policyJsonArray) {
+			JSONObject decisionJsonObjP = (JSONObject) obj;
+			String rLocP = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObjP);
+			double rSpeedP = PolicyJSONParserUtils.parseDoubleVar("rSpeed", decisionJsonObjP);
+			boolean rBumpedP = PolicyJSONParserUtils.parseBooleanVar("rBumped", decisionJsonObjP);
+			JSONObject actionJsonObjP = (JSONObject) decisionJsonObjP.get("action");
+
+			if (rLoc.equals(rLocP) && rSpeed == rSpeedP && rBumped != rBumpedP
+					&& !actionJsonObj.equals(actionJsonObjP)) {
+				builder.append(" | " + (rBumped ? "bumped" : "!bumped"));
+				break;
+			}
+		}
+		return builder.toString();
+	}
+
 	private interface INodeLinkFormatter {
 		Link createMoveToLink(MutableNode srcNode, MutableNode destNode) throws NodeIDNotFoundException;
+
+		String createSetSpeedLabel(double targetSpeed, boolean rBumped);
 	}
 }

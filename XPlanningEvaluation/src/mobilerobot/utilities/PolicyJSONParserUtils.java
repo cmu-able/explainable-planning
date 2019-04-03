@@ -16,7 +16,8 @@ public class PolicyJSONParserUtils {
 	}
 
 	public static double parseDoubleVar(String varName, JSONObject decisionJsonObj) {
-		return JSONSimpleParserUtils.parseDouble(decisionJsonObj, varName);
+		JSONObject stateJsonObj = (JSONObject) decisionJsonObj.get("state");
+		return JSONSimpleParserUtils.parseDouble(stateJsonObj, varName);
 	}
 
 	public static boolean parseBooleanVar(String varName, JSONObject decisionJsonObj) {

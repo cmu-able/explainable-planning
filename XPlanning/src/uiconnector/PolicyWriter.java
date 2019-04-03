@@ -3,8 +3,6 @@ package uiconnector;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -79,17 +77,24 @@ public class PolicyWriter {
 	}
 
 	private JSONObject writeAction(IAction action) {
-		// Convert action parameters from type IStateVarValue to String for JSON output
-		List<String> actionParamStrArray = new ArrayList<>();
-		for (IStateVarValue paramValue : action.getParameters()) {
-			String paramValueStr = paramValue.toString();
-			actionParamStrArray.add(paramValueStr);
-		}
-
 		JSONObject actionJsonObj = new JSONObject();
 		actionJsonObj.put("type", action.getNamePrefix());
 		JSONArray paramArray = new JSONArray();
-		paramArray.addAll(actionParamStrArray);
+		for (IStateVarValue paramValue : action.getParameters()) {
+			if (paramValue instanceof IStateVarBoolean) {
+				IStateVarBoolean paramBoolValue = (IStateVarBoolean) paramValue;
+				paramArray.add(paramBoolValue.getValue());
+			} else if (paramValue instanceof IStateVarInt) {
+				IStateVarInt paramIntValue = (IStateVarInt) paramValue;
+				paramArray.add(paramIntValue.getValue());
+			} else if (paramValue instanceof IStateVarDouble) {
+				IStateVarDouble paramDoubleValue = (IStateVarDouble) paramValue;
+				paramArray.add(paramDoubleValue.getValue());
+			} else {
+				String paramValueStr = paramValue.toString();
+				paramArray.add(paramValueStr);
+			}
+		}
 		actionJsonObj.put("params", paramArray);
 		return actionJsonObj;
 	}

@@ -21,6 +21,7 @@ import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -54,7 +55,12 @@ public class PolicyJSONToGraphViz {
 				public Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
 					String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
 					MutableNode destNode = mutNode(destLoc);
-					return to(destNode).with(Style.lineWidth(5), Color.BLUE);
+					String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
+					Link moveToLink = to(destNode).with(Style.lineWidth(5), Color.BLUE);
+					if (rBumpedCond != null) {
+						moveToLink = moveToLink.with(Label.of(rBumpedCond));
+					}
+					return moveToLink;
 				}
 
 				@Override
@@ -80,7 +86,13 @@ public class PolicyJSONToGraphViz {
 					setNodePosition(destNode, map, mur);
 					mGraphRenderer.setNodeStyle(srcNode);
 					mGraphRenderer.setNodeStyle(destNode);
-					return to(destNode);
+
+					String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
+					Link moveToLink = to(destNode);
+					if (rBumpedCond != null) {
+						moveToLink = moveToLink.with(Label.of(rBumpedCond));
+					}
+					return moveToLink;
 				}
 
 				@Override
@@ -124,7 +136,7 @@ public class PolicyJSONToGraphViz {
 			boolean rBumpedP = PolicyJSONParserUtils.parseBooleanVar("rBumped", decisionJsonObjP);
 			JSONObject actionJsonObjP = (JSONObject) decisionJsonObjP.get("action");
 
-			// If there are multiple states at the decision-location+speed with different rBumped values and different actions,
+			// If there are multiple states at the decision's (location, speed) with different rBumped values and different actions,
 			// then explicitly label the rBumped condition of this decision
 			if (rLoc.equals(rLocP) && rSpeed == rSpeedP && rBumped != rBumpedP
 					&& !actionJsonObj.equals(actionJsonObjP)) {

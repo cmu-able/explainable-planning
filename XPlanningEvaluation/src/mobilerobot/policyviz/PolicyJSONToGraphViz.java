@@ -30,6 +30,10 @@ import mobilerobot.utilities.PolicyJSONParserUtils;
 
 public class PolicyJSONToGraphViz {
 
+	private static final String R_LOC = "rLoc";
+	private static final String R_SPEED = "rSpeed";
+	private static final String R_BUMPED = "rBumped";
+
 	private JSONParser mJsonParser = new JSONParser();
 	private GraphVizRenderer mGraphRenderer;
 
@@ -55,11 +59,9 @@ public class PolicyJSONToGraphViz {
 				public Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
 					String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
 					MutableNode destNode = mutNode(destLoc);
-					String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
-					Link moveToLink = to(destNode).with(Style.lineWidth(5), Color.BLUE);
-					if (rBumpedCond != null) {
-						moveToLink = moveToLink.with(Label.of(rBumpedCond));
-					}
+					Link moveToLink = to(destNode).with(Style.lineWidth(5));
+					moveToLink = addrSpeedLinkColor(moveToLink, decisionJsonObj);
+					moveToLink = addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
 					return moveToLink;
 				}
 
@@ -78,7 +80,7 @@ public class PolicyJSONToGraphViz {
 
 				@Override
 				public Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
-					String rLoc = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObj);
+					String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
 					String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
 					MutableNode srcNode = mutNode(rLoc);
 					MutableNode destNode = mutNode(destLoc);
@@ -86,12 +88,9 @@ public class PolicyJSONToGraphViz {
 					setNodePosition(destNode, map, mur);
 					mGraphRenderer.setNodeStyle(srcNode);
 					mGraphRenderer.setNodeStyle(destNode);
-
-					String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
 					Link moveToLink = to(destNode);
-					if (rBumpedCond != null) {
-						moveToLink = moveToLink.with(Label.of(rBumpedCond));
-					}
+					moveToLink = addrSpeedLinkColor(moveToLink, decisionJsonObj);
+					moveToLink = addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
 					return moveToLink;
 				}
 
@@ -111,6 +110,23 @@ public class PolicyJSONToGraphViz {
 		return policyGraph;
 	}
 
+	private Link addrSpeedLinkColor(Link moveToLink, JSONObject decisionJsonObj) {
+		double rSpeed = PolicyJSONParserUtils.parseDoubleVar(R_SPEED, decisionJsonObj);
+		if (rSpeed == 0.35) {
+			return moveToLink.with(Color.LIGHTBLUE);
+		} else if (rSpeed == 0.68) {
+			return moveToLink.with(Color.BLUE);
+		} else {
+			throw new IllegalArgumentException("Unknown rSpeed value: " + rSpeed);
+		}
+	}
+
+	private Link addNecessaryrBumpedConditionLabel(Link moveToLink, JSONObject decisionJsonObj,
+			JSONArray policyJsonArray) {
+		String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
+		return rBumpedCond == null ? moveToLink : moveToLink.with(Label.of(rBumpedCond));
+	}
+
 	private String createSetSpeedLabel(JSONObject decisionJsonObj, JSONArray policyJsonArray) {
 		double targetSpeed = PolicyJSONParserUtils.parseDoubleActionParameter(0, decisionJsonObj);
 		String actionLabel = "setSpeed(" + targetSpeed + ")";
@@ -124,16 +140,16 @@ public class PolicyJSONToGraphViz {
 		// implicit in the actions.
 		// Thus, the only condition that must be represented is on rBumped.
 
-		String rLoc = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObj);
-		double rSpeed = PolicyJSONParserUtils.parseDoubleVar("rSpeed", decisionJsonObj);
-		boolean rBumped = PolicyJSONParserUtils.parseBooleanVar("rBumped", decisionJsonObj);
+		String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
+		double rSpeed = PolicyJSONParserUtils.parseDoubleVar(R_SPEED, decisionJsonObj);
+		boolean rBumped = PolicyJSONParserUtils.parseBooleanVar(R_BUMPED, decisionJsonObj);
 		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get("action");
 
 		for (Object obj : policyJsonArray) {
 			JSONObject decisionJsonObjP = (JSONObject) obj;
-			String rLocP = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObjP);
-			double rSpeedP = PolicyJSONParserUtils.parseDoubleVar("rSpeed", decisionJsonObjP);
-			boolean rBumpedP = PolicyJSONParserUtils.parseBooleanVar("rBumped", decisionJsonObjP);
+			String rLocP = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObjP);
+			double rSpeedP = PolicyJSONParserUtils.parseDoubleVar(R_SPEED, decisionJsonObjP);
+			boolean rBumpedP = PolicyJSONParserUtils.parseBooleanVar(R_BUMPED, decisionJsonObjP);
 			JSONObject actionJsonObjP = (JSONObject) decisionJsonObjP.get("action");
 
 			// If there are multiple states at the decision's (location, speed) with different rBumped values and different actions,
@@ -150,7 +166,7 @@ public class PolicyJSONToGraphViz {
 
 	private MutableNode parseNodeLink(JSONObject decisionJsonObj, INodeLinkFormatter nodeLinkFormatter)
 			throws NodeIDNotFoundException {
-		String rLoc = PolicyJSONParserUtils.parseStringVar("rLoc", decisionJsonObj);
+		String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
 		String actionType = PolicyJSONParserUtils.parseActionType(decisionJsonObj);
 		MutableNode rLocNode = mutNode(rLoc);
 

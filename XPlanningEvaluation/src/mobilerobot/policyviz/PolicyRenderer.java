@@ -78,8 +78,8 @@ public class PolicyRenderer {
 	public static void main(String[] args)
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
 		File policiesDir;
-		if (args.length > 1) {
-			String policiesPath = args[1];
+		if (args.length > 0) {
+			String policiesPath = args[0];
 			policiesDir = new File(policiesPath);
 		} else {
 			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);

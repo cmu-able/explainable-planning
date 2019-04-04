@@ -50,7 +50,14 @@ public class XPlanningRunner {
 		Directories outputDirs = new Directories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
 
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
-		File missionsJsonRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
+		File missionsJsonRootDir;
+		if (args.length > 0) {
+			String missionsJsonRootPath = args[0];
+			missionsJsonRootDir = new File(missionsJsonRootPath);
+		} else {
+			missionsJsonRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
+		}
+
 		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, missionsJsonRootDir, outputDirs);
 		runner.runAllMissions();
 	}

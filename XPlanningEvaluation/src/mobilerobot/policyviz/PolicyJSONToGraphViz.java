@@ -50,27 +50,24 @@ public class PolicyJSONToGraphViz {
 		JSONArray policyJsonArray = (JSONArray) policyJsonObj.get("policy");
 
 		MutableGraph policyGraph;
-		INodeLinkFormatter nodeLinkFormatter;
+		IMoveToLinkFormatter moveToLinkFormatter;
+		ISetSpeedLabelFormatter setSpeedLabelFormatter = decisionJsonObj -> {
+			double targetSpeed = PolicyJSONParserUtils.parseDoubleActionParameter(0, decisionJsonObj);
+			String actionLabel = "setSpeed(" + targetSpeed + ")";
+			String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
+			return rBumpedCond == null ? actionLabel : actionLabel + " | " + rBumpedCond;
+		};
 
 		if (withMap) {
 			MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
 			policyGraph = mapToGraph.convertMapJsonToGraph();
-			nodeLinkFormatter = new INodeLinkFormatter() {
-
-				@Override
-				public Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
-					String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
-					MutableNode destNode = mutNode(destLoc);
-					Link moveToLink = to(destNode).with(Style.lineWidth(MOVE_TO_LINE_WIDTH));
-					addrSpeedLinkColor(moveToLink, decisionJsonObj);
-					addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
-					return moveToLink;
-				}
-
-				@Override
-				public String createSetSpeedLabel(JSONObject decisionJsonObj) {
-					return PolicyJSONToGraphViz.this.createSetSpeedLabel(decisionJsonObj, policyJsonArray);
-				}
+			moveToLinkFormatter = decisionJsonObj -> {
+				String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
+				MutableNode destNode = mutNode(destLoc);
+				Link moveToLink = to(destNode).with(Style.lineWidth(MOVE_TO_LINE_WIDTH));
+				addrSpeedLinkColor(moveToLink, decisionJsonObj);
+				addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
+				return moveToLink;
 			};
 		} else {
 			MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
@@ -78,28 +75,19 @@ public class PolicyJSONToGraphViz {
 			JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
 			double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
 			policyGraph = mutGraph("policy").setDirected(true);
-			nodeLinkFormatter = new INodeLinkFormatter() {
-
-				@Override
-				public Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException {
-					String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
-					String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
-					MutableNode srcNode = mutNode(rLoc);
-					MutableNode destNode = mutNode(destLoc);
-					setNodePosition(srcNode, map, mur);
-					setNodePosition(destNode, map, mur);
-					mGraphRenderer.setNodeStyle(srcNode);
-					mGraphRenderer.setNodeStyle(destNode);
-					Link moveToLink = to(destNode);
-					addrSpeedLinkColor(moveToLink, decisionJsonObj);
-					addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
-					return moveToLink;
-				}
-
-				@Override
-				public String createSetSpeedLabel(JSONObject decisionJsonObj) {
-					return PolicyJSONToGraphViz.this.createSetSpeedLabel(decisionJsonObj, policyJsonArray);
-				}
+			moveToLinkFormatter = decisionJsonObj -> {
+				String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
+				String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
+				MutableNode srcNode = mutNode(rLoc);
+				MutableNode destNode = mutNode(destLoc);
+				setNodePosition(srcNode, map, mur);
+				setNodePosition(destNode, map, mur);
+				mGraphRenderer.setNodeStyle(srcNode);
+				mGraphRenderer.setNodeStyle(destNode);
+				Link moveToLink = to(destNode);
+				addrSpeedLinkColor(moveToLink, decisionJsonObj);
+				addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
+				return moveToLink;
 			};
 		}
 
@@ -108,9 +96,9 @@ public class PolicyJSONToGraphViz {
 			String actionType = PolicyJSONParserUtils.parseActionType(decisionJsonObj);
 
 			if (actionType.equals("moveTo")) {
-				addMoveToLinkToNode(policyGraph, decisionJsonObj, nodeLinkFormatter);
+				addMoveToLinkToNode(policyGraph, decisionJsonObj, moveToLinkFormatter);
 			} else if (actionType.equals("setSpeed")) {
-				addSetSpeedLabelToNode(policyGraph, decisionJsonObj, nodeLinkFormatter);
+				addSetSpeedLabelToNode(policyGraph, decisionJsonObj, setSpeedLabelFormatter);
 			}
 		}
 
@@ -134,13 +122,6 @@ public class PolicyJSONToGraphViz {
 		if (rBumpedCond != null) {
 			moveToLink.add(Label.of(rBumpedCond));
 		}
-	}
-
-	private String createSetSpeedLabel(JSONObject decisionJsonObj, JSONArray policyJsonArray) {
-		double targetSpeed = PolicyJSONParserUtils.parseDoubleActionParameter(0, decisionJsonObj);
-		String actionLabel = "setSpeed(" + targetSpeed + ")";
-		String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
-		return rBumpedCond == null ? actionLabel : actionLabel + " | " + rBumpedCond;
 	}
 
 	private String createrBumpedConditionLabel(JSONObject decisionJsonObj, JSONArray policyJsonArray) {
@@ -174,18 +155,18 @@ public class PolicyJSONToGraphViz {
 	}
 
 	private void addMoveToLinkToNode(MutableGraph policyGraph, JSONObject decisionJsonObj,
-			INodeLinkFormatter nodeLinkFormatter) throws NodeIDNotFoundException {
+			IMoveToLinkFormatter formatter) throws NodeIDNotFoundException {
 		String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
 		MutableNode rLocNode = GraphVizUtils.lookUpNode(policyGraph, rLoc);
-		Link moveToLink = nodeLinkFormatter.createMoveToLink(decisionJsonObj);
+		Link moveToLink = formatter.createMoveToLink(decisionJsonObj);
 		GraphVizUtils.addUniqueMoveToLink(rLocNode, moveToLink);
 	}
 
 	private void addSetSpeedLabelToNode(MutableGraph policyGraph, JSONObject decisionJsonObj,
-			INodeLinkFormatter nodeLinkFormatter) {
+			ISetSpeedLabelFormatter formatter) {
 		String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
-		String setSpeedLabel = nodeLinkFormatter.createSetSpeedLabel(decisionJsonObj);
 		MutableNode rLocNode = GraphVizUtils.lookUpNode(policyGraph, rLoc);
+		String setSpeedLabel = formatter.createSetSpeedLabel(decisionJsonObj);
 		GraphVizUtils.addUniqueNodeXLabel(rLocNode, setSpeedLabel);
 	}
 
@@ -197,9 +178,11 @@ public class PolicyJSONToGraphViz {
 		mGraphRenderer.setRelativeNodePosition(node, xCoord, yCoord, mur);
 	}
 
-	private interface INodeLinkFormatter {
+	private interface IMoveToLinkFormatter {
 		Link createMoveToLink(JSONObject decisionJsonObj) throws NodeIDNotFoundException;
+	}
 
+	private interface ISetSpeedLabelFormatter {
 		String createSetSpeedLabel(JSONObject decisionJsonObj);
 	}
 }

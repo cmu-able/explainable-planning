@@ -159,7 +159,11 @@ public class AlternativeExplorer {
 	}
 
 	/**
-	 * Create a new objective function of n-1 attributes that excludes this QA
+	 * Create a new objective function of n-1 attributes that excludes this QA. The new objective function will have the
+	 * same offset as that of the cost function.
+	 * 
+	 * If the planning problem is SSP, the offset of the new objective function ensures that solution polices have no
+	 * cycles and reach a goal.
 	 * 
 	 * @param costFunction
 	 *            : Cost function of the XMDP
@@ -168,7 +172,8 @@ public class AlternativeExplorer {
 	 * @return (n-1)-attribute objective function
 	 */
 	private AdditiveCostFunction createNewObjective(CostFunction costFunction, IQFunction<?, ?> excludedQFunction) {
-		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_no_" + excludedQFunction.getName());
+		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_no_" + excludedQFunction.getName(),
+				costFunction.getOffset());
 
 		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
 			if (!otherQFunction.equals(excludedQFunction)) {

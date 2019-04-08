@@ -20,6 +20,8 @@ public interface IAdditiveCostFunction {
 
 	public double getScalingConstant(AttributeCostFunction<? extends IQFunction<?, ?>> attrCostFunc);
 
+	public double getOffset();
+
 	public String getName();
 
 	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions();

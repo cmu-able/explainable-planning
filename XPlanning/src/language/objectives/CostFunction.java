@@ -11,6 +11,9 @@ import language.domain.models.IAction;
  * multi-attribute cost function, whose each single-attribute component cost function is linear, and all scaling
  * constants are between 0 and 1 and sum to 1.
  * 
+ * {@link CostFunction} may have an offset, which is used in formulating SSP to ensure all objective costs are positive,
+ * except in the goal states -- to ensure that solution policies have no cycles and reach a goal.
+ * 
  * @author rsukkerd
  *
  */
@@ -21,10 +24,14 @@ public class CostFunction implements IAdditiveCostFunction {
 	 */
 	private volatile int hashCode;
 
-	private AdditiveCostFunction mAdditiveCostFunc = new AdditiveCostFunction("cost");
+	private AdditiveCostFunction mAdditiveCostFunc;
 
 	public CostFunction() {
-		// mAdditiveCostFunc initially empty
+		this(0);
+	}
+
+	public CostFunction(double offset) {
+		mAdditiveCostFunc = new AdditiveCostFunction("cost", offset);
 	}
 
 	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(
@@ -46,6 +53,11 @@ public class CostFunction implements IAdditiveCostFunction {
 	@Override
 	public String getName() {
 		return mAdditiveCostFunc.getName();
+	}
+
+	@Override
+	public double getOffset() {
+		return mAdditiveCostFunc.getOffset();
 	}
 
 	@Override

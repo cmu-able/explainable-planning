@@ -13,6 +13,9 @@ import language.domain.models.IAction;
  * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs of a single
  * transition. Assume that the single-attribute component cost functions are linear.
  * 
+ * {@link AdditiveCostFunction} may have an offset, which is used in formulating SSP to ensure all objective costs are
+ * positive, except in the goal states -- to ensure that solution policies have no cycles and reach a goal.
+ * 
  * @author rsukkerd
  *
  */
@@ -24,6 +27,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	private volatile int hashCode;
 
 	private String mName;
+	private double mOffset;
 	private Map<AttributeCostFunction<? extends IQFunction<?, ?>>, Double> mScalingConsts = new HashMap<>();
 
 	// For fast look-up of AttributeCostFunction via IQFunction
@@ -36,7 +40,12 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 	private Set<AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>>> mGenericAttrCostFuncs = new HashSet<>();
 
 	public AdditiveCostFunction(String name) {
+		this(name, 0);
+	}
+
+	public AdditiveCostFunction(String name, double offset) {
 		mName = name;
+		mOffset = offset;
 	}
 
 	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(
@@ -64,8 +73,14 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		return mScalingConsts.get(attrCostFunc);
 	}
 
+	@Override
 	public String getName() {
 		return mName;
+	}
+
+	@Override
+	public double getOffset() {
+		return mOffset;
 	}
 
 	public Set<IQFunction<IAction, ITransitionStructure<IAction>>> getQFunctions() {
@@ -86,7 +101,8 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 			return false;
 		}
 		AdditiveCostFunction costFunc = (AdditiveCostFunction) obj;
-		return costFunc.mName.equals(mName) && costFunc.mScalingConsts.equals(mScalingConsts);
+		return costFunc.mName.equals(mName) && Double.compare(costFunc.mOffset, mOffset) == 0
+				&& costFunc.mScalingConsts.equals(mScalingConsts);
 	}
 
 	@Override
@@ -95,6 +111,7 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mName.hashCode();
+			result = 31 * result + Double.hashCode(mOffset);
 			result = 31 * result + mScalingConsts.hashCode();
 			hashCode = result;
 		}

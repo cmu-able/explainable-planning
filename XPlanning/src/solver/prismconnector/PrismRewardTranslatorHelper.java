@@ -38,7 +38,6 @@ import solver.prismconnector.PrismTranslatorHelper.ActionFilter;
 
 public class PrismRewardTranslatorHelper {
 
-	private static final double ARTIFICIAL_REWARD_VALUE = 1.0E-5;
 	private static final String BEGIN_REWARDS = "rewards \"%s\"";
 	private static final String END_REWARDS = "endrewards";
 
@@ -94,8 +93,11 @@ public class PrismRewardTranslatorHelper {
 			builder.append(rewardItems);
 		}
 
-		String artificialReward = buildArtificialRewardItem(ARTIFICIAL_REWARD_VALUE);
+		// Add auxiliary reward if necessary (e.g., for SSPs)
+		double offset = objectiveFunction.getOffset();
+		String artificialReward = buildAuxiliaryRewardItem(offset);
 		builder.append(artificialReward);
+
 		builder.append("\n");
 		builder.append(END_REWARDS);
 		return builder.toString();
@@ -408,14 +410,18 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
+	 * NOTE: Auxiliary reward is only used for SSPs to ensure that solution policies have no cycles and reach a goal. In
+	 * the case of average-cost MDPs, auxiliary reward is not used (i.e., "offset" is 0), and PRISM is not used to solve
+	 * such problems (GRB solver is used instead).
+	 * 
 	 * This is to ensure that there is no zero-reward cycle in the MDP. This is because the current version of PRISM 4.4
 	 * does not support "constructing a strategy for Rmin in the presence of zero-reward ECs".
 	 * 
 	 * @param value
-	 *            : Artificial reward value assigned to every "compute" transition
+	 *            : Auxiliary reward value assigned to every "compute" transition
 	 * @return [compute] true : {value};
 	 */
-	String buildArtificialRewardItem(double value) {
+	String buildAuxiliaryRewardItem(double value) {
 		return PrismTranslatorUtils.INDENT + "[compute] true : " + value + ";";
 	}
 

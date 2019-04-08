@@ -43,6 +43,7 @@ import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
+import solver.common.Constants;
 
 public class MobileRobotXMDPBuilder {
 
@@ -279,7 +280,7 @@ public class MobileRobotXMDPBuilder {
 	}
 
 	private CostFunction buildCostFunction(QSpace qSpace, PreferenceInfo prefInfo) {
-		CostFunction costFunction = new CostFunction();
+		CostFunction costFunction = new CostFunction(Constants.SSP_COST_OFFSET);
 		for (IQFunction<?, ?> qFunction : qSpace) {
 			addAttributeCostFunctions(qFunction, prefInfo, costFunction);
 		}

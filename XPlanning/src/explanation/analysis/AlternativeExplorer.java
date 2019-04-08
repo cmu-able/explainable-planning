@@ -175,7 +175,7 @@ public class AlternativeExplorer {
 				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
 						.getAttributeCostFunction(otherQFunction);
 				double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
-				objectiveFunction.put(otherAttrCostFunc.getQFunction(), otherAttrCostFunc, scalingConst);
+				objectiveFunction.put(otherAttrCostFunc, scalingConst);
 			}
 		}
 		return objectiveFunction;

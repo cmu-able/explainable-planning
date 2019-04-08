@@ -291,6 +291,6 @@ public class MobileRobotXMDPBuilder {
 		double aConst = prefInfo.getaConst(qFunction.getName());
 		double bConst = prefInfo.getbConst(qFunction.getName());
 		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
-		costFunction.put(qFunction, attrCostFunction, prefInfo.getScalingConst(qFunction.getName()));
+		costFunction.put(attrCostFunction, prefInfo.getScalingConst(qFunction.getName()));
 	}
 }

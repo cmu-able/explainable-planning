@@ -39,10 +39,13 @@ public class AdditiveCostFunction implements IAdditiveCostFunction {
 		mName = name;
 	}
 
-	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(S qFunction,
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
-		mAttrCostFuncs.put(qFunction, attrCostFunc);
 		mScalingConsts.put(attrCostFunc, scalingConst);
+
+		// For fast look-up
+		S qFunction = attrCostFunc.getQFunction();
+		mAttrCostFuncs.put(qFunction, attrCostFunc);
 
 		mGenericQFuncs.add((IQFunction<IAction, ITransitionStructure<IAction>>) qFunction);
 		mGenericAttrCostFuncs

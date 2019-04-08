@@ -340,6 +340,6 @@ public class ClinicSchedulingXMDPBuilder {
 		}
 
 		AttributeCostFunction<S> attrCostFunction = new AttributeCostFunction<>(qFunction, aConst, bConst);
-		costFunction.put(qFunction, attrCostFunction, scalingConst);
+		costFunction.put(attrCostFunction, scalingConst);
 	}
 }

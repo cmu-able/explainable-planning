@@ -27,9 +27,9 @@ public class CostFunction implements IAdditiveCostFunction {
 		// mAdditiveCostFunc initially empty
 	}
 
-	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(S qFunction,
+	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> void put(
 			AttributeCostFunction<S> attrCostFunc, Double scalingConst) {
-		mAdditiveCostFunc.put(qFunction, attrCostFunc, scalingConst);
+		mAdditiveCostFunc.put(attrCostFunc, scalingConst);
 	}
 
 	@Override

@@ -407,36 +407,18 @@ public class ExplicitMDPReader {
 		int numStates = explicitMDP.getNumStates();
 		int numActions = explicitMDP.getNumActions();
 
-		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
+		// Auxiliary cost is assigned to every "compute" transition
+		double offset = objectiveFunction.getOffset();
 
 		for (int i = 0; i < numStates; i++) {
 			for (int a = 0; a < numActions; a++) {
-				// Objective cost of a transition: c_0[i][a] = sum_k(scaling const * attribute cost of c_k[i][a])
-				// OR
-				// Objective cost of a state: c_0[i] = sum_k(scaling const * attribute cost of c_k[i])
-				double objectiveCost = 0;
+				// Compute "pure" objective cost from all QA functions in the objective function
+				double objectiveCost = computePureObjectiveCost(i, a, explicitMDP, objectiveFunction);
 
-				for (IQFunction<?, ?> qFunction : qFunctions) {
-					AttributeCostFunction<?> attrCostFunc = objectiveFunction.getAttributeCostFunction(qFunction);
-					double scalingConst = objectiveFunction.getScalingConstant(attrCostFunc);
-
-					// When constructing ExplicitMDP, we ensure that the indices of the cost functions of ExplicitMDP
-					// are aligned with the indices of the PRISM reward structures
-					int costFuncIndex = mQFunctionEncoding.getRewardStructureIndex(qFunction);
-
-					// QA value of a single transition
-					// OR
-					// QA value of a single state
-					double stepQValue = explicitMDP.getCostType() == CostType.TRANSITION_COST
-							? explicitMDP.getTransitionCost(costFuncIndex, i, a)
-							: explicitMDP.getStateCost(costFuncIndex, i);
-
-					// Attribute cost of the transition value
-					// OR
-					// Attribute cost of the state value
-					double stepAttrCost = attrCostFunc.getCost(stepQValue);
-
-					objectiveCost += scalingConst * stepAttrCost;
+				// Add offset to objective cost of (any state, "compute" action)
+				String actionName = explicitMDP.getActionNameAtIndex(a);
+				if (actionName.equals("compute")) {
+					objectiveCost += offset;
 				}
 
 				// Set objective cost at c_0[i][a]
@@ -449,6 +431,40 @@ public class ExplicitMDPReader {
 				}
 			}
 		}
+	}
 
+	private double computePureObjectiveCost(int i, int a, ExplicitMDP explicitMDP,
+			IAdditiveCostFunction objectiveFunction) throws QFunctionNotFoundException {
+		Set<IQFunction<IAction, ITransitionStructure<IAction>>> qFunctions = objectiveFunction.getQFunctions();
+
+		// Objective cost of a transition: c_0[i][a] = sum_k(scaling const * attribute cost of c_k[i][a])
+		// OR
+		// Objective cost of a state: c_0[i] = sum_k(scaling const * attribute cost of c_k[i])
+		double objectiveCost = 0;
+
+		for (IQFunction<?, ?> qFunction : qFunctions) {
+			AttributeCostFunction<?> attrCostFunc = objectiveFunction.getAttributeCostFunction(qFunction);
+			double scalingConst = objectiveFunction.getScalingConstant(attrCostFunc);
+
+			// When constructing ExplicitMDP, we ensure that the indices of the cost functions of ExplicitMDP
+			// are aligned with the indices of the PRISM reward structures
+			int costFuncIndex = mQFunctionEncoding.getRewardStructureIndex(qFunction);
+
+			// QA value of a single transition
+			// OR
+			// QA value of a single state
+			double stepQValue = explicitMDP.getCostType() == CostType.TRANSITION_COST
+					? explicitMDP.getTransitionCost(costFuncIndex, i, a)
+					: explicitMDP.getStateCost(costFuncIndex, i);
+
+			// Attribute cost of the transition value
+			// OR
+			// Attribute cost of the state value
+			double stepAttrCost = attrCostFunc.getCost(stepQValue);
+
+			objectiveCost += scalingConst * stepAttrCost;
+		}
+
+		return objectiveCost;
 	}
 }

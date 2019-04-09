@@ -10,6 +10,9 @@ import language.domain.models.IAction;
  * {@link IAdditiveCostFunction} is an interface to an additive, multi-attribute cost function of n values
  * characterizing n QAs of a single transition in a policy execution.
  * 
+ * {@link IAdditiveCostFunction} may have a positive offset, which is used in formulating SSP to ensure all objective
+ * costs are positive, except in the goal states.
+ * 
  * @author rsukkerd
  *
  */

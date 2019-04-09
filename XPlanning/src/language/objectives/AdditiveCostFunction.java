@@ -13,8 +13,8 @@ import language.domain.models.IAction;
  * {@link AdditiveCostFunction} represents an additive cost function of n values characterizing n QAs of a single
  * transition. Assume that the single-attribute component cost functions are linear.
  * 
- * {@link AdditiveCostFunction} may have an offset, which is used in formulating SSP to ensure all objective costs are
- * positive, except in the goal states -- to ensure that solution policies have no cycles and reach a goal.
+ * {@link AdditiveCostFunction} may have a positive offset, which is used in formulating SSP to ensure all objective
+ * costs are positive, except in the goal states.
  * 
  * @author rsukkerd
  *

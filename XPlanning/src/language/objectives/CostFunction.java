@@ -11,8 +11,8 @@ import language.domain.models.IAction;
  * multi-attribute cost function, whose each single-attribute component cost function is linear, and all scaling
  * constants are between 0 and 1 and sum to 1.
  * 
- * {@link CostFunction} may have an offset, which is used in formulating SSP to ensure all objective costs are positive,
- * except in the goal states -- to ensure that solution policies have no cycles and reach a goal.
+ * {@link CostFunction} may have a positive offset, which is used in formulating SSP to ensure all objective costs are
+ * positive, except in the goal states.
  * 
  * @author rsukkerd
  *

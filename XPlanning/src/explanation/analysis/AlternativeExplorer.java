@@ -162,8 +162,8 @@ public class AlternativeExplorer {
 	 * Create a new objective function of n-1 attributes that excludes this QA. The new objective function will have the
 	 * same offset as that of the cost function.
 	 * 
-	 * If the planning problem is SSP, the offset of the new objective function ensures that solution polices have no
-	 * cycles and reach a goal.
+	 * If the planning problem is SSP, the offset of the new objective function ensures that all objective costs are
+	 * positive, except in the goal states.
 	 * 
 	 * @param costFunction
 	 *            : Cost function of the XMDP

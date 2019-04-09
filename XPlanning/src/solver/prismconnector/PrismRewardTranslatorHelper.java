@@ -410,9 +410,9 @@ public class PrismRewardTranslatorHelper {
 	}
 
 	/**
-	 * NOTE: Auxiliary reward is only used for SSPs to ensure that solution policies have no cycles and reach a goal. In
-	 * the case of average-cost MDPs, auxiliary reward is not used (i.e., "offset" is 0), and PRISM is not used to solve
-	 * such problems (GRB solver is used instead).
+	 * NOTE: Auxiliary reward is only used for SSPs to ensure that all objective costs are positive, except in the goal
+	 * states. In the case of average-cost MDPs, auxiliary reward is not used (i.e., "offset" is 0), and PRISM is not
+	 * used to solve such problems (GRB solver is used instead).
 	 * 
 	 * This is to ensure that there is no zero-reward cycle in the MDP. This is because the current version of PRISM 4.4
 	 * does not support "constructing a strategy for Rmin in the presence of zero-reward ECs".

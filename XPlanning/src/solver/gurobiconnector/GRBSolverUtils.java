@@ -15,6 +15,7 @@ public class GRBSolverUtils {
 
 	public static final double DEFAULT_FEASIBILITY_TOL = 1e-7;
 	public static final double DEFAULT_INT_FEAS_TOL = 1e-7;
+	public static final double DEFAULT_OPT_TOL = 1e-6;
 
 	private GRBSolverUtils() {
 		throw new IllegalStateException("Utility class");
@@ -276,6 +277,7 @@ public class GRBSolverUtils {
 			throws GRBException {
 		model.set(GRB.DoubleParam.FeasibilityTol, feasibilityTol);
 		model.set(GRB.DoubleParam.IntFeasTol, intFeasTol);
+		model.set(GRB.DoubleParam.OptimalityTol, DEFAULT_OPT_TOL);
 	}
 
 	/**

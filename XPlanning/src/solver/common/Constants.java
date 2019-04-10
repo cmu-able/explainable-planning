@@ -8,7 +8,7 @@ public class Constants {
 	 * 
 	 * The cost offset is used in SSPs to ensure that all objective costs are positive, except in the goal states.
 	 */
-	public static final double SSP_COST_OFFSET = 1e-4;
+	public static final double SSP_COST_OFFSET = 1e-4; // GRB's default value of OptimalityTol is 1e-6
 
 	private Constants() {
 		throw new IllegalStateException("Utility class");

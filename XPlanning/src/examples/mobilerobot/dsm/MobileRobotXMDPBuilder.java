@@ -18,8 +18,6 @@ import examples.mobilerobot.models.Distance;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.Occlusion;
-import examples.mobilerobot.models.RobotBumped;
-import examples.mobilerobot.models.RobotBumpedActionDescription;
 import examples.mobilerobot.models.RobotLocationActionDescription;
 import examples.mobilerobot.models.RobotSpeed;
 import examples.mobilerobot.models.RobotSpeedActionDescription;
@@ -50,9 +48,6 @@ public class MobileRobotXMDPBuilder {
 	// Robot's default setting
 	private static final RobotSpeed DEFAULT_SPEED = new RobotSpeed(0.35);
 
-	// Robot's initial bump-sensor value
-	private static final RobotBumped DEFAULT_BUMPED = new RobotBumped(false);
-
 	// --- Location --- //
 	// Robot's location state variable
 	private StateVarDefinition<Location> rLocDef;
@@ -81,15 +76,6 @@ public class MobileRobotXMDPBuilder {
 	// SetSpeed action definition
 	private ActionDefinition<SetSpeedAction> setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedHalf,
 			setSpeedFull);
-	// ------ //
-
-	// --- Bump sensor --- //
-	// Bump sensor values (known, fixed)
-	private RobotBumped bumped = new RobotBumped(true);
-	private RobotBumped notBumped = new RobotBumped(false);
-
-	// Robot's bump sensor state variable
-	private StateVarDefinition<RobotBumped> rBumpedDef = new StateVarDefinition<>("rBumped", bumped, notBumped);
 	// ------ //
 
 	// --- QA functions --- //
@@ -142,7 +128,6 @@ public class MobileRobotXMDPBuilder {
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(rLocDef);
 		stateSpace.addStateVarDefinition(rSpeedDef);
-		stateSpace.addStateVarDefinition(rBumpedDef);
 		return stateSpace;
 	}
 
@@ -186,7 +171,6 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
-		initialState.addStateVar(rBumpedDef.getStateVar(DEFAULT_BUMPED));
 		return initialState;
 	}
 
@@ -218,14 +202,9 @@ public class MobileRobotXMDPBuilder {
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
 				rLocDef);
 
-		// Action description for rBumped
-		RobotBumpedActionDescription rBumpedActionDesc = new RobotBumpedActionDescription(moveToDef, preMoveTo, rLocDef,
-				rBumpedDef);
-
 		// PSO
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
 		moveToPSO.addActionDescription(rLocActionDesc);
-		moveToPSO.addActionDescription(rBumpedActionDesc);
 
 		// SetSpeed:
 		// Precondition
@@ -253,7 +232,7 @@ public class MobileRobotXMDPBuilder {
 		TravelTimeQFunction timeQFunction = new TravelTimeQFunction(timeDomain);
 
 		// Collision
-		CollisionDomain collDomain = new CollisionDomain(rSpeedDef, moveToDef, rBumpedDef);
+		CollisionDomain collDomain = new CollisionDomain(rLocDef, rSpeedDef, moveToDef);
 		CollisionEvent collEvent = new CollisionEvent(collDomain, SAFE_SPEED);
 		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collisionQFunction = new CountQFunction<>(
 				collEvent);

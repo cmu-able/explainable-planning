@@ -10,14 +10,21 @@ public class GRBConnectorSettings {
 	private volatile int hashCode;
 
 	private PrismExplicitModelReader mPrismExplicitModelReader;
-	private double mFeasibilityTol;
 	private double mIntFeasTol;
+	private double mFeasibilityTol;
+	private double mRoundOff;
 
-	public GRBConnectorSettings(PrismExplicitModelReader prismExplicitModelReader, double feasibilityTol,
-			double intFeasTol) {
+	public GRBConnectorSettings(PrismExplicitModelReader prismExplicitModelReader) {
+		this(prismExplicitModelReader, GRBSolverUtils.DEFAULT_INT_FEAS_TOL, GRBSolverUtils.DEFAULT_FEASIBILITY_TOL,
+				GRBSolverUtils.DEFAULT_ROUND_OFF);
+	}
+
+	public GRBConnectorSettings(PrismExplicitModelReader prismExplicitModelReader, double intFeasTol,
+			double feasibilityTol, double roundOff) {
 		mPrismExplicitModelReader = prismExplicitModelReader;
-		mFeasibilityTol = feasibilityTol;
 		mIntFeasTol = intFeasTol;
+		mFeasibilityTol = feasibilityTol;
+		mRoundOff = roundOff;
 	}
 
 	public PrismExplicitModelReader getPrismExplicitModelReader() {
@@ -32,6 +39,16 @@ public class GRBConnectorSettings {
 		return mIntFeasTol;
 	}
 
+	/**
+	 * Any value smaller than the round-off value will be considered zero. This is used for determining if occupation
+	 * measure, x_ia of state i and action a, is positive.
+	 * 
+	 * @return Round-off value
+	 */
+	public double getRoundOff() {
+		return mRoundOff;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -43,7 +60,8 @@ public class GRBConnectorSettings {
 		GRBConnectorSettings settings = (GRBConnectorSettings) obj;
 		return settings.mPrismExplicitModelReader.equals(mPrismExplicitModelReader)
 				&& Double.compare(settings.mFeasibilityTol, mFeasibilityTol) == 0
-				&& Double.compare(settings.mIntFeasTol, mIntFeasTol) == 0;
+				&& Double.compare(settings.mIntFeasTol, mIntFeasTol) == 0
+				&& Double.compare(settings.mRoundOff, mRoundOff) == 0;
 	}
 
 	@Override
@@ -54,6 +72,7 @@ public class GRBConnectorSettings {
 			result = 31 * result + mPrismExplicitModelReader.hashCode();
 			result = 31 * result + Double.hashCode(mFeasibilityTol);
 			result = 31 * result + Double.hashCode(mIntFeasTol);
+			result = 31 * result + Double.hashCode(mRoundOff);
 			hashCode = result;
 		}
 		return hashCode;

@@ -15,7 +15,6 @@ import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.gurobiconnector.GRBConnectorSettings;
-import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
@@ -47,8 +46,7 @@ public class Explainer {
 
 		// GRBConnector
 		// GRBConnector is used in AlternativeExplorer
-		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
-				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
 		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, grbConnSettings);
 		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 		Set<PolicyInfo> altPolicies = altExplorer.getParetoOptimalAlternatives(policyInfo);

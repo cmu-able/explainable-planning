@@ -71,7 +71,7 @@ public class UpperBoundOccupationMeasureSolver {
 		GRBEnv env = new GRBEnv();
 		GRBModel model = new GRBModel(env);
 
-		GRBSolverUtils.configureToleranceParameters(model, feasibilityTol, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBSolverUtils.configureToleranceParameters(model, GRBSolverUtils.DEFAULT_INT_FEAS_TOL, feasibilityTol);
 
 		int n = explicitMDP.getNumStates();
 		int m = explicitMDP.getNumActions();

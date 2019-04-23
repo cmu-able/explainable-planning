@@ -165,15 +165,13 @@ public class GRBConnector {
 		int m = explicitMDP.getNumActions();
 		double[][] policyMatrix = new double[n][m];
 		LPSolution solution = null;
-		double feasibilityTol = mSettings.getFeasibilityTolerance();
-		double intFeasTol = mSettings.getIntegralityTolerance();
 
 		if (mCostCriterion == CostCriterion.TOTAL_COST) {
-			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints, feasibilityTol, intFeasTol);
+			SSPSolver solver = new SSPSolver(explicitMDP, softConstraints, hardConstraints, mSettings);
 			solution = solver.solveOptimalPolicy(policyMatrix);
 		} else if (mCostCriterion == CostCriterion.AVERAGE_COST) {
 			AverageCostMDPSolver solver = new AverageCostMDPSolver(explicitMDP, softConstraints, hardConstraints,
-					feasibilityTol, intFeasTol);
+					mSettings);
 			solution = solver.solveOptimalPolicy(policyMatrix);
 		}
 

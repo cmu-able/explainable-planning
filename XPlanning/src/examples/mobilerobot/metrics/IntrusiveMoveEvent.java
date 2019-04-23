@@ -41,9 +41,10 @@ public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDom
 	}
 
 	@Override
-	public boolean hasEventOccurred(Transition<MoveToAction, IntrusivenessDomain> transition)
+	public double getEventProbability(Transition<MoveToAction, IntrusivenessDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
-		return mDomain.getArea(transition).equals(getArea());
+		Area destArea = mDomain.getArea(transition);
+		return destArea == getArea() ? 1 : 0;
 	}
 
 	@Override

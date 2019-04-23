@@ -1,14 +1,17 @@
 package examples.mobilerobot.metrics;
 
+import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
-import examples.mobilerobot.models.RobotBumped;
+import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
 import language.domain.metrics.TransitionStructure;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
+import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarClass;
 
@@ -19,28 +22,30 @@ public class CollisionDomain implements ITransitionStructure<MoveToAction> {
 	 */
 	private volatile int hashCode;
 
+	private StateVarDefinition<Location> mrLocSrcDef;
 	private StateVarDefinition<RobotSpeed> mrSpeedSrcDef;
-	private StateVarDefinition<RobotBumped> mrBumpedDestDef;
 
 	private TransitionStructure<MoveToAction> mDomain = new TransitionStructure<>();
 
-	public CollisionDomain(StateVarDefinition<RobotSpeed> rSpeedSrcDef, ActionDefinition<MoveToAction> moveToDef,
-			StateVarDefinition<RobotBumped> rBumpedDestDef) {
+	public CollisionDomain(StateVarDefinition<Location> rLocSrcDef, StateVarDefinition<RobotSpeed> rSpeedSrcDef,
+			ActionDefinition<MoveToAction> moveToDef) {
+		mrLocSrcDef = rLocSrcDef;
 		mrSpeedSrcDef = rSpeedSrcDef;
-		mrBumpedDestDef = rBumpedDestDef;
 
+		mDomain.addSrcStateVarDef(rLocSrcDef);
 		mDomain.addSrcStateVarDef(rSpeedSrcDef);
 		mDomain.setActionDef(moveToDef);
-		mDomain.addDestStateVarDef(rBumpedDestDef);
 	}
 
 	public RobotSpeed getRobotSpeed(Transition<MoveToAction, CollisionDomain> transition) throws VarNotFoundException {
 		return transition.getSrcStateVarValue(RobotSpeed.class, mrSpeedSrcDef);
 	}
 
-	public RobotBumped getRobotBumped(Transition<MoveToAction, CollisionDomain> transition)
-			throws VarNotFoundException {
-		return transition.getDestStateVarValue(RobotBumped.class, mrBumpedDestDef);
+	public Occlusion getOcclusion(Transition<MoveToAction, CollisionDomain> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException {
+		Location srcLoc = transition.getSrcStateVarValue(Location.class, mrLocSrcDef);
+		StateVar<Location> rLocSrc = mrLocSrcDef.getStateVar(srcLoc);
+		return transition.getAction().getOcclusion(rLocSrc);
 	}
 
 	@Override

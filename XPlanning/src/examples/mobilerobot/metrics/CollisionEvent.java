@@ -1,10 +1,11 @@
 package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.models.MoveToAction;
-import examples.mobilerobot.models.RobotBumped;
+import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotSpeed;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.Transition;
+import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 
 /**
@@ -15,6 +16,10 @@ import language.exceptions.VarNotFoundException;
  *
  */
 public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
+
+	private static final double BUMP_PROB_CLEAR = 0.0;
+	private static final double BUMP_PROB_PARTIALLY_OCCLUDED = 0.2;
+	private static final double BUMP_PROB_OCCLUDED = 0.4;
 
 	public static final String NAME = "collision";
 
@@ -46,10 +51,19 @@ public class CollisionEvent implements IEvent<MoveToAction, CollisionDomain> {
 	}
 
 	@Override
-	public boolean hasEventOccurred(Transition<MoveToAction, CollisionDomain> transition) throws VarNotFoundException {
+	public double getEventProbability(Transition<MoveToAction, CollisionDomain> transition)
+			throws VarNotFoundException, AttributeNameNotFoundException {
 		RobotSpeed speed = mDomain.getRobotSpeed(transition);
-		RobotBumped bumped = mDomain.getRobotBumped(transition);
-		return speed.getSpeed() > getSpeedThreshold() && bumped.hasBumped();
+		Occlusion occlusion = mDomain.getOcclusion(transition);
+		int unsafeSpeed = speed.getSpeed() > getSpeedThreshold() ? 1 : 0;
+		if (occlusion == Occlusion.CLEAR) {
+			return unsafeSpeed * BUMP_PROB_CLEAR;
+		} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
+			return unsafeSpeed * BUMP_PROB_PARTIALLY_OCCLUDED;
+		} else if (occlusion == Occlusion.OCCLUDED) {
+			return unsafeSpeed * BUMP_PROB_OCCLUDED;
+		}
+		throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 	}
 
 	@Override

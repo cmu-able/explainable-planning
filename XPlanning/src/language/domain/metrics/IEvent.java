@@ -16,6 +16,6 @@ public interface IEvent<E extends IAction, T extends ITransitionStructure<E>> {
 
 	public T getTransitionStructure();
 
-	public boolean hasEventOccurred(Transition<E, T> transition)
+	public double getEventProbability(Transition<E, T> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException;
 }

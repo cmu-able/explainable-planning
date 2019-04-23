@@ -48,14 +48,14 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 	}
 
 	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException {
+		double expectedValue = 0.0;
 		for (Entry<S, Double> e : mMetric.entrySet()) {
 			S event = e.getKey();
-			Double value = e.getValue();
-			if (event.hasEventOccurred(transition)) {
-				return value;
-			}
+			Double eventValue = e.getValue();
+
+			expectedValue += event.getEventProbability(transition) * eventValue;
 		}
-		return 0;
+		return expectedValue;
 	}
 
 	@Override

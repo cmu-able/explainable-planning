@@ -45,7 +45,7 @@ public class CountQFunction<E extends IAction, T extends ITransitionStructure<E>
 
 	@Override
 	public double getValue(Transition<E, T> transition) throws VarNotFoundException, AttributeNameNotFoundException {
-		return mEvent.hasEventOccurred(transition) ? 1 : 0;
+		return mEvent.getEventProbability(transition);
 	}
 
 	@Override

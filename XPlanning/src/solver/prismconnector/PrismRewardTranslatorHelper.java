@@ -263,7 +263,7 @@ public class PrismRewardTranslatorHelper {
 			@Override
 			public double evaluate(Transition<E, T> transition)
 					throws VarNotFoundException, AttributeNameNotFoundException {
-				return event.hasEventOccurred(transition) ? 1 : 0;
+				return event.getEventProbability(transition);
 			}
 		};
 		return buildRewardStructure(rewardName, eventStructure, actionPSO, evaluator);

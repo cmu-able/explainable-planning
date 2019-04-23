@@ -54,41 +54,27 @@ public class PolicyJSONToGraphViz {
 		ISetSpeedLabelFormatter setSpeedLabelFormatter = decisionJsonObj -> {
 			double targetSpeed = PolicyJSONParserUtils.parseDoubleActionParameter(0, decisionJsonObj);
 			String actionLabel = "setSpeed(" + targetSpeed + ")";
-			String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
-			return rBumpedCond == null ? actionLabel : actionLabel + " | " + rBumpedCond;
+
+			if (PolicyJSONParserUtils.containsVar(R_BUMPED, decisionJsonObj)) {
+				String rBumpedCond = createrBumpedConditionLabel(decisionJsonObj, policyJsonArray);
+				return rBumpedCond == null ? actionLabel : actionLabel + " | " + rBumpedCond;
+			}
+
+			return actionLabel;
 		};
 
 		if (withMap) {
 			MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
 			policyGraph = mapToGraph.convertMapJsonToGraph();
-			moveToLinkFormatter = decisionJsonObj -> {
-				String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
-				MutableNode destNode = mutNode(destLoc);
-				Link moveToLink = to(destNode).with(Style.lineWidth(MOVE_TO_LINE_WIDTH));
-				addrSpeedLinkColor(moveToLink, decisionJsonObj);
-				addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
-				return moveToLink;
-			};
+			moveToLinkFormatter = decisionJsonObj -> createMoveToLinkWithMap(decisionJsonObj, policyJsonArray);
 		} else {
 			MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());
 			MapTopology map = mapReader.readMapTopology(mapJsonFile);
 			JSONObject mapJsonObj = (JSONObject) mJsonParser.parse(new FileReader(mapJsonFile));
 			double mur = JSONSimpleParserUtils.parseDouble(mapJsonObj, "mur");
 			policyGraph = mutGraph("policy").setDirected(true);
-			moveToLinkFormatter = decisionJsonObj -> {
-				String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
-				String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
-				MutableNode srcNode = mutNode(rLoc);
-				MutableNode destNode = mutNode(destLoc);
-				setNodePosition(srcNode, map, mur);
-				setNodePosition(destNode, map, mur);
-				mGraphRenderer.setNodeStyle(srcNode);
-				mGraphRenderer.setNodeStyle(destNode);
-				Link moveToLink = to(destNode);
-				addrSpeedLinkColor(moveToLink, decisionJsonObj);
-				addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
-				return moveToLink;
-			};
+			moveToLinkFormatter = decisionJsonObj -> createMoveToLinkWithoutMap(decisionJsonObj, policyJsonArray, map,
+					mur);
 		}
 
 		for (Object obj : policyJsonArray) {
@@ -103,6 +89,39 @@ public class PolicyJSONToGraphViz {
 		}
 
 		return policyGraph;
+	}
+
+	private Link createMoveToLinkWithMap(JSONObject decisionJsonObj, JSONArray policyJsonArray) {
+		String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
+		MutableNode destNode = mutNode(destLoc);
+		Link moveToLink = to(destNode).with(Style.lineWidth(MOVE_TO_LINE_WIDTH));
+		addrSpeedLinkColor(moveToLink, decisionJsonObj);
+
+		if (PolicyJSONParserUtils.containsVar(R_BUMPED, decisionJsonObj)) {
+			addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
+		}
+
+		return moveToLink;
+	}
+
+	private Link createMoveToLinkWithoutMap(JSONObject decisionJsonObj, JSONArray policyJsonArray, MapTopology map,
+			double mur) throws NodeIDNotFoundException {
+		String rLoc = PolicyJSONParserUtils.parseStringVar(R_LOC, decisionJsonObj);
+		String destLoc = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
+		MutableNode srcNode = mutNode(rLoc);
+		MutableNode destNode = mutNode(destLoc);
+		setNodePosition(srcNode, map, mur);
+		setNodePosition(destNode, map, mur);
+		mGraphRenderer.setNodeStyle(srcNode);
+		mGraphRenderer.setNodeStyle(destNode);
+		Link moveToLink = to(destNode);
+		addrSpeedLinkColor(moveToLink, decisionJsonObj);
+
+		if (PolicyJSONParserUtils.containsVar(R_BUMPED, decisionJsonObj)) {
+			addNecessaryrBumpedConditionLabel(moveToLink, decisionJsonObj, policyJsonArray);
+		}
+
+		return moveToLink;
 	}
 
 	private void addrSpeedLinkColor(Link moveToLink, JSONObject decisionJsonObj) {

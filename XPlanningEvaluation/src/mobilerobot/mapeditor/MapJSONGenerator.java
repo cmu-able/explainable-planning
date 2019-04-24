@@ -16,17 +16,24 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class MapJSONGenerator {
 
-	private static final String RESOURCE_FILE_NAME = "GHC7-waypoints.csv";
-	private static final String OUTPUT_FILE_NAME = "GHC7-map.json";
+	private static final String MAP_FILE_NAME = "GHC7-waypoints.csv";
 
 	private static final String MUR_KEY = "mur";
 	private static final String MAP_KEY = "map";
 
 	public static void main(String[] args) throws URISyntaxException, IOException {
-		File csvFile = FileIOUtils.getFile(MapJSONGenerator.class, FileIOUtils.MAPS_RESOURCE_PATH, RESOURCE_FILE_NAME);
-		List<String> csvLines = readLines(csvFile);
+		String mapFilename;
+		if (args.length > 0) {
+			mapFilename = args[0];
+		} else {
+			mapFilename = MAP_FILE_NAME;
+		}
+		String outputFilename = mapFilename.replace("waypoints", "map").replace("csv", "json");
+
+		File mapCsvFile = FileIOUtils.getMapFile(MapJSONGenerator.class, mapFilename);
+		List<String> csvLines = readLines(mapCsvFile);
 		JSONObject mapJSONObj = convertCSVLinesToJSON(csvLines);
-		File outputFile = FileIOUtils.createOutputFile(OUTPUT_FILE_NAME);
+		File outputFile = FileIOUtils.createOutputFile(outputFilename);
 		FileIOUtils.prettyPrintJSONObjectToFile(mapJSONObj, outputFile);
 	}
 

@@ -27,7 +27,6 @@ import language.objectives.CostCriterion;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.gurobiconnector.GRBConnectorSettings;
-import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.PrismDTMCTranslator;
@@ -150,8 +149,7 @@ public class MobileRobotAlternativeExplorerTest {
 			ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 			PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
 					encodings);
-			GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
-					GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+			GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
 			GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.TOTAL_COST, grbConnSettings);
 
 			// Compute optimal policy

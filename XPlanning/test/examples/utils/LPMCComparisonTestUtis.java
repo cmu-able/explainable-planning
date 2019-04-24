@@ -22,7 +22,6 @@ import language.policy.Policy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.gurobiconnector.GRBConnectorSettings;
-import solver.gurobiconnector.GRBSolverUtils;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
@@ -53,8 +52,7 @@ public class LPMCComparisonTestUtis {
 				encodings);
 
 		// Create GRB connector
-		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
-				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
 		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, grbConnSettings);
 
 		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, equalityTol);
@@ -106,8 +104,7 @@ public class LPMCComparisonTestUtis {
 				encodings);
 
 		// Create GRB connector
-		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader,
-				GRBSolverUtils.DEFAULT_FEASIBILITY_TOL, GRBSolverUtils.DEFAULT_INT_FEAS_TOL);
+		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
 		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, grbConnSettings);
 
 		LPMCComparator comparator = new LPMCComparator(grbConnector, prismConnector, equalityTol);

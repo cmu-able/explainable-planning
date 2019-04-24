@@ -5,7 +5,7 @@
     {
       "scaling-const": 0.6,
       "min-step-value": 0.0,
-      "max-step-value": 33.92488701799425,
+      "max-step-value": 49.30248161986933,
       "objective": "travelTime"
     },
     {

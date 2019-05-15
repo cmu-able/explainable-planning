@@ -42,27 +42,25 @@ public class MissionJSONGenerator {
 	public Set<JSONObject> createAllMissions(File mapsDir, String startNodeID, String goalNodeID)
 			throws MapTopologyException, URISyntaxException, IOException, ParseException {
 		Set<JSONObject> allMissions = new HashSet<>();
-		for (File mapFile : mapsDir.listFiles()) {
-			String mapFilename = mapFile.getName();
+		for (File mapJsonFile : mapsDir.listFiles()) {
 			Set<Map<String, Integer>> combs = getAllScalingConstsCombinations();
 			for (Map<String, Integer> scalingConsts : combs) {
 				Map<String, Double> normScalingConsts = getNormalizedScalingConsts(scalingConsts);
-				JSONObject mission = createMissionJsonObject(mapFilename, startNodeID, goalNodeID, normScalingConsts);
+				JSONObject mission = createMissionJsonObject(mapJsonFile, startNodeID, goalNodeID, normScalingConsts);
 				allMissions.add(mission);
 			}
 		}
 		return allMissions;
 	}
 
-	public JSONObject createMissionJsonObject(String mapFilename, String startNodeID, String goalNodeID,
+	public JSONObject createMissionJsonObject(File mapJsonFile, String startNodeID, String goalNodeID,
 			Map<String, Double> scalingConsts)
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
 		JSONObject missionJsonObj = new JSONObject();
 		missionJsonObj.put("start-id", startNodeID);
 		missionJsonObj.put("goal-id", goalNodeID);
-		missionJsonObj.put("map-file", mapFilename);
+		missionJsonObj.put("map-file", mapJsonFile.getName());
 
-		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
 		MapTopology mapTopology = MapTopologyUtils.parseMapTopology(mapJsonFile, true);
 
 		JSONArray prefJsonArray = new JSONArray();
@@ -162,7 +160,14 @@ public class MissionJSONGenerator {
 		}
 
 		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
+		List<ObjectiveInfo> objectivesInfo = getDefaultObjectivesInfo();
 
+		MissionJSONGenerator missionGen = new MissionJSONGenerator(objectivesInfo);
+		Set<JSONObject> missionJsonObjs = missionGen.createAllMissions(mapsDir, startNodeID, goalNodeID);
+		writeMissionsToJSONFiles(FileIOUtils.getOutputDir(), missionJsonObjs);
+	}
+
+	public static List<ObjectiveInfo> getDefaultObjectivesInfo() {
 		IGetMaxStepValue getMaxStepTravelTime = new IGetMaxStepValue() {
 
 			@Override
@@ -181,20 +186,18 @@ public class MissionJSONGenerator {
 		objectivesInfo.add(collisionInfo);
 		objectivesInfo.add(intrusiveInfo);
 
-		MissionJSONGenerator missionGen = new MissionJSONGenerator(objectivesInfo);
-		Set<JSONObject> missionJsonObjs = missionGen.createAllMissions(mapsDir, startNodeID, goalNodeID);
-		writeMissionsToJSONFiles(missionJsonObjs);
+		return objectivesInfo;
 	}
 
-	private static final void writeMissionsToJSONFiles(Set<JSONObject> missionJsonObjs) throws IOException {
+	public static final void writeMissionsToJSONFiles(File outDir, Set<JSONObject> missionJsonObjs) throws IOException {
 		int i = 0;
 		for (JSONObject missionJsonObj : missionJsonObjs) {
 			String mapFilename = (String) missionJsonObj.get("map-file");
 			String mapName = FilenameUtils.removeExtension(mapFilename);
-			String outputSubDirname = "missions-of-" + mapName;
-			String outputFilename = FileIOUtils.insertIndexToFilename("mission.json", i);
-			File outputFile = FileIOUtils.createOutputFile(outputSubDirname, outputFilename);
-			FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outputFile);
+			String outSubDirname = "missions-of-" + mapName;
+			String outFilename = FileIOUtils.insertIndexToFilename("mission.json", i);
+			File outFile = FileIOUtils.createOutFile(outDir, outSubDirname, outFilename);
+			FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outFile);
 			i++;
 		}
 	}

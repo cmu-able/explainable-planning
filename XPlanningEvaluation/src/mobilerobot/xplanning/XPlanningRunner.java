@@ -3,7 +3,6 @@ package mobilerobot.xplanning;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 
 import examples.common.DSMException;
 import examples.common.Directories;
@@ -43,11 +42,7 @@ public class XPlanningRunner {
 
 	public static void main(String[] args) throws URISyntaxException, PrismException, IOException, XMDPException,
 			PrismConnectorException, GRBException, DSMException {
-		Path outputPath = FileIOUtils.getOutputDir().toPath();
-		Path policiesOutputPath = outputPath.resolve("policies");
-		Path explanationsOutputPath = outputPath.resolve("explanations");
-		Path prismOutputPath = outputPath.resolve("prism");
-		Directories outputDirs = new Directories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
+		Directories outputDirs = FileIOUtils.createXPlanningDirectories();
 
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		File missionsJsonRootDir;

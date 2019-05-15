@@ -4,20 +4,26 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+
+import examples.common.Directories;
 
 public class FileIOUtils {
 
@@ -119,6 +125,14 @@ public class FileIOUtils {
 		return outSubDir;
 	}
 
+	public static Directories createXPlanningDirectories() throws IOException {
+		Path outputPath = FileIOUtils.getOutputDir().toPath();
+		Path policiesOutputPath = outputPath.resolve(Directories.POLICIES_SUBDIR_NAME);
+		Path explanationsOutputPath = outputPath.resolve(Directories.EXPLANATIONS_SUBDIR_NAME);
+		Path prismOutputPath = outputPath.resolve(Directories.PRISM_SUBDIR_NAME);
+		return new Directories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
+	}
+
 	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, File outputFile) throws FileNotFoundException {
 		// Pretty-Print JSON
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -128,6 +142,12 @@ public class FileIOUtils {
 		try (PrintWriter out = new PrintWriter(new BufferedOutputStream(new FileOutputStream(outputFile)))) {
 			out.print(jsonStr);
 		}
+	}
+
+	public static JSONObject readJSONObjectFromFile(File jsonFile) throws IOException, ParseException {
+		FileReader reader = new FileReader(jsonFile);
+		JSONParser jsonParser = new JSONParser();
+		return (JSONObject) jsonParser.parse(reader);
 	}
 
 	public static String insertIndexToFilename(String originalFilename, int index) {

@@ -12,6 +12,10 @@ public class Directories {
 	public static final String EXPLANATIONS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
 	public static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism";
 
+	public static final String POLICIES_SUBDIR_NAME = "policies";
+	public static final String EXPLANATIONS_SUBDIR_NAME = "explanations";
+	public static final String PRISM_SUBDIR_NAME = "prism";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */

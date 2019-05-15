@@ -12,6 +12,10 @@ public class WADDPattern {
 
 	private Map<String, Double> mWeights = new HashMap<>();
 
+	public void putAllWeights(Map<String, Double> scalingConsts) {
+		mWeights.putAll(scalingConsts);
+	}
+
 	public void putWeight(String objectiveName, Double weight) {
 		mWeights.put(objectiveName, weight);
 	}

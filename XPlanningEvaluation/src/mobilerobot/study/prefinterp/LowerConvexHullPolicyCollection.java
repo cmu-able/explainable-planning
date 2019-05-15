@@ -3,7 +3,6 @@ package mobilerobot.study.prefinterp;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,11 +13,18 @@ import java.util.Set;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import examples.common.DSMException;
+import examples.common.Directories;
+import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
+import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
+import mobilerobot.utilities.MissionJSONParserUtils;
+import prism.PrismException;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 
@@ -31,10 +37,11 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 	 */
 	private volatile int hashCode;
 
-	private List<PolicyInfo> mPolicyInfos = new ArrayList<>();
+	private Map<WADDPattern, PolicyInfo> mPolicyInfos = new HashMap<>();
 
 	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID)
-			throws MapTopologyException, URISyntaxException, IOException, ParseException {
+			throws URISyntaxException, IOException, ParseException, ResultParsingException, DSMException, XMDPException,
+			PrismException {
 		createMissionJSONFiles(mapJsonFile, startNodeID, goalNodeID);
 		populateLowerConvexHullPolicies();
 	}
@@ -68,13 +75,31 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 		return scalingConsts;
 	}
 
-	private void populateLowerConvexHullPolicies() {
-		// TODO
+	private void populateLowerConvexHullPolicies() throws URISyntaxException, IOException, ResultParsingException,
+			DSMException, XMDPException, PrismException, ParseException {
+		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
+		Directories outputDirs = FileIOUtils.createXPlanningDirectories();
+		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
+		File missionsDir = FileIOUtils.getMissionsResourceDir(getClass());
+		for (File missionJsonFile : missionsDir.listFiles()) {
+			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
+
+			JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+			Map<String, Double> scalingConsts = MissionJSONParserUtils.parseScalingConsts(missionJsonObj);
+			WADDPattern waddPattern = new WADDPattern();
+			waddPattern.putAllWeights(scalingConsts);
+
+			mPolicyInfos.put(waddPattern, policyInfo);
+		}
+	}
+
+	public PolicyInfo getOptimalPolicyInfo(WADDPattern waddPattern) {
+		return mPolicyInfos.get(waddPattern);
 	}
 
 	@Override
 	public Iterator<PolicyInfo> iterator() {
-		return mPolicyInfos.iterator();
+		return mPolicyInfos.values().iterator();
 	}
 
 	@Override

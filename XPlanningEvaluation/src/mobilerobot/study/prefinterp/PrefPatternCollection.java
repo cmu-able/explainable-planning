@@ -1,6 +1,8 @@
 package mobilerobot.study.prefinterp;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,25 +17,26 @@ public class PrefPatternCollection implements Iterable<WADDPattern> {
 
 	private List<WADDPattern> mPrefPatterns = new ArrayList<>();
 
-	public PrefPatternCollection(List<String> objectiveNames, List<List<Double>> paramLists) {
+	public PrefPatternCollection(String[] objectiveNames, Double[][] paramLists) {
 		populatePrefPatterns(objectiveNames, paramLists);
 	}
 
-	private void populatePrefPatterns(List<String> objectiveNames, List<List<Double>> paramLists) {
-		for (List<Double> paramList : paramLists) {
-			PermutationIterator<Double> permIter = new PermutationIterator<>(paramList);
+	private void populatePrefPatterns(String[] objectiveNames, Double[][] paramLists) {
+		for (Double[] paramList : paramLists) {
+			Collection<Double> paramColl = Arrays.asList(paramList);
+			PermutationIterator<Double> permIter = new PermutationIterator<>(paramColl);
 			List<WADDPattern> waddPatterns = createWADDPatterns(objectiveNames, permIter);
 			mPrefPatterns.addAll(waddPatterns);
 		}
 	}
 
-	private List<WADDPattern> createWADDPatterns(List<String> objectiveNames, PermutationIterator<Double> permIter) {
+	private List<WADDPattern> createWADDPatterns(String[] objectiveNames, PermutationIterator<Double> permIter) {
 		List<WADDPattern> waddPatterns = new ArrayList<>();
 		while (permIter.hasNext()) {
 			List<Double> perm = permIter.next();
 			WADDPattern waddPattern = new WADDPattern();
-			for (int i = 0; i < objectiveNames.size(); i++) {
-				String objectiveName = objectiveNames.get(i);
+			for (int i = 0; i < objectiveNames.length; i++) {
+				String objectiveName = objectiveNames[i];
 				double weight = perm.get(i);
 				waddPattern.putWeight(objectiveName, weight);
 			}

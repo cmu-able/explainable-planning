@@ -32,6 +32,7 @@ import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.PrismConnectorException;
+import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.ExplanationWriter;
 
 public class MobileRobotDemo {
@@ -46,7 +47,7 @@ public class MobileRobotDemo {
 		mOutputDirs = outputDirs;
 	}
 
-	public void run(File missionJsonFile)
+	public void runXPlanning(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
@@ -80,6 +81,25 @@ public class MobileRobotDemo {
 		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());
 	}
 
+	public PolicyInfo runPlanning(File missionJsonFile)
+			throws DSMException, XMDPException, PrismException, IOException, ResultParsingException {
+		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
+		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
+
+		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
+
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+				advOutputPath.toString());
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
+
+		// Close down PRISM
+		prismConnector.terminate();
+
+		return policyInfo;
+	}
+
 	public static void main(String[] args)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionFilename = args[0];
@@ -92,7 +112,7 @@ public class MobileRobotDemo {
 		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
-		demo.run(missionJsonFile);
+		demo.runXPlanning(missionJsonFile);
 	}
 
 	public static Vocabulary getVocabulary(XMDP xmdp) {

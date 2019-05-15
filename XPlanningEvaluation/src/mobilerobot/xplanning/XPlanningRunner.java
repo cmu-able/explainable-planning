@@ -33,7 +33,7 @@ public class XPlanningRunner {
 	public void runAllMissions(File dirOrFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		if (!dirOrFile.isDirectory()) {
-			mDemo.run(dirOrFile);
+			mDemo.runXPlanning(dirOrFile);
 		} else {
 			for (File subDirOrFile : dirOrFile.listFiles()) {
 				runAllMissions(subDirOrFile);

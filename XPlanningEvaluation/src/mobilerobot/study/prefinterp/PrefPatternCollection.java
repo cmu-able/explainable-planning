@@ -3,14 +3,17 @@ package mobilerobot.study.prefinterp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.collections4.iterators.PermutationIterator;
 
 public class PrefPatternCollection implements Iterable<WADDPattern> {
 
+	/*
+	 * Cached hashCode -- Effective Java
+	 */
+	private volatile int hashCode;
+
 	private List<WADDPattern> mPrefPatterns = new ArrayList<>();
-	private Random mRandom = new Random(0L);
 
 	public PrefPatternCollection(List<String> objectiveNames, List<List<Double>> paramLists) {
 		populatePrefPatterns(objectiveNames, paramLists);
@@ -39,14 +42,31 @@ public class PrefPatternCollection implements Iterable<WADDPattern> {
 		return waddPatterns;
 	}
 
-	public WADDPattern getRandomPrefPattern() {
-		int i = mRandom.nextInt(mPrefPatterns.size());
-		return mPrefPatterns.get(i);
-	}
-
 	@Override
 	public Iterator<WADDPattern> iterator() {
 		return mPrefPatterns.iterator();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof PrefPatternCollection)) {
+			return false;
+		}
+		PrefPatternCollection coll = (PrefPatternCollection) obj;
+		return coll.mPrefPatterns.equals(mPrefPatterns);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mPrefPatterns.hashCode();
+			hashCode = result;
+		}
+		return hashCode;
+	}
 }

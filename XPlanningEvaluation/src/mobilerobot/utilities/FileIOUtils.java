@@ -71,22 +71,52 @@ public class FileIOUtils {
 		return new File(OUTPUT_PATH);
 	}
 
+	/**
+	 * Create an output file at /output/{outputFilename}.
+	 * 
+	 * @param outputFilename
+	 * @return Output file at /output/{outputFilename}
+	 * @throws IOException
+	 */
 	public static File createOutputFile(String outputFilename) throws IOException {
 		// Create /output/ directory if not already exist
 		Files.createDirectories(Paths.get(OUTPUT_PATH));
 		return new File(OUTPUT_PATH, outputFilename);
 	}
 
+	/**
+	 * Create an output file at /output/{outputSubDirname}/{outputFilename}.
+	 * 
+	 * @param outputSubDirname
+	 * @param outputFilename
+	 * @return Output file at /output/{outputSubDirname}/{outputFilename}
+	 * @throws IOException
+	 */
 	public static File createOutputFile(String outputSubDirname, String outputFilename) throws IOException {
-		// Create /output/subdir/ if not already exist
-		File outputSubDir = createOutputSubDir(outputSubDirname);
+		// Create /output/{outputSubDirname}/ if not already exist
+		File outputSubDir = createOutSubDir(getOutputDir(), outputSubDirname);
 		return new File(outputSubDir, outputFilename);
 	}
 
-	private static File createOutputSubDir(String outputSubDirname) throws IOException {
-		File outputSubDir = new File(OUTPUT_PATH, outputSubDirname);
-		Files.createDirectories(outputSubDir.toPath());
-		return outputSubDir;
+	/**
+	 * Create an out file at /{outDir}/{outSubDirname}/{outFilename}.
+	 * 
+	 * @param outDir
+	 * @param outSubDirname
+	 * @param outFilename
+	 * @return Out file at /{outDir}/{outSubDirname}/{outFilename}
+	 * @throws IOException
+	 */
+	public static File createOutFile(File outDir, String outSubDirname, String outFilename) throws IOException {
+		// Create /{outDir}/{outSubDirname}/ if not already exist
+		File outSubDir = createOutSubDir(outDir, outSubDirname);
+		return new File(outSubDir, outFilename);
+	}
+
+	private static File createOutSubDir(File outDir, String outSubDirname) throws IOException {
+		File outSubDir = new File(outDir, outSubDirname);
+		Files.createDirectories(outSubDir.toPath());
+		return outSubDir;
 	}
 
 	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, File outputFile) throws FileNotFoundException {

@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -25,11 +26,10 @@ import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
-import mobilerobot.utilities.MissionJSONParserUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
-public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
+public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, PolicyInfo>> {
 
 	private static final String[] OBJECTIVE_NAMES = { "travelTime", "collision", "intrusiveness" };
 	private static final Double[][] PARAM_LISTS = { { 0.6, 0.3, 0.1 }, { 0.6, 0.2, 0.2 }, { 0.4, 0.4, 0.2 },
@@ -40,7 +40,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 	 */
 	private volatile int hashCode;
 
-	private Map<WADDPattern, PolicyInfo> mPolicyInfos = new HashMap<>();
+	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
 
 	// For random policy selection: indexed unique policies
 	private List<Policy> mIndexedUniquePolicies = new ArrayList<>();
@@ -48,14 +48,16 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 	// For random policy selection: random number generator with seed
 	private Random mRandom = new Random(0L);
 
-	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID)
-			throws URISyntaxException, IOException, ParseException, ResultParsingException, DSMException, XMDPException,
-			PrismException {
-		createMissionJSONFiles(mapJsonFile, startNodeID, goalNodeID);
+	private int mNextMissionIndex;
+
+	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID,
+			int startMissionIndex) throws URISyntaxException, IOException, ParseException, ResultParsingException,
+			DSMException, XMDPException, PrismException {
+		createMissionJSONFiles(mapJsonFile, startNodeID, goalNodeID, startMissionIndex);
 		populateLowerConvexHullPolicies();
 	}
 
-	private void createMissionJSONFiles(File mapJsonFile, String startNodeID, String goalNodeID)
+	private void createMissionJSONFiles(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
 			throws MapTopologyException, URISyntaxException, IOException, ParseException {
 		List<ObjectiveInfo> objectivesInfo = MissionJSONGenerator.getDefaultObjectivesInfo();
 		MissionJSONGenerator missionGenerator = new MissionJSONGenerator(objectivesInfo);
@@ -73,7 +75,8 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 		}
 
 		File missionsDir = FileIOUtils.getMissionsResourceDir(getClass());
-		MissionJSONGenerator.writeMissionsToJSONFiles(missionsDir, missionJsonObjs);
+		mNextMissionIndex = MissionJSONGenerator.writeMissionsToJSONFiles(missionsDir, missionJsonObjs,
+				startMissionIndex);
 	}
 
 	private Map<String, Double> convertWADDToScalingConsts(WADDPattern waddPattern) {
@@ -85,20 +88,17 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 	}
 
 	private void populateLowerConvexHullPolicies() throws URISyntaxException, IOException, ResultParsingException,
-			DSMException, XMDPException, PrismException, ParseException {
+			DSMException, XMDPException, PrismException {
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		Directories outputDirs = FileIOUtils.createXPlanningDirectories();
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		File missionsDir = FileIOUtils.getMissionsResourceDir(getClass());
 		for (File missionJsonFile : missionsDir.listFiles()) {
+			// Run planning using mission.json as input
 			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
 
-			JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
-			Map<String, Double> scalingConsts = MissionJSONParserUtils.parseScalingConsts(missionJsonObj);
-			WADDPattern waddPattern = new WADDPattern();
-			waddPattern.putAllWeights(scalingConsts);
-
-			mPolicyInfos.put(waddPattern, policyInfo);
+			// Keep track of mission file that generates each lower-convex-hull policy
+			mPolicyInfos.put(missionJsonFile, policyInfo);
 
 			// Append a new unique policy to the list for random selection
 			Policy policy = policyInfo.getPolicy();
@@ -108,13 +108,15 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 		}
 	}
 
-	public PolicyInfo getOptimalPolicyInfo(WADDPattern waddPattern) {
-		return mPolicyInfos.get(waddPattern);
+	public int getNextMissionIndex() {
+		return mNextMissionIndex;
 	}
 
-	public Set<Policy> randomlySelectUniquePolicies(int numPolicies) {
+	public Set<Policy> randomlySelectUniquePolicies(int numPolicies, Policy iniPolicy) {
 		Set<Policy> uniqueRandomPolicies = new HashSet<>();
-		for (int i = 0; i < numPolicies; i++) {
+		uniqueRandomPolicies.add(iniPolicy);
+
+		for (int i = 1; i < numPolicies; i++) {
 			Policy randomPolicy;
 			do {
 				int policyIndex = mRandom.nextInt(mIndexedUniquePolicies.size());
@@ -126,9 +128,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 		return uniqueRandomPolicies;
 	}
 
+	/**
+	 * Iterator over pairs of mission JSON file and its solution policy info.
+	 */
 	@Override
-	public Iterator<PolicyInfo> iterator() {
-		return mPolicyInfos.values().iterator();
+	public Iterator<Entry<File, PolicyInfo>> iterator() {
+		return mPolicyInfos.entrySet().iterator();
 	}
 
 	@Override

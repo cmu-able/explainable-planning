@@ -164,7 +164,7 @@ public class MissionJSONGenerator {
 
 		MissionJSONGenerator missionGen = new MissionJSONGenerator(objectivesInfo);
 		Set<JSONObject> missionJsonObjs = missionGen.createAllMissions(mapsDir, startNodeID, goalNodeID);
-		writeMissionsToJSONFiles(FileIOUtils.getOutputDir(), missionJsonObjs, 0);
+		writeMissionsToJSONFiles(missionJsonObjs, 0);
 	}
 
 	public static List<ObjectiveInfo> getDefaultObjectivesInfo() {
@@ -190,23 +190,22 @@ public class MissionJSONGenerator {
 	}
 
 	/**
-	 * Write missions to .json files, with filenames starting from the given starting index.
+	 * Write missions as .json files to /output/, with filenames starting from the given starting index.
 	 * 
-	 * @param outDir
 	 * @param missionJsonObjs
 	 * @param startMissionIndex
 	 * @return Next mission index
 	 * @throws IOException
 	 */
-	public static final int writeMissionsToJSONFiles(File outDir, Set<JSONObject> missionJsonObjs,
-			int startMissionIndex) throws IOException {
+	public static final int writeMissionsToJSONFiles(Set<JSONObject> missionJsonObjs, int startMissionIndex)
+			throws IOException {
 		int i = startMissionIndex;
 		for (JSONObject missionJsonObj : missionJsonObjs) {
 			String mapFilename = (String) missionJsonObj.get("map-file");
 			String mapName = FilenameUtils.removeExtension(mapFilename);
 			String outSubDirname = "missions-of-" + mapName;
 			String outFilename = FileIOUtils.insertIndexToFilename("mission.json", i);
-			File outFile = FileIOUtils.createOutFile(outDir, outSubDirname, outFilename);
+			File outFile = FileIOUtils.createOutputFile(outSubDirname, outFilename);
 			FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outFile);
 			i++;
 		}

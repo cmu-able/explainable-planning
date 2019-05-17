@@ -25,11 +25,9 @@ public class PrefInterpQuestionGenerator {
 
 	private static final int DEFAULT_NUM_MULTI_CHOICE = 5;
 
-	private File mQuestionsDir;
 	private int mNumMultiChoicePolicies;
 
-	public PrefInterpQuestionGenerator(File questionsDir, int numMultiChoicePolicies) {
-		mQuestionsDir = questionsDir;
+	public PrefInterpQuestionGenerator(int numMultiChoicePolicies) {
 		mNumMultiChoicePolicies = numMultiChoicePolicies;
 	}
 
@@ -60,11 +58,12 @@ public class PrefInterpQuestionGenerator {
 	}
 
 	private void createQuestionDir(File missionFile, Set<Policy> multiChoicePolicies) throws IOException {
+		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
 		// Create question sub-directory: /questions/question-missionX/
 		String questionSubDirname = "question-" + missionName;
-		File questionSubDir = FileIOUtils.createOutSubDir(mQuestionsDir, questionSubDirname);
+		File questionSubDir = FileIOUtils.createOutSubDir(outputDir, questionSubDirname);
 
 		// Copy missionX.json file from /missions/missions-of-{mapName}/ to /questions/question-missionX/
 		// Note: missionX name is unique across all maps
@@ -93,10 +92,9 @@ public class PrefInterpQuestionGenerator {
 			goalNodeID = MissionJSONGenerator.DEFAULT_GOAL_NODE_ID;
 		}
 
-		File questionsDir = FileIOUtils.getResourceDir(PrefInterpQuestionGenerator.class, "questions");
 		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 
-		PrefInterpQuestionGenerator generator = new PrefInterpQuestionGenerator(questionsDir, DEFAULT_NUM_MULTI_CHOICE);
+		PrefInterpQuestionGenerator generator = new PrefInterpQuestionGenerator(DEFAULT_NUM_MULTI_CHOICE);
 		generator.generateAllPrefInterpQuestions(mapsDir, startNodeID, goalNodeID);
 	}
 

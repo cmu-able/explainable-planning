@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -49,10 +50,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private Random mRandom = new Random(0L);
 
 	private int mNextMissionIndex;
+	private String mMapName;
 
 	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID,
 			int startMissionIndex) throws URISyntaxException, IOException, ParseException, ResultParsingException,
 			DSMException, XMDPException, PrismException {
+		mMapName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		createMissionJSONFiles(mapJsonFile, startNodeID, goalNodeID, startMissionIndex);
 		populateLowerConvexHullPolicies();
 	}
@@ -74,9 +77,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 			missionJsonObjs.add(missionJsonObj);
 		}
 
-		File missionsDir = FileIOUtils.getMissionsResourceDir(getClass());
-		mNextMissionIndex = MissionJSONGenerator.writeMissionsToJSONFiles(missionsDir, missionJsonObjs,
-				startMissionIndex);
+		mNextMissionIndex = MissionJSONGenerator.writeMissionsToJSONFiles(missionJsonObjs, startMissionIndex);
 	}
 
 	private Map<String, Double> convertWADDToScalingConsts(WADDPattern waddPattern) {
@@ -92,8 +93,9 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		Directories outputDirs = FileIOUtils.createXPlanningDirectories();
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
-		File missionsDir = FileIOUtils.getMissionsResourceDir(getClass());
-		for (File missionJsonFile : missionsDir.listFiles()) {
+		File outputDir = FileIOUtils.getOutputDir();
+		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);
+		for (File missionJsonFile : missionsOfMapDir.listFiles()) {
 			// Run planning using mission.json as input
 			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
 

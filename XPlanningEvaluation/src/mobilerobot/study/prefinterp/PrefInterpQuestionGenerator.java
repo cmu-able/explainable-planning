@@ -61,15 +61,15 @@ public class PrefInterpQuestionGenerator {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
-		// Create question sub-directory: /questions/question-missionX/
+		// Create question sub-directory: /output/question-missionX/
 		String questionSubDirname = "question-" + missionName;
 		File questionSubDir = FileIOUtils.createOutSubDir(outputDir, questionSubDirname);
 
-		// Copy missionX.json file from /missions/missions-of-{mapName}/ to /questions/question-missionX/
+		// Copy missionX.json file from /output/missions-of-{mapName}/ to /output/question-missionX/
 		// Note: missionX name is unique across all maps
 		Files.copy(missionFile.toPath(), questionSubDir.toPath().resolve(missionFile.getName()));
 
-		// Write all multiple-choice policies as json files at /questions/question-missionX/
+		// Write all multiple-choice policies as json files at /output/question-missionX/
 		int i = 0;
 		for (Policy choicePolicy : multiChoicePolicies) {
 			JSONObject choicePolicyJsonObj = PolicyWriter.writePolicyJSONObject(choicePolicy);

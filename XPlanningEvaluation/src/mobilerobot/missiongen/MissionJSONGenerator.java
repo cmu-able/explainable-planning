@@ -30,8 +30,8 @@ import mobilerobot.utilities.MapTopologyUtils;
 
 public class MissionJSONGenerator {
 
-	private static final String START_NODE_ID = "L1";
-	private static final String GOAL_NODE_ID = "L32";
+	public static final String DEFAULT_START_NODE_ID = "L1";
+	public static final String DEFAULT_GOAL_NODE_ID = "L32";
 
 	private List<ObjectiveInfo> mObjectivesInfo;
 
@@ -155,8 +155,8 @@ public class MissionJSONGenerator {
 			startNodeID = args[0];
 			goalNodeID = args[1];
 		} else {
-			startNodeID = START_NODE_ID;
-			goalNodeID = GOAL_NODE_ID;
+			startNodeID = DEFAULT_START_NODE_ID;
+			goalNodeID = DEFAULT_GOAL_NODE_ID;
 		}
 
 		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
@@ -164,7 +164,7 @@ public class MissionJSONGenerator {
 
 		MissionJSONGenerator missionGen = new MissionJSONGenerator(objectivesInfo);
 		Set<JSONObject> missionJsonObjs = missionGen.createAllMissions(mapsDir, startNodeID, goalNodeID);
-		writeMissionsToJSONFiles(FileIOUtils.getOutputDir(), missionJsonObjs);
+		writeMissionsToJSONFiles(FileIOUtils.getOutputDir(), missionJsonObjs, 0);
 	}
 
 	public static List<ObjectiveInfo> getDefaultObjectivesInfo() {
@@ -189,8 +189,18 @@ public class MissionJSONGenerator {
 		return objectivesInfo;
 	}
 
-	public static final void writeMissionsToJSONFiles(File outDir, Set<JSONObject> missionJsonObjs) throws IOException {
-		int i = 0;
+	/**
+	 * Write missions to .json files, with filenames starting from the given starting index.
+	 * 
+	 * @param outDir
+	 * @param missionJsonObjs
+	 * @param startMissionIndex
+	 * @return Next mission index
+	 * @throws IOException
+	 */
+	public static final int writeMissionsToJSONFiles(File outDir, Set<JSONObject> missionJsonObjs,
+			int startMissionIndex) throws IOException {
+		int i = startMissionIndex;
 		for (JSONObject missionJsonObj : missionJsonObjs) {
 			String mapFilename = (String) missionJsonObj.get("map-file");
 			String mapName = FilenameUtils.removeExtension(mapFilename);
@@ -200,5 +210,6 @@ public class MissionJSONGenerator {
 			FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, outFile);
 			i++;
 		}
+		return i;
 	}
 }

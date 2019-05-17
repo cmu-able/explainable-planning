@@ -68,7 +68,7 @@ public class FileIOUtils {
 		return getResourceDir(callerClass, POLICIES_RESOURCE_PATH);
 	}
 
-	private static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {
+	public static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {
 		URL resourceFolderURL = callerClass.getResource(resourcePath);
 		return new File(resourceFolderURL.toURI());
 	}
@@ -78,7 +78,7 @@ public class FileIOUtils {
 	}
 
 	/**
-	 * Create an output file at /output/{outputFilename}.
+	 * Create an output file at /output/{outputFilename}. Create /output/ if not already exist.
 	 * 
 	 * @param outputFilename
 	 * @return Output file at /output/{outputFilename}
@@ -91,7 +91,7 @@ public class FileIOUtils {
 	}
 
 	/**
-	 * Create an output file at /output/{outputSubDirname}/{outputFilename}.
+	 * Create an output file at /output/{outputSubDirname}/{outputFilename}. Create outputSubDir if not already exist.
 	 * 
 	 * @param outputSubDirname
 	 * @param outputFilename
@@ -105,7 +105,21 @@ public class FileIOUtils {
 	}
 
 	/**
-	 * Create an out file at /{outDir}/{outSubDirname}/{outFilename}.
+	 * Create an out file at /{outDir}/{outFilename}. Create outDir if not already exist.
+	 * 
+	 * @param outDir
+	 * @param outFilename
+	 * @return Out file at /{outDir}/{outFilename}
+	 * @throws IOException
+	 */
+	public static File createOutFile(File outDir, String outFilename) throws IOException {
+		// Create /outDir/ if not already exist
+		Files.createDirectories(outDir.toPath());
+		return new File(outDir, outFilename);
+	}
+
+	/**
+	 * Create an out file at /{outDir}/{outSubDirname}/{outFilename}. Create outSubDir if not already exist.
 	 * 
 	 * @param outDir
 	 * @param outSubDirname
@@ -119,7 +133,15 @@ public class FileIOUtils {
 		return new File(outSubDir, outFilename);
 	}
 
-	private static File createOutSubDir(File outDir, String outSubDirname) throws IOException {
+	/**
+	 * Create an out sub-directory at /{outDir}/{outSubDirname}/.
+	 * 
+	 * @param outDir
+	 * @param outSubDirname
+	 * @return Out sub-directory at /{outDir}/{outSubDirname}/
+	 * @throws IOException
+	 */
+	public static File createOutSubDir(File outDir, String outSubDirname) throws IOException {
 		File outSubDir = new File(outDir, outSubDirname);
 		Files.createDirectories(outSubDir.toPath());
 		return outSubDir;

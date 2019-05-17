@@ -3,11 +3,13 @@ package mobilerobot.study.prefinterp;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -19,6 +21,7 @@ import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import language.exceptions.XMDPException;
+import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
@@ -38,6 +41,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 	private volatile int hashCode;
 
 	private Map<WADDPattern, PolicyInfo> mPolicyInfos = new HashMap<>();
+
+	// For random policy selection: indexed unique policies
+	private List<Policy> mIndexedUniquePolicies = new ArrayList<>();
+
+	// For random policy selection: random number generator with seed
+	private Random mRandom = new Random(0L);
 
 	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID)
 			throws URISyntaxException, IOException, ParseException, ResultParsingException, DSMException, XMDPException,
@@ -90,11 +99,31 @@ public class LowerConvexHullPolicyCollection implements Iterable<PolicyInfo> {
 			waddPattern.putAllWeights(scalingConsts);
 
 			mPolicyInfos.put(waddPattern, policyInfo);
+
+			// Append a new unique policy to the list for random selection
+			Policy policy = policyInfo.getPolicy();
+			if (!mIndexedUniquePolicies.contains(policy)) {
+				mIndexedUniquePolicies.add(policy);
+			}
 		}
 	}
 
 	public PolicyInfo getOptimalPolicyInfo(WADDPattern waddPattern) {
 		return mPolicyInfos.get(waddPattern);
+	}
+
+	public Set<Policy> randomlySelectUniquePolicies(int numPolicies) {
+		Set<Policy> uniqueRandomPolicies = new HashSet<>();
+		for (int i = 0; i < numPolicies; i++) {
+			Policy randomPolicy;
+			do {
+				int policyIndex = mRandom.nextInt(mIndexedUniquePolicies.size());
+				randomPolicy = mIndexedUniquePolicies.get(policyIndex);
+			} while (uniqueRandomPolicies.contains(randomPolicy));
+
+			uniqueRandomPolicies.add(randomPolicy);
+		}
+		return uniqueRandomPolicies;
 	}
 
 	@Override

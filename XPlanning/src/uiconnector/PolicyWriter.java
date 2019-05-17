@@ -39,7 +39,7 @@ public class PolicyWriter {
 		return policyJsonFile;
 	}
 
-	private JSONObject writePolicyJSONObject(Policy policy) {
+	public static JSONObject writePolicyJSONObject(Policy policy) {
 		JSONArray policyJsonArray = new JSONArray();
 		for (Decision decision : policy) {
 			JSONObject stateJsonObj = writeState(decision.getState());
@@ -55,7 +55,7 @@ public class PolicyWriter {
 		return policyJsonObj;
 	}
 
-	private JSONObject writeState(StateVarTuple stateVarTuple) {
+	private static JSONObject writeState(StateVarTuple stateVarTuple) {
 		JSONObject stateJsonObj = new JSONObject();
 		for (StateVar<IStateVarValue> stateVar : stateVarTuple) {
 			String varName = stateVar.getName();
@@ -76,7 +76,7 @@ public class PolicyWriter {
 		return stateJsonObj;
 	}
 
-	private JSONObject writeAction(IAction action) {
+	private static JSONObject writeAction(IAction action) {
 		JSONObject actionJsonObj = new JSONObject();
 		actionJsonObj.put("type", action.getNamePrefix());
 		JSONArray paramArray = new JSONArray();

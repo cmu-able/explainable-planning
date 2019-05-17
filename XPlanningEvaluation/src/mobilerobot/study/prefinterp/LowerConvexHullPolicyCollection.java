@@ -114,9 +114,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		return mNextMissionIndex;
 	}
 
-	public Set<Policy> randomlySelectUniquePolicies(int numPolicies, Policy iniPolicy) {
+	public Set<Policy> randomlySelectUniquePolicies(int maxNumPolicies, Policy iniPolicy) {
 		Set<Policy> uniqueRandomPolicies = new HashSet<>();
 		uniqueRandomPolicies.add(iniPolicy);
+		int numPolicies = Math.min(maxNumPolicies, mIndexedUniquePolicies.size());
 
 		for (int i = 1; i < numPolicies; i++) {
 			Policy randomPolicy;

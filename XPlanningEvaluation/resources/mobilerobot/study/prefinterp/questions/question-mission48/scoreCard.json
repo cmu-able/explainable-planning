@@ -1,7 +1,7 @@
 {
-  "choicePolicy0": 0.9698350393564271,
-  "choicePolicy1": 0.718599247773831,
-  "choicePolicy2": 1.0,
-  "choicePolicy3": 0.85758810501226,
-  "choicePolicy4": 0.7935169147881614
+  "choicePolicy0": 1.0,
+  "choicePolicy1": 0.7935169147881614,
+  "choicePolicy2": 0.85758810501226,
+  "choicePolicy3": 0.9698350393564271,
+  "choicePolicy4": 0.718599247773831
 }

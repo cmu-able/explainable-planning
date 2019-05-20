@@ -1,6 +1,7 @@
 package mobilerobot.study.prefinterp;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -16,12 +17,15 @@ import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
+import mobilerobot.policyviz.MapRenderer;
+import mobilerobot.policyviz.PolicyRenderer;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
@@ -33,6 +37,8 @@ public class PrefInterpQuestionGenerator {
 
 	private static final int DEFAULT_NUM_MULTI_CHOICE = 5;
 
+	private MapRenderer mMapRenderer = new MapRenderer();
+	private PolicyRenderer mPolicyRenderer = new PolicyRenderer();
 	private int mNumMultiChoicePolicies;
 
 	public PrefInterpQuestionGenerator(int numMultiChoicePolicies) {
@@ -66,7 +72,8 @@ public class PrefInterpQuestionGenerator {
 	}
 
 	private void createQuestionDir(File missionFile, Set<QuantitativePolicy> multiChoicePolicies,
-			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException {
+			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException,
+			MapTopologyException, ParseException, URISyntaxException {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
@@ -100,6 +107,9 @@ public class PrefInterpQuestionGenerator {
 		JSONObject scoreCardJsonObj = computeOptimalityScores(missionName, indexedMultiChoicePolicies, solnPolicyInfo);
 		File scoreCardFile = FileIOUtils.createOutFile(questionSubDir, "scoreCard.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
+
+		// Render map of the mission and all choice policies
+		renderMapAndMultiChoicePolicies(questionSubDir);
 	}
 
 	private JSONObject computeOptimalityScores(String missionName, List<QuantitativePolicy> indexedMultiChoicePolicies,
@@ -129,6 +139,25 @@ public class PrefInterpQuestionGenerator {
 		prismConnector.terminate();
 
 		return scoreCardJsonObj;
+	}
+
+	private void renderMapAndMultiChoicePolicies(File questionSubDir)
+			throws IOException, ParseException, URISyntaxException, MapTopologyException {
+		FilenameFilter missionFileFilter = (dir, name) -> name.matches("mission[0-9]+.json");
+		FilenameFilter choicePolicyFileFilter = (dir, name) -> name.matches("choicePolicy[0-9]+.json");
+
+		File missionJsonFile = questionSubDir.listFiles(missionFileFilter)[0];
+		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+		String mapFilename = (String) missionJsonObj.get("map-file");
+		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
+
+		// Render map of the mission at /output/question-missionX/
+		mMapRenderer.render(mapJsonFile, questionSubDir);
+
+		// Render all choice policies at /output/question-missionX/
+		for (File choicePolicyJsonFile : questionSubDir.listFiles(choicePolicyFileFilter)) {
+			mPolicyRenderer.render(choicePolicyJsonFile, mapJsonFile, questionSubDir, null);
+		}
 	}
 
 	public static void main(String[] args) throws URISyntaxException, ResultParsingException, IOException,

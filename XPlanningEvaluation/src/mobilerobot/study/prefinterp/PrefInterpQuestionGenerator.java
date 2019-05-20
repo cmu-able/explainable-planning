@@ -13,8 +13,8 @@ import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import explanation.analysis.PolicyInfo;
+import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
-import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
@@ -48,17 +48,17 @@ public class PrefInterpQuestionGenerator {
 		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
 			File missionFile = e.getKey();
 			PolicyInfo solnPolicyInfo = e.getValue();
-			Policy solnPolicy = solnPolicyInfo.getPolicy();
-			Set<Policy> multiChoicePolicies = lowerConvexHull.randomlySelectUniquePolicies(mNumMultiChoicePolicies,
-					solnPolicy);
-			createQuestionDir(missionFile, multiChoicePolicies, solnPolicy);
+			QuantitativePolicy solnQuantPolicy = solnPolicyInfo.getQuantitativePolicy();
+			Set<QuantitativePolicy> multiChoicePolicies = lowerConvexHull
+					.randomlySelectUniqueQuantitativePolicies(mNumMultiChoicePolicies, solnQuantPolicy);
+			createQuestionDir(missionFile, multiChoicePolicies, solnPolicyInfo);
 		}
 
 		return lowerConvexHull.getNextMissionIndex();
 	}
 
-	private void createQuestionDir(File missionFile, Set<Policy> multiChoicePolicies, Policy solnPolicy)
-			throws IOException {
+	private void createQuestionDir(File missionFile, Set<QuantitativePolicy> multiChoicePolicies,
+			PolicyInfo solnPolicyInfo) throws IOException {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
@@ -72,8 +72,8 @@ public class PrefInterpQuestionGenerator {
 
 		// Write all multiple-choice policies as json files at /output/question-missionX/
 		int i = 0;
-		for (Policy choicePolicy : multiChoicePolicies) {
-			JSONObject choicePolicyJsonObj = PolicyWriter.writePolicyJSONObject(choicePolicy);
+		for (QuantitativePolicy choiceQuantPolicy : multiChoicePolicies) {
+			JSONObject choicePolicyJsonObj = PolicyWriter.writePolicyJSONObject(choiceQuantPolicy.getPolicy());
 			String choicePolicyFilename = FileIOUtils.insertIndexToFilename("choicePolicy.json", i);
 			File choicePolicyFile = FileIOUtils.createOutFile(questionSubDir, choicePolicyFilename);
 			FileIOUtils.prettyPrintJSONObjectToFile(choicePolicyJsonObj, choicePolicyFile);
@@ -81,7 +81,7 @@ public class PrefInterpQuestionGenerator {
 		}
 
 		// Write the solution policy as json file at /output/question-missionX/
-		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicy);
+		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicyInfo.getPolicy());
 		File solnPolicyFile = FileIOUtils.createOutFile(questionSubDir, "solnPolicy.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(solnPolicyJsonObj, solnPolicyFile);
 	}

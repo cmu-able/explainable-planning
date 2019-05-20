@@ -22,8 +22,8 @@ import examples.common.Directories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
+import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
-import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
@@ -43,8 +43,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 
 	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
 
-	// For random policy selection: indexed unique policies
-	private List<Policy> mIndexedUniquePolicies = new ArrayList<>();
+	// For random policy selection: indexed unique quantitative policies
+	// Note: All of these policies are generated from the same map but different objective cost functions,
+	// so comparing QA values across these policies is legitimate.
+	private List<QuantitativePolicy> mIndexedUniqueQuantPolicies = new ArrayList<>();
 
 	// For random policy selection: random number generator with seed
 	private Random mRandom = new Random(0L);
@@ -102,10 +104,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 			// Keep track of mission file that generates each lower-convex-hull policy
 			mPolicyInfos.put(missionJsonFile, policyInfo);
 
-			// Append a new unique policy to the list for random selection
-			Policy policy = policyInfo.getPolicy();
-			if (!mIndexedUniquePolicies.contains(policy)) {
-				mIndexedUniquePolicies.add(policy);
+			// Append a new unique quantitative policy to the list for random selection
+			QuantitativePolicy quantPolicy = policyInfo.getQuantitativePolicy();
+			if (!mIndexedUniqueQuantPolicies.contains(quantPolicy)) {
+				mIndexedUniqueQuantPolicies.add(quantPolicy);
 			}
 		}
 	}
@@ -114,21 +116,22 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		return mNextMissionIndex;
 	}
 
-	public Set<Policy> randomlySelectUniquePolicies(int maxNumPolicies, Policy iniPolicy) {
-		Set<Policy> uniqueRandomPolicies = new HashSet<>();
-		uniqueRandomPolicies.add(iniPolicy);
-		int numPolicies = Math.min(maxNumPolicies, mIndexedUniquePolicies.size());
+	public Set<QuantitativePolicy> randomlySelectUniqueQuantitativePolicies(int maxNumPolicies,
+			QuantitativePolicy iniQuantPolicy) {
+		Set<QuantitativePolicy> uniqueRandomQuantPolicies = new HashSet<>();
+		uniqueRandomQuantPolicies.add(iniQuantPolicy);
+		int numPolicies = Math.min(maxNumPolicies, mIndexedUniqueQuantPolicies.size());
 
 		for (int i = 1; i < numPolicies; i++) {
-			Policy randomPolicy;
+			QuantitativePolicy randomQuantPolicy;
 			do {
-				int policyIndex = mRandom.nextInt(mIndexedUniquePolicies.size());
-				randomPolicy = mIndexedUniquePolicies.get(policyIndex);
-			} while (uniqueRandomPolicies.contains(randomPolicy));
+				int policyIndex = mRandom.nextInt(mIndexedUniqueQuantPolicies.size());
+				randomQuantPolicy = mIndexedUniqueQuantPolicies.get(policyIndex);
+			} while (uniqueRandomQuantPolicies.contains(randomQuantPolicy));
 
-			uniqueRandomPolicies.add(randomPolicy);
+			uniqueRandomQuantPolicies.add(randomQuantPolicy);
 		}
-		return uniqueRandomPolicies;
+		return uniqueRandomQuantPolicies;
 	}
 
 	/**

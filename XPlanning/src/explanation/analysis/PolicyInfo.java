@@ -48,6 +48,10 @@ public class PolicyInfo {
 		return mQuantPolicy.getPolicy();
 	}
 
+	public QuantitativePolicy getQuantitativePolicy() {
+		return mQuantPolicy;
+	}
+
 	public double getObjectiveCost() {
 		return mObjectiveCost;
 	}

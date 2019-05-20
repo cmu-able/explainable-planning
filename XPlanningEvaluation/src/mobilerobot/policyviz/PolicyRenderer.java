@@ -21,6 +21,10 @@ public class PolicyRenderer {
 	private JSONParser mJsonParser = new JSONParser();
 	private PolicyJSONToGraphViz mPolicyToGraph;
 
+	public PolicyRenderer() {
+		this(GraphVizRenderer.METER_PER_INCH, GraphVizRenderer.SCALING_FACTOR);
+	}
+
 	public PolicyRenderer(double meterPerInch, double scalingFactor) {
 		GraphVizRenderer graphRenderer = new GraphVizRenderer(meterPerInch, scalingFactor);
 		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer);
@@ -34,7 +38,7 @@ public class PolicyRenderer {
 			String missionName = policyPath.getName(nameCount - 2).toString();
 			File mapJsonFile = getMapJsonFile(missionName + ".json",
 					FileIOUtils.getMissionsResourceDir(XPlanningRunner.class));
-			render(policiesDirOrFile, mapJsonFile, missionName);
+			render(policiesDirOrFile, mapJsonFile, FileIOUtils.getOutputDir(), missionName);
 		} else {
 			for (File policiesSubDirOrFile : policiesDirOrFile.listFiles()) {
 				renderAll(policiesSubDirOrFile);
@@ -43,14 +47,14 @@ public class PolicyRenderer {
 	}
 
 	public void render(File policyJsonFile, File mapJsonFile) throws MapTopologyException, IOException, ParseException {
-		render(policyJsonFile, mapJsonFile, null);
+		render(policyJsonFile, mapJsonFile, FileIOUtils.getOutputDir(), null);
 	}
 
-	public void render(File policyJsonFile, File mapJsonFile, String outputSubDirname)
+	public void render(File policyJsonFile, File mapJsonFile, File outDir, String outSubDirname)
 			throws IOException, ParseException, MapTopologyException {
 		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile, true);
 		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
-		GraphVizRenderer.drawGraph(policyGraph, outputSubDirname, outputName);
+		GraphVizRenderer.drawGraph(policyGraph, outDir, outSubDirname, outputName);
 	}
 
 	private File getMapJsonFile(String missionJsonFilename, File missionsJsonRootDir)
@@ -85,8 +89,7 @@ public class PolicyRenderer {
 			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
 		}
 
-		PolicyRenderer policyRenderer = new PolicyRenderer(GraphVizRenderer.METER_PER_INCH,
-				GraphVizRenderer.SCALING_FACTOR);
+		PolicyRenderer policyRenderer = new PolicyRenderer();
 
 		policyRenderer.renderAll(policiesDir);
 	}

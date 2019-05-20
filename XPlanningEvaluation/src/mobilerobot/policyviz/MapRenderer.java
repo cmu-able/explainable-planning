@@ -15,15 +15,23 @@ public class MapRenderer {
 
 	private GraphVizRenderer mGraphRenderer;
 
+	public MapRenderer() {
+		this(GraphVizRenderer.METER_PER_INCH, GraphVizRenderer.SCALING_FACTOR);
+	}
+
 	public MapRenderer(double meterPerInch, double scalingFactor) {
 		mGraphRenderer = new GraphVizRenderer(meterPerInch, scalingFactor);
 	}
 
 	public void render(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
+		render(mapJsonFile, FileIOUtils.getOutputDir());
+	}
+
+	public void render(File mapJsonFile, File outDir) throws MapTopologyException, IOException, ParseException {
 		MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
 		MutableGraph mapGraph = mapToGraph.convertMapJsonToGraph();
 		String outputName = FilenameUtils.removeExtension(mapJsonFile.getName());
-		GraphVizRenderer.drawGraph(mapGraph, outputName);
+		GraphVizRenderer.drawGraph(mapGraph, outDir, null, outputName);
 	}
 
 	public static void main(String[] args)
@@ -37,7 +45,7 @@ public class MapRenderer {
 		}
 
 		File[] mapJsonFiles = mapsDir.listFiles();
-		MapRenderer mapRenderer = new MapRenderer(GraphVizRenderer.METER_PER_INCH, GraphVizRenderer.SCALING_FACTOR);
+		MapRenderer mapRenderer = new MapRenderer();
 
 		for (File mapJsonFile : mapJsonFiles) {
 			mapRenderer.render(mapJsonFile);

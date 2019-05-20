@@ -40,13 +40,10 @@ public class GraphVizRenderer {
 		node.add("width", "0.1");
 	}
 
-	public static void drawGraph(MutableGraph graph, String outputName) throws IOException {
-		drawGraph(graph, null, outputName);
-	}
-
-	public static void drawGraph(MutableGraph graph, String outputSubDirname, String outputName) throws IOException {
-		File outputPNGFile = outputSubDirname == null ? FileIOUtils.createOutputFile(outputName + ".png")
-				: FileIOUtils.createOutputFile(outputSubDirname, outputName + ".png");
+	public static void drawGraph(MutableGraph graph, File outDir, String outSubDirname, String outputName)
+			throws IOException {
+		File outputPNGFile = outSubDirname == null ? FileIOUtils.createOutFile(outDir, outputName + ".png")
+				: FileIOUtils.createOutFile(outDir, outSubDirname, outputName + ".png");
 		Graphviz.fromGraph(graph).engine(Engine.NEATO).render(Format.PNG).toFile(outputPNGFile);
 	}
 

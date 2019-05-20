@@ -13,7 +13,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.common.DSMException;
-import examples.common.Directories;
+import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.SimpleConsoleLogger;
 import language.domain.metrics.IQFunction;
@@ -142,7 +142,7 @@ public class MobileRobotXDTMCTest {
 	private PrismExplicitModelReader generateAdverary(File missionJsonFile, XMDP xmdp)
 			throws XMDPException, PrismException, ResultParsingException, IOException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String outputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.TRANSITION_REWARD);
 

@@ -13,7 +13,7 @@ import examples.clinicscheduling.metrics.OvertimeQFunction;
 import examples.clinicscheduling.metrics.RevenueQFunction;
 import examples.clinicscheduling.metrics.SwitchABPQFunction;
 import examples.common.DSMException;
-import examples.common.Directories;
+import examples.common.XPlanningOutDirectories;
 import explanation.analysis.Explainer;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
@@ -43,9 +43,9 @@ public class ClinicSchedulingDemo {
 	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
 	private ClinicSchedulingXMDPLoader mXMDPLoader;
-	private Directories mOutputDirs;
+	private XPlanningOutDirectories mOutputDirs;
 
-	public ClinicSchedulingDemo(int branchFactor, Directories outputDirs) {
+	public ClinicSchedulingDemo(int branchFactor, XPlanningOutDirectories outputDirs) {
 		mXMDPLoader = new ClinicSchedulingXMDPLoader(branchFactor);
 		mOutputDirs = outputDirs;
 	}
@@ -98,10 +98,10 @@ public class ClinicSchedulingDemo {
 		String problemFilename = args[0];
 		File problemFile = new File(PROBLEMS_PATH, problemFilename);
 
-		Path policiesOutputPath = Paths.get(Directories.POLICIES_OUTPUT_PATH);
-		Path explanationOutputPath = Paths.get(Directories.EXPLANATIONS_OUTPUT_PATH);
-		Path prismOutputPath = Paths.get(Directories.PRISM_OUTPUT_PATH);
-		Directories outputDirs = new Directories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+		Path policiesOutputPath = Paths.get(XPlanningOutDirectories.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(XPlanningOutDirectories.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(XPlanningOutDirectories.PRISM_OUTPUT_PATH);
+		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 
 		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
 		demo.run(problemFile);

@@ -11,7 +11,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.common.DSMException;
-import examples.common.Directories;
+import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
@@ -50,7 +50,7 @@ public class MobileRobotXMDPTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String outputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.TRANSITION_REWARD);
 

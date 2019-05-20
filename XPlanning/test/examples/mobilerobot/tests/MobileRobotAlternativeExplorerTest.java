@@ -12,7 +12,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.common.DSMException;
-import examples.common.Directories;
+import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.utils.SimpleConsoleLogger;
@@ -139,8 +139,8 @@ public class MobileRobotAlternativeExplorerTest {
 
 			// PrismConnector
 			String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-			String modelOutputPath = Directories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-			String advOutputPath = Directories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+			String modelOutputPath = XPlanningOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
+			String advOutputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 			PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 

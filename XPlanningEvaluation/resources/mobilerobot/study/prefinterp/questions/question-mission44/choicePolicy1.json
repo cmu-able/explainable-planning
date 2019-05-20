@@ -26,18 +26,6 @@
     },
     {
       "action": {
-        "type": "setSpeed",
-        "params": [
-          0.35
-        ]
-      },
-      "state": {
-        "rLoc": "L7",
-        "rSpeed": 0.68
-      }
-    },
-    {
-      "action": {
         "type": "moveTo",
         "params": [
           "L27"
@@ -46,18 +34,6 @@
       "state": {
         "rLoc": "L24",
         "rSpeed": 0.68
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L2"
-        ]
-      },
-      "state": {
-        "rLoc": "L1",
-        "rSpeed": 0.35
       }
     },
     {
@@ -122,14 +98,14 @@
     },
     {
       "action": {
-        "type": "setSpeed",
+        "type": "moveTo",
         "params": [
-          0.68
+          "L2"
         ]
       },
       "state": {
-        "rLoc": "L2",
-        "rSpeed": 0.35
+        "rLoc": "L1",
+        "rSpeed": 0.68
       }
     },
     {
@@ -158,6 +134,18 @@
     },
     {
       "action": {
+        "type": "setSpeed",
+        "params": [
+          0.68
+        ]
+      },
+      "state": {
+        "rLoc": "L1",
+        "rSpeed": 0.35
+      }
+    },
+    {
+      "action": {
         "type": "moveTo",
         "params": [
           "L15"
@@ -166,18 +154,6 @@
       "state": {
         "rLoc": "L14",
         "rSpeed": 0.68
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L6"
-        ]
-      },
-      "state": {
-        "rLoc": "L7",
-        "rSpeed": 0.35
       }
     },
     {
@@ -194,18 +170,6 @@
     },
     {
       "action": {
-        "type": "setSpeed",
-        "params": [
-          0.68
-        ]
-      },
-      "state": {
-        "rLoc": "L6",
-        "rSpeed": 0.35
-      }
-    },
-    {
-      "action": {
         "type": "moveTo",
         "params": [
           "L14"
@@ -213,6 +177,18 @@
       },
       "state": {
         "rLoc": "LX1",
+        "rSpeed": 0.68
+      }
+    },
+    {
+      "action": {
+        "type": "moveTo",
+        "params": [
+          "L6"
+        ]
+      },
+      "state": {
+        "rLoc": "L7",
         "rSpeed": 0.68
       }
     }

@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -12,12 +15,17 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
+import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
+import language.objectives.CostCriterion;
+import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
+import solver.prismconnector.PrismConnector;
+import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
@@ -58,7 +66,7 @@ public class PrefInterpQuestionGenerator {
 	}
 
 	private void createQuestionDir(File missionFile, Set<QuantitativePolicy> multiChoicePolicies,
-			PolicyInfo solnPolicyInfo) throws IOException {
+			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
@@ -72,11 +80,14 @@ public class PrefInterpQuestionGenerator {
 
 		// Write all multiple-choice policies as json files at /output/question-missionX/
 		int i = 0;
+		List<QuantitativePolicy> indexedMultiChoicePolicies = new ArrayList<>();
 		for (QuantitativePolicy choiceQuantPolicy : multiChoicePolicies) {
 			JSONObject choicePolicyJsonObj = PolicyWriter.writePolicyJSONObject(choiceQuantPolicy.getPolicy());
 			String choicePolicyFilename = FileIOUtils.insertIndexToFilename("choicePolicy.json", i);
 			File choicePolicyFile = FileIOUtils.createOutFile(questionSubDir, choicePolicyFilename);
 			FileIOUtils.prettyPrintJSONObjectToFile(choicePolicyJsonObj, choicePolicyFile);
+			// Keep track of index of each choice policy
+			indexedMultiChoicePolicies.add(choiceQuantPolicy);
 			i++;
 		}
 
@@ -84,6 +95,36 @@ public class PrefInterpQuestionGenerator {
 		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicyInfo.getPolicy());
 		File solnPolicyFile = FileIOUtils.createOutFile(questionSubDir, "solnPolicy.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(solnPolicyJsonObj, solnPolicyFile);
+
+		// Write the optimality scores of all choice policies to a json file at /output/question-missionX/
+		JSONObject scoreCardJsonObj = computeOptimalityScores(missionName, indexedMultiChoicePolicies, solnPolicyInfo);
+		File scoreCardFile = FileIOUtils.createOutFile(questionSubDir, "scoreCard.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
+	}
+
+	private JSONObject computeOptimalityScores(String missionName, List<QuantitativePolicy> indexedMultiChoicePolicies,
+			PolicyInfo solnPolicyInfo) throws PrismException, IOException, ResultParsingException, XMDPException {
+		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(missionName);
+		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(missionName);
+
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+				advOutputPath.toString());
+		PrismConnector prismConnector = new PrismConnector(solnPolicyInfo.getXMDP(), CostCriterion.TOTAL_COST,
+				prismConnSetttings);
+
+		JSONObject scoreCardJsonObj = new JSONObject();
+		for (int i = 0; i < indexedMultiChoicePolicies.size(); i++) {
+			QuantitativePolicy choiceQuantPolicy = indexedMultiChoicePolicies.get(i);
+			Policy choicePolicy = choiceQuantPolicy.getPolicy();
+			// Compute cost of the choice policy, using the cost function of the solution policy
+			double choicePolicyCost = prismConnector.computeObjectiveCost(choicePolicy);
+			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
+			double optimalityScore = 1 - choicePolicyCost / solnPolicyCost;
+			String choiceName = "choicePolicy" + i;
+			scoreCardJsonObj.put(choiceName, optimalityScore);
+		}
+		return scoreCardJsonObj;
 	}
 
 	public static void main(String[] args) throws URISyntaxException, ResultParsingException, IOException,

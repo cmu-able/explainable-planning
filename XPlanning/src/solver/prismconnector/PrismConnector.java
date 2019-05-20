@@ -252,7 +252,7 @@ public class PrismConnector {
 	}
 
 	public PolicyInfo buildPolicyInfo(Policy policy) throws ResultParsingException, XMDPException, PrismException {
-		double objectiveCost = computeCost(policy);
+		double objectiveCost = computeObjectiveCost(policy);
 		PolicyInfo policyInfo = new PolicyInfo(mXMDP, policy, objectiveCost);
 
 		CostFunction costFunction = mXMDP.getCostFunction();
@@ -279,17 +279,17 @@ public class PrismConnector {
 	}
 
 	/**
-	 * Retrieve the cost (depending on the cost criterion of the MDP) of a given policy from the cache. If the policy is
-	 * not already in the cache, then compute and cache its cost.
+	 * Retrieve the objective cost (depending on the cost criterion of the MDP) of a given policy from the cache. If the
+	 * policy is not already in the cache, then compute and cache its objective cost.
 	 * 
 	 * @param policy
 	 *            : Policy
-	 * @return Cost of the policy (depending on the cost criterion of the MDP)
+	 * @return Objective cost of the policy (depending on the cost criterion of the MDP)
 	 * @throws XMDPException
 	 * @throws PrismException
 	 * @throws ResultParsingException
 	 */
-	public double computeCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
+	public double computeObjectiveCost(Policy policy) throws XMDPException, PrismException, ResultParsingException {
 		if (!mCachedCosts.containsKey(policy)) {
 			computeAndCacheCost(policy);
 		}

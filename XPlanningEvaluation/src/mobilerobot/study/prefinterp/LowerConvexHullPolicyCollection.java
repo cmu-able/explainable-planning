@@ -18,7 +18,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
-import examples.common.Directories;
+import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
@@ -93,7 +93,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private void populateLowerConvexHullPolicies() throws URISyntaxException, IOException, ResultParsingException,
 			DSMException, XMDPException, PrismException {
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
-		Directories outputDirs = FileIOUtils.createXPlanningDirectories();
+		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		File outputDir = FileIOUtils.getOutputDir();
 		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);

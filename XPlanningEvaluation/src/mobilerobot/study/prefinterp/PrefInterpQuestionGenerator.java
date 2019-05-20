@@ -51,13 +51,14 @@ public class PrefInterpQuestionGenerator {
 			Policy solnPolicy = solnPolicyInfo.getPolicy();
 			Set<Policy> multiChoicePolicies = lowerConvexHull.randomlySelectUniquePolicies(mNumMultiChoicePolicies,
 					solnPolicy);
-			createQuestionDir(missionFile, multiChoicePolicies);
+			createQuestionDir(missionFile, multiChoicePolicies, solnPolicy);
 		}
 
 		return lowerConvexHull.getNextMissionIndex();
 	}
 
-	private void createQuestionDir(File missionFile, Set<Policy> multiChoicePolicies) throws IOException {
+	private void createQuestionDir(File missionFile, Set<Policy> multiChoicePolicies, Policy solnPolicy)
+			throws IOException {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
@@ -78,6 +79,11 @@ public class PrefInterpQuestionGenerator {
 			FileIOUtils.prettyPrintJSONObjectToFile(choicePolicyJsonObj, choicePolicyFile);
 			i++;
 		}
+
+		// Write the solution policy as json file at /output/question-missionX/
+		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicy);
+		File solnPolicyFile = FileIOUtils.createOutFile(questionSubDir, "solnPolicy.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(solnPolicyJsonObj, solnPolicyFile);
 	}
 
 	public static void main(String[] args) throws URISyntaxException, ResultParsingException, IOException,

@@ -120,10 +120,14 @@ public class PrefInterpQuestionGenerator {
 			// Compute cost of the choice policy, using the cost function of the solution policy
 			double choicePolicyCost = prismConnector.computeObjectiveCost(choicePolicy);
 			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
-			double optimalityScore = 1 - choicePolicyCost / solnPolicyCost;
+			double optimalityScore = solnPolicyCost / choicePolicyCost;
 			String choiceName = "choicePolicy" + i;
 			scoreCardJsonObj.put(choiceName, optimalityScore);
 		}
+
+		// Close down PRISM
+		prismConnector.terminate();
+
 		return scoreCardJsonObj;
 	}
 

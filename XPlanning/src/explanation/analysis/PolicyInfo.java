@@ -17,25 +17,23 @@ public class PolicyInfo {
 	private volatile int hashCode;
 
 	private XMDP mXMDP;
-	private Policy mPolicy;
+	private QuantitativePolicy mQuantPolicy;
 	private double mObjectiveCost;
-	private Map<IQFunction<?, ?>, Double> mQAValues = new HashMap<>();
-	private Map<NonStandardMetricQFunction<?, ?, ?>, EventBasedQAValue<?>> mEventBasedQAValues = new HashMap<>();
 	private Map<IQFunction<?, ?>, Double> mScaledQACosts = new HashMap<>();
 
 	public PolicyInfo(XMDP xmdp, Policy policy, double objectiveCost) {
 		mXMDP = xmdp;
-		mPolicy = policy;
+		mQuantPolicy = new QuantitativePolicy(policy);
 		mObjectiveCost = objectiveCost;
 	}
 
 	public void putQAValue(IQFunction<?, ?> qFunction, double qaValue) {
-		mQAValues.put(qFunction, qaValue);
+		mQuantPolicy.putQAValue(qFunction, qaValue);
 	}
 
 	public <E extends IEvent<?, ?>> void putEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
 			EventBasedQAValue<E> qaValue) {
-		mEventBasedQAValues.put(qFunction, qaValue);
+		mQuantPolicy.putEventBasedQAValue(qFunction, qaValue);
 	}
 
 	public void putScaledQACost(IQFunction<?, ?> qFunction, double scaledQACost) {
@@ -47,7 +45,7 @@ public class PolicyInfo {
 	}
 
 	public Policy getPolicy() {
-		return mPolicy;
+		return mQuantPolicy.getPolicy();
 	}
 
 	public double getObjectiveCost() {
@@ -55,13 +53,12 @@ public class PolicyInfo {
 	}
 
 	public double getQAValue(IQFunction<?, ?> qFunction) {
-		return mQAValues.get(qFunction);
+		return mQuantPolicy.getQAValue(qFunction);
 	}
 
 	public <E extends IEvent<?, ?>> EventBasedQAValue<E> getEventBasedQAValue(
 			NonStandardMetricQFunction<?, ?, E> qFunction) {
-		// Casting: type-safety is ensured in putEventBasedQAValue()
-		return (EventBasedQAValue<E>) mEventBasedQAValues.get(qFunction);
+		return mQuantPolicy.getEventBasedQAValue(qFunction);
 	}
 
 	public double getScaledQACost(IQFunction<?, ?> qFunction) {
@@ -77,9 +74,8 @@ public class PolicyInfo {
 			return false;
 		}
 		PolicyInfo policyInfo = (PolicyInfo) obj;
-		return policyInfo.mXMDP.equals(mXMDP) && policyInfo.mPolicy.equals(mPolicy)
+		return policyInfo.mXMDP.equals(mXMDP) && policyInfo.mQuantPolicy.equals(mQuantPolicy)
 				&& Double.compare(policyInfo.mObjectiveCost, mObjectiveCost) == 0
-				&& policyInfo.mQAValues.equals(mQAValues) && policyInfo.mEventBasedQAValues.equals(mEventBasedQAValues)
 				&& policyInfo.mScaledQACosts.equals(mScaledQACosts);
 	}
 
@@ -89,10 +85,8 @@ public class PolicyInfo {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mXMDP.hashCode();
-			result = 31 * result + mPolicy.hashCode();
+			result = 31 * result + mQuantPolicy.hashCode();
 			result = 31 * result + Double.hashCode(mObjectiveCost);
-			result = 31 * result + mQAValues.hashCode();
-			result = 31 * result + mEventBasedQAValues.hashCode();
 			result = 31 * result + mScaledQACosts.hashCode();
 			hashCode = result;
 		}

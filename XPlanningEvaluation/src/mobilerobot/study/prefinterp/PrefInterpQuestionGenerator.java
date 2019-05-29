@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,7 @@ import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.policyviz.MapRenderer;
 import mobilerobot.policyviz.PolicyRenderer;
+import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
@@ -74,16 +74,7 @@ public class PrefInterpQuestionGenerator {
 	private void createQuestionDir(File missionFile, Set<QuantitativePolicy> multiChoicePolicies,
 			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException,
 			MapTopologyException, ParseException, URISyntaxException {
-		File outputDir = FileIOUtils.getOutputDir();
-		String missionName = FilenameUtils.removeExtension(missionFile.getName());
-
-		// Create question sub-directory: /output/question-missionX/
-		String questionSubDirname = "question-" + missionName;
-		File questionSubDir = FileIOUtils.createOutSubDir(outputDir, questionSubDirname);
-
-		// Copy missionX.json file from /output/missions-of-{mapName}/ to /output/question-missionX/
-		// Note: missionX name is unique across all maps
-		Files.copy(missionFile.toPath(), questionSubDir.toPath().resolve(missionFile.getName()));
+		File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
 
 		// Write all multiple-choice policies as json files at /output/question-missionX/
 		int i = 0;
@@ -91,29 +82,28 @@ public class PrefInterpQuestionGenerator {
 		for (QuantitativePolicy choiceQuantPolicy : multiChoicePolicies) {
 			JSONObject choicePolicyJsonObj = PolicyWriter.writePolicyJSONObject(choiceQuantPolicy.getPolicy());
 			String choicePolicyFilename = FileIOUtils.insertIndexToFilename("choicePolicy.json", i);
-			File choicePolicyFile = FileIOUtils.createOutFile(questionSubDir, choicePolicyFilename);
+			File choicePolicyFile = FileIOUtils.createOutFile(questionDir, choicePolicyFilename);
 			FileIOUtils.prettyPrintJSONObjectToFile(choicePolicyJsonObj, choicePolicyFile);
 			// Keep track of index of each choice policy
 			indexedMultiChoicePolicies.add(choiceQuantPolicy);
 			i++;
 		}
 
-		// Write the solution policy as json file at /output/question-missionX/
-		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicyInfo.getPolicy());
-		File solnPolicyFile = FileIOUtils.createOutFile(questionSubDir, "solnPolicy.json");
-		FileIOUtils.prettyPrintJSONObjectToFile(solnPolicyJsonObj, solnPolicyFile);
+		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
 		// Write the optimality scores of all choice policies to a json file at /output/question-missionX/
-		JSONObject scoreCardJsonObj = computeOptimalityScores(missionName, indexedMultiChoicePolicies, solnPolicyInfo);
-		File scoreCardFile = FileIOUtils.createOutFile(questionSubDir, "scoreCard.json");
+		JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedMultiChoicePolicies, solnPolicyInfo);
+		File scoreCardFile = FileIOUtils.createOutFile(questionDir, "scoreCard.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
 
 		// Render map of the mission and all choice policies
-		renderMapAndMultiChoicePolicies(questionSubDir);
+		renderMapAndMultiChoicePolicies(questionDir);
 	}
 
-	private JSONObject computeOptimalityScores(String missionName, List<QuantitativePolicy> indexedMultiChoicePolicies,
+	private JSONObject computeOptimalityScores(File missionFile, List<QuantitativePolicy> indexedMultiChoicePolicies,
 			PolicyInfo solnPolicyInfo) throws PrismException, IOException, ResultParsingException, XMDPException {
+		String missionName = FilenameUtils.removeExtension(missionFile.getName());
+
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
 		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(missionName);

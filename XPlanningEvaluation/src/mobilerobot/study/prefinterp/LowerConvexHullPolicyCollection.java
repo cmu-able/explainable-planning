@@ -41,7 +41,8 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	 */
 	private volatile int hashCode;
 
-	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
+	private String mMapName;
+	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>(); // Lower convex hull of the map
 
 	// For random policy selection: indexed unique quantitative policies
 	// Note: All of these policies are generated from the same map but different objective cost functions,
@@ -52,7 +53,6 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private Random mRandom = new Random(0L);
 
 	private int mNextMissionIndex;
-	private String mMapName;
 
 	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID,
 			int startMissionIndex) throws URISyntaxException, IOException, ParseException, ResultParsingException,
@@ -116,6 +116,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		return mNextMissionIndex;
 	}
 
+	public Set<QuantitativePolicy> getAllUniqueQuantitativePolicies() {
+		return new HashSet<>(mIndexedUniqueQuantPolicies);
+	}
+
 	public Set<QuantitativePolicy> randomlySelectUniqueQuantitativePolicies(int maxNumPolicies,
 			QuantitativePolicy iniQuantPolicy) {
 		Set<QuantitativePolicy> uniqueRandomQuantPolicies = new HashSet<>();
@@ -151,7 +155,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 			return false;
 		}
 		LowerConvexHullPolicyCollection coll = (LowerConvexHullPolicyCollection) obj;
-		return coll.mPolicyInfos.equals(mPolicyInfos);
+		return coll.mMapName.equals(mMapName) && coll.mPolicyInfos.equals(mPolicyInfos);
 	}
 
 	@Override
@@ -159,6 +163,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mMapName.hashCode();
 			result = 31 * result + mPolicyInfos.hashCode();
 			hashCode = result;
 		}

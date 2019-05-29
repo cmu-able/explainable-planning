@@ -75,6 +75,7 @@ public class PrefInterpQuestionGenerator {
 			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException,
 			MapTopologyException, ParseException, URISyntaxException {
 		File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
+		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
 		// Write all multiple-choice policies as json files at /output/question-missionX/
 		int i = 0;
@@ -88,8 +89,6 @@ public class PrefInterpQuestionGenerator {
 			indexedMultiChoicePolicies.add(choiceQuantPolicy);
 			i++;
 		}
-
-		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
 		// Write the optimality scores of all choice policies to a json file at /output/question-missionX/
 		JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedMultiChoicePolicies, solnPolicyInfo);

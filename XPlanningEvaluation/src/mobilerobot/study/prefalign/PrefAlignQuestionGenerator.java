@@ -15,6 +15,7 @@ import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mobilerobot.study.prefinterp.LowerConvexHullPolicyCollection;
+import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
@@ -22,13 +23,14 @@ import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
-public class PrefAlignQuestionGenerator {
+public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	private QuestionViz mQuestionViz = new QuestionViz();
 
-	public int generatePrefAlignQuestions(File mapJsonFile, String startNodeID, String goalNodeID,
-			int startMissionIndex) throws ResultParsingException, URISyntaxException, IOException, ParseException,
-			DSMException, XMDPException, PrismException {
+	@Override
+	public int generateQuestions(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
+			throws ResultParsingException, URISyntaxException, IOException, ParseException, DSMException, XMDPException,
+			PrismException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
 		for (Entry<File, PolicyInfo> e : lowerConvexHull) {

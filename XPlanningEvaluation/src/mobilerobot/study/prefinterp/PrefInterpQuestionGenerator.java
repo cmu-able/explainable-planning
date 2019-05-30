@@ -21,7 +21,7 @@ import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
-import mobilerobot.missiongen.MissionJSONGenerator;
+import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
@@ -31,29 +31,25 @@ import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
-public class PrefInterpQuestionGenerator {
+public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 
 	private static final int DEFAULT_NUM_MULTI_CHOICE = 5;
 
 	private QuestionViz mQuestionViz = new QuestionViz();
 	private int mNumMultiChoicePolicies;
 
+	public PrefInterpQuestionGenerator() {
+		this(DEFAULT_NUM_MULTI_CHOICE);
+	}
+
 	public PrefInterpQuestionGenerator(int numMultiChoicePolicies) {
 		mNumMultiChoicePolicies = numMultiChoicePolicies;
 	}
 
-	public void generateAllPrefInterpQuestions(File mapsDir, String startNodeID, String goalNodeID)
+	@Override
+	public int generateQuestions(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
 			throws ResultParsingException, URISyntaxException, IOException, ParseException, DSMException, XMDPException,
 			PrismException {
-		int nextMissionIndex = 0;
-		for (File mapJsonFile : mapsDir.listFiles()) {
-			nextMissionIndex = generatePrefInterpQuestions(mapJsonFile, startNodeID, goalNodeID, nextMissionIndex);
-		}
-	}
-
-	public int generatePrefInterpQuestions(File mapJsonFile, String startNodeID, String goalNodeID,
-			int startMissionIndex) throws ResultParsingException, URISyntaxException, IOException, ParseException,
-			DSMException, XMDPException, PrismException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
 		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
@@ -124,24 +120,6 @@ public class PrefInterpQuestionGenerator {
 		prismConnector.terminate();
 
 		return scoreCardJsonObj;
-	}
-
-	public static void main(String[] args) throws URISyntaxException, ResultParsingException, IOException,
-			ParseException, DSMException, XMDPException, PrismException {
-		String startNodeID;
-		String goalNodeID;
-		if (args.length >= 2) {
-			startNodeID = args[0];
-			goalNodeID = args[1];
-		} else {
-			startNodeID = MissionJSONGenerator.DEFAULT_START_NODE_ID;
-			goalNodeID = MissionJSONGenerator.DEFAULT_GOAL_NODE_ID;
-		}
-
-		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
-
-		PrefInterpQuestionGenerator generator = new PrefInterpQuestionGenerator(DEFAULT_NUM_MULTI_CHOICE);
-		generator.generateAllPrefInterpQuestions(mapsDir, startNodeID, goalNodeID);
 	}
 
 }

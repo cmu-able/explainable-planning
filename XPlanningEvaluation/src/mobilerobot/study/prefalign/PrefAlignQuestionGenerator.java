@@ -9,18 +9,22 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
+import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mobilerobot.study.prefinterp.LowerConvexHullPolicyCollection;
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
 public class PrefAlignQuestionGenerator {
+
+	private QuestionViz mQuestionViz = new QuestionViz();
 
 	public int generatePrefAlignQuestions(File mapJsonFile, String startNodeID, String goalNodeID,
 			int startMissionIndex) throws ResultParsingException, URISyntaxException, IOException, ParseException,
@@ -42,7 +46,7 @@ public class PrefAlignQuestionGenerator {
 	}
 
 	private void createQuestionDir(File missionFile, QuantitativePolicy agentQuantPolicy, PolicyInfo solnPolicyInfo)
-			throws IOException {
+			throws IOException, MapTopologyException, ParseException, URISyntaxException {
 		File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
 		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
@@ -53,6 +57,9 @@ public class PrefAlignQuestionGenerator {
 
 		JSONObject scoreCardJsonObj = computeAnswerScores(agentQuantPolicy, solnPolicyInfo);
 		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
+
+		// Visualize map of the mission and the agent's proposed policy
+		mQuestionViz.visualizeAll(questionDir);
 	}
 
 	private JSONObject computeAnswerScores(QuantitativePolicy agentQuantPolicy, PolicyInfo solnPolicyInfo) {

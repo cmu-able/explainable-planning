@@ -90,10 +90,9 @@ public class PrefInterpQuestionGenerator {
 			i++;
 		}
 
-		// Write the optimality scores of all choice policies to a json file at /output/question-missionX/
+		// Compute the optimality scores of all choice policies
 		JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedMultiChoicePolicies, solnPolicyInfo);
-		File scoreCardFile = FileIOUtils.createOutFile(questionDir, "scoreCard.json");
-		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
+		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
 
 		// Render map of the mission and all choice policies
 		renderMapAndMultiChoicePolicies(questionDir);

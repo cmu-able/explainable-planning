@@ -34,9 +34,15 @@ public class QuestionUtils {
 
 	public static void writeSolutionPolicyToQuestionDir(PolicyInfo solnPolicyInfo, File questionDir)
 			throws IOException {
-		// Write the solution policy as json file at /output/question-missionX/
+		// Write the solution policy as solnPolicy.json file at /output/question-missionX/
 		JSONObject solnPolicyJsonObj = PolicyWriter.writePolicyJSONObject(solnPolicyInfo.getPolicy());
 		File solnPolicyFile = FileIOUtils.createOutFile(questionDir, "solnPolicy.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(solnPolicyJsonObj, solnPolicyFile);
+	}
+
+	public static void writeScoreCardToQuestionDir(JSONObject scoreCardJsonObj, File questionDir) throws IOException {
+		// Write the scores of all choice answers as scoreCard.json file at /output/question-missionX/
+		File scoreCardFile = FileIOUtils.createOutFile(questionDir, "scoreCard.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
 	}
 }

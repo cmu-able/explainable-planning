@@ -24,6 +24,7 @@ import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
+import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
@@ -53,6 +54,9 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	// Note: All of these policies are generated from the same map but different objective cost functions,
 	// so comparing QA values across these policies is legitimate.
 	private List<QuantitativePolicy> mIndexedUniqueQuantPolicies = new ArrayList<>();
+
+	// To keep track of unique policies, since quantitative policies may not have consistent precision of QA values
+	private Set<Policy> mUniquePolicies = new HashSet<>();
 
 	// For random policy selection: random number generator with seed
 	private Random mRandom = new Random(0L);
@@ -109,10 +113,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 			// Keep track of mission file that generates each lower-convex-hull policy
 			mPolicyInfos.put(missionJsonFile, policyInfo);
 
-			// Append a new unique quantitative policy to the list for random selection
+			// Append a new unique (quantitative) policy to the list for random selection
 			QuantitativePolicy quantPolicy = policyInfo.getQuantitativePolicy();
-			if (!mIndexedUniqueQuantPolicies.contains(quantPolicy)) {
+			Policy policy = quantPolicy.getPolicy();
+			if (!mUniquePolicies.contains(policy)) {
 				mIndexedUniqueQuantPolicies.add(quantPolicy);
+				mUniquePolicies.add(policy);
 			}
 		}
 	}

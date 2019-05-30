@@ -12,6 +12,7 @@ import examples.common.DSMException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
+import language.policy.Policy;
 import mobilerobot.study.prefinterp.LowerConvexHullPolicyCollection;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
@@ -27,11 +28,14 @@ public class PrefAlignQuestionGenerator {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
 		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
+			// Each mission is unique in terms of the scaling constants of the objective function
 			File missionFile = e.getKey();
+			// Each solution policy is not necessarily unique
 			PolicyInfo solnPolicyInfo = e.getValue();
 
-			for (QuantitativePolicy quantPolicy : lowerConvexHull.getAllUniqueQuantitativePolicies()) {
-
+			// Each agent's policy is unique, taken from the lower convex hull of the mission problem
+			for (QuantitativePolicy agentQuantPolicy : lowerConvexHull.getAllUniqueQuantitativePolicies()) {
+				createQuestionDir(missionFile, agentQuantPolicy, solnPolicyInfo);
 			}
 		}
 		return lowerConvexHull.getNextMissionIndex();
@@ -46,6 +50,20 @@ public class PrefAlignQuestionGenerator {
 		JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
 		File agentPolicyFile = FileIOUtils.createOutFile(questionDir, "agentPolicy.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(agentPolicyJsonObj, agentPolicyFile);
+
+		JSONObject scoreCardJsonObj = computeAnswerScores(agentQuantPolicy, solnPolicyInfo);
+		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
 	}
 
+	private JSONObject computeAnswerScores(QuantitativePolicy agentQuantPolicy, PolicyInfo solnPolicyInfo) {
+		Policy agentPolicy = agentQuantPolicy.getPolicy();
+		Policy solnPolicy = solnPolicyInfo.getPolicy();
+		double yesScore = agentPolicy.equals(solnPolicy) ? 1 : 0;
+		double noScore = agentPolicy.equals(solnPolicy) ? 0 : 1;
+
+		JSONObject scoreCardJsonObj = new JSONObject();
+		scoreCardJsonObj.put("yes", yesScore);
+		scoreCardJsonObj.put("no", noScore);
+		return scoreCardJsonObj;
+	}
 }

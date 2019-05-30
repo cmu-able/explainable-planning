@@ -42,7 +42,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private volatile int hashCode;
 
 	private String mMapName;
-	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>(); // Lower convex hull of the map
+
+	// Lower convex hull of the map
+	// Each key is a mission whose optimal solution lies in the lower convex hull, and each value is that solution
+	// Each mission is unique in terms of the scaling constants of the objective function, but each solution is not
+	// necessarily unique.
+	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
 
 	// For random policy selection: indexed unique quantitative policies
 	// Note: All of these policies are generated from the same map but different objective cost functions,

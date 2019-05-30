@@ -21,15 +21,15 @@ public class QuestionUtils {
 		File outputDir = FileIOUtils.getOutputDir();
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
-		// Create question sub-directory: /output/question-missionX/
-		String questionSubDirname = "question-" + missionName;
-		File questionSubDir = FileIOUtils.createOutSubDir(outputDir, questionSubDirname);
+		// Create question directory: /output/question-missionX/
+		String questionDirname = "question-" + missionName;
+		File questionDir = FileIOUtils.createOutSubDir(outputDir, questionDirname);
 
 		// Copy missionX.json file from /output/missions-of-{mapName}/ to /output/question-missionX/
 		// Note: missionX name is unique across all maps
-		Files.copy(missionFile.toPath(), questionSubDir.toPath().resolve(missionFile.getName()));
+		Files.copy(missionFile.toPath(), questionDir.toPath().resolve(missionFile.getName()));
 
-		return questionSubDir;
+		return questionDir;
 	}
 
 	public static void writeSolutionPolicyToQuestionDir(PolicyInfo solnPolicyInfo, File questionDir)

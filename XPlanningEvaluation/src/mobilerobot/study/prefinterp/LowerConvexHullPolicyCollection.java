@@ -121,8 +121,8 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		return mNextMissionIndex;
 	}
 
-	public Set<QuantitativePolicy> getAllUniqueQuantitativePolicies() {
-		return new HashSet<>(mIndexedUniqueQuantPolicies);
+	public List<QuantitativePolicy> getIndexedUniqueQuantitativePolicies() {
+		return mIndexedUniqueQuantPolicies;
 	}
 
 	public Set<QuantitativePolicy> randomlySelectUniqueQuantitativePolicies(int maxNumPolicies,

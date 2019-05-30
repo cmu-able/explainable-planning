@@ -3,13 +3,13 @@ package mobilerobot.study.prefalign;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
-import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
@@ -39,40 +39,47 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			// Each solution policy is not necessarily unique
 			PolicyInfo solnPolicyInfo = e.getValue();
 
+			// Each question dir contains multiple questions, all of which have the same mission but different agent's
+			// proposed policies
+			File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
+			QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
+
 			// Each agent's policy is unique, taken from the lower convex hull of the mission problem
-			for (QuantitativePolicy agentQuantPolicy : lowerConvexHull.getAllUniqueQuantitativePolicies()) {
-				createQuestionDir(missionFile, agentQuantPolicy, solnPolicyInfo);
+			List<QuantitativePolicy> indexedAgentQuantPolicies = lowerConvexHull.getIndexedUniqueQuantitativePolicies();
+			for (int i = 0; i < indexedAgentQuantPolicies.size(); i++) {
+				QuantitativePolicy agentQuantPolicy = indexedAgentQuantPolicies.get(i);
+
+				// Write each agent's proposed solution policy as json file at /output/question-missionX/
+				JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
+				String agentPolicyFilename = FileIOUtils.insertIndexToFilename("agentPolicy.json", i);
+				File agentPolicyFile = FileIOUtils.createOutFile(questionDir, agentPolicyFilename);
+				FileIOUtils.prettyPrintJSONObjectToFile(agentPolicyJsonObj, agentPolicyFile);
+
+				// TODO: Create a question file with easily-interpretable cost structure
 			}
+
+			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
+			JSONObject answerKeyJsonObj = createAnswerKey(indexedAgentQuantPolicies, solnPolicyInfo);
+			QuestionUtils.writeScoreCardToQuestionDir(answerKeyJsonObj, questionDir);
+
+			// Visualize map of the mission and the agent's proposed policy
+			mQuestionViz.visualizeAll(questionDir);
 		}
 		return lowerConvexHull.getNextMissionIndex();
 	}
 
-	private void createQuestionDir(File missionFile, QuantitativePolicy agentQuantPolicy, PolicyInfo solnPolicyInfo)
-			throws IOException, MapTopologyException, ParseException, URISyntaxException {
-		File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
-		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
+	private JSONObject createAnswerKey(List<QuantitativePolicy> indexedAgentQuantPolicies, PolicyInfo solnPolicyInfo) {
+		JSONObject answerKeyJsonObj = new JSONObject();
 
-		// Write agent's proposed solution policy as json file at /output/question-missionX/
-		JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
-		File agentPolicyFile = FileIOUtils.createOutFile(questionDir, "agentPolicy.json");
-		FileIOUtils.prettyPrintJSONObjectToFile(agentPolicyJsonObj, agentPolicyFile);
+		for (int i = 0; i < indexedAgentQuantPolicies.size(); i++) {
+			QuantitativePolicy agentQuantPolicy = indexedAgentQuantPolicies.get(i);
+			Policy agentPolicy = agentQuantPolicy.getPolicy();
+			Policy solnPolicy = solnPolicyInfo.getPolicy();
+			String agentPolicyName = "agentPolicy" + i;
+			String answer = agentPolicy.equals(solnPolicy) ? "yes" : "no";
+			answerKeyJsonObj.put(agentPolicyName, answer);
+		}
 
-		JSONObject scoreCardJsonObj = computeAnswerScores(agentQuantPolicy, solnPolicyInfo);
-		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
-
-		// Visualize map of the mission and the agent's proposed policy
-		mQuestionViz.visualizeAll(questionDir);
-	}
-
-	private JSONObject computeAnswerScores(QuantitativePolicy agentQuantPolicy, PolicyInfo solnPolicyInfo) {
-		Policy agentPolicy = agentQuantPolicy.getPolicy();
-		Policy solnPolicy = solnPolicyInfo.getPolicy();
-		double yesScore = agentPolicy.equals(solnPolicy) ? 1 : 0;
-		double noScore = agentPolicy.equals(solnPolicy) ? 0 : 1;
-
-		JSONObject scoreCardJsonObj = new JSONObject();
-		scoreCardJsonObj.put("yes", yesScore);
-		scoreCardJsonObj.put("no", noScore);
-		return scoreCardJsonObj;
+		return answerKeyJsonObj;
 	}
 }

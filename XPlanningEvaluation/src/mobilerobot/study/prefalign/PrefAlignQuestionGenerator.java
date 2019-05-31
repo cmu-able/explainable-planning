@@ -20,10 +20,13 @@ import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
+import solver.prismconnector.PrismConnector;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
 public class PrefAlignQuestionGenerator implements IQuestionGenerator {
+
+	private static final double EQUALITY_TOL = 1e-5;
 
 	private QuestionViz mQuestionViz = new QuestionViz();
 
@@ -59,7 +62,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			}
 
 			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
-			JSONObject answerKeyJsonObj = createAnswerKey(indexedAgentQuantPolicies, solnPolicyInfo);
+			JSONObject answerKeyJsonObj = createAnswerKey(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
 			QuestionUtils.writeScoreCardToQuestionDir(answerKeyJsonObj, questionDir);
 
 			// Visualize map of the mission and the agent's proposed policy
@@ -68,17 +71,33 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return lowerConvexHull.getNextMissionIndex();
 	}
 
-	private JSONObject createAnswerKey(List<QuantitativePolicy> indexedAgentQuantPolicies, PolicyInfo solnPolicyInfo) {
-		JSONObject answerKeyJsonObj = new JSONObject();
+	private JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
+			PolicyInfo solnPolicyInfo) throws IOException, PrismException, ResultParsingException, XMDPException {
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
 
+		JSONObject answerKeyJsonObj = new JSONObject();
 		for (int i = 0; i < indexedAgentQuantPolicies.size(); i++) {
 			QuantitativePolicy agentQuantPolicy = indexedAgentQuantPolicies.get(i);
 			Policy agentPolicy = agentQuantPolicy.getPolicy();
 			Policy solnPolicy = solnPolicyInfo.getPolicy();
+
+			// Compute cost of the agent's proposed policy, using the cost function of the solution policy
+			double agentPolicyCost = prismConnector.computeObjectiveCost(agentPolicy);
+			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
+
+			// Agent's proposed policy is aligned if:
+			// it is the same as the solution policy, OR
+			// its cost (using the cost function of the solution policy) is approximately equal to the solution policy's cost.
+			// The latter is the compensatory case.
+			String answer = (agentPolicy.equals(solnPolicy)
+					|| Math.abs(agentPolicyCost - solnPolicyCost) <= EQUALITY_TOL) ? "yes" : "no";
+
 			String agentPolicyName = "agentPolicy" + i;
-			String answer = agentPolicy.equals(solnPolicy) ? "yes" : "no";
 			answerKeyJsonObj.put(agentPolicyName, answer);
 		}
+
+		// Close down PRISM
+		prismConnector.terminate();
 
 		return answerKeyJsonObj;
 	}

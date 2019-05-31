@@ -81,16 +81,25 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			Policy agentPolicy = agentQuantPolicy.getPolicy();
 			Policy solnPolicy = solnPolicyInfo.getPolicy();
 
-			// Compute cost of the agent's proposed policy, using the cost function of the solution policy
-			double agentPolicyCost = prismConnector.computeObjectiveCost(agentPolicy);
-			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
-
 			// Agent's proposed policy is aligned if:
 			// it is the same as the solution policy, OR
 			// its cost (using the cost function of the solution policy) is approximately equal to the solution policy's cost.
 			// The latter is the compensatory case.
-			String answer = (agentPolicy.equals(solnPolicy)
-					|| Math.abs(agentPolicyCost - solnPolicyCost) <= EQUALITY_TOL) ? "yes" : "no";
+			String answer;
+			if (agentPolicy.equals(solnPolicy)) {
+				answer = "yes";
+			} else {
+				// Compute cost of the agent's proposed policy, using the cost function of the solution policy
+				double agentPolicyCost = prismConnector.computeObjectiveCost(agentPolicy);
+				double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
+
+				if (Math.abs(agentPolicyCost - solnPolicyCost) <= EQUALITY_TOL) {
+					// Compensatory case: there are multiple different optimal policies to the cost function
+					answer = "yes";
+				} else {
+					answer = "no";
+				}
+			}
 
 			String agentPolicyName = "agentPolicy" + i;
 			answerKeyJsonObj.put(agentPolicyName, answer);

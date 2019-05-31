@@ -3,23 +3,19 @@ package mobilerobot.study.prefinterp;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
-import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
-import language.objectives.CostCriterion;
 import language.policy.Policy;
 import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
@@ -27,7 +23,6 @@ import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
-import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
@@ -93,16 +88,7 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 
 	private JSONObject computeOptimalityScores(File missionFile, List<QuantitativePolicy> indexedMultiChoicePolicies,
 			PolicyInfo solnPolicyInfo) throws PrismException, IOException, ResultParsingException, XMDPException {
-		String missionName = FilenameUtils.removeExtension(missionFile.getName());
-
-		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
-		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(missionName);
-		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(missionName);
-
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
-				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(solnPolicyInfo.getXMDP(), CostCriterion.TOTAL_COST,
-				prismConnSetttings);
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
 
 		JSONObject scoreCardJsonObj = new JSONObject();
 		for (int i = 0; i < indexedMultiChoicePolicies.size(); i++) {

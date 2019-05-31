@@ -3,12 +3,19 @@ package mobilerobot.study.utilities;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 
+import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
+import language.mdp.XMDP;
+import language.objectives.CostCriterion;
 import mobilerobot.utilities.FileIOUtils;
+import prism.PrismException;
+import solver.prismconnector.PrismConnector;
+import solver.prismconnector.PrismConnectorSettings;
 import uiconnector.PolicyWriter;
 
 public class QuestionUtils {
@@ -44,5 +51,17 @@ public class QuestionUtils {
 		// Write the scores of all choice answers as scoreCard.json file at /output/question-missionX/
 		File scoreCardFile = FileIOUtils.createOutFile(questionDir, "scoreCard.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(scoreCardJsonObj, scoreCardFile);
+	}
+
+	public static PrismConnector createPrismConnector(File missionFile, XMDP xmdp) throws IOException, PrismException {
+		String missionName = FilenameUtils.removeExtension(missionFile.getName());
+
+		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(missionName);
+		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(missionName);
+
+		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+				advOutputPath.toString());
+		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 	}
 }

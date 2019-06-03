@@ -24,7 +24,7 @@ import solver.prismconnector.exceptions.ExplicitModelParsingException;
 public class AlternativeExplorer {
 
 	private GRBConnector mGRBConnector;
-	private WeberScale mWeberScale;
+	private DifferenceScaler mDiffScaler;
 
 	/**
 	 * Generate Pareto-optimal alternative policies that are immediate neighbors of the original solution policy. This
@@ -40,12 +40,12 @@ public class AlternativeExplorer {
 	 * Generate Pareto-optimal alternative policies that are at some significant distance away from the the original
 	 * solution policy on the n-dimensional cost space.
 	 * 
-	 * @param weberScale
-	 *            : Weber-Fechner law of perception
+	 * @param diffScaler
+	 *            : Difference scaler
 	 * @param grbConnector
 	 */
-	public AlternativeExplorer(WeberScale weberScale, GRBConnector grbConnector) {
-		mWeberScale = weberScale;
+	public AlternativeExplorer(DifferenceScaler diffScaler, GRBConnector grbConnector) {
+		mDiffScaler = diffScaler;
 		mGRBConnector = grbConnector;
 	}
 
@@ -134,13 +134,12 @@ public class AlternativeExplorer {
 		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, hardBoundType,
 				currQAValue);
 
-		if (mWeberScale != null) {
+		if (mDiffScaler != null) {
 			// Non-strict, soft upper/lower bound
 			BOUND_TYPE softBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.UPPER_BOUND : BOUND_TYPE.LOWER_BOUND;
 
 			// Weber scaling -- decrease or increase in value for improvement
-			double softBoundValue = attrCostFuncSlope > 0 ? mWeberScale.getSignificantDecrease(qFunction, currQAValue)
-					: mWeberScale.getSignificantIncrease(qFunction, currQAValue);
+			double softBoundValue = mDiffScaler.getSignificantImprovement(qFunction, currQAValue);
 
 			// Penalty function for soft-constraint violation
 			// FIXME
@@ -205,7 +204,7 @@ public class AlternativeExplorer {
 			double altQAValue = alternativeInfo.getQAValue(qFunction);
 
 			// If this QA of the alternative has been improved as a side effect, remove it from the QAs to be explored
-			if (mWeberScale != null) {
+			if (mDiffScaler != null) {
 				// Check if the side-effect improvement is significant
 				if (hasSignificantImprovement(qFunction, attrCostFuncSlope, solnQAValue, altQAValue)) {
 					frontierIter.remove();
@@ -219,14 +218,7 @@ public class AlternativeExplorer {
 
 	private boolean hasSignificantImprovement(IQFunction<?, ?> qFunction, double attrCostFuncSlope, double solnQAValue,
 			double altQAValue) {
-		if (attrCostFuncSlope > 0) {
-			// Decrease in value for improvement
-			double softUpperBound = mWeberScale.getSignificantDecrease(qFunction, solnQAValue);
-			return altQAValue <= softUpperBound;
-		} else {
-			// Increase in value for improvement
-			double softLowerBound = mWeberScale.getSignificantIncrease(qFunction, solnQAValue);
-			return altQAValue >= softLowerBound;
-		}
+		double softBound = mDiffScaler.getSignificantImprovement(qFunction, solnQAValue);
+		return attrCostFuncSlope > 0 ? altQAValue <= softBound : altQAValue >= softBound;
 	}
 }

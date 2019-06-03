@@ -27,7 +27,7 @@ public class QuestionViz {
 
 	public File visualizeMap(File questionDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
-		FilenameFilter missionFileFilter = (dir, name) -> name.matches("mission[0-9]+.json");
+		FilenameFilter missionFileFilter = (dir, name) -> name.toLowerCase().matches("mission[0-9]+.json");
 		// There is only 1 missionX.json file in each question dir
 		File missionJsonFile = questionDir.listFiles(missionFileFilter)[0];
 		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
@@ -43,8 +43,7 @@ public class QuestionViz {
 	public void visualizePolicies(File questionDir, File mapJsonFile)
 			throws MapTopologyException, IOException, ParseException {
 		// There can be 1 or more [policyName].json files in each question dir
-		FilenameFilter policyFileFilter = (dir, name) -> name.toLowerCase().contains("policy")
-				&& name.toLowerCase().endsWith(".json");
+		FilenameFilter policyFileFilter = (dir, name) -> name.toLowerCase().matches(".*policy[0-9]*.json");
 
 		// Render all policies at /output/question-missionX/
 		for (File policyJsonFile : questionDir.listFiles(policyFileFilter)) {

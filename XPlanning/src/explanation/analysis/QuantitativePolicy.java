@@ -1,6 +1,7 @@
 package explanation.analysis;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import language.domain.metrics.IEvent;
@@ -8,7 +9,7 @@ import language.domain.metrics.IQFunction;
 import language.domain.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 
-public class QuantitativePolicy {
+public class QuantitativePolicy implements Iterable<IQFunction<?, ?>> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -44,6 +45,11 @@ public class QuantitativePolicy {
 			NonStandardMetricQFunction<?, ?, E> qFunction) {
 		// Casting: type-safety is ensured in putEventBasedQAValue()
 		return (EventBasedQAValue<E>) mEventBasedQAValues.get(qFunction);
+	}
+
+	@Override
+	public Iterator<IQFunction<?, ?>> iterator() {
+		return mQAValues.keySet().iterator();
 	}
 
 	@Override

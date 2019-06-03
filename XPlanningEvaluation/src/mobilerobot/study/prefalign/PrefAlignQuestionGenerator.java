@@ -18,9 +18,11 @@ import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
+import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.domain.metrics.CountQFunction;
+import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.NonStandardMetricQFunction;
 import language.exceptions.XMDPException;
@@ -71,9 +73,11 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 				// Write each agent's proposed solution policy as json file at /output/question-missionX/
 				JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
-				String agentPolicyFilename = FileIOUtils.insertIndexToFilename("agentPolicy.json", i);
-				File agentPolicyFile = FileIOUtils.createOutFile(questionDir, agentPolicyFilename);
-				FileIOUtils.prettyPrintJSONObjectToFile(agentPolicyJsonObj, agentPolicyFile);
+				writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", i, questionDir);
+
+				// Write the QA values of each agent policy as json file
+				JSONObject agentPolicyValuesJsonObj = createAgentPolicyValues(agentQuantPolicy);
+				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
 			}
 
 			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
@@ -84,6 +88,13 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			mQuestionViz.visualizeAll(questionDir);
 		}
 		return lowerConvexHull.getNextMissionIndex();
+	}
+
+	private void writeAgentJSONObjectToFile(JSONObject agentJsonObj, String filename, int agentIndex, File questionDir)
+			throws IOException {
+		String agentFilename = FileIOUtils.insertIndexToFilename(filename, agentIndex);
+		File agentFile = FileIOUtils.createOutFile(questionDir, agentFilename);
+		FileIOUtils.prettyPrintJSONObjectToFile(agentJsonObj, agentFile);
 	}
 
 	private void createSimpleCostStructure(File questionDir, XMDP xmdp) throws IOException {
@@ -112,6 +123,28 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		File costStructFile = FileIOUtils.createOutFile(questionDir, "simpleCostStructure.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(costStructJsonObj, costStructFile);
+	}
+
+	private JSONObject createAgentPolicyValues(QuantitativePolicy agentQuantPolicy) {
+		JSONObject agentPolicyValuesJsonObj = new JSONObject();
+		for (IQFunction<?, ?> qFunction : agentQuantPolicy) {
+			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				NonStandardMetricQFunction<?, ?, ?> eventBasedQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
+				EventBasedQAValue<?> eventBasedQAValue = agentQuantPolicy.getEventBasedQAValue(eventBasedQFunction);
+
+				JSONObject agentEventBasedValuesJsonObj = new JSONObject();
+				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
+					IEvent<?, ?> event = e.getKey();
+					Double expectedValue = e.getValue();
+					agentEventBasedValuesJsonObj.put(event.getName(), expectedValue);
+				}
+				agentPolicyValuesJsonObj.put(eventBasedQFunction.getName(), agentEventBasedValuesJsonObj);
+			} else {
+				double expectedValue = agentQuantPolicy.getQAValue(qFunction);
+				agentPolicyValuesJsonObj.put(qFunction.getName(), expectedValue);
+			}
+		}
+		return agentPolicyValuesJsonObj;
 	}
 
 	private JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,

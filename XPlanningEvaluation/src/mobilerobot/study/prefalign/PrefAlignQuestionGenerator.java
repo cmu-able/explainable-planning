@@ -112,9 +112,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		CostFunction costFunction = xmdp.getCostFunction();
 		SimpleCostStructure costStruct = new SimpleCostStructure(qaUnitAmounts, costFunction);
-		double unitTimeCost = costStruct.getCostOfEachUnit(timeQFunction);
-		double unitCollisionCost = costStruct.getCostOfEachUnit(collideQFunction);
-		double unitIntrusiveCost = costStruct.getCostOfEachUnit(intrusiveQFunction);
+		double unitTimeCost = costStruct.getScaledCostOfEachUnit(timeQFunction);
+		double unitCollisionCost = costStruct.getScaledCostOfEachUnit(collideQFunction);
+		double unitIntrusiveCost = costStruct.getScaledCostOfEachUnit(intrusiveQFunction);
 
 		JSONObject costStructJsonObj = new JSONObject();
 		costStructJsonObj.put("1 minute", unitTimeCost);
@@ -135,8 +135,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				JSONObject agentEventBasedValuesJsonObj = new JSONObject();
 				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
 					IEvent<?, ?> event = e.getKey();
-					Double expectedValue = e.getValue();
-					agentEventBasedValuesJsonObj.put(event.getName(), expectedValue);
+					Double expectedCount = e.getValue();
+					agentEventBasedValuesJsonObj.put(event.getName(), expectedCount);
 				}
 				agentPolicyValuesJsonObj.put(eventBasedQFunction.getName(), agentEventBasedValuesJsonObj);
 			} else {

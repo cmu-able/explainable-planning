@@ -1,0 +1,9 @@
+{
+  "collision": 0.39999999999999997,
+  "travelTime": 153.6167804583472,
+  "intrusiveness": {
+    "non-intrusive": 7.0,
+    "very-intrusive": 0.0,
+    "somewhat-intrusive": 5.0
+  }
+}

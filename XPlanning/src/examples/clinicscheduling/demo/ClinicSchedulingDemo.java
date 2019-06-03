@@ -51,8 +51,8 @@ public class ClinicSchedulingDemo {
 		mOutputDirs = outputDirs;
 	}
 
-	public void run(File problemFile) throws PrismException, XMDPException, IOException, ExplicitModelParsingException,
-			GRBException, DSMException, ResultParsingException {
+	public void runXPlanning(File problemFile) throws PrismException, XMDPException, IOException,
+			ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(problemName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(problemName);
@@ -76,6 +76,7 @@ public class ClinicSchedulingDemo {
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
 
+		// ExplainerSettings define what DifferenceScaler to use, if any
 		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policyInfo);
@@ -107,7 +108,7 @@ public class ClinicSchedulingDemo {
 				prismOutputPath);
 
 		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
-		demo.run(problemFile);
+		demo.runXPlanning(problemFile);
 	}
 
 	public static Vocabulary getVocabulary(XMDP xmdp) {

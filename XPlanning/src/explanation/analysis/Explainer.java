@@ -49,7 +49,7 @@ public class Explainer {
 		// GRBConnector is used in AlternativeExplorer
 		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
 		GRBConnector grbConnector = new GRBConnector(xmdp, costCriterion, grbConnSettings);
-		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
+		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector, mSettings.getDifferenceScaler());
 		Set<PolicyInfo> altPolicies = altExplorer.getParetoOptimalAlternatives(policyInfo);
 
 		// Temporary solution: policyInfo might not have its event-based QA values computed yet

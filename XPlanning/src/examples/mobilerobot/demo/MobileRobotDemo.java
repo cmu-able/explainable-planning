@@ -64,6 +64,7 @@ public class MobileRobotDemo {
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConnector.terminate();
 
+		// ExplainerSettings define what DifferenceScaler to use, if any
 		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);

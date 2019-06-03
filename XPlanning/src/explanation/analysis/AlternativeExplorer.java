@@ -33,18 +33,18 @@ public class AlternativeExplorer {
 	 * @param grbConnector
 	 */
 	public AlternativeExplorer(GRBConnector grbConnector) {
-		this(null, grbConnector);
+		this(grbConnector, null);
 	}
 
 	/**
 	 * Generate Pareto-optimal alternative policies that are at some significant distance away from the the original
 	 * solution policy on the n-dimensional cost space.
 	 * 
+	 * @param grbConnector
 	 * @param diffScaler
 	 *            : Difference scaler
-	 * @param grbConnector
 	 */
-	public AlternativeExplorer(DifferenceScaler diffScaler, GRBConnector grbConnector) {
+	public AlternativeExplorer(GRBConnector grbConnector, DifferenceScaler diffScaler) {
 		mDiffScaler = diffScaler;
 		mGRBConnector = grbConnector;
 	}

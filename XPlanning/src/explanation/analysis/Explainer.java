@@ -27,10 +27,10 @@ public class Explainer {
 
 	private static final double DEFAULT_EQUALITY_TOL = 1e-6;
 
-	private PrismConnectorSettings mPrismConnSettings;
+	private ExplainerSettings mSettings;
 
-	public Explainer(PrismConnectorSettings prismConnectorSettings) {
-		mPrismConnSettings = prismConnectorSettings;
+	public Explainer(ExplainerSettings settings) {
+		mSettings = settings;
 	}
 
 	public Explanation explain(XMDP xmdp, CostCriterion costCriterion, PolicyInfo policyInfo) throws PrismException,
@@ -38,7 +38,8 @@ public class Explainer {
 		// PrismConnector
 		// Create a new PrismConnector to export PRISM explicit model files from the XMDP
 		// so that GRBConnector can create the corresponding ExplicitMDP
-		PrismConnector prismConnector = new PrismConnector(xmdp, costCriterion, mPrismConnSettings);
+		PrismConnectorSettings prismConnSettings = mSettings.getPrismConnectorSettings();
+		PrismConnector prismConnector = new PrismConnector(xmdp, costCriterion, prismConnSettings);
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,

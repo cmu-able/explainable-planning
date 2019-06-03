@@ -15,6 +15,7 @@ import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import explanation.analysis.Explainer;
+import explanation.analysis.ExplainerSettings;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
@@ -38,14 +39,15 @@ public class MobileRobotExplanationTest {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		String modelOutputPath = XPlanningOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
 		String advOutputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSettings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConnector.terminate();
 
-		Explainer explainer = new Explainer(prismConnSetttings);
+		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
+		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
 		Vocabulary vocabulary = MobileRobotDemo.getVocabulary(xmdp);

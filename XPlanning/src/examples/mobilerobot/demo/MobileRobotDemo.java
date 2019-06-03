@@ -16,6 +16,7 @@ import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.Explainer;
+import explanation.analysis.ExplainerSettings;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
@@ -55,15 +56,16 @@ public class MobileRobotDemo {
 
 		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
 
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSettings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
 
 		// Close down PRISM -- before explainer creates a new PrismConnector
 		prismConnector.terminate();
 
-		Explainer explainer = new Explainer(prismConnSetttings);
+		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
+		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
@@ -109,7 +111,8 @@ public class MobileRobotDemo {
 		Path policiesOutputPath = Paths.get(XPlanningOutDirectories.POLICIES_OUTPUT_PATH);
 		Path explanationOutputPath = Paths.get(XPlanningOutDirectories.EXPLANATIONS_OUTPUT_PATH);
 		Path prismOutputPath = Paths.get(XPlanningOutDirectories.PRISM_OUTPUT_PATH);
-		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath,
+				prismOutputPath);
 
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		demo.runXPlanning(missionJsonFile);

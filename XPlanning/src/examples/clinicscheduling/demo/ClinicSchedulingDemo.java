@@ -15,6 +15,7 @@ import examples.clinicscheduling.metrics.SwitchABPQFunction;
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
 import explanation.analysis.Explainer;
+import explanation.analysis.ExplainerSettings;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.verbalization.Verbalizer;
@@ -59,9 +60,9 @@ public class ClinicSchedulingDemo {
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
 
 		// Use PrismConnector to export XMDP to explicit model files
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
+		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSetttings);
+		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSettings);
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
@@ -75,7 +76,8 @@ public class ClinicSchedulingDemo {
 		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
 		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
 
-		Explainer explainer = new Explainer(prismConnSetttings);
+		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
+		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policyInfo);
 
 		Vocabulary vocabulary = getVocabulary(xmdp);
@@ -101,7 +103,8 @@ public class ClinicSchedulingDemo {
 		Path policiesOutputPath = Paths.get(XPlanningOutDirectories.POLICIES_OUTPUT_PATH);
 		Path explanationOutputPath = Paths.get(XPlanningOutDirectories.EXPLANATIONS_OUTPUT_PATH);
 		Path prismOutputPath = Paths.get(XPlanningOutDirectories.PRISM_OUTPUT_PATH);
-		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath, prismOutputPath);
+		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath,
+				prismOutputPath);
 
 		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
 		demo.run(problemFile);

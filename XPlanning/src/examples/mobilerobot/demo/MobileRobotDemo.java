@@ -15,6 +15,7 @@ import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
+import explanation.analysis.DifferenceScaler;
 import explanation.analysis.Explainer;
 import explanation.analysis.ExplainerSettings;
 import explanation.analysis.Explanation;
@@ -50,6 +51,11 @@ public class MobileRobotDemo {
 
 	public void runXPlanning(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		runXPlanning(missionJsonFile, null);
+	}
+
+	public void runXPlanning(File missionJsonFile, DifferenceScaler diffScaler)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
@@ -66,6 +72,7 @@ public class MobileRobotDemo {
 
 		// ExplainerSettings define what DifferenceScaler to use, if any
 		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
+		explainerSettings.setDifferenceScaler(diffScaler);
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 

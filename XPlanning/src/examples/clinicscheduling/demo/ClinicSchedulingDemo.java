@@ -14,6 +14,7 @@ import examples.clinicscheduling.metrics.RevenueQFunction;
 import examples.clinicscheduling.metrics.SwitchABPQFunction;
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
+import explanation.analysis.DifferenceScaler;
 import explanation.analysis.Explainer;
 import explanation.analysis.ExplainerSettings;
 import explanation.analysis.Explanation;
@@ -51,8 +52,13 @@ public class ClinicSchedulingDemo {
 		mOutputDirs = outputDirs;
 	}
 
-	public void runXPlanning(File problemFile) throws PrismException, XMDPException, IOException,
-			ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
+	public void runXPlanning(File problemFile) throws ExplicitModelParsingException, ResultParsingException,
+			PrismException, XMDPException, IOException, GRBException, DSMException {
+		runXPlanning(problemFile, null);
+	}
+
+	public void runXPlanning(File problemFile, DifferenceScaler diffScaler) throws PrismException, XMDPException,
+			IOException, ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(problemName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(problemName);
@@ -78,6 +84,7 @@ public class ClinicSchedulingDemo {
 
 		// ExplainerSettings define what DifferenceScaler to use, if any
 		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
+		explainerSettings.setDifferenceScaler(diffScaler);
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policyInfo);
 

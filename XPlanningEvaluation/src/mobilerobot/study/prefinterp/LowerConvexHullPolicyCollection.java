@@ -45,7 +45,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private String mMapName;
 
 	// Lower convex hull of the map
-	// Each key is a mission whose optimal solution lies in the lower convex hull, and each value is that solution
+	// Each key is a mission whose optimal solution lies in the lower convex hull, and each value is that solution.
 	// Each mission is unique in terms of the scaling constants of the objective function, but each solution is not
 	// necessarily unique.
 	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
@@ -129,6 +129,18 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 
 	public List<QuantitativePolicy> getIndexedUniqueQuantitativePolicies() {
 		return mIndexedUniqueQuantPolicies;
+	}
+
+	public File getMissionFile(QuantitativePolicy quantPolicy) {
+		for (Entry<File, PolicyInfo> e : mPolicyInfos.entrySet()) {
+			File missionFile = e.getKey();
+			PolicyInfo policyInfo = e.getValue();
+
+			if (policyInfo.getQuantitativePolicy().equals(quantPolicy)) {
+				return missionFile;
+			}
+		}
+		throw new IllegalArgumentException("Quantitative policy argument is not in this LCH");
 	}
 
 	public Set<QuantitativePolicy> randomlySelectUniqueQuantitativePolicies(int maxNumPolicies,

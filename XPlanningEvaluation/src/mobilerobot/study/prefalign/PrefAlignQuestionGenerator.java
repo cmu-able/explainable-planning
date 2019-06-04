@@ -3,6 +3,7 @@ package mobilerobot.study.prefalign;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,11 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				// Write the QA values of each agent policy as json file
 				JSONObject agentPolicyValuesJsonObj = createAgentPolicyValues(agentQuantPolicy);
 				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
+
+				// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative
+				// policies, and explanation at /output/question-missionX/explanation-agentY/
+				File agentMissionFile = lowerConvexHull.getMissionFile(agentQuantPolicy);
+				createExplanation(questionDir, i, agentMissionFile);
 			}
 
 			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
@@ -147,6 +153,19 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return agentPolicyValuesJsonObj;
 	}
 
+	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile) throws IOException {
+		// Create explanation sub-directory for each agent: /output/question-missionX/explanation-agentY/
+		String explanationDirname = "explanation-agent" + agentIndex;
+		File explanationDir = FileIOUtils.createOutSubDir(questionDir, explanationDirname);
+
+		// Copy missionY.json file (corresponding mission of agent) from /output/missions-of-{mapName}/ to the
+		// explanation sub-dir /output/question-missionX/explanation-agentY/
+		// Note: missionY name is unique across all maps
+		Files.copy(agentMissionFile.toPath(), explanationDir.toPath().resolve(agentMissionFile.getName()));
+
+		// TODO
+	}
+
 	private JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
 			PolicyInfo solnPolicyInfo) throws IOException, PrismException, ResultParsingException, XMDPException {
 		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
@@ -159,7 +178,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 			// Agent's proposed policy is aligned if:
 			// it is the same as the solution policy, OR
-			// its cost (using the cost function of the solution policy) is approximately equal to the solution policy's cost.
+			// its cost (using the cost function of the solution policy) is approximately equal to the solution policy's
+			// cost.
 			// The latter is the compensatory case.
 			String answer;
 			if (agentPolicy.equals(solnPolicy)) {

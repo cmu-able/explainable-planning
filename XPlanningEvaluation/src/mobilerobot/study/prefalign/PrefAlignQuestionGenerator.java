@@ -94,7 +94,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
 
 				// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative
-				// policies, and explanation at /output/question-missionX/explanation-agentY/
+				// policies, and explanation at /output/question-missionX/explanation-agent[i]/
 				File agentMissionFile = lowerConvexHull.getMissionFile(agentQuantPolicy);
 				createExplanation(questionDir, i, agentMissionFile);
 			}
@@ -168,32 +168,38 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		// Create explanation sub-directory for each agent: /output/question-missionX/explanation-agentY/
+		// Create explanation sub-directory for each agent: /output/question-missionX/explanation-agent[i]/
 		String explanationDirname = "explanation-agent" + agentIndex;
 		File explanationDir = FileIOUtils.createOutSubDir(questionDir, explanationDirname);
 
-		// Copy missionY.json file (corresponding mission of agent) from /output/missions-of-{mapName}/ to the
+		// Copy missionY.json file (corresponding mission of agent[i]) from /output/missions-of-{mapName}/ to the
 		// explanation sub-dir
 		// Note: missionY name is unique across all maps
 		Files.copy(agentMissionFile.toPath(), explanationDir.toPath().resolve(agentMissionFile.getName()));
 
-		// Run XPlanning on missionY.json to create explanation for agentY's policy
-		mXPlanningRunner.runMission(agentMissionFile);
+		// Check if missionY of agent[i] has already been explained
+		// If so, no need to run XPlanning on missionY.json again
+		XPlanningOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
+		Path explanationsOutPath = xplanningOutDirs.getExplanationsOutputPath();
+		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
+		String agentExplanationFilename = agentMissionName + "_explanation.json";
+		Path agentExplanationPath = explanationsOutPath.resolve(agentExplanationFilename);
+
+		if (!agentExplanationPath.toFile().exists()) {
+			// missionY_explanation.json does not exist -- missionY has not been explained yet
+			// Run XPlanning on missionY.json to create explanation for agent[i]'s policy
+			mXPlanningRunner.runMission(agentMissionFile);
+		}
 
 		// Copy solution policy, alternative policies, and explanation from XPlanningOutDirectories to the explanation
 		// sub-dir
-		XPlanningOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
 
-		// Copy solnPolicy.json and all altPolicy[i].json from /output/policies/missionY/ to the explanation sub-dir
+		// Copy solnPolicy.json and all altPolicy[j].json from /output/policies/missionY/ to the explanation sub-dir
 		Path policiesOutPath = xplanningOutDirs.getPoliciesOutputPath();
-		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
 		Path agentMissionPoliciesOutPath = policiesOutPath.resolve(agentMissionName);
 		FileUtils.copyDirectory(agentMissionPoliciesOutPath.toFile(), explanationDir);
 
 		// Copy missionY_explanation.json from /output/explanations/ to the explanation sub-dir
-		Path explanationsOutPath = xplanningOutDirs.getExplanationsOutputPath();
-		String agentExplanationFilename = agentMissionName + "_explanation.json";
-		Path agentExplanationPath = explanationsOutPath.resolve(agentExplanationFilename);
 		Files.copy(agentExplanationPath, explanationDir.toPath().resolve(agentExplanationFilename));
 	}
 

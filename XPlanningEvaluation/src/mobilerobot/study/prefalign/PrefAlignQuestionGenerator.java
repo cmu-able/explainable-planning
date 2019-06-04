@@ -103,7 +103,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			JSONObject answerKeyJsonObj = createAnswerKey(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
 			QuestionUtils.writeScoreCardToQuestionDir(answerKeyJsonObj, questionDir);
 
-			// Visualize map of the mission and the agent's proposed policy
+			// Visualize map of the mission, each agent's proposed policy, and all policies in the explanation of each
+			// agent
 			mQuestionViz.visualizeAll(questionDir);
 		}
 		return lowerConvexHull.getNextMissionIndex();

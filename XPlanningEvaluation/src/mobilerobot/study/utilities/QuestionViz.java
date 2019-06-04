@@ -1,6 +1,7 @@
 package mobilerobot.study.utilities;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -48,6 +49,13 @@ public class QuestionViz {
 		// Render all policies at /output/question-missionX/
 		for (File policyJsonFile : questionDir.listFiles(policyFileFilter)) {
 			mPolicyRenderer.render(policyJsonFile, mapJsonFile, questionDir, null);
+		}
+
+		// Visualize all policies in sub-directories recursively
+		// Assume that all policies are of the same map
+		FileFilter subDirFileFilter = File::isDirectory;
+		for (File subDir : questionDir.listFiles(subDirFileFilter)) {
+			visualizePolicies(subDir, mapJsonFile);
 		}
 	}
 }

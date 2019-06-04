@@ -17,24 +17,17 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 public class XPlanningRunner {
 
 	private MobileRobotDemo mDemo;
-	private File mMissionsJsonRootDir;
 
-	public XPlanningRunner(File mapsJsonDir, File missionsJsonRootDir, XPlanningOutDirectories outputDirs) {
+	public XPlanningRunner(File mapsJsonDir, XPlanningOutDirectories outputDirs) {
 		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs);
-		mMissionsJsonRootDir = missionsJsonRootDir;
 	}
 
-	public void runAllMissions()
+	public void runAllMissions(File missionDirOrFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		runAllMissions(mMissionsJsonRootDir);
-	}
-
-	public void runAllMissions(File dirOrFile)
-			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		if (!dirOrFile.isDirectory()) {
-			mDemo.runXPlanning(dirOrFile);
+		if (!missionDirOrFile.isDirectory()) {
+			mDemo.runXPlanning(missionDirOrFile);
 		} else {
-			for (File subDirOrFile : dirOrFile.listFiles()) {
+			for (File subDirOrFile : missionDirOrFile.listFiles()) {
 				runAllMissions(subDirOrFile);
 			}
 		}
@@ -53,8 +46,8 @@ public class XPlanningRunner {
 			missionsJsonRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
 		}
 
-		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, missionsJsonRootDir, outputDirs);
-		runner.runAllMissions();
+		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs);
+		runner.runAllMissions(missionsJsonRootDir);
 	}
 
 }

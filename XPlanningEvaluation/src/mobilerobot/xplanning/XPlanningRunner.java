@@ -17,20 +17,31 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 public class XPlanningRunner {
 
 	private MobileRobotDemo mDemo;
+	private XPlanningOutDirectories mOutputDirs;
 
 	public XPlanningRunner(File mapsJsonDir, XPlanningOutDirectories outputDirs) {
 		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs);
+		mOutputDirs = outputDirs;
 	}
 
-	public void runAllMissions(File missionDirOrFile)
+	public void runMission(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		if (!missionDirOrFile.isDirectory()) {
-			mDemo.runXPlanning(missionDirOrFile);
+		mDemo.runXPlanning(missionJsonFile);
+	}
+
+	public void runAllMissions(File missionsJsonDir)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		if (!missionsJsonDir.isDirectory()) {
+			mDemo.runXPlanning(missionsJsonDir);
 		} else {
-			for (File subDirOrFile : missionDirOrFile.listFiles()) {
+			for (File subDirOrFile : missionsJsonDir.listFiles()) {
 				runAllMissions(subDirOrFile);
 			}
 		}
+	}
+
+	public XPlanningOutDirectories getXPlanningOutDirectories() {
+		return mOutputDirs;
 	}
 
 	public static void main(String[] args) throws URISyntaxException, PrismException, IOException, XMDPException,

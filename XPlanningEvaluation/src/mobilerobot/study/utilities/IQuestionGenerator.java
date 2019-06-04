@@ -7,13 +7,14 @@ import java.net.URISyntaxException;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import prism.PrismException;
-import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 
 public interface IQuestionGenerator {
 
 	public int generateQuestions(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
-			throws ResultParsingException, URISyntaxException, IOException, ParseException, DSMException, XMDPException,
-			PrismException;
+			throws URISyntaxException, IOException, ParseException, DSMException, XMDPException, PrismException,
+			PrismConnectorException, GRBException;
 }

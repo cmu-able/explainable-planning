@@ -4,15 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
+import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
@@ -22,6 +26,7 @@ import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
@@ -36,8 +41,10 @@ import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
+import mobilerobot.xplanning.XPlanningRunner;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
@@ -46,11 +53,17 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private static final double EQUALITY_TOL = 1e-5;
 
 	private QuestionViz mQuestionViz = new QuestionViz();
+	private XPlanningRunner mXPlanningRunner;
+
+	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
+		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		mXPlanningRunner = new XPlanningRunner(mapsJsonDir, outputDirs);
+	}
 
 	@Override
 	public int generateQuestions(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
-			throws ResultParsingException, URISyntaxException, IOException, ParseException, DSMException, XMDPException,
-			PrismException {
+			throws URISyntaxException, IOException, ParseException, DSMException, XMDPException, PrismException,
+			PrismConnectorException, GRBException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
 		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
@@ -153,17 +166,35 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return agentPolicyValuesJsonObj;
 	}
 
-	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile) throws IOException {
+	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile)
+			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		// Create explanation sub-directory for each agent: /output/question-missionX/explanation-agentY/
 		String explanationDirname = "explanation-agent" + agentIndex;
 		File explanationDir = FileIOUtils.createOutSubDir(questionDir, explanationDirname);
 
 		// Copy missionY.json file (corresponding mission of agent) from /output/missions-of-{mapName}/ to the
-		// explanation sub-dir /output/question-missionX/explanation-agentY/
+		// explanation sub-dir
 		// Note: missionY name is unique across all maps
 		Files.copy(agentMissionFile.toPath(), explanationDir.toPath().resolve(agentMissionFile.getName()));
 
-		// TODO
+		// Run XPlanning on missionY.json to create explanation for agentY's policy
+		mXPlanningRunner.runMission(agentMissionFile);
+
+		// Copy solution policy, alternative policies, and explanation from XPlanningOutDirectories to the explanation
+		// sub-dir
+		XPlanningOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
+
+		// Copy solnPolicy.json and all altPolicy[i].json from /output/policies/missionY/ to the explanation sub-dir
+		Path policiesOutPath = xplanningOutDirs.getPoliciesOutputPath();
+		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
+		Path agentMissionPoliciesOutPath = policiesOutPath.resolve(agentMissionName);
+		FileUtils.copyDirectory(agentMissionPoliciesOutPath.toFile(), explanationDir);
+
+		// Copy missionY_explanation.json from /output/explanations/ to the explanation sub-dir
+		Path explanationsOutPath = xplanningOutDirs.getExplanationsOutputPath();
+		String agentExplanationFilename = agentMissionName + "_explanation.json";
+		Path agentExplanationPath = explanationsOutPath.resolve(agentExplanationFilename);
+		Files.copy(agentExplanationPath, explanationDir.toPath().resolve(agentExplanationFilename));
 	}
 
 	private JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,

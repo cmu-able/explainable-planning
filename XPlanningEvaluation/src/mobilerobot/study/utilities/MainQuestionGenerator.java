@@ -7,13 +7,14 @@ import java.net.URISyntaxException;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.study.prefalign.PrefAlignQuestionGenerator;
 import mobilerobot.study.prefinterp.PrefInterpQuestionGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
-import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 
 public class MainQuestionGenerator {
 
@@ -23,8 +24,9 @@ public class MainQuestionGenerator {
 		mQuestionGenerator = questionGenerator;
 	}
 
-	public void generateAllQuestions(File mapsDir, String startNodeID, String goalNodeID) throws ResultParsingException,
-			URISyntaxException, IOException, ParseException, DSMException, XMDPException, PrismException {
+	public void generateAllQuestions(File mapsDir, String startNodeID, String goalNodeID)
+			throws URISyntaxException, IOException, ParseException, DSMException, XMDPException, PrismException,
+			PrismConnectorException, GRBException {
 		int nextMissionIndex = 0;
 		for (File mapJsonFile : mapsDir.listFiles()) {
 			nextMissionIndex = mQuestionGenerator.generateQuestions(mapJsonFile, startNodeID, goalNodeID,
@@ -32,8 +34,8 @@ public class MainQuestionGenerator {
 		}
 	}
 
-	public static void main(String[] args) throws URISyntaxException, ResultParsingException, IOException,
-			ParseException, DSMException, XMDPException, PrismException {
+	public static void main(String[] args) throws URISyntaxException, IOException, ParseException, DSMException,
+			XMDPException, PrismException, PrismConnectorException, GRBException {
 		String studyName = args[0];
 		String startNodeID;
 		String goalNodeID;
@@ -50,7 +52,7 @@ public class MainQuestionGenerator {
 		if (studyName.equals("PrefInterp")) {
 			questionGenerator = new PrefInterpQuestionGenerator();
 		} else if (studyName.equals("PrefAlign")) {
-			questionGenerator = new PrefAlignQuestionGenerator();
+			questionGenerator = new PrefAlignQuestionGenerator(mapsDir);
 		} else {
 			throw new IllegalArgumentException("Invalid Study Name");
 		}

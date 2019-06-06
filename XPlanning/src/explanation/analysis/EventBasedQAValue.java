@@ -1,9 +1,11 @@
 package explanation.analysis;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Stream;
 
 import language.domain.metrics.IEvent;
 
@@ -26,7 +28,9 @@ public class EventBasedQAValue<E extends IEvent<?, ?>> implements Iterable<Entry
 
 	@Override
 	public Iterator<Entry<E, Double>> iterator() {
-		return mEventExpectedCounts.entrySet().iterator();
+		Stream<Entry<E, Double>> sorted = mEventExpectedCounts.entrySet().stream()
+				.sorted(Collections.reverseOrder(Map.Entry.comparingByValue()));
+		return sorted.iterator();
 	}
 
 	@Override

@@ -4,9 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
@@ -63,5 +69,26 @@ public class QuestionUtils {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+	}
+
+	public static void createHTMLDocumentExplanation(File explanationJsonFile) throws IOException, ParseException {
+		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
+		String explanationText = (String) explanationJsonObj.get("Explanation");
+		String explanationWithImages = "";
+		String imgHTMLElementStr = "<img src=\"%s\">";
+
+		Pattern jsonFileRefPattern = Pattern.compile("\\[.+\\.json\\]");
+		Matcher matcher = jsonFileRefPattern.matcher(explanationText);
+		while (matcher.find()) {
+			String jsonFileRef = matcher.group(0);
+			String imgHTMLElement = String.format(imgHTMLElementStr, jsonFileRef);
+			explanationWithImages = explanationText.replace(jsonFileRef, imgHTMLElement);
+		}
+
+		Document doc = Jsoup.parse("<html></html>");
+		doc.body().appendElement("div");
+		Element div = doc.selectFirst("div");
+		div.text(explanationWithImages);
+		String htmlStr = doc.toString();
 	}
 }

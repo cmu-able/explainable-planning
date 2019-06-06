@@ -99,17 +99,31 @@ public class Verbalizer {
 				builder.append("; ");
 			}
 
-			builder.append(mVocabulary.getVerb(qFunction));
-			builder.append(" ");
+			double qaValue = policyInfo.getQAValue(qFunction);
+			double scaledQACost = policyInfo.getScaledQACost(qFunction);
 
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				// Nonstandard metric
+				// First describe total penalty value
+				String formattedPenaltyValue = mSettings.formatQAValue(qFunction, qaValue);
+				builder.append("have ");
+				builder.append(qFunction.getName());
+				builder.append("-penalty of ");
+				builder.append(formattedPenaltyValue);
+				builder.append(": ");
+
+				// Then describe event-based QA value break-down
+				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(" ");
+
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = policyInfo.getEventBasedQAValue(nonStdQFunction);
-				double scaledQACost = policyInfo.getScaledQACost(nonStdQFunction);
 				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACost, false));
 			} else {
-				double qaValue = policyInfo.getQAValue(qFunction);
-				double scaledQACost = policyInfo.getScaledQACost(qFunction);
+				// Standard metric or count
+				// Use only 1 verb
+				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(" ");
 				builder.append(verbalizeQAValue(qFunction, qaValue, scaledQACost, false));
 			}
 		}

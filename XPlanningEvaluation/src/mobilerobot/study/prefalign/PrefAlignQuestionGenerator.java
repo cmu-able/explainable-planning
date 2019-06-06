@@ -26,6 +26,7 @@ import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.IEvent;
@@ -54,10 +55,12 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	private QuestionViz mQuestionViz = new QuestionViz();
 	private XPlanningRunner mXPlanningRunner;
+	private VerbalizerSettings mVerbalizationSettings = new VerbalizerSettings();
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
 		mXPlanningRunner = new XPlanningRunner(mapsJsonDir, outputDirs);
+		mVerbalizationSettings.setDescribeCosts(false);
 	}
 
 	@Override
@@ -189,7 +192,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		if (!agentExplanationPath.toFile().exists()) {
 			// missionY_explanation.json does not exist -- missionY has not been explained yet
 			// Run XPlanning on missionY.json to create explanation for agent[i]'s policy
-			mXPlanningRunner.runMission(agentMissionFile);
+			mXPlanningRunner.runMission(agentMissionFile, mVerbalizationSettings);
 		}
 
 		// Copy solution policy, alternative policies, and explanation from XPlanningOutDirectories to the explanation

@@ -49,12 +49,12 @@ public class MobileRobotDemo {
 		mOutputDirs = outputDirs;
 	}
 
-	public void runXPlanning(File missionJsonFile)
+	public void runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		runXPlanning(missionJsonFile, null);
+		runXPlanning(missionJsonFile, verbalizerSettings, null);
 	}
 
-	public void runXPlanning(File missionJsonFile, DifferenceScaler diffScaler)
+	public void runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings, DifferenceScaler diffScaler)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
@@ -77,7 +77,6 @@ public class MobileRobotDemo {
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
 		Vocabulary vocabulary = getVocabulary(xmdp.getQSpace());
-		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		setDecimalFormats(verbalizerSettings, xmdp.getQSpace());
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toFile(),
@@ -124,7 +123,8 @@ public class MobileRobotDemo {
 				prismOutputPath);
 
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
-		demo.runXPlanning(missionJsonFile);
+		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
+		demo.runXPlanning(missionJsonFile, defaultVerbalizerSettings);
 	}
 
 	public static Vocabulary getVocabulary(QSpace qSpace) {

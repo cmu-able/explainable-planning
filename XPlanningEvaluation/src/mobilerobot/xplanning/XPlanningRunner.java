@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
+import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
@@ -24,18 +25,18 @@ public class XPlanningRunner {
 		mOutputDirs = outputDirs;
 	}
 
-	public void runMission(File missionJsonFile)
+	public void runMission(File missionJsonFile, VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		mDemo.runXPlanning(missionJsonFile);
+		mDemo.runXPlanning(missionJsonFile, verbalizerSettings);
 	}
 
-	public void runAllMissions(File missionsJsonDir)
+	public void runAllMissions(File missionsJsonDir, VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		if (!missionsJsonDir.isDirectory()) {
-			mDemo.runXPlanning(missionsJsonDir);
+			runMission(missionsJsonDir, verbalizerSettings);
 		} else {
 			for (File subDirOrFile : missionsJsonDir.listFiles()) {
-				runAllMissions(subDirOrFile);
+				runAllMissions(subDirOrFile, verbalizerSettings);
 			}
 		}
 	}
@@ -58,7 +59,8 @@ public class XPlanningRunner {
 		}
 
 		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs);
-		runner.runAllMissions(missionsJsonRootDir);
+		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
+		runner.runAllMissions(missionsJsonRootDir, defaultVerbalizerSettings);
 	}
 
 }

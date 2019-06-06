@@ -342,6 +342,13 @@ public class Verbalizer {
 			builder.append(" to ");
 
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				// Nonstandard metric
+				// First describe total penalty value
+				String formattedPenaltyValue = mSettings.formatQAValue(qFunction, altQAValue);
+				builder.append(formattedPenaltyValue);
+				builder.append(": ");
+
+				// Then describe event-based QA value break-down
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = altPolicyInfo.getEventBasedQAValue(nonStdQFunction);
 				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACostDiff, true));

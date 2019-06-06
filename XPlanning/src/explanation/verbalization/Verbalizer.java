@@ -126,10 +126,14 @@ public class Verbalizer {
 
 	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost,
 			boolean isCostDiff) {
+		String formattedQAValue = mSettings.formatQAValue(qFunction, qaValue);
+		double roundedQAValue = Double.parseDouble(formattedQAValue);
+
 		StringBuilder builder = new StringBuilder();
-		builder.append(qaValue);
+		builder.append(formattedQAValue);
 		builder.append(" ");
-		builder.append(qaValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+		builder.append(
+				roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
 
 		if (mSettings.getDescribeCosts()) {
 			builder.append(" ");
@@ -157,12 +161,16 @@ public class Verbalizer {
 
 			E event = entry.getKey();
 			double expectedCount = entry.getValue();
+
+			String formattedExpectedCount = mSettings.formatQAValue(qFunction, expectedCount);
+			double roundedExpectedCount = Double.parseDouble(formattedExpectedCount);
+
 			builder.append(mVocabulary.getCategoricalValue(qFunction, event));
 			builder.append(" ");
-			builder.append(expectedCount);
+			builder.append(formattedExpectedCount);
 			builder.append(" ");
-			builder.append(
-					expectedCount > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+			builder.append(roundedExpectedCount > 1 ? mVocabulary.getPluralUnit(qFunction)
+					: mVocabulary.getSingularUnit(qFunction));
 		}
 
 		if (mSettings.getDescribeCosts()) {

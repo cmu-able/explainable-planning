@@ -71,7 +71,7 @@ public class QuestionUtils {
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 	}
 
-	public static void createHTMLDocumentExplanation(File explanationJsonFile, File outDir)
+	public static void createExplanationHTMLFile(File explanationJsonFile, File outDir)
 			throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 		String explanationText = (String) explanationJsonObj.get("Explanation");

@@ -75,25 +75,27 @@ public class QuestionUtils {
 			throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 		String explanationText = (String) explanationJsonObj.get("Explanation");
-		String explanationWithImages = "";
-		String imgHTMLElementStr = "<img src=\"%s\">";
-
-		Pattern jsonFileRefPattern = Pattern.compile("\\[.+\\.json\\]");
-		Matcher matcher = jsonFileRefPattern.matcher(explanationText);
-		while (matcher.find()) {
-			String jsonFileRef = matcher.group(0);
-			String imgHTMLElement = String.format(imgHTMLElementStr, jsonFileRef);
-			explanationWithImages = explanationText.replace(jsonFileRef, imgHTMLElement);
-		}
 
 		Document doc = Jsoup.parse("<html></html>");
 		doc.body().appendElement("div");
 		Element div = doc.selectFirst("div");
-		div.text(explanationWithImages);
-
+		div.text(explanationText);
 		String explanationHTMLStr = doc.toString();
+
+		String explanationHTMLWithImages = explanationHTMLStr;
+		String imgHTMLElementStr = "<img src=\"%s\">";
+
+		Pattern jsonFileRefPattern = Pattern.compile("(\\[([^\\[]+)\\.json\\])");
+		Matcher matcher = jsonFileRefPattern.matcher(explanationHTMLStr);
+		while (matcher.find()) {
+			String jsonFileRef = matcher.group(1); // [policyX.json]
+			String pngFilename = matcher.group(2) + ".png"; // policyX.png
+			String imgHTMLElement = String.format(imgHTMLElementStr, pngFilename);
+			explanationHTMLWithImages = explanationHTMLWithImages.replace(jsonFileRef, imgHTMLElement);
+		}
+
 		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
 		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
-		Files.write(explanationHTMLPath, explanationHTMLStr.getBytes());
+		Files.write(explanationHTMLPath, explanationHTMLWithImages.getBytes());
 	}
 }

@@ -88,8 +88,9 @@ public class QuestionUtils {
 		Pattern jsonFileRefPattern = Pattern.compile("(\\[([^\\[]+)\\.json\\])");
 		Matcher matcher = jsonFileRefPattern.matcher(explanationHTMLStr);
 		while (matcher.find()) {
-			String jsonFileRef = matcher.group(1); // [policyX.json]
-			String pngFilename = matcher.group(2) + ".png"; // policyX.png
+			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
+			String pngFullFilename = matcher.group(2) + ".png"; // /path/to/policyX.png
+			String pngFilename = FilenameUtils.getName(pngFullFilename);
 			String imgHTMLElement = String.format(imgHTMLElementStr, pngFilename);
 			explanationHTMLWithImages = explanationHTMLWithImages.replace(jsonFileRef, imgHTMLElement);
 		}

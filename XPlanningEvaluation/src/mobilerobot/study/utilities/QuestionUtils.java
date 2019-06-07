@@ -71,7 +71,8 @@ public class QuestionUtils {
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 	}
 
-	public static void createHTMLDocumentExplanation(File explanationJsonFile) throws IOException, ParseException {
+	public static void createHTMLDocumentExplanation(File explanationJsonFile, File outDir)
+			throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		String explanationWithImages = "";
@@ -89,6 +90,10 @@ public class QuestionUtils {
 		doc.body().appendElement("div");
 		Element div = doc.selectFirst("div");
 		div.text(explanationWithImages);
-		String htmlStr = doc.toString();
+
+		String explanationHTMLStr = doc.toString();
+		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
+		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
+		Files.write(explanationHTMLPath, explanationHTMLStr.getBytes());
 	}
 }

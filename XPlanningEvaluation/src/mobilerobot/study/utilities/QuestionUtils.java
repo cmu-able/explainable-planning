@@ -4,15 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
@@ -25,8 +19,6 @@ import solver.prismconnector.PrismConnectorSettings;
 import uiconnector.PolicyWriter;
 
 public class QuestionUtils {
-
-	private static final double POLICY_IMG_WIDTH_TO_HEIGHT_RATIO = 0.47;
 
 	private QuestionUtils() {
 		throw new IllegalStateException("Utility class");
@@ -71,36 +63,5 @@ public class QuestionUtils {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-	}
-
-	public static void createExplanationHTMLFile(File explanationJsonFile, File outDir)
-			throws IOException, ParseException {
-		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-		String explanationText = (String) explanationJsonObj.get("Explanation");
-
-		Document doc = Jsoup.parse("<html></html>");
-		doc.body().appendElement("div");
-		Element div = doc.selectFirst("div");
-		div.text(explanationText);
-		String explanationHTMLStr = doc.toString();
-
-		String explanationHTMLWithImages = explanationHTMLStr;
-		int widthPx = 500;
-		int heightPx = (int) Math.round(widthPx / POLICY_IMG_WIDTH_TO_HEIGHT_RATIO);
-		String imgHTMLElementStr = "<img src=\"%s\" width=\"%d\" height=\"%d\">";
-
-		Pattern jsonFileRefPattern = Pattern.compile("(\\[([^\\[]+)\\.json\\])");
-		Matcher matcher = jsonFileRefPattern.matcher(explanationHTMLStr);
-		while (matcher.find()) {
-			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
-			String pngFullFilename = matcher.group(2) + ".png"; // /path/to/policyX.png
-			String pngFilename = FilenameUtils.getName(pngFullFilename);
-			String imgHTMLElement = String.format(imgHTMLElementStr, pngFilename, widthPx, heightPx);
-			explanationHTMLWithImages = explanationHTMLWithImages.replace(jsonFileRef, imgHTMLElement);
-		}
-
-		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
-		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
-		Files.write(explanationHTMLPath, explanationHTMLWithImages.getBytes());
 	}
 }

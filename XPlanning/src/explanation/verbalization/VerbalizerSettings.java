@@ -22,6 +22,10 @@ public class VerbalizerSettings {
 		mDecimalFormatter = decimalFormatter;
 	}
 
+	public QADecimalFormatter getQADecimalFormatter() {
+		return mDecimalFormatter;
+	}
+
 	public void putDecimalFormat(IQFunction<?, ?> qFunction, String decimalFormatPattern) {
 		mDecimalFormatter.putDecimalFormat(qFunction, decimalFormatPattern);
 	}

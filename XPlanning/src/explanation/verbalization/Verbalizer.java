@@ -82,6 +82,10 @@ public class Verbalizer {
 		return mPolicyJsonFiles.get(policy);
 	}
 
+	public QADecimalFormatter getQADecimalFormatter() {
+		return mSettings.getQADecimalFormatter();
+	}
+
 	private String verbalizeQAs(PolicyInfo policyInfo, QSpace qSpace) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("It is expected to ");

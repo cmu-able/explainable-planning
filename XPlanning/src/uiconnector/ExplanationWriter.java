@@ -3,6 +3,7 @@ package uiconnector;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -38,13 +39,17 @@ public class ExplanationWriter {
 		Policy solutionPolicy = explanation.getSolutionPolicyInfo().getPolicy();
 		File solnPolicyJsonFile = mVerbalizer.getPolicyJsonFile(solutionPolicy);
 
-		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
+		Set<QuantitativePolicy> allQuantPolicies = new HashSet<>();
+		allQuantPolicies.add(explanation.getSolutionPolicyInfo().getQuantitativePolicy());
 
+		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
 		JSONArray altPolicyJsonArray = new JSONArray();
 		for (Tradeoff tradeoff : tradeoffs) {
 			Policy alternativePolicy = tradeoff.getAlternativePolicyInfo().getPolicy();
 			File altPolicyJsonFile = mVerbalizer.getPolicyJsonFile(alternativePolicy);
 			altPolicyJsonArray.add(altPolicyJsonFile.getAbsolutePath());
+
+			allQuantPolicies.add(tradeoff.getAlternativePolicyInfo().getQuantitativePolicy());
 		}
 
 		JSONObject explanationJsonObj = new JSONObject();
@@ -53,6 +58,8 @@ public class ExplanationWriter {
 		explanationJsonObj.put("Alternative Policies", altPolicyJsonArray);
 		explanationJsonObj.put("Explanation", verbalization);
 
+		writeQAValuesToExplanationJSONObject(allQuantPolicies, explanationJsonObj);
+
 		File explanationJsonFile = new File(mExplanationJsonDir, explanationJsonFilename);
 		try (FileWriter writer = new FileWriter(explanationJsonFile)) {
 			writer.write(explanationJsonObj.toJSONString());
@@ -60,6 +67,17 @@ public class ExplanationWriter {
 		}
 
 		return explanationJsonFile;
+	}
+
+	private void writeQAValuesToExplanationJSONObject(Set<QuantitativePolicy> quantPolicies,
+			JSONObject explanationJsonObj) {
+		for (QuantitativePolicy quantPolicy : quantPolicies) {
+			File policyJsonFile = mVerbalizer.getPolicyJsonFile(quantPolicy.getPolicy());
+			String policyJsonFilename = policyJsonFile.getName();
+			JSONObject policyValuesJsonObj = writeQAValuesToJSONObject(quantPolicy,
+					mVerbalizer.getQADecimalFormatter());
+			explanationJsonObj.put(policyJsonFilename, policyValuesJsonObj);
+		}
 	}
 
 	public static JSONObject writeQAValuesToJSONObject(QuantitativePolicy quantPolicy,

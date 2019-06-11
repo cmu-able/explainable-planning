@@ -29,7 +29,7 @@ public class ExplanationHTMLGenerator {
 	private double mPolicyImgWidthToHeightRatio;
 	private int mPolicyImgWidthPx;
 	private HTMLTableSettings mTableSettings;
-	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[([^\\[]+)\\.json\\])");
+	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[(([^\\[]+)\\.json)\\])");
 
 	public ExplanationHTMLGenerator(double policyImgWidthToHeightRatio, int policyImgWidthPx,
 			HTMLTableSettings tableSettings) {
@@ -70,9 +70,7 @@ public class ExplanationHTMLGenerator {
 
 	public void createExplanationHTMLFile(File explanationJsonFile, File outDir) throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-		String explanationText = (String) explanationJsonObj.get("Explanation");
-
-		Document doc = createExplanationDocument(explanationText);
+		Document doc = createExplanationDocument(explanationJsonObj);
 		String explanationHTML = doc.toString();
 
 		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
@@ -80,23 +78,31 @@ public class ExplanationHTMLGenerator {
 		Files.write(explanationHTMLPath, explanationHTML.getBytes());
 	}
 
-	private Document createExplanationDocument(String explanationText) {
+	private Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = Jsoup.parse("<html></html>");
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		doc.appendElement("link").attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
 
+		String explanationText = (String) explanationJsonObj.get("Explanation");
 		String[] parts = explanationText.split("\n\n");
 		for (int i = 0; i < parts.length; i++) {
 			String policyExplanation = parts[i];
 			int imgIndex = i + 1;
 
-			Element policySectionDiv = createPolicySectionDiv(policyExplanation, imgIndex);
+			Matcher matcher = mJsonFileRefPattern.matcher(policyExplanation);
+			String policyJsonFullFilename = matcher.group(2); // /path/to/policyX.json
+			String policyJsonFilename = FilenameUtils.getName(policyJsonFullFilename); // policyX.json
+
+			// QA values of this policy as json object
+			JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyJsonFilename);
+
+			Element policySectionDiv = createPolicySectionDiv(policyExplanation, policyQAValuesJsonObj, imgIndex);
 			doc.appendChild(policySectionDiv);
 		}
 		return doc;
 	}
 
-	private Element createPolicySectionDiv(String policyExplanation, int imgIndex) {
+	private Element createPolicySectionDiv(String policyExplanation, JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		if (Math.floorMod(imgIndex, 2) == 0) {
@@ -113,13 +119,14 @@ public class ExplanationHTMLGenerator {
 		Matcher matcher = mJsonFileRefPattern.matcher(policyExplanation);
 		if (matcher.find()) {
 			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
-			String pngFullFilename = matcher.group(2) + ".png"; // /path/to/policyX.png
+			String pngFullFilename = matcher.group(3) + ".png"; // /path/to/policyX.png
 			pngFilename = FilenameUtils.getName(pngFullFilename);
 			policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see Figure " + imgIndex + ")");
 		}
 
 		Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
-		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef);
+		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
+				imgIndex);
 
 		container.appendChild(policyImgDiv);
 		container.appendChild(policyExplanationDiv);
@@ -145,19 +152,25 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
-	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef) {
+	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject policyQAValuesJsonObj,
+			int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_CELL);
 
+		// Verbal explanation
 		Element policyExplanationP = new Element("p");
 		policyExplanationP.text(policyExplanationWithImgRef);
 
+		// Table of QA values
+		Element qaValuesTable = createQAValuesTable(policyQAValuesJsonObj, imgIndex);
+
 		container.appendChild(policyExplanationP);
+		container.appendChild(qaValuesTable);
 		return container;
 	}
 
-	private Element createQAValuesTable(String policyKey, String policyRef, JSONObject explanationJsonObj) {
+	private Element createQAValuesTable(JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");
 
@@ -166,11 +179,9 @@ public class ExplanationHTMLGenerator {
 		createQAValuesTableHeader(table);
 
 		// Table rows
-		JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyKey);
-
 		// Table row: [Policy ref], QA1 value, QA2 value, ...
 		Element qaValuesRow = new Element("tr");
-		qaValuesRow.appendElement("td").text(policyRef);
+		qaValuesRow.appendElement("td").text("Figure " + imgIndex);
 
 		for (String qaName : mTableSettings.getOrderedQANames()) {
 			Object qaValueObj = policyQAValuesJsonObj.get(qaName);

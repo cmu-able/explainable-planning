@@ -28,14 +28,18 @@ public class ExplanationHTMLGenerator {
 
 	private double mPolicyImgWidthToHeightRatio;
 	private int mPolicyImgWidthPx;
+	private HTMLTableSettings mTableSettings;
 	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[([^\\[]+)\\.json\\])");
 
-	public ExplanationHTMLGenerator(double policyImgWidthToHeightRatio, int policyImgWidthPx) {
+	public ExplanationHTMLGenerator(double policyImgWidthToHeightRatio, int policyImgWidthPx,
+			HTMLTableSettings tableSettings) {
 		mPolicyImgWidthToHeightRatio = policyImgWidthToHeightRatio;
 		mPolicyImgWidthPx = policyImgWidthPx;
+		mTableSettings = tableSettings;
 	}
 
-	public void createExplanationHTMLFileBasic(File explanationJsonFile, File outDir) throws IOException, ParseException {
+	public void createExplanationHTMLFileBasic(File explanationJsonFile, File outDir)
+			throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 
@@ -153,6 +157,81 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
+	private Element createQAValuesTable(String policyKey, String policyRef, JSONObject explanationJsonObj) {
+		Element table = new Element("table");
+		table.addClass("w3-table");
+
+		// Table header: [Policy], QA1, QA2, ...
+		// Table sub-header: Event1, Event2, ... per event-based QA
+		createQAValuesTableHeader(table);
+
+		// Table rows
+		JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyKey);
+
+		// Table row: [Policy ref], QA1 value, QA2 value, ...
+		Element qaValuesRow = new Element("tr");
+		qaValuesRow.appendElement("td").text(policyRef);
+
+		for (String qaName : mTableSettings.getOrderedQANames()) {
+			Object qaValueObj = policyQAValuesJsonObj.get(qaName);
+
+			if (qaValueObj instanceof JSONObject) {
+				// Event-based QA value
+				JSONObject eventBasedQAValue = (JSONObject) qaValueObj;
+				for (String eventName : mTableSettings.getOrderedEventNames(qaName)) {
+					String formattedEventValue = (String) eventBasedQAValue.get(eventName);
+					qaValuesRow.appendElement("td").text(formattedEventValue);
+				}
+			} else {
+				String formattedQAValue = (String) qaValueObj;
+				qaValuesRow.appendElement("td").text(formattedQAValue);
+			}
+		}
+		table.appendChild(qaValuesRow);
+		return table;
+	}
+
+	private void createQAValuesTableHeader(Element table) {
+		// Table header: [Policy], QA1, QA2, ...
+		Element tableHeader = new Element("tr");
+
+		// rowspan <- 2 for the sub-header(s) of event-based QA(s)
+		String headerRowspan = mTableSettings.hasEventBasedQA() ? "2" : "1";
+
+		// Empty header for Policy column
+		tableHeader.appendElement("th").attr("rowspan", headerRowspan);
+
+		// Header for each QA column
+		for (String qaName : mTableSettings.getOrderedQANames()) {
+			if (mTableSettings.isEventBasedQA(qaName)) {
+				// Need sub-header for this event-based QA
+				// colspan <- # events
+				int numEvents = mTableSettings.getOrderedEventNames(qaName).size();
+				tableHeader.appendElement("th").attr("colspan", Integer.toString(numEvents)).text(qaName);
+			} else {
+				// No sub-header for this QA
+				// rowspan is set according to whether there is a sub-header
+				tableHeader.appendElement("th").attr("rowspan", headerRowspan).text(qaName);
+			}
+		}
+		table.appendChild(tableHeader);
+
+		// Table sub-header: Event1, Event2, ... per event-based QA
+		if (mTableSettings.hasEventBasedQA()) {
+			Element tableSubHeader = new Element("tr");
+
+			for (String qaName : mTableSettings.getOrderedQANames()) {
+				if (mTableSettings.isEventBasedQA(qaName)) {
+					// Columns <- names of events
+					for (String eventName : mTableSettings.getOrderedEventNames(qaName)) {
+						tableSubHeader.appendElement("th").text(eventName);
+					}
+				}
+			}
+			table.appendChild(tableSubHeader);
+		}
+	}
+
 	public void createAllExplanationHTMLFiles(File rootDir) throws IOException, ParseException {
 		FilenameFilter explanationJsonFileFilter = (dir, name) -> name.toLowerCase().contains("explanation")
 				&& name.toLowerCase().endsWith(".json");
@@ -170,7 +249,7 @@ public class ExplanationHTMLGenerator {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
 		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(POLICY_IMG_WIDTH_TO_HEIGHT_RATIO,
-				DEFAULT_POLICY_IMG_WIDTH_PX);
+				DEFAULT_POLICY_IMG_WIDTH_PX, null); //FIXME
 		generator.createAllExplanationHTMLFiles(rootDir);
 	}
 

@@ -1,10 +1,5 @@
 package explanation.verbalization;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
-
 import language.domain.metrics.IQFunction;
 
 public class VerbalizerSettings {
@@ -14,22 +9,25 @@ public class VerbalizerSettings {
 	 */
 	private volatile int hashCode;
 
-	private Map<IQFunction<?, ?>, DecimalFormat> mDecimalFormats = new HashMap<>();
+	private QADecimalFormatter mDecimalFormatter = new QADecimalFormatter();
 	private boolean mDescribeCosts = true;
 
 	public VerbalizerSettings() {
-		// Default Verbalizer settings; describeCosts <- true
+		// Default Verbalizer settings:
+		// describeCosts <- true
+		// decimal formatter <- empty -- no formatting
+	}
+
+	public void setQADecimalFormatter(QADecimalFormatter decimalFormatter) {
+		mDecimalFormatter = decimalFormatter;
 	}
 
 	public void putDecimalFormat(IQFunction<?, ?> qFunction, String decimalFormatPattern) {
-		DecimalFormat df = new DecimalFormat(decimalFormatPattern);
-		df.setRoundingMode(RoundingMode.HALF_UP);
-		mDecimalFormats.put(qFunction, df);
+		mDecimalFormatter.putDecimalFormat(qFunction, decimalFormatPattern);
 	}
 
 	public String formatQAValue(IQFunction<?, ?> qFunction, double qaValue) {
-		DecimalFormat df = mDecimalFormats.get(qFunction);
-		return df.format(qaValue);
+		return mDecimalFormatter.formatQAValue(qFunction, qaValue);
 	}
 
 	public void setDescribeCosts(boolean describeCosts) {
@@ -49,7 +47,7 @@ public class VerbalizerSettings {
 			return false;
 		}
 		VerbalizerSettings settings = (VerbalizerSettings) obj;
-		return settings.mDecimalFormats.equals(mDecimalFormats) && settings.mDescribeCosts == mDescribeCosts;
+		return settings.mDecimalFormatter.equals(mDecimalFormatter) && settings.mDescribeCosts == mDescribeCosts;
 	}
 
 	@Override
@@ -57,7 +55,7 @@ public class VerbalizerSettings {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mDecimalFormats.hashCode();
+			result = 31 * result + mDecimalFormatter.hashCode();
 			result = 31 * result + Boolean.hashCode(mDescribeCosts);
 			hashCode = result;
 		}

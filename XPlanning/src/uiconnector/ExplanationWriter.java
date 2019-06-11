@@ -13,6 +13,7 @@ import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.Explanation;
 import explanation.analysis.QuantitativePolicy;
 import explanation.analysis.Tradeoff;
+import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.Verbalizer;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
@@ -61,7 +62,8 @@ public class ExplanationWriter {
 		return explanationJsonFile;
 	}
 
-	public static JSONObject writeQAValuesToJSONObject(QuantitativePolicy quantPolicy) {
+	public static JSONObject writeQAValuesToJSONObject(QuantitativePolicy quantPolicy,
+			QADecimalFormatter decimalFormatter) {
 		JSONObject policyValuesJsonObj = new JSONObject();
 		for (IQFunction<?, ?> qFunction : quantPolicy) {
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
@@ -72,12 +74,14 @@ public class ExplanationWriter {
 				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
 					IEvent<?, ?> event = e.getKey();
 					Double expectedCount = e.getValue();
-					eventBasedValuesJsonObj.put(event.getName(), expectedCount);
+					String formattedExpectedCount = decimalFormatter.formatQAValue(eventBasedQFunction, expectedCount);
+					eventBasedValuesJsonObj.put(event.getName(), formattedExpectedCount);
 				}
 				policyValuesJsonObj.put(eventBasedQFunction.getName(), eventBasedValuesJsonObj);
 			} else {
 				double expectedValue = quantPolicy.getQAValue(qFunction);
-				policyValuesJsonObj.put(qFunction.getName(), expectedValue);
+				String formattedExpectedValue = decimalFormatter.formatQAValue(qFunction, expectedValue);
+				policyValuesJsonObj.put(qFunction.getName(), formattedExpectedValue);
 			}
 		}
 		return policyValuesJsonObj;

@@ -17,19 +17,19 @@ import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
+import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
-import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
-import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.NonStandardMetricQFunction;
 import language.exceptions.XMDPException;
@@ -76,6 +76,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			// Each solution policy is not necessarily unique
 			PolicyInfo solnPolicyInfo = e.getValue();
 
+			QADecimalFormatter decimalFormatter = MobileRobotDemo
+					.getQADecimalFormatter(solnPolicyInfo.getXMDP().getQSpace());
+
 			// Each question dir contains multiple questions, all of which have the same mission but different agent's
 			// proposed policies
 			File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
@@ -94,7 +97,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", i, questionDir);
 
 				// Write the QA values of each agent policy as json file
-				JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy);
+				JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy,
+						decimalFormatter);
 				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
 
 				// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative

@@ -16,6 +16,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
 import mobilerobot.utilities.FileIOUtils;
 
 public class ExplanationHTMLGenerator {
@@ -259,8 +262,17 @@ public class ExplanationHTMLGenerator {
 	public static void main(String[] args) throws IOException, ParseException {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
+
+		HTMLTableSettings tableSettings = new HTMLTableSettings();
+		tableSettings.appendQAName(TravelTimeQFunction.NAME);
+		tableSettings.appendQAName(CollisionEvent.NAME);
+		tableSettings.appendQAName(IntrusiveMoveEvent.NAME);
+		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "non-intrusive");
+		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
+		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
+
 		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(POLICY_IMG_WIDTH_TO_HEIGHT_RATIO,
-				DEFAULT_POLICY_IMG_WIDTH_PX, null); //FIXME
+				DEFAULT_POLICY_IMG_WIDTH_PX, tableSettings);
 		generator.createAllExplanationHTMLFiles(rootDir);
 	}
 

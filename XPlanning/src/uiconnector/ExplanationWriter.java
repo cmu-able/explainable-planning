@@ -3,14 +3,20 @@ package uiconnector;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.Explanation;
+import explanation.analysis.QuantitativePolicy;
 import explanation.analysis.Tradeoff;
 import explanation.verbalization.Verbalizer;
+import language.domain.metrics.IEvent;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.NonStandardMetricQFunction;
 import language.policy.Policy;
 
 public class ExplanationWriter {
@@ -53,6 +59,28 @@ public class ExplanationWriter {
 		}
 
 		return explanationJsonFile;
+	}
+
+	public static JSONObject writeQAValuesToJSONObject(QuantitativePolicy quantPolicy) {
+		JSONObject policyValuesJsonObj = new JSONObject();
+		for (IQFunction<?, ?> qFunction : quantPolicy) {
+			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
+				NonStandardMetricQFunction<?, ?, ?> eventBasedQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
+				EventBasedQAValue<?> eventBasedQAValue = quantPolicy.getEventBasedQAValue(eventBasedQFunction);
+
+				JSONObject eventBasedValuesJsonObj = new JSONObject();
+				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
+					IEvent<?, ?> event = e.getKey();
+					Double expectedCount = e.getValue();
+					eventBasedValuesJsonObj.put(event.getName(), expectedCount);
+				}
+				policyValuesJsonObj.put(eventBasedQFunction.getName(), eventBasedValuesJsonObj);
+			} else {
+				double expectedValue = quantPolicy.getQAValue(qFunction);
+				policyValuesJsonObj.put(qFunction.getName(), expectedValue);
+			}
+		}
+		return policyValuesJsonObj;
 	}
 
 }

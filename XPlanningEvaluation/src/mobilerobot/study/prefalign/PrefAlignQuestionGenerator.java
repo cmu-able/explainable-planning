@@ -47,6 +47,7 @@ import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import uiconnector.ExplanationWriter;
 import uiconnector.PolicyWriter;
 
 public class PrefAlignQuestionGenerator implements IQuestionGenerator {
@@ -93,7 +94,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", i, questionDir);
 
 				// Write the QA values of each agent policy as json file
-				JSONObject agentPolicyValuesJsonObj = createAgentPolicyValues(agentQuantPolicy);
+				JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy);
 				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
 
 				// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative
@@ -146,28 +147,6 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		File costStructFile = FileIOUtils.createOutFile(questionDir, "simpleCostStructure.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(costStructJsonObj, costStructFile);
-	}
-
-	private JSONObject createAgentPolicyValues(QuantitativePolicy agentQuantPolicy) {
-		JSONObject agentPolicyValuesJsonObj = new JSONObject();
-		for (IQFunction<?, ?> qFunction : agentQuantPolicy) {
-			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
-				NonStandardMetricQFunction<?, ?, ?> eventBasedQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
-				EventBasedQAValue<?> eventBasedQAValue = agentQuantPolicy.getEventBasedQAValue(eventBasedQFunction);
-
-				JSONObject agentEventBasedValuesJsonObj = new JSONObject();
-				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
-					IEvent<?, ?> event = e.getKey();
-					Double expectedCount = e.getValue();
-					agentEventBasedValuesJsonObj.put(event.getName(), expectedCount);
-				}
-				agentPolicyValuesJsonObj.put(eventBasedQFunction.getName(), agentEventBasedValuesJsonObj);
-			} else {
-				double expectedValue = agentQuantPolicy.getQAValue(qFunction);
-				agentPolicyValuesJsonObj.put(qFunction.getName(), expectedValue);
-			}
-		}
-		return agentPolicyValuesJsonObj;
 	}
 
 	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile)

@@ -179,6 +179,9 @@ public class ExplanationHTMLGenerator {
 	private Element createQAValuesTable(JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");
+		table.addClass("w3-border");
+		table.addClass("w3-bordered");
+		table.addClass("w3-centered");
 
 		// Table header: [Policy], QA1, QA2, ...
 		// Table sub-header: Event1, Event2, ... per event-based QA

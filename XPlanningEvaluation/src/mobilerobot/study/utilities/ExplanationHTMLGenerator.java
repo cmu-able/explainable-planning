@@ -93,8 +93,11 @@ public class ExplanationHTMLGenerator {
 			int imgIndex = i + 1;
 
 			Matcher matcher = mJsonFileRefPattern.matcher(policyExplanation);
-			String policyJsonFullFilename = matcher.group(2); // /path/to/policyX.json
-			String policyJsonFilename = FilenameUtils.getName(policyJsonFullFilename); // policyX.json
+			String policyJsonFilename = null;
+			if (matcher.find()) {
+				String policyJsonFullFilename = matcher.group(2); // /path/to/policyX.json
+				policyJsonFilename = FilenameUtils.getName(policyJsonFullFilename); // policyX.json
+			}
 
 			// QA values of this policy as json object
 			JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyJsonFilename);

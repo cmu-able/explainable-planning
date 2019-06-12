@@ -87,7 +87,11 @@ public class ExplanationHTMLGenerator {
 		doc.appendElement("link").attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
 
 		String explanationText = (String) explanationJsonObj.get("Explanation");
+		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
+		// Solution policy's QA values are to be contrasted with those of each alternative policy
+		JSONObject solnPolicyQAValuesJsonObj = null;
+
 		for (int i = 0; i < parts.length; i++) {
 			String policyExplanation = parts[i];
 			int imgIndex = i + 1;
@@ -102,13 +106,20 @@ public class ExplanationHTMLGenerator {
 			// QA values of this policy as json object
 			JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyJsonFilename);
 
-			Element policySectionDiv = createPolicySectionDiv(policyExplanation, policyQAValuesJsonObj, imgIndex);
+			// First policy is always the solution policy
+			if (imgIndex == 1) {
+				solnPolicyQAValuesJsonObj = policyQAValuesJsonObj;
+			}
+
+			Element policySectionDiv = createPolicySectionDiv(policyExplanation, policyQAValuesJsonObj,
+					solnPolicyQAValuesJsonObj, imgIndex);
 			doc.appendChild(policySectionDiv);
 		}
 		return doc;
 	}
 
-	private Element createPolicySectionDiv(String policyExplanation, JSONObject policyQAValuesJsonObj, int imgIndex) {
+	private Element createPolicySectionDiv(String policyExplanation, JSONObject policyQAValuesJsonObj,
+			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		if (Math.floorMod(imgIndex, 2) == 0) {
@@ -132,7 +143,7 @@ public class ExplanationHTMLGenerator {
 
 		Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
-				imgIndex);
+				solnPolicyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(policyImgDiv);
 		container.appendChild(policyExplanationDiv);
@@ -159,7 +170,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject policyQAValuesJsonObj,
-			int imgIndex) {
+			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_CELL);
@@ -169,14 +180,15 @@ public class ExplanationHTMLGenerator {
 		policyExplanationP.text(policyExplanationWithImgRef);
 
 		// Table of QA values
-		Element qaValuesTable = createQAValuesTable(policyQAValuesJsonObj, imgIndex);
+		Element qaValuesTable = createQAValuesTable(policyQAValuesJsonObj, solnPolicyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(policyExplanationP);
 		container.appendChild(qaValuesTable);
 		return container;
 	}
 
-	private Element createQAValuesTable(JSONObject policyQAValuesJsonObj, int imgIndex) {
+	private Element createQAValuesTable(JSONObject policyQAValuesJsonObj, JSONObject solnPolicyQAValuesJsonObj,
+			int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");
 		table.addClass("w3-border");
@@ -189,25 +201,13 @@ public class ExplanationHTMLGenerator {
 
 		// Table rows
 		// Table row: [Policy ref], QA1 value, QA2 value, ...
-		Element qaValuesRow = new Element("tr");
-		qaValuesRow.appendElement("td").text("Figure " + imgIndex);
+		addPolicyQAValuesRow(policyQAValuesJsonObj, imgIndex, table);
 
-		for (String qaName : mTableSettings.getOrderedQANames()) {
-			Object qaValueObj = policyQAValuesJsonObj.get(qaName);
-
-			if (qaValueObj instanceof JSONObject) {
-				// Event-based QA value
-				JSONObject eventBasedQAValue = (JSONObject) qaValueObj;
-				for (String eventName : mTableSettings.getOrderedEventNames(qaName)) {
-					String formattedEventValue = (String) eventBasedQAValue.get(eventName);
-					qaValuesRow.appendElement("td").text(formattedEventValue);
-				}
-			} else {
-				String formattedQAValue = (String) qaValueObj;
-				qaValuesRow.appendElement("td").text(formattedQAValue);
-			}
+		// If this is alternative policy, add a row for the solution policy to contrast to
+		if (imgIndex > 1) {
+			addPolicyQAValuesRow(solnPolicyQAValuesJsonObj, 1, table);
 		}
-		table.appendChild(qaValuesRow);
+
 		return table;
 	}
 
@@ -256,6 +256,29 @@ public class ExplanationHTMLGenerator {
 			}
 			table.appendChild(tableSubHeader);
 		}
+	}
+
+	private void addPolicyQAValuesRow(JSONObject policyQAValuesJsonObj, int imgIndex, Element table) {
+		// Table row: [Policy ref], QA1 value, QA2 value, ...
+		Element qaValuesRow = new Element("tr");
+		qaValuesRow.appendElement("td").text("Figure " + imgIndex);
+
+		for (String qaName : mTableSettings.getOrderedQANames()) {
+			Object qaValueObj = policyQAValuesJsonObj.get(qaName);
+
+			if (qaValueObj instanceof JSONObject) {
+				// Event-based QA value
+				JSONObject eventBasedQAValue = (JSONObject) qaValueObj;
+				for (String eventName : mTableSettings.getOrderedEventNames(qaName)) {
+					String formattedEventValue = (String) eventBasedQAValue.get(eventName);
+					qaValuesRow.appendElement("td").text(formattedEventValue);
+				}
+			} else {
+				String formattedQAValue = (String) qaValueObj;
+				qaValuesRow.appendElement("td").text(formattedQAValue);
+			}
+		}
+		table.appendChild(qaValuesRow);
 	}
 
 	public void createAllExplanationHTMLFiles(File rootDir) throws IOException, ParseException {

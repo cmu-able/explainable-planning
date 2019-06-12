@@ -261,6 +261,12 @@ public class ExplanationHTMLGenerator {
 	private void addPolicyQAValuesRow(JSONObject policyQAValuesJsonObj, int imgIndex, Element table) {
 		// Table row: [Policy ref], QA1 value, QA2 value, ...
 		Element qaValuesRow = new Element("tr");
+
+		// Highlight the row for solution policy
+		if (imgIndex == 1) {
+			qaValuesRow.addClass("w3-pale-red");
+		}
+
 		qaValuesRow.appendElement("td").text("Figure " + imgIndex);
 
 		for (String qaName : mTableSettings.getOrderedQANames()) {

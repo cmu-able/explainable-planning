@@ -136,7 +136,7 @@ public class MobileRobotDemo {
 				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
 
 		Vocabulary vocab = new Vocabulary();
-		vocab.putNoun(timeQFunction, "time");
+		vocab.putNoun(timeQFunction, "travel time");
 		vocab.putVerb(timeQFunction, "take");
 		vocab.putUnit(timeQFunction, "minute", "minutes");
 		vocab.putNoun(collideQFunction, "collision");

@@ -14,6 +14,7 @@ public class HTMLTableSettings {
 
 	private List<String> mOrderedQANames = new ArrayList<>();
 	private Map<String, List<String>> mOrderedEventNamesMap = new HashMap<>();
+	private Map<String, String> mQADescriptiveUnits = new HashMap<>();
 
 	public void appendQAName(String qaName) {
 		mOrderedQANames.add(qaName);
@@ -26,6 +27,10 @@ public class HTMLTableSettings {
 
 		List<String> orderedEventNames = mOrderedEventNamesMap.get(eventBasedQAName);
 		orderedEventNames.add(eventName);
+	}
+
+	public void putQADescriptiveUnit(String qaName, String descriptiveUnit) {
+		mQADescriptiveUnits.put(qaName, descriptiveUnit);
 	}
 
 	public List<String> getOrderedQANames() {
@@ -44,6 +49,10 @@ public class HTMLTableSettings {
 		return mOrderedEventNamesMap.get(eventBasedQAName);
 	}
 
+	public String getQADescriptiveUnit(String qaName) {
+		return mQADescriptiveUnits.get(qaName);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -54,7 +63,8 @@ public class HTMLTableSettings {
 		}
 		HTMLTableSettings settings = (HTMLTableSettings) obj;
 		return settings.mOrderedQANames.equals(mOrderedQANames)
-				&& settings.mOrderedEventNamesMap.equals(mOrderedEventNamesMap);
+				&& settings.mOrderedEventNamesMap.equals(mOrderedEventNamesMap)
+				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits);
 	}
 
 	@Override
@@ -64,6 +74,7 @@ public class HTMLTableSettings {
 			result = 17;
 			result = 31 * result + mOrderedQANames.hashCode();
 			result = 31 * result + mOrderedEventNamesMap.hashCode();
+			result = 31 * result + mQADescriptiveUnits.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

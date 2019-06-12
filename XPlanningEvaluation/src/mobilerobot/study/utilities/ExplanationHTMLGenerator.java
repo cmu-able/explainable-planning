@@ -222,17 +222,23 @@ public class ExplanationHTMLGenerator {
 		tableHeader.appendElement("th").attr("rowspan", headerRowspan);
 
 		// Header for each QA column
+		Element qaHeader;
 		for (String qaName : mTableSettings.getOrderedQANames()) {
 			if (mTableSettings.isEventBasedQA(qaName)) {
 				// Need sub-header for this event-based QA
 				// colspan <- # events
 				int numEvents = mTableSettings.getOrderedEventNames(qaName).size();
-				tableHeader.appendElement("th").attr("colspan", Integer.toString(numEvents)).text(qaName);
+				qaHeader = tableHeader.appendElement("th").attr("colspan", Integer.toString(numEvents));
 			} else {
 				// No sub-header for this QA
 				// rowspan is set according to whether there is a sub-header
-				tableHeader.appendElement("th").attr("rowspan", headerRowspan).text(qaName);
+				qaHeader = tableHeader.appendElement("th").attr("rowspan", headerRowspan);
 			}
+
+			// QA header text: unit under QA name
+			String qaDescriptiveUnit = mTableSettings.getQADescriptiveUnit(qaName);
+			qaHeader.appendElement("div").text(qaName);
+			qaHeader.appendElement("div").text("(" + qaDescriptiveUnit + ")");
 		}
 		table.appendChild(tableHeader);
 
@@ -276,6 +282,9 @@ public class ExplanationHTMLGenerator {
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "non-intrusive");
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
+		tableSettings.putQADescriptiveUnit(TravelTimeQFunction.NAME, "minutes");
+		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "number of collisions");
+		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "number of visited locations");
 
 		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(POLICY_IMG_WIDTH_TO_HEIGHT_RATIO,
 				DEFAULT_POLICY_IMG_WIDTH_PX, tableSettings);

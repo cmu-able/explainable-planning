@@ -93,12 +93,12 @@ public class Verbalizer {
 		builder.append("It is expected to ");
 
 		// Describe QAs in a fixed, predefined order
-		Iterator<String> iter = mSettings.getOrderedQFunctionNames().iterator();
+		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = mSettings
+				.getOrderedQFunctions(policyInfo.getXMDP().getQSpace()).iterator();
 		boolean firstQA = true;
 
 		while (iter.hasNext()) {
-			String qFunctionName = iter.next();
-			IQFunction<?, ?> qFunction = policyInfo.getXMDP().getQSpace().getQFunction(IQFunction.class, qFunctionName);
+			IQFunction<?, ?> qFunction = iter.next();
 
 			if (firstQA) {
 				firstQA = false;
@@ -171,12 +171,11 @@ public class Verbalizer {
 		StringBuilder builder = new StringBuilder();
 
 		// Describe events of a non-standard QA in a fixed, predefined order
-		Iterator<String> iter = mSettings.getOrderedEventNames(qFunction.getName()).iterator();
+		Iterator<E> iter = mSettings.getOrderedEvents(qFunction).iterator();
 		boolean firstCatValue = true;
 
 		while (iter.hasNext()) {
-			String eventName = iter.next();
-			E event = qFunction.getEventBasedMetric().getEvent(eventName);
+			E event = iter.next();
 			double expectedCount = qaValue.getExpectedCount(event);
 
 			if (firstCatValue) {

@@ -5,7 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.metrics.NonStandardMetricQFunction;
+import language.domain.models.IAction;
+import language.mdp.QSpace;
 
 public class VerbalizerSettings {
 
@@ -23,8 +28,8 @@ public class VerbalizerSettings {
 		// Default Verbalizer settings:
 		// * describeCosts <- true
 		// * decimal formatter <- empty -- no formatting
-		// * order of QAs <- empty -- no fixed order
-		// * order of events of non-standard QA <- empty -- no fixed order
+		// * order of QAs <- empty -- no predefined order
+		// * order of events of non-standard QA <- empty -- no predefined order
 	}
 
 	public void setQADecimalFormatter(QADecimalFormatter decimalFormatter) {
@@ -55,11 +60,26 @@ public class VerbalizerSettings {
 		mOrderedQFunctionNames.add(qFunctionName);
 	}
 
-	public List<String> getOrderedQFunctionNames() {
-		return mOrderedQFunctionNames;
+	public List<IQFunction<IAction, ITransitionStructure<IAction>>> getOrderedQFunctions(QSpace qSpace) {
+		List<IQFunction<IAction, ITransitionStructure<IAction>>> orderedQFunctions = new ArrayList<>();
+		if (!mOrderedEventNames.isEmpty()) {
+			// There is a predefined ordering of QAs
+			for (String qFunctionName : mOrderedQFunctionNames) {
+				IQFunction<IAction, ITransitionStructure<IAction>> qFunction = qSpace.getQFunction(IQFunction.class,
+						qFunctionName);
+				orderedQFunctions.add(qFunction);
+			}
+		} else {
+			// There is no predefined ordering of QAs
+			// Use the ordering of QAs from QSpace
+			for (IQFunction<IAction, ITransitionStructure<IAction>> qFunction : qSpace) {
+				orderedQFunctions.add(qFunction);
+			}
+		}
+		return orderedQFunctions;
 	}
 
-	public void appendEvent(String nonStdQFunctionName, String eventName) {
+	public void appendEventName(String nonStdQFunctionName, String eventName) {
 		if (!mOrderedEventNames.containsKey(nonStdQFunctionName)) {
 			mOrderedEventNames.put(nonStdQFunctionName, new ArrayList<>());
 		}
@@ -67,8 +87,22 @@ public class VerbalizerSettings {
 		orderedEventNames.add(eventName);
 	}
 
-	public List<String> getOrderedEventNames(String nonStdQFunctionName) {
-		return mOrderedEventNames.get(nonStdQFunctionName);
+	public <E extends IEvent<?, ?>> List<E> getOrderedEvents(NonStandardMetricQFunction<?, ?, E> nonStdQFunction) {
+		List<E> orderedEvents = new ArrayList<>();
+		if (mOrderedEventNames.containsKey(nonStdQFunction.getName())) {
+			// There is a predefined ordering of events of this non-standard QA
+			for (String eventName : mOrderedEventNames.get(nonStdQFunction.getName())) {
+				E event = nonStdQFunction.getEventBasedMetric().getEvent(eventName);
+				orderedEvents.add(event);
+			}
+		} else {
+			// There is no predefined ordering of events of this non-standard QA
+			// Use the ordering of events from the event-based metric
+			for (E event : nonStdQFunction.getEventBasedMetric().getEvents()) {
+				orderedEvents.add(event);
+			}
+		}
+		return orderedEvents;
 	}
 
 	@Override

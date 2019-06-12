@@ -56,12 +56,14 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	private QuestionViz mQuestionViz = new QuestionViz();
 	private XPlanningRunner mXPlanningRunner;
-	private VerbalizerSettings mVerbalizationSettings = new VerbalizerSettings();
+	private VerbalizerSettings mVerbalizerSettings = new VerbalizerSettings();
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
 		mXPlanningRunner = new XPlanningRunner(mapsJsonDir, outputDirs);
-		mVerbalizationSettings.setDescribeCosts(false);
+		mVerbalizerSettings.setDescribeCosts(false);
+		mVerbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
+		MobileRobotDemo.setVerbalizerOrdering(mVerbalizerSettings);
 	}
 
 	@Override
@@ -76,8 +78,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			// Each solution policy is not necessarily unique
 			PolicyInfo solnPolicyInfo = e.getValue();
 
-			QADecimalFormatter decimalFormatter = MobileRobotDemo
-					.getQADecimalFormatter(solnPolicyInfo.getXMDP().getQSpace());
+			QADecimalFormatter decimalFormatter = mVerbalizerSettings.getQADecimalFormatter();
 
 			// Each question dir contains multiple questions, all of which have the same mission but different agent's
 			// proposed policies
@@ -175,7 +176,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		if (!agentExplanationPath.toFile().exists()) {
 			// missionY_explanation.json does not exist -- missionY has not been explained yet
 			// Run XPlanning on missionY.json to create explanation for agent[i]'s policy
-			mXPlanningRunner.runMission(agentMissionFile, mVerbalizationSettings);
+			mXPlanningRunner.runMission(agentMissionFile, mVerbalizerSettings);
 		}
 
 		// Copy solution policy, alternative policies, and explanation from XPlanningOutDirectories to the explanation

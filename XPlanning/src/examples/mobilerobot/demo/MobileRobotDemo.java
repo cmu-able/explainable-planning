@@ -77,13 +77,8 @@ public class MobileRobotDemo {
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
-		// Configure Verbalizer for MobileRobot domain
 		Vocabulary vocabulary = getVocabulary(xmdp.getQSpace());
-		verbalizerSettings.setQADecimalFormatter(getQADecimalFormatter(xmdp.getQSpace()));
-		setVerbalizerOrdering(verbalizerSettings);
-
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
-
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toFile(),
 				verbalizerSettings);
 
@@ -155,17 +150,11 @@ public class MobileRobotDemo {
 		return vocab;
 	}
 
-	public static QADecimalFormatter getQADecimalFormatter(QSpace qSpace) {
-		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
-		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace
-				.getQFunction(CountQFunction.class, CollisionEvent.NAME);
-		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = qSpace
-				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
-
+	public static QADecimalFormatter getQADecimalFormatter() {
 		QADecimalFormatter decimalFormatter = new QADecimalFormatter();
-		decimalFormatter.putDecimalFormat(timeQFunction, "#");
-		decimalFormatter.putDecimalFormat(collideQFunction, "#.#");
-		decimalFormatter.putDecimalFormat(intrusiveQFunction, "#");
+		decimalFormatter.putDecimalFormat(TravelTimeQFunction.NAME, "#");
+		decimalFormatter.putDecimalFormat(CollisionEvent.NAME, "#.#");
+		decimalFormatter.putDecimalFormat(IntrusiveMoveEvent.NAME, "#");
 		return decimalFormatter;
 	}
 

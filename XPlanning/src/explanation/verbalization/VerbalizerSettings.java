@@ -40,10 +40,6 @@ public class VerbalizerSettings {
 		return mDecimalFormatter;
 	}
 
-	public void putDecimalFormat(IQFunction<?, ?> qFunction, String decimalFormatPattern) {
-		mDecimalFormatter.putDecimalFormat(qFunction, decimalFormatPattern);
-	}
-
 	public String formatQAValue(IQFunction<?, ?> qFunction, double qaValue) {
 		return mDecimalFormatter.formatQAValue(qFunction, qaValue);
 	}

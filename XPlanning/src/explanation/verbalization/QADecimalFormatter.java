@@ -14,19 +14,19 @@ public class QADecimalFormatter {
 	 */
 	private volatile int hashCode;
 
-	private Map<IQFunction<?, ?>, DecimalFormat> mDecimalFormats = new HashMap<>();
+	private Map<String, DecimalFormat> mDecimalFormats = new HashMap<>();
 
-	public void putDecimalFormat(IQFunction<?, ?> qFunction, String decimalFormatPattern) {
+	public void putDecimalFormat(String qFunctionName, String decimalFormatPattern) {
 		DecimalFormat df = new DecimalFormat(decimalFormatPattern);
 		df.setRoundingMode(RoundingMode.HALF_UP);
-		mDecimalFormats.put(qFunction, df);
+		mDecimalFormats.put(qFunctionName, df);
 	}
 
 	public String formatQAValue(IQFunction<?, ?> qFunction, double qaValue) {
-		if (!mDecimalFormats.containsKey(qFunction)) {
+		if (!mDecimalFormats.containsKey(qFunction.getName())) {
 			return Double.toString(qaValue);
 		}
-		DecimalFormat df = mDecimalFormats.get(qFunction);
+		DecimalFormat df = mDecimalFormats.get(qFunction.getName());
 		return df.format(qaValue);
 	}
 

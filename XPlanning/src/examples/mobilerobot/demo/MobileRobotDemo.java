@@ -77,9 +77,13 @@ public class MobileRobotDemo {
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
+		// Configure Verbalizer for MobileRobot domain
 		Vocabulary vocabulary = getVocabulary(xmdp.getQSpace());
 		verbalizerSettings.setQADecimalFormatter(getQADecimalFormatter(xmdp.getQSpace()));
+		setVerbalizerOrdering(verbalizerSettings);
+
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
+
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toFile(),
 				verbalizerSettings);
 
@@ -163,6 +167,15 @@ public class MobileRobotDemo {
 		decimalFormatter.putDecimalFormat(collideQFunction, "#.#");
 		decimalFormatter.putDecimalFormat(intrusiveQFunction, "#");
 		return decimalFormatter;
+	}
+
+	public static void setVerbalizerOrdering(VerbalizerSettings verbalizerSettings) {
+		verbalizerSettings.appendQFunctionName(TravelTimeQFunction.NAME);
+		verbalizerSettings.appendQFunctionName(CollisionEvent.NAME);
+		verbalizerSettings.appendQFunctionName(IntrusiveMoveEvent.NAME);
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "non-intrusive");
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
 	}
 
 }

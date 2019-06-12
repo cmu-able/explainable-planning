@@ -26,6 +26,9 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 	private T mTransStructure;
 	private Map<S, Double> mMetric = new HashMap<>();
 
+	// For fast-lookup of event instance by its name
+	private Map<String, S> mEventNames = new HashMap<>();
+
 	public EventBasedMetric(String name, T transStructure) {
 		mName = name;
 		mTransStructure = transStructure;
@@ -33,6 +36,9 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 
 	public void put(S event, double value) {
 		mMetric.put(event, value);
+
+		// For fast-lookup of event instance by its name
+		mEventNames.put(event.getName(), event);
 	}
 
 	public String getName() {
@@ -41,6 +47,10 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 
 	public T getTransitionStructure() {
 		return mTransStructure;
+	}
+
+	public S getEvent(String eventName) {
+		return mEventNames.get(eventName);
 	}
 
 	public Set<S> getEvents() {

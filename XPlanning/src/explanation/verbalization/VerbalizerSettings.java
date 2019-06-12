@@ -1,5 +1,10 @@
 package explanation.verbalization;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import language.domain.metrics.IQFunction;
 
 public class VerbalizerSettings {
@@ -11,11 +16,15 @@ public class VerbalizerSettings {
 
 	private QADecimalFormatter mDecimalFormatter = new QADecimalFormatter();
 	private boolean mDescribeCosts = true;
+	private List<String> mOrderedQFunctionNames = new ArrayList<>();
+	private Map<String, List<String>> mOrderedEventNames = new HashMap<>();
 
 	public VerbalizerSettings() {
 		// Default Verbalizer settings:
-		// describeCosts <- true
-		// decimal formatter <- empty -- no formatting
+		// * describeCosts <- true
+		// * decimal formatter <- empty -- no formatting
+		// * order of QAs <- empty -- no fixed order
+		// * order of events of non-standard QA <- empty -- no fixed order
 	}
 
 	public void setQADecimalFormatter(QADecimalFormatter decimalFormatter) {
@@ -42,6 +51,26 @@ public class VerbalizerSettings {
 		return mDescribeCosts;
 	}
 
+	public void appendQFunctionName(String qFunctionName) {
+		mOrderedQFunctionNames.add(qFunctionName);
+	}
+
+	public List<String> getOrderedQFunctionNames() {
+		return mOrderedQFunctionNames;
+	}
+
+	public void appendEvent(String nonStdQFunctionName, String eventName) {
+		if (!mOrderedEventNames.containsKey(nonStdQFunctionName)) {
+			mOrderedEventNames.put(nonStdQFunctionName, new ArrayList<>());
+		}
+		List<String> orderedEventNames = mOrderedEventNames.get(nonStdQFunctionName);
+		orderedEventNames.add(eventName);
+	}
+
+	public List<String> getOrderedEventNames(String nonStdQFunctionName) {
+		return mOrderedEventNames.get(nonStdQFunctionName);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -51,7 +80,9 @@ public class VerbalizerSettings {
 			return false;
 		}
 		VerbalizerSettings settings = (VerbalizerSettings) obj;
-		return settings.mDecimalFormatter.equals(mDecimalFormatter) && settings.mDescribeCosts == mDescribeCosts;
+		return settings.mDecimalFormatter.equals(mDecimalFormatter) && settings.mDescribeCosts == mDescribeCosts
+				&& settings.mOrderedQFunctionNames.equals(mOrderedQFunctionNames)
+				&& settings.mOrderedEventNames.equals(mOrderedEventNames);
 	}
 
 	@Override
@@ -61,6 +92,8 @@ public class VerbalizerSettings {
 			result = 17;
 			result = 31 * result + mDecimalFormatter.hashCode();
 			result = 31 * result + Boolean.hashCode(mDescribeCosts);
+			result = 31 * result + mOrderedQFunctionNames.hashCode();
+			result = 31 * result + mOrderedEventNames.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

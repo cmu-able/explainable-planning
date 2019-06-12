@@ -27,6 +27,8 @@ import uiconnector.PolicyWriter;
 
 public class Verbalizer {
 
+	private static final String COMMA_AND = ", and ";
+
 	private Vocabulary mVocabulary;
 	private CostCriterion mCostCriterion;
 	private PolicyWriter mPolicyWriter;
@@ -56,7 +58,7 @@ public class Verbalizer {
 		builder.append("I'm planning to follow this policy [");
 		builder.append(policyJsonFile.getAbsolutePath());
 		builder.append("]. ");
-		builder.append(verbalizeQAs(solnPolicyInfo, qSpace));
+		builder.append(verbalizeQAs(solnPolicyInfo));
 
 		// Optimal QAs can have either the lowest values (when attribute cost function has positive slope) or the
 		// highest values (when attribute cost function has negative slope).
@@ -86,14 +88,17 @@ public class Verbalizer {
 		return mSettings.getQADecimalFormatter();
 	}
 
-	private String verbalizeQAs(PolicyInfo policyInfo, QSpace qSpace) {
+	private String verbalizeQAs(PolicyInfo policyInfo) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("It is expected to ");
 
-		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = qSpace.iterator();
+		// Describe QAs in a fixed, predefined order
+		Iterator<String> iter = mSettings.getOrderedQFunctionNames().iterator();
 		boolean firstQA = true;
+
 		while (iter.hasNext()) {
-			IQFunction<?, ?> qFunction = iter.next();
+			String qFunctionName = iter.next();
+			IQFunction<?, ?> qFunction = policyInfo.getXMDP().getQSpace().getQFunction(IQFunction.class, qFunctionName);
 
 			if (firstQA) {
 				firstQA = false;
@@ -164,21 +169,23 @@ public class Verbalizer {
 	private <E extends IEvent<?, ?>> String verbalizeEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
 			EventBasedQAValue<E> qaValue, double scaledQACost, boolean isCostDiff) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<Entry<E, Double>> iter = qaValue.iterator();
+
+		// Describe events of a non-standard QA in a fixed, predefined order
+		Iterator<String> iter = mSettings.getOrderedEventNames(qFunction.getName()).iterator();
 		boolean firstCatValue = true;
+
 		while (iter.hasNext()) {
-			Entry<E, Double> entry = iter.next();
+			String eventName = iter.next();
+			E event = qFunction.getEventBasedMetric().getEvent(eventName);
+			double expectedCount = qaValue.getExpectedCount(event);
 
 			if (firstCatValue) {
 				firstCatValue = false;
 			} else if (!iter.hasNext()) {
-				builder.append(", and ");
+				builder.append(COMMA_AND);
 			} else {
 				builder.append(", ");
 			}
-
-			E event = entry.getKey();
-			double expectedCount = entry.getValue();
 
 			String formattedExpectedCount = mSettings.formatQAValue(qFunction, expectedCount);
 			double roundedExpectedCount = Double.parseDouble(formattedExpectedCount);
@@ -288,7 +295,7 @@ public class Verbalizer {
 			if (firstQA) {
 				firstQA = false;
 			} else if (!iter.hasNext()) {
-				builder.append(", and ");
+				builder.append(COMMA_AND);
 			} else {
 				builder.append(", ");
 			}
@@ -336,7 +343,7 @@ public class Verbalizer {
 			if (firstQA) {
 				firstQA = false;
 			} else if (!iter.hasNext()) {
-				builder.append(", and ");
+				builder.append(COMMA_AND);
 			} else {
 				builder.append(", ");
 			}

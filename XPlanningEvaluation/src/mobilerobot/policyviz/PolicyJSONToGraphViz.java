@@ -35,6 +35,8 @@ public class PolicyJSONToGraphViz {
 	private static final String R_SPEED = "rSpeed";
 	private static final String R_BUMPED = "rBumped";
 	private static final int MOVE_TO_LINE_WIDTH = 5;
+	private static final Color HALF_SPEED_COLOR = Color.DEEPSKYBLUE;
+	private static final Color FULL_SPEED_COLOR = Color.BLUE;
 
 	private JSONParser mJsonParser = new JSONParser();
 	private GraphVizRenderer mGraphRenderer;
@@ -127,9 +129,9 @@ public class PolicyJSONToGraphViz {
 	private void addrSpeedLinkColor(Link moveToLink, JSONObject decisionJsonObj) {
 		double rSpeed = PolicyJSONParserUtils.parseDoubleVar(R_SPEED, decisionJsonObj);
 		if (rSpeed == 0.35) {
-			moveToLink.add(Color.LIGHTBLUE);
+			moveToLink.add(HALF_SPEED_COLOR);
 		} else if (rSpeed == 0.68) {
-			moveToLink.add(Color.BLUE);
+			moveToLink.add(FULL_SPEED_COLOR);
 		} else {
 			throw new IllegalArgumentException("Unknown rSpeed value: " + rSpeed);
 		}

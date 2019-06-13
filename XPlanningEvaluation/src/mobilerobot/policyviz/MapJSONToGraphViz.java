@@ -22,6 +22,7 @@ import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Font;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
@@ -30,6 +31,11 @@ import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.MapTopologyUtils;
 
 public class MapJSONToGraphViz {
+
+	private static final Color PUBLIC_AREA_COLOR = Color.GREEN;
+	private static final Color SEMI_PRIVATE_AREA_COLOR = Color.YELLOW;
+	private static final Color PRIVATE_AREA_COLOR = Color.RED;
+	private static final int OCCLUSION_FONT_SIZE = 25;
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
@@ -66,11 +72,11 @@ public class MapJSONToGraphViz {
 
 		Area area = locNode.getNodeAttribute(Area.class, "area");
 		if (area == Area.PUBLIC) {
-			node.add(Color.GREEN, Style.FILLED);
+			node.add(PUBLIC_AREA_COLOR, Style.FILLED);
 		} else if (area == Area.SEMI_PRIVATE) {
-			node.add(Color.YELLOW, Style.FILLED);
+			node.add(SEMI_PRIVATE_AREA_COLOR, Style.FILLED);
 		} else if (area == Area.PRIVATE) {
-			node.add(Color.RED, Style.FILLED);
+			node.add(PRIVATE_AREA_COLOR, Style.FILLED);
 		}
 
 		parseLinks(node, locNode, visitedLocNodes);
@@ -97,9 +103,9 @@ public class MapJSONToGraphViz {
 			if (occlusion == Occlusion.CLEAR) {
 				neighborLink = to(neighborNode);
 			} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of("PO"));
+				neighborLink = to(neighborNode).with(Label.of("PO")).with(Font.size(OCCLUSION_FONT_SIZE));
 			} else if (occlusion == Occlusion.OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of("O"));
+				neighborLink = to(neighborNode).with(Label.of("O")).with(Font.size(OCCLUSION_FONT_SIZE));
 			} else {
 				throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 			}

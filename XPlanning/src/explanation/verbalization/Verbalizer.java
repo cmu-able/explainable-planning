@@ -13,6 +13,7 @@ import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.Tradeoff;
+import language.domain.metrics.EventBasedMetric;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
@@ -122,6 +123,7 @@ public class Verbalizer {
 				builder.append(": ");
 
 				// Then describe event-based QA value break-down
+				builder.append("it will ");
 				builder.append(mVocabulary.getVerb(qFunction));
 				builder.append(" ");
 
@@ -166,12 +168,14 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private <E extends IEvent<?, ?>> String verbalizeEventBasedQAValue(NonStandardMetricQFunction<?, ?, E> qFunction,
-			EventBasedQAValue<E> qaValue, double scaledQACost, boolean isCostDiff) {
+	private <E extends IEvent<?, ?>> String verbalizeEventBasedQAValue(
+			NonStandardMetricQFunction<?, ?, E> nonStdQFunction, EventBasedQAValue<E> qaValue, double scaledQACost,
+			boolean isCostDiff) {
+		EventBasedMetric<?, ?, E> eventBasedMetric = nonStdQFunction.getEventBasedMetric();
 		StringBuilder builder = new StringBuilder();
 
 		// Describe events of a non-standard QA in a fixed, predefined order
-		Iterator<E> iter = mSettings.getOrderedEvents(qFunction).iterator();
+		Iterator<E> iter = mSettings.getOrderedEvents(nonStdQFunction).iterator();
 		boolean firstCatValue = true;
 
 		while (iter.hasNext()) {
@@ -186,15 +190,28 @@ public class Verbalizer {
 				builder.append(", ");
 			}
 
-			String formattedExpectedCount = mSettings.formatQAValue(qFunction, expectedCount);
+			// Expected number of events
+			String formattedExpectedCount = mSettings.formatQAValue(nonStdQFunction, expectedCount);
 			double roundedExpectedCount = Double.parseDouble(formattedExpectedCount);
 
-			builder.append(mVocabulary.getCategoricalValue(qFunction, event));
+			builder.append(mVocabulary.getCategoricalValue(nonStdQFunction, event)); // event name
 			builder.append(" ");
-			builder.append(formattedExpectedCount);
+			builder.append(mVocabulary.getPreposition(nonStdQFunction)); // linking event to measurement unit
 			builder.append(" ");
-			builder.append(roundedExpectedCount > 1 ? mVocabulary.getPluralUnit(qFunction)
-					: mVocabulary.getSingularUnit(qFunction));
+			builder.append(formattedExpectedCount); // number of events
+			builder.append(" ");
+			builder.append(roundedExpectedCount > 1 ? mVocabulary.getPluralUnit(nonStdQFunction)
+					: mVocabulary.getSingularUnit(nonStdQFunction));
+
+			// Total value from all events
+			double eventValue = eventBasedMetric.getEventValue(event);
+			double totalEventValue = eventValue * expectedCount;
+			String formattedTotalEventValue = mSettings.formatQAValue(nonStdQFunction, totalEventValue);
+
+			builder.append(" (");
+			builder.append(formattedTotalEventValue);
+			builder.append("-penalty");
+			builder.append(")");
 		}
 
 		if (mSettings.getDescribeCosts()) {

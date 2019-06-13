@@ -34,11 +34,15 @@ public class EventBasedMetric<E extends IAction, T extends ITransitionStructure<
 		mTransStructure = transStructure;
 	}
 
-	public void put(S event, double value) {
+	public void putEventValue(S event, double value) {
 		mMetric.put(event, value);
 
 		// For fast-lookup of event instance by its name
 		mEventNames.put(event.getName(), event);
+	}
+
+	public double getEventValue(S event) {
+		return mMetric.get(event);
 	}
 
 	public String getName() {

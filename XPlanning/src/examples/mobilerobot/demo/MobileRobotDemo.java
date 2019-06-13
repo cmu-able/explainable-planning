@@ -146,7 +146,8 @@ public class MobileRobotDemo {
 		for (IntrusiveMoveEvent event : intrusiveQFunction.getEventBasedMetric().getEvents()) {
 			vocab.putCategoricalValue(intrusiveQFunction, event, event.getName());
 		}
-		vocab.putUnit(intrusiveQFunction, "step", "steps");
+		vocab.putPreposition(intrusiveQFunction, "at");
+		vocab.putUnit(intrusiveQFunction, "location", "locations");
 		return vocab;
 	}
 

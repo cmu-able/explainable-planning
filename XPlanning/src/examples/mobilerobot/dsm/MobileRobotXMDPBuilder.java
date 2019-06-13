@@ -245,9 +245,9 @@ public class MobileRobotXMDPBuilder {
 		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent("very-intrusive", intrusiveDomain, Area.PRIVATE);
 		EventBasedMetric<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> metric = new EventBasedMetric<>(
 				IntrusiveMoveEvent.NAME, intrusiveDomain);
-		metric.put(nonIntrusive, NON_INTRUSIVE_PENALTY);
-		metric.put(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
-		metric.put(veryIntrusive, VERY_INTRUSIVE_PENALTY);
+		metric.putEventValue(nonIntrusive, NON_INTRUSIVE_PENALTY);
+		metric.putEventValue(somewhatIntrusive, SEMI_INTRUSIVE_PEANLTY);
+		metric.putEventValue(veryIntrusive, VERY_INTRUSIVE_PENALTY);
 		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = new NonStandardMetricQFunction<>(
 				metric);
 

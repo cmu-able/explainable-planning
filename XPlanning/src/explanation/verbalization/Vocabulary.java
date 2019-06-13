@@ -12,6 +12,7 @@ public class Vocabulary {
 	private Map<IQFunction<?, ?>, String> mNouns = new HashMap<>();
 	private Map<NonStandardMetricQFunction<?, ?, ?>, Map<IEvent<?, ?>, String>> mCategoricalValues = new HashMap<>();
 	private Map<IQFunction<?, ?>, String> mVerbs = new HashMap<>();
+	private Map<IQFunction<?, ?>, String> mPrepositions = new HashMap<>();
 	private Map<IQFunction<?, ?>, String> mSingularUnits = new HashMap<>();
 	private Map<IQFunction<?, ?>, String> mPluralUnits = new HashMap<>();
 	private String mPeriodUnit;
@@ -22,6 +23,10 @@ public class Vocabulary {
 
 	public void putVerb(IQFunction<?, ?> qFunction, String verb) {
 		mVerbs.put(qFunction, verb);
+	}
+
+	public void putPreposition(IQFunction<?, ?> qFunction, String preposition) {
+		mPrepositions.put(qFunction, preposition);
 	}
 
 	public void putUnit(IQFunction<?, ?> qFunction, String singularUnit, String pluralUnit) {
@@ -50,6 +55,10 @@ public class Vocabulary {
 
 	public String getVerb(IQFunction<?, ?> qFunction) {
 		return mVerbs.get(qFunction);
+	}
+
+	public String getPreposition(IQFunction<?, ?> qFunction) {
+		return mPrepositions.get(qFunction);
 	}
 
 	public String getSingularUnit(IQFunction<?, ?> qFunction) {

@@ -42,9 +42,11 @@ public class PolicyJSONToGraphViz {
 
 	private JSONParser mJsonParser = new JSONParser();
 	private GraphVizRenderer mGraphRenderer;
+	private boolean mShowSetSpeedLabel;
 
-	public PolicyJSONToGraphViz(GraphVizRenderer graphRenderer) {
+	public PolicyJSONToGraphViz(GraphVizRenderer graphRenderer, boolean showSetSpeedLabel) {
 		mGraphRenderer = graphRenderer;
+		mShowSetSpeedLabel = showSetSpeedLabel;
 	}
 
 	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile, File mapJsonFile, boolean withMap)
@@ -87,7 +89,7 @@ public class PolicyJSONToGraphViz {
 
 			if (actionType.equals("moveTo")) {
 				addMoveToLinkToNode(policyGraph, decisionJsonObj, moveToLinkFormatter);
-			} else if (actionType.equals("setSpeed")) {
+			} else if (actionType.equals("setSpeed") && mShowSetSpeedLabel) {
 				addSetSpeedLabelToNode(policyGraph, decisionJsonObj, setSpeedLabelFormatter);
 			}
 		}

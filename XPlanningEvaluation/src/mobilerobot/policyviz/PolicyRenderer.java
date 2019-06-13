@@ -27,7 +27,7 @@ public class PolicyRenderer {
 
 	public PolicyRenderer(double meterPerInch, double scalingFactor) {
 		GraphVizRenderer graphRenderer = new GraphVizRenderer(meterPerInch, scalingFactor);
-		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer);
+		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer, false);
 	}
 
 	public void renderAll(File policiesDirOrFile)

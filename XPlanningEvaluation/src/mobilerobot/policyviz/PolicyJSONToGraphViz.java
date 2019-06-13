@@ -21,6 +21,7 @@ import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Font;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
@@ -34,9 +35,10 @@ public class PolicyJSONToGraphViz {
 	private static final String R_LOC = "rLoc";
 	private static final String R_SPEED = "rSpeed";
 	private static final String R_BUMPED = "rBumped";
-	private static final int MOVE_TO_LINE_WIDTH = 5;
-	private static final Color HALF_SPEED_COLOR = Color.DEEPSKYBLUE;
+	private static final int MOVE_TO_LINE_WIDTH = 7;
+	private static final Color HALF_SPEED_COLOR = Color.LIGHTBLUE;
 	private static final Color FULL_SPEED_COLOR = Color.BLUE;
+	private static final int ACTION_FONT_SIZE = 30;
 
 	private JSONParser mJsonParser = new JSONParser();
 	private GraphVizRenderer mGraphRenderer;
@@ -90,6 +92,7 @@ public class PolicyJSONToGraphViz {
 			}
 		}
 
+		policyGraph.nodeAttrs().add(Font.size(ACTION_FONT_SIZE));
 		return policyGraph;
 	}
 

@@ -20,6 +20,9 @@ public class GraphVizRenderer {
 	static final double METER_PER_INCH = 10;
 	static final double SCALING_FACTOR = 4;
 
+	// Node width: 0.2 inch
+	private static final double NODE_WIDTH = 0.5;
+
 	private double mMeterPerInch;
 	private double mScalingFactor;
 
@@ -37,7 +40,8 @@ public class GraphVizRenderer {
 
 	public void setNodeStyle(MutableNode node) {
 		node.add(Shape.CIRCLE);
-		node.add("width", "0.1");
+		node.add("fixedsize", "true");
+		node.add("width", NODE_WIDTH);
 	}
 
 	public static void drawGraph(MutableGraph graph, File outDir, String outSubDirname, String outputName)

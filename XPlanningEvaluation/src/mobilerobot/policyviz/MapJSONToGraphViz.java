@@ -35,7 +35,8 @@ public class MapJSONToGraphViz {
 	private static final Color PUBLIC_AREA_COLOR = Color.GREEN;
 	private static final Color SEMI_PRIVATE_AREA_COLOR = Color.YELLOW;
 	private static final Color PRIVATE_AREA_COLOR = Color.RED;
-	private static final int OCCLUSION_FONT_SIZE = 25;
+	private static final int OCCLUSION_FONT_SIZE = 24;
+	private static final int NODE_FONT_SIZE = 24;
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
@@ -59,6 +60,7 @@ public class MapJSONToGraphViz {
 			mapGraph.add(nodeLink);
 		}
 
+		mapGraph.nodeAttrs().add(Font.size(NODE_FONT_SIZE));
 		return mapGraph;
 	}
 

@@ -84,21 +84,27 @@ public class ExplanationWriter {
 			QADecimalFormatter decimalFormatter) {
 		JSONObject policyValuesJsonObj = new JSONObject();
 		for (IQFunction<?, ?> qFunction : quantPolicy) {
+			double qaValue = quantPolicy.getQAValue(qFunction);
+
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
-				NonStandardMetricQFunction<?, ?, ?> eventBasedQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
-				EventBasedQAValue<?> eventBasedQAValue = quantPolicy.getEventBasedQAValue(eventBasedQFunction);
+				NonStandardMetricQFunction<?, ?, ?> nonStdQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
+				EventBasedQAValue<?> eventBasedQAValue = quantPolicy.getEventBasedQAValue(nonStdQFunction);
 
 				JSONObject eventBasedValuesJsonObj = new JSONObject();
 				for (Entry<? extends IEvent<?, ?>, Double> e : eventBasedQAValue) {
 					IEvent<?, ?> event = e.getKey();
 					Double expectedCount = e.getValue();
-					String formattedExpectedCount = decimalFormatter.formatQAValue(eventBasedQFunction, expectedCount);
+					String formattedExpectedCount = decimalFormatter.formatQAValue(nonStdQFunction, expectedCount);
 					eventBasedValuesJsonObj.put(event.getName(), formattedExpectedCount);
 				}
-				policyValuesJsonObj.put(eventBasedQFunction.getName(), eventBasedValuesJsonObj);
+
+				JSONObject nonStdQAValueJsonObj = new JSONObject();
+				nonStdQAValueJsonObj.put("Value", qaValue);
+				nonStdQAValueJsonObj.put("Event-based Values", eventBasedValuesJsonObj);
+
+				policyValuesJsonObj.put(nonStdQFunction.getName(), nonStdQAValueJsonObj);
 			} else {
-				double expectedValue = quantPolicy.getQAValue(qFunction);
-				String formattedExpectedValue = decimalFormatter.formatQAValue(qFunction, expectedValue);
+				String formattedExpectedValue = decimalFormatter.formatQAValue(qFunction, qaValue);
 				policyValuesJsonObj.put(qFunction.getName(), formattedExpectedValue);
 			}
 		}

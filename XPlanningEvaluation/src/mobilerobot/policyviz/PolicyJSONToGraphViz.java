@@ -38,7 +38,7 @@ public class PolicyJSONToGraphViz {
 	private static final int MOVE_TO_LINE_WIDTH = 7;
 	private static final Color HALF_SPEED_COLOR = Color.LIGHTBLUE;
 	private static final Color FULL_SPEED_COLOR = Color.BLUE;
-	private static final int ACTION_FONT_SIZE = 30;
+	private static final int ACTION_FONT_SIZE = 20;
 
 	private JSONParser mJsonParser = new JSONParser();
 	private GraphVizRenderer mGraphRenderer;

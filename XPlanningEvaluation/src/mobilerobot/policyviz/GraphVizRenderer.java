@@ -20,8 +20,7 @@ public class GraphVizRenderer {
 	static final double METER_PER_INCH = 10;
 	static final double SCALING_FACTOR = 4;
 
-	// Node width: 0.2 inch
-	private static final double NODE_WIDTH = 0.5;
+	private static final double NODE_WIDTH = 0.6;
 
 	private double mMeterPerInch;
 	private double mScalingFactor;

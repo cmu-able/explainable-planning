@@ -85,6 +85,7 @@ public class ExplanationWriter {
 		JSONObject policyValuesJsonObj = new JSONObject();
 		for (IQFunction<?, ?> qFunction : quantPolicy) {
 			double qaValue = quantPolicy.getQAValue(qFunction);
+			String formattedQAValue = decimalFormatter.formatQAValue(qFunction, qaValue);
 
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
 				NonStandardMetricQFunction<?, ?, ?> nonStdQFunction = (NonStandardMetricQFunction<?, ?, ?>) qFunction;
@@ -99,13 +100,12 @@ public class ExplanationWriter {
 				}
 
 				JSONObject nonStdQAValueJsonObj = new JSONObject();
-				nonStdQAValueJsonObj.put("Value", qaValue);
+				nonStdQAValueJsonObj.put("Value", formattedQAValue);
 				nonStdQAValueJsonObj.put("Event-based Values", eventBasedValuesJsonObj);
 
 				policyValuesJsonObj.put(nonStdQFunction.getName(), nonStdQAValueJsonObj);
 			} else {
-				String formattedExpectedValue = decimalFormatter.formatQAValue(qFunction, qaValue);
-				policyValuesJsonObj.put(qFunction.getName(), formattedExpectedValue);
+				policyValuesJsonObj.put(qFunction.getName(), formattedQAValue);
 			}
 		}
 		return policyValuesJsonObj;

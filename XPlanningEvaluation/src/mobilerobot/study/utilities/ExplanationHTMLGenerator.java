@@ -224,15 +224,20 @@ public class ExplanationHTMLGenerator {
 		// Header for each QA column
 		Element qaHeader;
 		for (String qaName : mTableSettings.getOrderedQANames()) {
+			// Create a header for this QA
+			// rowspan is set according to whether there is a sub-header
+			qaHeader = tableHeader.appendElement("th").attr("rowspan", headerRowspan);
+
 			if (mTableSettings.isEventBasedQA(qaName)) {
+				// This column is for total penalty value of this event-based QA
+				qaHeader.appendElement("div").text(qaName);
+				qaHeader.appendElement("div").text("(" + qaName + "-penalty" + ")");
+
+				// Additional column for break-down values of this event-based QA
 				// Need sub-header for this event-based QA
 				// colspan <- # events
 				int numEvents = mTableSettings.getOrderedEventNames(qaName).size();
 				qaHeader = tableHeader.appendElement("th").attr("colspan", Integer.toString(numEvents));
-			} else {
-				// No sub-header for this QA
-				// rowspan is set according to whether there is a sub-header
-				qaHeader = tableHeader.appendElement("th").attr("rowspan", headerRowspan);
 			}
 
 			// QA header text: unit under QA name
@@ -274,9 +279,16 @@ public class ExplanationHTMLGenerator {
 
 			if (qaValueObj instanceof JSONObject) {
 				// Event-based QA value
-				JSONObject eventBasedQAValue = (JSONObject) qaValueObj;
+				JSONObject eventBasedQAValueJsonObj = (JSONObject) qaValueObj;
+
+				// Raw QA value
+				String formattedQAValue = (String) eventBasedQAValueJsonObj.get("Value");
+				qaValuesRow.appendElement("td").text(formattedQAValue);
+
+				// Event-based values
+				JSONObject eventBasedValuesJsonObj = (JSONObject) eventBasedQAValueJsonObj.get("Event-based Values");
 				for (String eventName : mTableSettings.getOrderedEventNames(qaName)) {
-					String formattedEventValue = (String) eventBasedQAValue.get(eventName);
+					String formattedEventValue = (String) eventBasedValuesJsonObj.get(eventName);
 					qaValuesRow.appendElement("td").text(formattedEventValue);
 				}
 			} else {

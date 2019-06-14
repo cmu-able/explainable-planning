@@ -139,16 +139,21 @@ public class ExplanationHTMLGenerator {
 		if (matcher.find()) {
 			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
 			String pngFullFilename = matcher.group(3) + ".png"; // /path/to/policyX.png
-			pngFilename = FilenameUtils.getName(pngFullFilename);
+			pngFilename = FilenameUtils.getName(pngFullFilename); // policyX.png
 			policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see Figure " + imgIndex + ")");
 		}
 
-		Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
+		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", widthPx, heightPx, 1);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
 				solnPolicyQAValuesJsonObj, imgIndex);
 
-		container.appendChild(policyImgDiv);
+		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
+		if (imgIndex > 1) {
+			Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
+			container.appendChild(policyImgDiv);
+		}
+
 		return container;
 	}
 
@@ -283,8 +288,8 @@ public class ExplanationHTMLGenerator {
 		}
 	}
 
-	private Element createQAValuesTableHorizontal(JSONObject policyQAValuesJsonObj, JSONObject solnPolicyQAValuesJsonObj,
-			int imgIndex) {
+	private Element createQAValuesTableHorizontal(JSONObject policyQAValuesJsonObj,
+			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");
 		table.addClass("w3-border");

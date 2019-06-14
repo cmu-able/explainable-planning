@@ -6,6 +6,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -180,14 +182,108 @@ public class ExplanationHTMLGenerator {
 		policyExplanationP.text(policyExplanationWithImgRef);
 
 		// Table of QA values
-		Element qaValuesTable = createQAValuesTable(policyQAValuesJsonObj, solnPolicyQAValuesJsonObj, imgIndex);
+		Element qaValuesTable = createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(policyExplanationP);
 		container.appendChild(qaValuesTable);
 		return container;
 	}
 
-	private Element createQAValuesTable(JSONObject policyQAValuesJsonObj, JSONObject solnPolicyQAValuesJsonObj,
+	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
+			int imgIndex) {
+		Element table = new Element("table");
+		table.addClass("w3-table");
+		table.addClass("w3-border");
+		table.addClass("w3-bordered");
+		table.addClass("w3-centered");
+
+		// Table header: | (empty header for QA column) | Agent's Policy | Alternative Policy |
+		Element tableHeaderRow = table.appendElement("tr");
+		tableHeaderRow.appendElement("th"); // empty header for QA column
+		Element policyHeader = tableHeaderRow.appendElement("th"); // Agent's Policy header
+		policyHeader.appendElement("div").text("Agent's Policy");
+		policyHeader.appendElement("div").text("(Figure 1)");
+		if (imgIndex > 1) {
+			Element altPolicyHeader = tableHeaderRow.appendElement("th"); // Alternative Policy header
+			altPolicyHeader.appendElement("div").text("Alternative Policy");
+			altPolicyHeader.appendElement("div").text("(Figure " + imgIndex + ")");
+		}
+
+		// Table rows:
+		// | [QA 1] | Agent's QA 1 value | Alternative's QA 1 value |
+		// | [QA 2] | Agent's QA 2 value | Alternative's QA 2 value |
+		// ...
+		for (String qaName : mTableSettings.getOrderedQANames()) {
+			Element qaTableRow = new Element("tr");
+
+			// QA header text: unit under QA name
+			Element qaHeader = qaTableRow.appendElement("th");
+			String qaDescriptiveUnit = mTableSettings.getQADescriptiveUnit(qaName);
+			qaHeader.appendElement("div").text(qaName);
+			qaHeader.appendElement("div").text("(" + qaDescriptiveUnit + ")");
+
+			List<Element> eventTableRows = new ArrayList<>();
+			createQAValueCell(solnPolicyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, tableHeaderRow);
+
+			if (imgIndex > 1) {
+				// Alternative's QA value cell
+				createQAValueCell(policyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, tableHeaderRow);
+			}
+		}
+
+		return table;
+	}
+
+	private void createQAValueCell(JSONObject policyQAValuesJsonObj, String qaName, Element qaTableRow,
+			List<Element> eventTableRows, Element table) {
+		// Policy's QA value cell
+		Object policyQAValueObj = policyQAValuesJsonObj.get(qaName);
+
+		if (policyQAValueObj instanceof JSONObject) {
+			// Event-based QA value
+			JSONObject eventBasedQAValueJsonObj = (JSONObject) policyQAValueObj;
+
+			// Raw QA value cell
+			String formattedQAValue = (String) eventBasedQAValueJsonObj.get("Value");
+			qaTableRow.appendElement("td").text(formattedQAValue);
+			table.appendChild(qaTableRow);
+
+			// Additional rows for event-based values
+			List<String> orderedEventNames = mTableSettings.getOrderedEventNames(qaName);
+			JSONObject eventBasedValuesJsonObj = (JSONObject) eventBasedQAValueJsonObj.get("Event-based Values");
+
+			// If event rows have not been created yet, create and add them to the table
+			if (eventTableRows.isEmpty()) {
+				for (String eventName : orderedEventNames) {
+					// Create a row for each event
+					Element eventTableRow = table.appendElement("tr");
+
+					// Event name header
+					eventTableRow.appendElement("th").text(eventName);
+					// TODO: unit
+
+					eventTableRows.add(eventTableRow);
+				}
+			}
+
+			// All event rows have been created and added to the table
+			for (int i = 0; i < orderedEventNames.size(); i++) {
+				Element eventTableRow = eventTableRows.get(i);
+				String eventName = orderedEventNames.get(i);
+
+				// Event value cell
+				String formattedEventValue = (String) eventBasedValuesJsonObj.get(eventName);
+				eventTableRow.appendElement("td").text(formattedEventValue);
+			}
+		} else {
+			// QA value cell
+			String formattedQAValue = (String) policyQAValueObj;
+			qaTableRow.appendElement("td").text(formattedQAValue);
+			table.appendChild(qaTableRow);
+		}
+	}
+
+	private Element createQAValuesTableHorizontal(JSONObject policyQAValuesJsonObj, JSONObject solnPolicyQAValuesJsonObj,
 			int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");

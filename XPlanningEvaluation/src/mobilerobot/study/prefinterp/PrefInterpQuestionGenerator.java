@@ -47,9 +47,9 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 			PrismException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
-		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
-			File missionFile = e.getKey();
-			PolicyInfo solnPolicyInfo = e.getValue();
+		for (Entry<PolicyInfo, File> e : lowerConvexHull) {
+			PolicyInfo solnPolicyInfo = e.getKey();
+			File missionFile = e.getValue();
 			QuantitativePolicy solnQuantPolicy = solnPolicyInfo.getQuantitativePolicy();
 			Set<QuantitativePolicy> multiChoicePolicies = lowerConvexHull
 					.randomlySelectUniqueQuantitativePolicies(mNumMultiChoicePolicies, solnQuantPolicy);

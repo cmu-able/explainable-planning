@@ -219,7 +219,7 @@ public class ExplanationHTMLGenerator {
 		// | [QA 2] | Agent's QA 2 value | Alternative's QA 2 value |
 		// ...
 		for (String qaName : mTableSettings.getOrderedQANames()) {
-			Element qaTableRow = new Element("tr");
+			Element qaTableRow = table.appendElement("tr");
 
 			// QA header text: unit under QA name
 			Element qaHeader = qaTableRow.appendElement("th");
@@ -228,11 +228,11 @@ public class ExplanationHTMLGenerator {
 			qaHeader.appendElement("div").text("(" + qaDescriptiveUnit + ")");
 
 			List<Element> eventTableRows = new ArrayList<>();
-			createQAValueCell(solnPolicyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, tableHeaderRow);
+			createQAValueCell(solnPolicyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, table);
 
 			if (imgIndex > 1) {
 				// Alternative's QA value cell
-				createQAValueCell(policyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, tableHeaderRow);
+				createQAValueCell(policyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, table);
 			}
 		}
 
@@ -251,7 +251,6 @@ public class ExplanationHTMLGenerator {
 			// Raw QA value cell
 			String formattedQAValue = (String) eventBasedQAValueJsonObj.get("Value");
 			qaTableRow.appendElement("td").text(formattedQAValue);
-			table.appendChild(qaTableRow);
 
 			// Additional rows for event-based values
 			List<String> orderedEventNames = mTableSettings.getOrderedEventNames(qaName);
@@ -284,7 +283,6 @@ public class ExplanationHTMLGenerator {
 			// QA value cell
 			String formattedQAValue = (String) policyQAValueObj;
 			qaTableRow.appendElement("td").text(formattedQAValue);
-			table.appendChild(qaTableRow);
 		}
 	}
 

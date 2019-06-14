@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -72,13 +73,11 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			PrismConnectorException, GRBException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
-		for (Entry<File, PolicyInfo> e : lowerConvexHull) {
+		for (Entry<PolicyInfo, File> e : lowerConvexHull) {
+			// Each solution PolicyInfo is unique due to its XMDP, but the solution policy is not necessarily unique
+			PolicyInfo solnPolicyInfo = e.getKey();
 			// Each mission is unique in terms of the scaling constants of the objective function
-			File missionFile = e.getKey();
-			// Each solution policy is not necessarily unique
-			PolicyInfo solnPolicyInfo = e.getValue();
-
-			QADecimalFormatter decimalFormatter = mVerbalizerSettings.getQADecimalFormatter();
+			File missionFile = e.getValue();
 
 			// Each question dir contains multiple questions, all of which have the same mission but different agent's
 			// proposed policies
@@ -88,24 +87,36 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			// Each question dir has a simple cost structure defining the preference
 			createSimpleCostStructure(questionDir, solnPolicyInfo.getXMDP());
 
+			// One of the agents in this question dir must be solving this question's XMDP
+			// This agent will generate its explanation using the mission file in this question
+			QuantitativePolicy solnQuantPolicy = solnPolicyInfo.getQuantitativePolicy();
+
+			// Agent-0 is the aligned agent
+			createAgentData(questionDir, solnQuantPolicy, 0, missionFile);
+
 			// Each agent's policy is unique, taken from the lower convex hull of the mission problem
 			List<QuantitativePolicy> indexedAgentQuantPolicies = lowerConvexHull.getIndexedUniqueQuantitativePolicies();
-			for (int i = 0; i < indexedAgentQuantPolicies.size(); i++) {
-				QuantitativePolicy agentQuantPolicy = indexedAgentQuantPolicies.get(i);
 
-				// Write each agent's proposed solution policy as json file at /output/question-missionX/
-				JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
-				writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", i, questionDir);
+			Iterator<QuantitativePolicy> iter = indexedAgentQuantPolicies.iterator();
+			int agentIndex = 1; // agent-index 0 is for the aligned agent
+			while (iter.hasNext()) {
+				QuantitativePolicy agentQuantPolicy = iter.next();
 
-				// Write the QA values of each agent policy as json file
-				JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy,
-						decimalFormatter);
-				writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", i, questionDir);
+				if (agentQuantPolicy.getPolicy().equals(solnQuantPolicy.getPolicy())) {
+					// This agent policy is the same as the aligned agent policy
+					// Skip this
+					continue;
+				}
 
-				// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative
-				// policies, and explanation at /output/question-missionX/explanation-agent[i]/
+				// Note: The same agent policy may be created by different mission files,
+				// but we can use any of those mission files
+				// because a non-aligned agent doesn't need to have a specific cost function
 				File agentMissionFile = lowerConvexHull.getMissionFile(agentQuantPolicy);
-				createExplanation(questionDir, i, agentMissionFile);
+
+				// Create agentPolicy[i].json, agentPolicyValues[i].json, and explanation-agent[i]
+				createAgentData(questionDir, agentQuantPolicy, agentIndex, agentMissionFile);
+
+				agentIndex++;
 			}
 
 			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
@@ -117,6 +128,25 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			mQuestionViz.visualizeAll(questionDir);
 		}
 		return lowerConvexHull.getNextMissionIndex();
+	}
+
+	private void createAgentData(File questionDir, QuantitativePolicy agentQuantPolicy, int agentIndex,
+			File agentMissionFile)
+			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		// Write each agent's proposed solution policy as json file at /output/question-missionX/
+		JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
+		writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", agentIndex, questionDir);
+
+		QADecimalFormatter decimalFormatter = mVerbalizerSettings.getQADecimalFormatter();
+
+		// Write the QA values of each agent policy as json file
+		JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy,
+				decimalFormatter);
+		writeAgentJSONObjectToFile(agentPolicyValuesJsonObj, "agentPolicyValues.json", agentIndex, questionDir);
+
+		// Create explanation dir that contains agent's corresponding mission file, solution policy, alternative
+		// policies, and explanation at /output/question-missionX/explanation-agent[i]/
+		createExplanation(questionDir, agentIndex, agentMissionFile);
 	}
 
 	private void writeAgentJSONObjectToFile(JSONObject agentJsonObj, String filename, int agentIndex, File questionDir)

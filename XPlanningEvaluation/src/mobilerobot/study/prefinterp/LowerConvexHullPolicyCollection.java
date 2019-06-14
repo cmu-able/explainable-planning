@@ -31,7 +31,7 @@ import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
-public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, PolicyInfo>> {
+public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInfo, File>> {
 
 	private static final String[] OBJECTIVE_NAMES = { "travelTime", "collision", "intrusiveness" };
 	private static final Double[][] PARAM_LISTS = { { 0.6, 0.3, 0.1 }, { 0.6, 0.2, 0.2 }, { 0.4, 0.4, 0.2 },
@@ -45,10 +45,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	private String mMapName;
 
 	// Lower convex hull of the map
-	// Each key is a mission whose optimal solution lies in the lower convex hull, and each value is that solution.
-	// Each mission is unique in terms of the scaling constants of the objective function, but each solution is not
-	// necessarily unique.
-	private Map<File, PolicyInfo> mPolicyInfos = new HashMap<>();
+	// Each key is a PolicyInfo containing a solution policy that lies in the LCH. The policy is not necessarily unique, 
+	// but the PolicyInfo is unique due to its unique XMDP.
+	// Each value is a mission file corresponding to the key's XMDP.
+	private Map<PolicyInfo, File> mPolicyInfos = new HashMap<>();
 
 	// For random policy selection: indexed unique quantitative policies
 	// Note: All of these policies are generated from the same map but different objective cost functions,
@@ -110,8 +110,8 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 			// Run planning using mission.json as input
 			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
 
-			// Keep track of mission file that generates each lower-convex-hull policy
-			mPolicyInfos.put(missionJsonFile, policyInfo);
+			// Keep track of each LCH policy, its XMDP, and mission file that generates it
+			mPolicyInfos.put(policyInfo, missionJsonFile);
 
 			// Append a new unique (quantitative) policy to the list for random selection
 			QuantitativePolicy quantPolicy = policyInfo.getQuantitativePolicy();
@@ -131,10 +131,18 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 		return mIndexedUniqueQuantPolicies;
 	}
 
+	/**
+	 * Note that the same solution policy may be created by different mission files. Since LCH policy collection only
+	 * keeps track of unique policies, this method will only return one mission file that generates a given policy.
+	 * 
+	 * @param quantPolicy
+	 *            : Quantitative policy
+	 * @return Mission file that generates the given policy
+	 */
 	public File getMissionFile(QuantitativePolicy quantPolicy) {
-		for (Entry<File, PolicyInfo> e : mPolicyInfos.entrySet()) {
-			File missionFile = e.getKey();
-			PolicyInfo policyInfo = e.getValue();
+		for (Entry<PolicyInfo, File> e : mPolicyInfos.entrySet()) {
+			PolicyInfo policyInfo = e.getKey();
+			File missionFile = e.getValue();
 
 			if (policyInfo.getQuantitativePolicy().equals(quantPolicy)) {
 				return missionFile;
@@ -162,10 +170,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<File, Pol
 	}
 
 	/**
-	 * Iterator over pairs of mission JSON file and its solution policy info.
+	 * Iterator over pairs of LCH PolicyInfo and its corresponding mission JSON file.
 	 */
 	@Override
-	public Iterator<Entry<File, PolicyInfo>> iterator() {
+	public Iterator<Entry<PolicyInfo, File>> iterator() {
 		return mPolicyInfos.entrySet().iterator();
 	}
 

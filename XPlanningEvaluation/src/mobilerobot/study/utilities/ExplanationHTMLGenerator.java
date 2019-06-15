@@ -194,9 +194,12 @@ public class ExplanationHTMLGenerator {
 
 		// Table of QA values
 		Element qaValuesTable = createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
+		Element qaTableDiv = new Element("div");
+		qaTableDiv.addClass("w3-responsive");
+		qaTableDiv.appendChild(qaValuesTable);
 
 		container.appendChild(policyExplanationP);
-		container.appendChild(qaValuesTable);
+		container.appendChild(qaTableDiv);
 		return container;
 	}
 

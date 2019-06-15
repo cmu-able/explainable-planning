@@ -130,8 +130,10 @@ public class ExplanationHTMLGenerator {
 			container.addClass("w3-light-grey");
 		}
 
-		int widthPx = mPolicyImgWidthPx;
-		int heightPx = (int) Math.round(widthPx / mPolicyImgWidthToHeightRatio);
+		// Make this container fits the height of the browser
+		// Use scroll for overflow content
+		container.attr("style", "height:100vh;overflow:scroll");
+
 		String pngFilename = null;
 		String policyExplanationWithImgRef = null;
 
@@ -143,14 +145,14 @@ public class ExplanationHTMLGenerator {
 			policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see Figure " + imgIndex + ")");
 		}
 
-		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", widthPx, heightPx, 1);
+		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", 1);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
 				solnPolicyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
 		if (imgIndex > 1) {
-			Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
+			Element policyImgDiv = createPolicyImgDiv(pngFilename, imgIndex);
 			container.appendChild(policyImgDiv);
 		} else {
 			Element emptyImgDiv = new Element("div");
@@ -162,7 +164,7 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
-	private Element createPolicyImgDiv(String pngFilename, int widthPx, int heightPx, int imgIndex) {
+	private Element createPolicyImgDiv(String pngFilename, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_THIRD);
@@ -171,8 +173,9 @@ public class ExplanationHTMLGenerator {
 		Element policyImg = new Element("img");
 		policyImg.addClass("w3-image");
 		policyImg.attr("src", pngFilename);
-		policyImg.attr("width", Integer.toString(widthPx));
-		policyImg.attr("height", Integer.toString(heightPx));
+
+		// Make this image fits the height of the container with room for image caption
+		policyImg.attr("style", "height:90%");
 
 		Element policyImgCaption = new Element("h5");
 		policyImgCaption.text("Figure " + imgIndex);

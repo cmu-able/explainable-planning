@@ -28,8 +28,8 @@ public class ExplanationHTMLGenerator {
 	private static final double POLICY_IMG_WIDTH_TO_HEIGHT_RATIO = 0.47;
 	private static final int DEFAULT_POLICY_IMG_WIDTH_PX = 500;
 	private static final String W3_CONTAINER = "w3-container";
-	private static final String W3_CELL = "w3-cell";
 	private static final String W3_CENTER = "w3-center";
+	private static final String W3_THIRD = "w3-third";
 
 	private double mPolicyImgWidthToHeightRatio;
 	private int mPolicyImgWidthPx;
@@ -152,6 +152,11 @@ public class ExplanationHTMLGenerator {
 		if (imgIndex > 1) {
 			Element policyImgDiv = createPolicyImgDiv(pngFilename, widthPx, heightPx, imgIndex);
 			container.appendChild(policyImgDiv);
+		} else {
+			Element emptyImgDiv = new Element("div");
+			emptyImgDiv.addClass(W3_CONTAINER);
+			emptyImgDiv.addClass(W3_THIRD);
+			container.appendChild(emptyImgDiv);
 		}
 
 		return container;
@@ -160,10 +165,11 @@ public class ExplanationHTMLGenerator {
 	private Element createPolicyImgDiv(String pngFilename, int widthPx, int heightPx, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
-		container.addClass(W3_CELL);
+		container.addClass(W3_THIRD);
 		container.addClass(W3_CENTER);
 
 		Element policyImg = new Element("img");
+		policyImg.addClass("w3-image");
 		policyImg.attr("src", pngFilename);
 		policyImg.attr("width", Integer.toString(widthPx));
 		policyImg.attr("height", Integer.toString(heightPx));
@@ -180,7 +186,7 @@ public class ExplanationHTMLGenerator {
 			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
-		container.addClass(W3_CELL);
+		container.addClass(W3_THIRD);
 
 		// Verbal explanation
 		Element policyExplanationP = new Element("p");

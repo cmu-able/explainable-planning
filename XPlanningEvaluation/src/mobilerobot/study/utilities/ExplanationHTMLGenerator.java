@@ -25,52 +25,15 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class ExplanationHTMLGenerator {
 
-	private static final double POLICY_IMG_WIDTH_TO_HEIGHT_RATIO = 0.47;
-	private static final int DEFAULT_POLICY_IMG_WIDTH_PX = 500;
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_CENTER = "w3-center";
 	private static final String W3_THIRD = "w3-third";
 
-	private double mPolicyImgWidthToHeightRatio;
-	private int mPolicyImgWidthPx;
 	private HTMLTableSettings mTableSettings;
 	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[(([^\\[]+)\\.json)\\])");
 
-	public ExplanationHTMLGenerator(double policyImgWidthToHeightRatio, int policyImgWidthPx,
-			HTMLTableSettings tableSettings) {
-		mPolicyImgWidthToHeightRatio = policyImgWidthToHeightRatio;
-		mPolicyImgWidthPx = policyImgWidthPx;
+	public ExplanationHTMLGenerator(HTMLTableSettings tableSettings) {
 		mTableSettings = tableSettings;
-	}
-
-	public void createExplanationHTMLFileBasic(File explanationJsonFile, File outDir)
-			throws IOException, ParseException {
-		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-		String explanationText = (String) explanationJsonObj.get("Explanation");
-
-		Document doc = Jsoup.parse("<html></html>");
-		doc.body().appendElement("div");
-		Element div = doc.selectFirst("div");
-		div.text(explanationText);
-		String explanationHTMLStr = doc.toString();
-
-		String explanationHTMLWithImages = explanationHTMLStr;
-		int widthPx = mPolicyImgWidthPx;
-		int heightPx = (int) Math.round(widthPx / mPolicyImgWidthToHeightRatio);
-		String imgHTMLElementStr = "<img src=\"%s\" width=\"%d\" height=\"%d\">";
-
-		Matcher matcher = mJsonFileRefPattern.matcher(explanationHTMLStr);
-		while (matcher.find()) {
-			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
-			String pngFullFilename = matcher.group(2) + ".png"; // /path/to/policyX.png
-			String pngFilename = FilenameUtils.getName(pngFullFilename);
-			String imgHTMLElement = String.format(imgHTMLElementStr, pngFilename, widthPx, heightPx);
-			explanationHTMLWithImages = explanationHTMLWithImages.replace(jsonFileRef, imgHTMLElement);
-		}
-
-		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
-		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
-		Files.write(explanationHTMLPath, explanationHTMLWithImages.getBytes());
 	}
 
 	public void createExplanationHTMLFile(File explanationJsonFile, File outDir) throws IOException, ParseException {
@@ -196,7 +159,9 @@ public class ExplanationHTMLGenerator {
 		policyExplanationP.text(policyExplanationWithImgRef);
 
 		// Table of QA values
-		Element qaValuesTable = createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
+		Element qaValuesTable = mTableSettings.isVerticalTable()
+				? createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex)
+				: createQAValuesTableHorizontal(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 		Element qaTableDiv = new Element("div");
 		qaTableDiv.addClass("w3-responsive");
 		qaTableDiv.appendChild(qaValuesTable);
@@ -298,8 +263,8 @@ public class ExplanationHTMLGenerator {
 		}
 	}
 
-	private Element createQAValuesTableHorizontal(JSONObject policyQAValuesJsonObj,
-			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
+	private Element createQAValuesTableHorizontal(JSONObject solnPolicyQAValuesJsonObj,
+			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element table = new Element("table");
 		table.addClass("w3-table");
 		table.addClass("w3-border");
@@ -427,7 +392,7 @@ public class ExplanationHTMLGenerator {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
 
-		HTMLTableSettings tableSettings = new HTMLTableSettings();
+		HTMLTableSettings tableSettings = new HTMLTableSettings(true);
 		tableSettings.appendQAName(TravelTimeQFunction.NAME);
 		tableSettings.appendQAName(CollisionEvent.NAME);
 		tableSettings.appendQAName(IntrusiveMoveEvent.NAME);
@@ -438,8 +403,7 @@ public class ExplanationHTMLGenerator {
 		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "number of collisions");
 		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "number of visited locations");
 
-		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(POLICY_IMG_WIDTH_TO_HEIGHT_RATIO,
-				DEFAULT_POLICY_IMG_WIDTH_PX, tableSettings);
+		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(tableSettings);
 		generator.createAllExplanationHTMLFiles(rootDir);
 	}
 

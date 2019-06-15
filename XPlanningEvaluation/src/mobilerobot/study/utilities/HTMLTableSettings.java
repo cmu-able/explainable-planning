@@ -15,6 +15,11 @@ public class HTMLTableSettings {
 	private List<String> mOrderedQANames = new ArrayList<>();
 	private Map<String, List<String>> mOrderedEventNamesMap = new HashMap<>();
 	private Map<String, String> mQADescriptiveUnits = new HashMap<>();
+	private boolean mVertical;
+
+	public HTMLTableSettings(boolean vertical) {
+		mVertical = vertical;
+	}
 
 	public void appendQAName(String qaName) {
 		mOrderedQANames.add(qaName);
@@ -53,6 +58,10 @@ public class HTMLTableSettings {
 		return mQADescriptiveUnits.get(qaName);
 	}
 
+	public boolean isVerticalTable() {
+		return mVertical;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {
@@ -64,7 +73,7 @@ public class HTMLTableSettings {
 		HTMLTableSettings settings = (HTMLTableSettings) obj;
 		return settings.mOrderedQANames.equals(mOrderedQANames)
 				&& settings.mOrderedEventNamesMap.equals(mOrderedEventNamesMap)
-				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits);
+				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits) && settings.mVertical == mVertical;
 	}
 
 	@Override
@@ -75,6 +84,7 @@ public class HTMLTableSettings {
 			result = 31 * result + mOrderedQANames.hashCode();
 			result = 31 * result + mOrderedEventNamesMap.hashCode();
 			result = 31 * result + mQADescriptiveUnits.hashCode();
+			result = 31 * result + Boolean.hashCode(mVertical);
 			hashCode = result;
 		}
 		return hashCode;

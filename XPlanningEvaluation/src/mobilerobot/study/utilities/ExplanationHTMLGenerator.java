@@ -220,7 +220,7 @@ public class ExplanationHTMLGenerator {
 			List<Element> eventTableRows = new ArrayList<>();
 			createQAValueCell(solnPolicyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, table);
 
-			if (imgIndex > 1) {
+			if (imgIndex > 0) {
 				// Alternative's QA value cell
 				createQAValueCell(policyQAValuesJsonObj, qaName, qaTableRow, eventTableRows, table);
 			}
@@ -252,9 +252,9 @@ public class ExplanationHTMLGenerator {
 					// Create a row for each event
 					Element eventTableRow = table.appendElement("tr");
 
-					// Event name header
-					eventTableRow.appendElement("th").text(eventName);
-					// TODO: unit
+					// Each event's descriptive unit (sub-)header
+					String eventDescriptiveUnit = mTableSettings.getEventDescriptiveUnit(qaName, eventName);
+					eventTableRow.appendElement("td").text(eventDescriptiveUnit);
 
 					eventTableRows.add(eventTableRow);
 				}
@@ -413,8 +413,9 @@ public class ExplanationHTMLGenerator {
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
 		tableSettings.putQADescriptiveUnit(TravelTimeQFunction.NAME, "minutes");
-		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "number of collisions");
-		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "number of visited locations");
+		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "# collisions");
+		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "intrusiveness-penalty");
+		tableSettings.putEventDescriptiveUnit(IntrusiveMoveEvent.NAME, "# " + IntrusiveMoveEvent.NAME + " locations");
 
 		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(tableSettings);
 		generator.createAllExplanationHTMLFiles(rootDir);

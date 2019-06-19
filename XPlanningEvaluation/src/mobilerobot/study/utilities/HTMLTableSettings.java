@@ -15,6 +15,7 @@ public class HTMLTableSettings {
 	private List<String> mOrderedQANames = new ArrayList<>();
 	private Map<String, List<String>> mOrderedEventNamesMap = new HashMap<>();
 	private Map<String, String> mQADescriptiveUnits = new HashMap<>();
+	private Map<String, String> mEventDescriptiveUnits = new HashMap<>();
 	private boolean mVertical;
 
 	public HTMLTableSettings(boolean vertical) {
@@ -38,6 +39,10 @@ public class HTMLTableSettings {
 		mQADescriptiveUnits.put(qaName, descriptiveUnit);
 	}
 
+	public void putEventDescriptiveUnit(String eventBasedQAName, String descriptiveUnit) {
+		mEventDescriptiveUnits.put(eventBasedQAName, descriptiveUnit);
+	}
+
 	public List<String> getOrderedQANames() {
 		return mOrderedQANames;
 	}
@@ -58,6 +63,11 @@ public class HTMLTableSettings {
 		return mQADescriptiveUnits.get(qaName);
 	}
 
+	public String getEventDescriptiveUnit(String eventBasedQAName, String eventName) {
+		String eventDescriptiveUnit = mEventDescriptiveUnits.get(eventBasedQAName);
+		return eventDescriptiveUnit.replace(eventBasedQAName, eventName);
+	}
+
 	public boolean isVerticalTable() {
 		return mVertical;
 	}
@@ -73,7 +83,8 @@ public class HTMLTableSettings {
 		HTMLTableSettings settings = (HTMLTableSettings) obj;
 		return settings.mOrderedQANames.equals(mOrderedQANames)
 				&& settings.mOrderedEventNamesMap.equals(mOrderedEventNamesMap)
-				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits) && settings.mVertical == mVertical;
+				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits)
+				&& settings.mEventDescriptiveUnits.equals(mEventDescriptiveUnits) && settings.mVertical == mVertical;
 	}
 
 	@Override
@@ -84,6 +95,7 @@ public class HTMLTableSettings {
 			result = 31 * result + mOrderedQANames.hashCode();
 			result = 31 * result + mOrderedEventNamesMap.hashCode();
 			result = 31 * result + mQADescriptiveUnits.hashCode();
+			result = 31 * result + mEventDescriptiveUnits.hashCode();
 			result = 31 * result + Boolean.hashCode(mVertical);
 			hashCode = result;
 		}

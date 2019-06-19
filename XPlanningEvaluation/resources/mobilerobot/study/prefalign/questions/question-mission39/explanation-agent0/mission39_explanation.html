@@ -3,24 +3,18 @@
  <body></body>
 </html>
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<div class="w3-container w3-light-grey" style="height:100vh;overflow:scroll">
+<div class="w3-container w3-pale-yellow" style="height:100vh;overflow:scroll">
  <div class="w3-container w3-third w3-center">
-  <img class="w3-image" src="solnPolicy.png" style="height:90%">
-  <h5>Figure 1</h5>
+  <h5>Agent's Policy</h5>
+  <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>I'm planning to follow this policy (see Figure 1). It is expected to take 133 minutes; have 1.6 collisions; and have intrusiveness-penalty of 6: it will be non-intrusive at 10 locations (0-penalty), somewhat-intrusive at 0 location (0-penalty), and very-intrusive at 2 locations (6-penalty).</p>
+  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 133 minutes; have 1.6 collisions; and have intrusiveness-penalty of 6: it will be non-intrusive at 10 locations (0-penalty), somewhat-intrusive at 0 location (0-penalty), and very-intrusive at 2 locations (6-penalty).</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
      <th></th>
-     <th>
-      <div>
-       Agent's Policy
-      </div>
-      <div>
-       (Figure 1)
-      </div></th>
+     <th>Agent's Policy</th>
     </tr>
     <tr>
      <th>
@@ -38,7 +32,7 @@
        collision
       </div>
       <div>
-       (number of collisions)
+       (# collisions)
       </div></th>
      <td>1.6</td>
     </tr>
@@ -48,20 +42,20 @@
        intrusiveness
       </div>
       <div>
-       (number of visited locations)
+       (intrusiveness-penalty)
       </div></th>
      <td>6</td>
     </tr>
     <tr>
-     <th>non-intrusive</th>
+     <td># non-intrusive locations</td>
      <td>10</td>
     </tr>
     <tr>
-     <th>somewhat-intrusive</th>
+     <td># somewhat-intrusive locations</td>
      <td>0</td>
     </tr>
     <tr>
-     <th>very-intrusive</th>
+     <td># very-intrusive locations</td>
      <td>2</td>
     </tr>
    </table>
@@ -69,31 +63,19 @@
  </div>
  <div class="w3-container w3-third"></div>
 </div>
-<div class="w3-container w3-pale-yellow" style="height:100vh;overflow:scroll">
+<div class="w3-container w3-light-grey" style="height:100vh;overflow:scroll">
  <div class="w3-container w3-third w3-center">
-  <img class="w3-image" src="solnPolicy.png" style="height:90%">
-  <h5>Figure 1</h5>
+  <h5>Agent's Policy</h5>
+  <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see Figure 2) would reduce the travel time to 129 minutes, and reduce the collision to 1.2 collisions. However, I didn't choose that policy because it would increase the intrusiveness to 8: non-intrusive at 6 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 1 location (3-penalty). The decrease in travel time, and the decrease in collision are not worth the increase in intrusiveness.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the travel time to 129 minutes, and reduce the collision to 1.2 collisions. However, I didn't choose that policy because it would increase the intrusiveness to 8: non-intrusive at 6 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 1 location (3-penalty). The decrease in travel time, and the decrease in collision are not worth the increase in intrusiveness.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
      <th></th>
-     <th>
-      <div>
-       Agent's Policy
-      </div>
-      <div>
-       (Figure 1)
-      </div></th>
-     <th>
-      <div>
-       Alternative Policy
-      </div>
-      <div>
-       (Figure 2)
-      </div></th>
+     <th>Agent's Policy</th>
+     <th>Alternative Policy 1</th>
     </tr>
     <tr>
      <th>
@@ -112,7 +94,7 @@
        collision
       </div>
       <div>
-       (number of collisions)
+       (# collisions)
       </div></th>
      <td>1.6</td>
      <td>1.2</td>
@@ -123,23 +105,23 @@
        intrusiveness
       </div>
       <div>
-       (number of visited locations)
+       (intrusiveness-penalty)
       </div></th>
      <td>6</td>
      <td>8</td>
     </tr>
     <tr>
-     <th>non-intrusive</th>
+     <td># non-intrusive locations</td>
      <td>10</td>
      <td>6</td>
     </tr>
     <tr>
-     <th>somewhat-intrusive</th>
+     <td># somewhat-intrusive locations</td>
      <td>0</td>
      <td>5</td>
     </tr>
     <tr>
-     <th>very-intrusive</th>
+     <td># very-intrusive locations</td>
      <td>2</td>
      <td>1</td>
     </tr>
@@ -147,35 +129,23 @@
   </div>
  </div>
  <div class="w3-container w3-third w3-center">
-  <img class="w3-image" src="altPolicy1.png" style="height:90%">
-  <h5>Figure 2</h5>
+  <h5>Alternative Policy 1</h5>
+  <img class="w3-image w3-card" src="altPolicy1.png" style="height:90%">
  </div>
 </div>
-<div class="w3-container w3-light-grey" style="height:100vh;overflow:scroll">
+<div class="w3-container w3-pale-yellow" style="height:100vh;overflow:scroll">
  <div class="w3-container w3-third w3-center">
-  <img class="w3-image" src="solnPolicy.png" style="height:90%">
-  <h5>Figure 1</h5>
+  <h5>Agent's Policy</h5>
+  <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see Figure 3) would reduce the collision to 1.4 collisions, and reduce the intrusiveness to 5: non-intrusive at 12 locations (0-penalty), somewhat-intrusive at 2 locations (2-penalty), and very-intrusive at 1 location (3-penalty). However, I didn't choose that policy because it would increase the travel time to 153 minutes. The decrease in collision, and the decrease in intrusiveness are not worth the increase in travel time.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the collision to 1.4 collisions, and reduce the intrusiveness to 5: non-intrusive at 12 locations (0-penalty), somewhat-intrusive at 2 locations (2-penalty), and very-intrusive at 1 location (3-penalty). However, I didn't choose that policy because it would increase the travel time to 153 minutes. The decrease in collision, and the decrease in intrusiveness are not worth the increase in travel time.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
      <th></th>
-     <th>
-      <div>
-       Agent's Policy
-      </div>
-      <div>
-       (Figure 1)
-      </div></th>
-     <th>
-      <div>
-       Alternative Policy
-      </div>
-      <div>
-       (Figure 3)
-      </div></th>
+     <th>Agent's Policy</th>
+     <th>Alternative Policy 2</th>
     </tr>
     <tr>
      <th>
@@ -194,7 +164,7 @@
        collision
       </div>
       <div>
-       (number of collisions)
+       (# collisions)
       </div></th>
      <td>1.6</td>
      <td>1.4</td>
@@ -205,23 +175,23 @@
        intrusiveness
       </div>
       <div>
-       (number of visited locations)
+       (intrusiveness-penalty)
       </div></th>
      <td>6</td>
      <td>5</td>
     </tr>
     <tr>
-     <th>non-intrusive</th>
+     <td># non-intrusive locations</td>
      <td>10</td>
      <td>12</td>
     </tr>
     <tr>
-     <th>somewhat-intrusive</th>
+     <td># somewhat-intrusive locations</td>
      <td>0</td>
      <td>2</td>
     </tr>
     <tr>
-     <th>very-intrusive</th>
+     <td># very-intrusive locations</td>
      <td>2</td>
      <td>1</td>
     </tr>
@@ -229,7 +199,7 @@
   </div>
  </div>
  <div class="w3-container w3-third w3-center">
-  <img class="w3-image" src="altPolicy2.png" style="height:90%">
-  <h5>Figure 3</h5>
+  <h5>Alternative Policy 2</h5>
+  <img class="w3-image w3-card" src="altPolicy2.png" style="height:90%">
  </div>
 </div>

@@ -59,7 +59,7 @@ public class ExplanationHTMLGenerator {
 
 		for (int i = 0; i < parts.length; i++) {
 			String policyExplanation = parts[i];
-			int imgIndex = i + 1;
+			int imgIndex = i;
 
 			Matcher matcher = mJsonFileRefPattern.matcher(policyExplanation);
 			String policyJsonFilename = null;
@@ -72,7 +72,7 @@ public class ExplanationHTMLGenerator {
 			JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyJsonFilename);
 
 			// First policy is always the solution policy
-			if (imgIndex == 1) {
+			if (imgIndex == 0) {
 				solnPolicyQAValuesJsonObj = policyQAValuesJsonObj;
 			}
 
@@ -105,16 +105,24 @@ public class ExplanationHTMLGenerator {
 			String jsonFileRef = matcher.group(1); // [/path/to/policyX.json]
 			String pngFullFilename = matcher.group(3) + ".png"; // /path/to/policyX.png
 			pngFilename = FilenameUtils.getName(pngFullFilename); // policyX.png
-			policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see Figure " + imgIndex + ")");
+
+			if (imgIndex == 0) {
+				// Agent's policy is always at index 0
+				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see \"Agent's Policy\" figure)");
+			} else {
+				// Alternative policies start at index 1
+				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef,
+						"(see \"Alternative Policy " + imgIndex + "\" figure)");
+			}
 		}
 
-		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", 1);
+		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", 0);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
 				solnPolicyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
-		if (imgIndex > 1) {
+		if (imgIndex > 0) {
 			Element policyImgDiv = createPolicyImgDiv(pngFilename, imgIndex);
 			container.appendChild(policyImgDiv);
 		} else {
@@ -133,18 +141,25 @@ public class ExplanationHTMLGenerator {
 		container.addClass(W3_THIRD);
 		container.addClass(W3_CENTER);
 
+		Element policyImgCaption = new Element("h5");
+		if (imgIndex == 0) {
+			// First policy is always the solution policy
+			policyImgCaption.text("Agent's Policy");
+		} else {
+			// Alternative policies start at index 1
+			policyImgCaption.text("Alternative Policy " + imgIndex);
+		}
+
 		Element policyImg = new Element("img");
 		policyImg.addClass("w3-image");
+		policyImg.addClass("w3-card");
 		policyImg.attr("src", pngFilename);
 
 		// Make this image fits the height of the container with room for image caption
 		policyImg.attr("style", "height:90%");
 
-		Element policyImgCaption = new Element("h5");
-		policyImgCaption.text("Figure " + imgIndex);
-
-		container.appendChild(policyImg);
 		container.appendChild(policyImgCaption);
+		container.appendChild(policyImg);
 		return container;
 	}
 
@@ -183,12 +198,10 @@ public class ExplanationHTMLGenerator {
 		Element tableHeaderRow = table.appendElement("tr");
 		tableHeaderRow.appendElement("th"); // empty header for QA column
 		Element policyHeader = tableHeaderRow.appendElement("th"); // Agent's Policy header
-		policyHeader.appendElement("div").text("Agent's Policy");
-		policyHeader.appendElement("div").text("(Figure 1)");
-		if (imgIndex > 1) {
+		policyHeader.text("Agent's Policy");
+		if (imgIndex > 0) {
 			Element altPolicyHeader = tableHeaderRow.appendElement("th"); // Alternative Policy header
-			altPolicyHeader.appendElement("div").text("Alternative Policy");
-			altPolicyHeader.appendElement("div").text("(Figure " + imgIndex + ")");
+			altPolicyHeader.text("Alternative Policy " + imgIndex);
 		}
 
 		// Table rows:

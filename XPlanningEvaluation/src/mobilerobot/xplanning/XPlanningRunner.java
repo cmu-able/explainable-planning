@@ -59,8 +59,9 @@ public class XPlanningRunner {
 		}
 
 		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs);
-		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		runner.runAllMissions(missionsJsonRootDir, defaultVerbalizerSettings);
+		VerbalizerSettings verbalizerSettings = new VerbalizerSettings(); // describe costs
+		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
+		runner.runAllMissions(missionsJsonRootDir, verbalizerSettings);
 	}
 
 }

@@ -9,7 +9,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 218 minutes; have 0 collision; and have intrusiveness-penalty of 4: it will be non-intrusive at 11 locations (0-penalty), somewhat-intrusive at 4 locations (4-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision, and intrusiveness.</p>
+  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 218 minutes; have 0 expected collision; and have intrusiveness-penalty of 4: it will be non-intrusive at 11 locations (0-penalty), somewhat-intrusive at 4 locations (4-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision, and intrusiveness.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -32,7 +32,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0</td>
     </tr>
@@ -42,7 +42,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>4</td>
     </tr>
@@ -69,7 +69,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the travel time to 211 minutes. However, I didn't choose that policy because it would increase the collision to 0.2 collision. The decrease in travel time is not worth the increase in collision.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected travel time by 7 minutes. However, I didn't choose that policy because it would increase the expected collision by 0.2. The decrease in expected travel time is not worth the increase in expected collision.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -94,7 +94,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0</td>
      <td>0.2</td>
@@ -105,7 +105,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>4</td>
      <td>4</td>

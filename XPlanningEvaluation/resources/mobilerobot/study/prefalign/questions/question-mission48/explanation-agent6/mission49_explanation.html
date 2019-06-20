@@ -9,7 +9,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 160 minutes; have 0.2 collision; and have intrusiveness-penalty of 8: it will be non-intrusive at 6 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 1 location (3-penalty). It has the lowest expected intrusiveness.</p>
+  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 160 minutes; have 0.2 expected collision; and have intrusiveness-penalty of 8: it will be non-intrusive at 6 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 1 location (3-penalty).</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -32,7 +32,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0.2</td>
     </tr>
@@ -42,7 +42,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>8</td>
     </tr>
@@ -69,7 +69,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the collision to 0 collision. However, I didn't choose that policy because it would increase the travel time to 170 minutes. The decrease in collision is not worth the increase in travel time.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected collision by 0.2. However, I didn't choose that policy because it would increase the expected travel time by 9 minutes. The decrease in expected collision is not worth the increase in expected travel time.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -94,7 +94,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0.2</td>
      <td>0</td>
@@ -105,7 +105,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>8</td>
      <td>8</td>
@@ -139,7 +139,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the travel time to 158 minutes. However, I didn't choose that policy because it would increase the collision to 0.4 collision. The decrease in travel time is not worth the increase in collision.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the expected intrusiveness by 2: it would be non-intrusive at 10 locations (0-penalty), somewhat-intrusive at 0 location (0-penalty), and very-intrusive at 2 locations (6-penalty), and reduce the expected travel time by 9 minutes. However, I didn't choose that policy because it would increase the expected collision by 0.8. The decrease in expected intrusiveness, and the decrease in expected travel time are not worth the increase in expected collision.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -156,7 +156,7 @@
        (minutes)
       </div></th>
      <td>160</td>
-     <td>158</td>
+     <td>151</td>
     </tr>
     <tr>
      <th>
@@ -164,10 +164,10 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0.2</td>
-     <td>0.4</td>
+     <td>1</td>
     </tr>
     <tr>
      <th>
@@ -175,25 +175,25 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>8</td>
-     <td>8</td>
+     <td>6</td>
     </tr>
     <tr>
      <td># non-intrusive locations</td>
      <td>6</td>
-     <td>6</td>
+     <td>10</td>
     </tr>
     <tr>
      <td># somewhat-intrusive locations</td>
      <td>5</td>
-     <td>5</td>
+     <td>0</td>
     </tr>
     <tr>
      <td># very-intrusive locations</td>
      <td>1</td>
-     <td>1</td>
+     <td>2</td>
     </tr>
    </table>
   </div>

@@ -9,7 +9,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 131 minutes; have 1.2 collisions; and have intrusiveness-penalty of 10: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 3 locations (9-penalty). It has the lowest expected intrusiveness.</p>
+  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 131 minutes; have 1.2 expected collisions; and have intrusiveness-penalty of 10: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 3 locations (9-penalty). It has the lowest expected intrusiveness.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -32,7 +32,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>1.2</td>
     </tr>
@@ -42,7 +42,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>10</td>
     </tr>
@@ -69,7 +69,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the collision to 1 collision. However, I didn't choose that policy because it would increase the travel time to 137 minutes. The decrease in collision is not worth the increase in travel time.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected collision by 0.2. However, I didn't choose that policy because it would increase the expected travel time by 6 minutes. The decrease in expected collision is not worth the increase in expected travel time.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -94,7 +94,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>1.2</td>
      <td>1</td>
@@ -105,7 +105,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>10</td>
      <td>10</td>
@@ -139,7 +139,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the travel time to 127 minutes. However, I didn't choose that policy because it would increase the intrusiveness to 13: non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 4 locations (12-penalty), and increase the collision to 1.4 collisions. The decrease in travel time is not worth the increase in intrusiveness, and the increase in collision.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the expected travel time by 4 minutes. However, I didn't choose that policy because it would increase the expected intrusiveness by 3: it would be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 4 locations (12-penalty), and increase the expected collision by 0.2. The decrease in expected travel time is not worth the increase in expected intrusiveness, and the increase in expected collision.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -164,7 +164,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>1.2</td>
      <td>1.4</td>
@@ -175,7 +175,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>10</td>
      <td>13</td>

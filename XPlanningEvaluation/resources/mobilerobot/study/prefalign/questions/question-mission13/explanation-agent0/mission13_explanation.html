@@ -9,7 +9,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 153 minutes; have 0 collision; and have intrusiveness-penalty of 6: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 6 locations (6-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision.</p>
+  <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 153 minutes; have 0 expected collision; and have intrusiveness-penalty of 6: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 6 locations (6-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -32,7 +32,7 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0</td>
     </tr>
@@ -42,7 +42,7 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>6</td>
     </tr>
@@ -69,7 +69,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the travel time to 145 minutes. However, I didn't choose that policy because it would increase the collision to 0.2 collision. The decrease in travel time is not worth the increase in collision.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected intrusiveness by 1: it would be non-intrusive at 7 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 0 location (0-penalty). However, I didn't choose that policy because it would increase the expected collision by 0.4, and increase the expected travel time by 1 minute. The decrease in expected intrusiveness is not worth the increase in expected collision, and the increase in expected travel time.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -86,7 +86,7 @@
        (minutes)
       </div></th>
      <td>153</td>
-     <td>145</td>
+     <td>154</td>
     </tr>
     <tr>
      <th>
@@ -94,10 +94,10 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0</td>
-     <td>0.2</td>
+     <td>0.4</td>
     </tr>
     <tr>
      <th>
@@ -105,20 +105,20 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>6</td>
-     <td>6</td>
+     <td>5</td>
     </tr>
     <tr>
      <td># non-intrusive locations</td>
      <td>8</td>
-     <td>8</td>
+     <td>7</td>
     </tr>
     <tr>
      <td># somewhat-intrusive locations</td>
      <td>6</td>
-     <td>6</td>
+     <td>5</td>
     </tr>
     <tr>
      <td># very-intrusive locations</td>
@@ -139,7 +139,7 @@
   <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
  </div>
  <div class="w3-container w3-third">
-  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the intrusiveness to 5: non-intrusive at 7 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 0 location (0-penalty). However, I didn't choose that policy because it would increase the collision to 0.4 collision, and increase the travel time to 154 minutes. The decrease in intrusiveness is not worth the increase in collision, and the increase in travel time.</p>
+  <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the expected travel time by 9 minutes. However, I didn't choose that policy because it would increase the expected collision by 0.2. The decrease in expected travel time is not worth the increase in expected collision.</p>
   <div class="w3-responsive">
    <table class="w3-table w3-border w3-bordered w3-centered">
     <tr>
@@ -156,7 +156,7 @@
        (minutes)
       </div></th>
      <td>153</td>
-     <td>154</td>
+     <td>143</td>
     </tr>
     <tr>
      <th>
@@ -164,10 +164,10 @@
        collision
       </div>
       <div>
-       (# collisions)
+       (expected #)
       </div></th>
      <td>0</td>
-     <td>0.4</td>
+     <td>0.2</td>
     </tr>
     <tr>
      <th>
@@ -175,20 +175,20 @@
        intrusiveness
       </div>
       <div>
-       (intrusiveness-penalty)
+       (penalty)
       </div></th>
      <td>6</td>
-     <td>5</td>
+     <td>6</td>
     </tr>
     <tr>
      <td># non-intrusive locations</td>
      <td>8</td>
-     <td>7</td>
+     <td>8</td>
     </tr>
     <tr>
      <td># somewhat-intrusive locations</td>
      <td>6</td>
-     <td>5</td>
+     <td>6</td>
     </tr>
     <tr>
      <td># very-intrusive locations</td>

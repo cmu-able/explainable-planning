@@ -61,6 +61,7 @@ public class XPlanningRunner {
 		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings(); // describe costs
 		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
+		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
 		runner.runAllMissions(missionsJsonRootDir, verbalizerSettings);
 	}
 

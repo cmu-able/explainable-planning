@@ -140,7 +140,8 @@ public class MobileRobotDemo {
 		vocab.putUnit(timeQFunction, "minute", "minutes");
 		vocab.putNoun(collideQFunction, "collision");
 		vocab.putVerb(collideQFunction, "have");
-		vocab.putUnit(collideQFunction, "collision", "collisions");
+		vocab.putUnit(collideQFunction, "expected collision", "expected collisions");
+		vocab.setOmitUnitWhenNounPresent(collideQFunction);
 		vocab.putNoun(intrusiveQFunction, "intrusiveness");
 		vocab.putVerb(intrusiveQFunction, "be");
 		for (IntrusiveMoveEvent event : intrusiveQFunction.getEventBasedMetric().getEvents()) {

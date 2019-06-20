@@ -135,7 +135,7 @@ public class Verbalizer {
 				// Use only 1 verb
 				builder.append(mVocabulary.getVerb(qFunction));
 				builder.append(" ");
-				builder.append(verbalizeQAValue(qFunction, qaValue, scaledQACost, false));
+				builder.append(verbalizeQAValue(qFunction, qaValue, scaledQACost, false, false));
 			}
 		}
 
@@ -149,16 +149,20 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost,
-			boolean isCostDiff) {
+	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost, boolean isCostDiff,
+			boolean isNounPresent) {
 		String formattedQAValue = mSettings.formatQAValue(qFunction, qaValue);
 		double roundedQAValue = Double.parseDouble(formattedQAValue);
 
 		StringBuilder builder = new StringBuilder();
 		builder.append(formattedQAValue);
-		builder.append(" ");
-		builder.append(
-				roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+
+		// Include unit of the QA only when the noun is not present, or when it must not be omitted
+		if (!isNounPresent || !mVocabulary.omitUnitWhenNounPresent(qFunction)) {
+			builder.append(" ");
+			builder.append(
+					roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+		}
 
 		if (mSettings.getDescribeCosts()) {
 			builder.append(" ");
@@ -364,7 +368,7 @@ public class Verbalizer {
 				builder.append(", ");
 			}
 
-			builder.append(diffQAValue < 0 ? "reduce the " : "increase the ");
+			builder.append(diffQAValue < 0 ? "reduce the expected " : "increase the expected ");
 			builder.append(mVocabulary.getNoun(qFunction));
 			builder.append(" to ");
 
@@ -380,7 +384,7 @@ public class Verbalizer {
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = altPolicyInfo.getEventBasedQAValue(nonStdQFunction);
 				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACostDiff, true));
 			} else {
-				builder.append(verbalizeQAValue(qFunction, altQAValue, scaledQACostDiff, true));
+				builder.append(verbalizeQAValue(qFunction, altQAValue, scaledQACostDiff, true, true));
 			}
 		}
 		return builder.toString();
@@ -417,7 +421,7 @@ public class Verbalizer {
 				builder.append(", the ");
 			}
 
-			builder.append(diffQAValue < 0 ? "decrease in " : "increase in ");
+			builder.append(diffQAValue < 0 ? "decrease in expected " : "increase in expected ");
 			builder.append(mVocabulary.getNoun(qFunction));
 		}
 		return builder.toString();

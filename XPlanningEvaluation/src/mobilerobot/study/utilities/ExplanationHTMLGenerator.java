@@ -413,8 +413,8 @@ public class ExplanationHTMLGenerator {
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
 		tableSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
 		tableSettings.putQADescriptiveUnit(TravelTimeQFunction.NAME, "minutes");
-		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "# collisions");
-		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "intrusiveness-penalty");
+		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "expected #");
+		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "penalty");
 		tableSettings.putEventDescriptiveUnit(IntrusiveMoveEvent.NAME, "# " + IntrusiveMoveEvent.NAME + " locations");
 
 		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(tableSettings);

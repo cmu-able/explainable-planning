@@ -30,18 +30,17 @@ public class PolicyRenderer {
 		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer, false);
 	}
 
-	public void renderAll(File policiesDirOrFile)
+	public void renderAll(File policiesDirOrFile, File missionsRootDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
 		if (!policiesDirOrFile.isDirectory()) {
 			Path policyPath = policiesDirOrFile.toPath();
 			int nameCount = policyPath.getNameCount();
 			String missionName = policyPath.getName(nameCount - 2).toString();
-			File mapJsonFile = getMapJsonFile(missionName + ".json",
-					FileIOUtils.getMissionsResourceDir(XPlanningRunner.class));
+			File mapJsonFile = getMapJsonFile(missionName + ".json", missionsRootDir);
 			render(policiesDirOrFile, mapJsonFile, FileIOUtils.getOutputDir(), missionName);
 		} else {
 			for (File policiesSubDirOrFile : policiesDirOrFile.listFiles()) {
-				renderAll(policiesSubDirOrFile);
+				renderAll(policiesSubDirOrFile, missionsRootDir);
 			}
 		}
 	}
@@ -82,15 +81,19 @@ public class PolicyRenderer {
 	public static void main(String[] args)
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
 		File policiesDir;
-		if (args.length > 0) {
+		File missionsRootDir;
+		if (args.length >= 2) {
 			String policiesPath = args[0];
+			String missionsPath = args[1];
 			policiesDir = new File(policiesPath);
+			missionsRootDir = new File(missionsPath);
 		} else {
 			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
+			missionsRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
 		}
 
 		PolicyRenderer policyRenderer = new PolicyRenderer();
 
-		policyRenderer.renderAll(policiesDir);
+		policyRenderer.renderAll(policiesDir, missionsRootDir);
 	}
 }

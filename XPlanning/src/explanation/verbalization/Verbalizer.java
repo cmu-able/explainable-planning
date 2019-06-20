@@ -149,7 +149,7 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost, boolean isCostDiff,
+	private String verbalizeQAValue(IQFunction<?, ?> qFunction, double qaValue, double scaledQACost, boolean isRelative,
 			boolean isNounPresent) {
 		String formattedQAValue = mSettings.formatQAValue(qFunction, qaValue);
 		double roundedQAValue = Double.parseDouble(formattedQAValue);
@@ -164,9 +164,9 @@ public class Verbalizer {
 					roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
 		}
 
-		if (mSettings.getDescribeCosts()) {
+		if (mSettings.describeCosts()) {
 			builder.append(" ");
-			builder.append(verbalizeCost(scaledQACost, isCostDiff));
+			builder.append(verbalizeCost(scaledQACost, isRelative));
 		}
 
 		return builder.toString();
@@ -218,7 +218,7 @@ public class Verbalizer {
 			builder.append(")");
 		}
 
-		if (mSettings.getDescribeCosts()) {
+		if (mSettings.describeCosts()) {
 			builder.append(" ");
 			builder.append(verbalizeCost(scaledQACost, isCostDiff));
 		}
@@ -370,21 +370,34 @@ public class Verbalizer {
 
 			builder.append(diffQAValue < 0 ? "reduce the expected " : "increase the expected ");
 			builder.append(mVocabulary.getNoun(qFunction));
-			builder.append(" to ");
+
+			// Use either relative contrast, or absolute contrast
+			double altContrastValue;
+			if (mSettings.useRelativeContrast()) {
+				altContrastValue = Math.abs(diffQAValue);
+				builder.append(" by ");
+			} else {
+				altContrastValue = altQAValue;
+				builder.append(" to ");
+			}
 
 			if (qFunction instanceof NonStandardMetricQFunction<?, ?, ?>) {
 				// Nonstandard metric
 				// First describe total penalty value
-				String formattedPenaltyValue = mSettings.formatQAValue(qFunction, altQAValue);
+				String formattedPenaltyValue = mSettings.formatQAValue(qFunction, altContrastValue);
 				builder.append(formattedPenaltyValue);
-				builder.append(": ");
 
-				// Then describe event-based QA value break-down
+				// Then describe event-based QA value break-down, but in absolute term
+				builder.append(": ");
+				builder.append("it would ");
+				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(" ");
+
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
 				EventBasedQAValue<IEvent<?, ?>> eventBasedQAValue = altPolicyInfo.getEventBasedQAValue(nonStdQFunction);
 				builder.append(verbalizeEventBasedQAValue(nonStdQFunction, eventBasedQAValue, scaledQACostDiff, true));
 			} else {
-				builder.append(verbalizeQAValue(qFunction, altQAValue, scaledQACostDiff, true, true));
+				builder.append(verbalizeQAValue(qFunction, altContrastValue, scaledQACostDiff, true, true));
 			}
 		}
 		return builder.toString();

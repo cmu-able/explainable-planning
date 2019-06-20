@@ -20,12 +20,14 @@ public class VerbalizerSettings {
 	private volatile int hashCode;
 
 	private QADecimalFormatter mDecimalFormatter = new QADecimalFormatter();
+	private boolean mRelContrast = true;
 	private boolean mDescribeCosts = true;
 	private List<String> mOrderedQFunctionNames = new ArrayList<>();
 	private Map<String, List<String>> mOrderedEventNames = new HashMap<>();
 
 	public VerbalizerSettings() {
 		// Default Verbalizer settings:
+		// * relContrast <- true
 		// * describeCosts <- true
 		// * decimal formatter <- empty -- no formatting
 		// * order of QAs <- empty -- no predefined order
@@ -44,11 +46,19 @@ public class VerbalizerSettings {
 		return mDecimalFormatter.formatQAValue(qFunction, qaValue);
 	}
 
+	public void setRelativeContrast(boolean diffContrast) {
+		mRelContrast = diffContrast;
+	}
+
+	public boolean useRelativeContrast() {
+		return mRelContrast;
+	}
+
 	public void setDescribeCosts(boolean describeCosts) {
 		mDescribeCosts = describeCosts;
 	}
 
-	public boolean getDescribeCosts() {
+	public boolean describeCosts() {
 		return mDescribeCosts;
 	}
 
@@ -110,7 +120,8 @@ public class VerbalizerSettings {
 			return false;
 		}
 		VerbalizerSettings settings = (VerbalizerSettings) obj;
-		return settings.mDecimalFormatter.equals(mDecimalFormatter) && settings.mDescribeCosts == mDescribeCosts
+		return settings.mDecimalFormatter.equals(mDecimalFormatter) && settings.mRelContrast == mRelContrast
+				&& settings.mDescribeCosts == mDescribeCosts
 				&& settings.mOrderedQFunctionNames.equals(mOrderedQFunctionNames)
 				&& settings.mOrderedEventNames.equals(mOrderedEventNames);
 	}
@@ -121,6 +132,7 @@ public class VerbalizerSettings {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDecimalFormatter.hashCode();
+			result = 31 * result + Boolean.hashCode(mRelContrast);
 			result = 31 * result + Boolean.hashCode(mDescribeCosts);
 			result = 31 * result + mOrderedQFunctionNames.hashCode();
 			result = 31 * result + mOrderedEventNames.hashCode();

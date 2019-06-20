@@ -118,7 +118,7 @@ public class AlternativeExplorer {
 			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		CostFunction costFunction = policyInfo.getXMDP().getCostFunction();
 
-		// Create a new objective function of n-1 attributes that excludes this QA
+		// Create a new objective function with a demoted QA
 		AdditiveCostFunction objectiveFunction = createNewObjective(costFunction, qFunction);
 
 		// QA value of the solution policy
@@ -158,30 +158,45 @@ public class AlternativeExplorer {
 	}
 
 	/**
-	 * Create a new objective function of n-1 attributes that excludes this QA. The new objective function will have the
-	 * same offset as that of the cost function.
+	 * Create a new objective function, where n-1 attributes have their original scaling constants, but the demoted
+	 * attribute has a relatively very small scaling constant. The new objective function will have the same offset as
+	 * that of the cost function.
 	 * 
 	 * If the planning problem is SSP, the offset of the new objective function ensures that all objective costs are
 	 * positive, except in the goal states.
 	 * 
 	 * @param costFunction
 	 *            : Cost function of the XMDP
-	 * @param excludedQFunction
-	 *            : QA function to be excluded from the objective
-	 * @return (n-1)-attribute objective function
+	 * @param demotedQFunction
+	 *            : QA function to be demoted in the new objective
+	 * @return A new objective function with demoted QA
 	 */
-	private AdditiveCostFunction createNewObjective(CostFunction costFunction, IQFunction<?, ?> excludedQFunction) {
-		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_no_" + excludedQFunction.getName(),
+	private AdditiveCostFunction createNewObjective(CostFunction costFunction, IQFunction<?, ?> demotedQFunction) {
+		AdditiveCostFunction objectiveFunction = new AdditiveCostFunction("cost_demoted_" + demotedQFunction.getName(),
 				costFunction.getOffset());
 
-		for (IQFunction<IAction, ITransitionStructure<IAction>> otherQFunction : costFunction.getQFunctions()) {
-			if (!otherQFunction.equals(excludedQFunction)) {
-				AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> otherAttrCostFunc = costFunction
-						.getAttributeCostFunction(otherQFunction);
-				double scalingConst = costFunction.getScalingConstant(otherAttrCostFunc);
-				objectiveFunction.put(otherAttrCostFunc, scalingConst);
+		// The demoted QA will have a scaling constant of 1/10 of the smallest scaling constant of the remaining QAs
+		AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> demotedAttrCostFunc = null;
+		double minNonDemotedScalingConst = 1.0;
+
+		// Add all non-demoted QAs to the new objective function
+		for (AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc : costFunction
+				.getAttributeCostFunctions()) {
+
+			if (!attrCostFunc.getQFunction().equals(demotedQFunction)) {
+				// Non-demoted QA
+				double scalingConst = costFunction.getScalingConstant(attrCostFunc);
+				objectiveFunction.put(attrCostFunc, scalingConst);
+
+				minNonDemotedScalingConst = Math.min(minNonDemotedScalingConst, scalingConst);
+			} else {
+				// Demoted QA
+				demotedAttrCostFunc = attrCostFunc;
 			}
 		}
+
+		// Add the demoted QA to the new objective function
+		objectiveFunction.put(demotedAttrCostFunc, 0.1 * minNonDemotedScalingConst);
 		return objectiveFunction;
 	}
 

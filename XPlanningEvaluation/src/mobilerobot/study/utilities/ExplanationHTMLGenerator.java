@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -38,12 +36,9 @@ public class ExplanationHTMLGenerator {
 
 	public void createExplanationHTMLFile(File explanationJsonFile, File outDir) throws IOException, ParseException {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-		Document doc = createExplanationDocument(explanationJsonObj);
-		String explanationHTML = doc.toString();
-
-		String explanationHTMLFilename = FilenameUtils.removeExtension(explanationJsonFile.getName()) + ".html";
-		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
-		Files.write(explanationHTMLPath, explanationHTML.getBytes());
+		Document explanationDoc = createExplanationDocument(explanationJsonObj);
+		String explanationDocName = FilenameUtils.removeExtension(explanationJsonFile.getName());
+		QuestionUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
 	}
 
 	private Document createExplanationDocument(JSONObject explanationJsonObj) {

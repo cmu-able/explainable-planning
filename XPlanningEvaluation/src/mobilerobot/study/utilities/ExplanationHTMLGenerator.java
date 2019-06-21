@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -42,11 +41,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Document createExplanationDocument(JSONObject explanationJsonObj) {
-		Document doc = Jsoup.parse("<html></html>");
-		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		Element link = new Element("link");
-		link.attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
-		doc.body().before(link);
+		Document doc = QuestionUtils.createHTMLBlankDocument();
 
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy

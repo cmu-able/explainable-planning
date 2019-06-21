@@ -44,7 +44,9 @@ public class ExplanationHTMLGenerator {
 	private Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = Jsoup.parse("<html></html>");
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		doc.appendElement("link").attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
+		Element link = new Element("link");
+		link.attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
+		doc.body().before(link);
 
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy
@@ -73,7 +75,7 @@ public class ExplanationHTMLGenerator {
 
 			Element policySectionDiv = createPolicySectionDiv(policyExplanation, policyQAValuesJsonObj,
 					solnPolicyQAValuesJsonObj, imgIndex);
-			doc.appendChild(policySectionDiv);
+			doc.body().appendChild(policySectionDiv);
 		}
 		return doc;
 	}

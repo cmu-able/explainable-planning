@@ -23,7 +23,6 @@ import mobilerobot.utilities.FileIOUtils;
 public class ExplanationHTMLGenerator {
 
 	private static final String W3_CONTAINER = "w3-container";
-	private static final String W3_CENTER = "w3-center";
 	private static final String W3_THIRD = "w3-third";
 
 	private HTMLTableSettings mTableSettings;

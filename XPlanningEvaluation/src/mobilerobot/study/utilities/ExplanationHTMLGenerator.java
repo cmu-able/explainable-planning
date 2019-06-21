@@ -126,31 +126,16 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicyImgDiv(String pngFilename, int imgIndex) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_THIRD);
-		container.addClass(W3_CENTER);
-
-		Element policyImgCaption = new Element("h5");
+		String policyImgCaption;
 		if (imgIndex == 0) {
 			// First policy is always the solution policy
-			policyImgCaption.text("Agent's Policy");
+			policyImgCaption = "Agent's Policy";
 		} else {
 			// Alternative policies start at index 1
-			policyImgCaption.text("Alternative Policy " + imgIndex);
+			policyImgCaption = "Alternative Policy " + imgIndex;
 		}
 
-		Element policyImg = new Element("img");
-		policyImg.addClass("w3-image");
-		policyImg.addClass("w3-card");
-		policyImg.attr("src", pngFilename);
-
-		// Make this image fits the height of the container with room for image caption
-		policyImg.attr("style", "height:90%");
-
-		container.appendChild(policyImgCaption);
-		container.appendChild(policyImg);
-		return container;
+		return HTMLGeneratorUtils.createImgContainerThirdViewportWidth(pngFilename, policyImgCaption);
 	}
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject policyQAValuesJsonObj,

@@ -79,7 +79,11 @@ public class SSPSolver {
 						if (mExplicitMDP.isActionApplicable(i, a)) {
 							// pi_ia = x_ia / sum_a (x_ia)
 							double prob = xResults[i][a] / denom;
-							outputPolicy[i][a] = prob;
+
+							// Some x_ia value may be very small due to floating-point arithmetic error
+							// Round-off very small prob value to 0 -- to ensure that outputPolicy: pi_ia doesn't
+							// contain the floating-point arithmetic error
+							outputPolicy[i][a] = prob > roundOff ? prob : 0.0;
 						}
 					}
 				}

@@ -78,12 +78,7 @@ public class SSPSolver {
 						// Exclude any x_ia value when action a is not applicable in state i
 						if (mExplicitMDP.isActionApplicable(i, a)) {
 							// pi_ia = x_ia / sum_a (x_ia)
-							double prob = xResults[i][a] / denom;
-
-							// Some x_ia value may be very small due to floating-point arithmetic error
-							// Round-off very small prob value to 0 -- to ensure that outputPolicy: pi_ia doesn't
-							// contain the floating-point arithmetic error
-							outputPolicy[i][a] = prob > roundOff ? prob : 0.0;
+							fillStateActionProbability(outputPolicy, xResults, denom, i, a);
 						}
 					}
 				}
@@ -93,6 +88,17 @@ public class SSPSolver {
 		}
 
 		return solution;
+	}
+
+	private void fillStateActionProbability(double[][] outputPolicy, double[][] xResults, double denom, int i, int a) {
+		// pi_ia = x_ia / sum_a (x_ia)
+		double prob = xResults[i][a] / denom;
+
+		// Some x_ia value may be very small due to floating-point arithmetic error
+		// Round-off very small prob value to 0 -- to ensure that outputPolicy: pi_ia doesn't
+		// contain the floating-point arithmetic error
+		double roundOff = mSettings.getRoundOff();
+		outputPolicy[i][a] = prob > roundOff ? prob : 0.0;
 	}
 
 	/**

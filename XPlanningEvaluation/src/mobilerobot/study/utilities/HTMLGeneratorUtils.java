@@ -11,6 +11,8 @@ import org.jsoup.nodes.Element;
 
 public class HTMLGeneratorUtils {
 
+	private static final String W3_CONTAINER = "w3-container";
+
 	private HTMLGeneratorUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -29,5 +31,16 @@ public class HTMLGeneratorUtils {
 		String explanationHTMLFilename = documentName + ".html";
 		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
 		Files.write(explanationHTMLPath, explanationHTML.getBytes());
+	}
+
+	public static Element createBlankContainerFullViewportHeight() {
+		Element container = new Element("div");
+		container.addClass(W3_CONTAINER);
+
+		// Make this container fits the height of the browser
+		// Use scroll for overflow content
+		container.attr("style", "height:100vh;overflow:scroll");
+
+		return container;
 	}
 }

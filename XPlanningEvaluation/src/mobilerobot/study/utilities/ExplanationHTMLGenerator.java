@@ -77,17 +77,15 @@ public class ExplanationHTMLGenerator {
 
 	private Element createPolicySectionDiv(String policyExplanation, JSONObject policyQAValuesJsonObj,
 			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
+		// Make this container fits the height of the browser
+		// Use scroll for overflow content
+		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+
 		if (Math.floorMod(imgIndex, 2) == 0) {
 			container.addClass("w3-pale-yellow");
 		} else {
 			container.addClass("w3-light-grey");
 		}
-
-		// Make this container fits the height of the browser
-		// Use scroll for overflow content
-		container.attr("style", "height:100vh;overflow:scroll");
 
 		String pngFilename = null;
 		String policyExplanationWithImgRef = null;

@@ -7,9 +7,6 @@ import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
@@ -66,21 +63,5 @@ public class QuestionUtils {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-	}
-
-	public static Document createHTMLBlankDocument() {
-		Document doc = Jsoup.parse("<html></html>");
-		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-		Element link = new Element("link");
-		link.attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
-		doc.body().before(link);
-		return doc;
-	}
-
-	public static void writeHTMLDocumentToFile(Document document, String documentName, File outDir) throws IOException {
-		String explanationHTML = document.toString();
-		String explanationHTMLFilename = documentName + ".html";
-		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
-		Files.write(explanationHTMLPath, explanationHTML.getBytes());
 	}
 }

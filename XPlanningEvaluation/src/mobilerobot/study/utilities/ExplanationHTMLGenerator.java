@@ -37,11 +37,11 @@ public class ExplanationHTMLGenerator {
 		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 		Document explanationDoc = createExplanationDocument(explanationJsonObj);
 		String explanationDocName = FilenameUtils.removeExtension(explanationJsonFile.getName());
-		QuestionUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
+		HTMLGeneratorUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
 	}
 
 	private Document createExplanationDocument(JSONObject explanationJsonObj) {
-		Document doc = QuestionUtils.createHTMLBlankDocument();
+		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
 
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy

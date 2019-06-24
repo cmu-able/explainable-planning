@@ -151,19 +151,15 @@ public class ExplanationHTMLGenerator {
 		Element qaValuesTable = mTableSettings.isVerticalTable()
 				? createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex)
 				: createQAValuesTableHorizontal(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
-		Element qaTableDiv = new Element("div");
-		qaTableDiv.addClass("w3-responsive");
-		qaTableDiv.appendChild(qaValuesTable);
 
 		container.appendChild(policyExplanationP);
-		container.appendChild(qaTableDiv);
+		container.appendChild(qaValuesTable);
 		return container;
 	}
 
 	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
 			int imgIndex) {
-		Element table = new Element("table");
-		table.addClass("w3-table");
+		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
 		table.addClass("w3-border");
 		table.addClass("w3-bordered");
 		table.addClass("w3-centered");
@@ -252,8 +248,7 @@ public class ExplanationHTMLGenerator {
 
 	private Element createQAValuesTableHorizontal(JSONObject solnPolicyQAValuesJsonObj,
 			JSONObject policyQAValuesJsonObj, int imgIndex) {
-		Element table = new Element("table");
-		table.addClass("w3-table");
+		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
 		table.addClass("w3-border");
 		table.addClass("w3-bordered");
 		table.addClass("w3-centered");

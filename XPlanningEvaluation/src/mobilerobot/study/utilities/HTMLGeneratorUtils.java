@@ -67,4 +67,11 @@ public class HTMLGeneratorUtils {
 		container.appendChild(img);
 		return container;
 	}
+
+	public static Element createResponsiveBlankTable() {
+		Element table = new Element("table");
+		table.addClass("w3-table");
+		table.addClass("w3-responsive");
+		return table;
+	}
 }

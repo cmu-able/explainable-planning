@@ -2,6 +2,7 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
@@ -10,15 +11,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
+import mobilerobot.study.utilities.HTMLTableSettings;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLGenerator {
 
 	private static final String MISSION_TEXT = "Find the best policy from %s to %s that minimizes the following costs:";
+	private static final String AGENT_TEXT = "I'm planning to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
 	private static final String JSON_EXTENSION = ".json";
 
-	public PrefAlignQuestionHTMLGenerator() {
-		//
+	private HTMLTableSettings mTableSettings;
+
+	public PrefAlignQuestionHTMLGenerator(HTMLTableSettings tableSettings) {
+		mTableSettings = tableSettings;
 	}
 
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex) throws IOException, ParseException {
@@ -57,7 +62,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	private Element createMissionQuestionDiv(JSONObject missionJsonObj, JSONObject costStructJsonObj) {
 		String mapJsonFilename = (String) missionJsonObj.get("map-file");
 
-		// Mission paragraph and table
+		// Mission paragraph and cost-structure table
 		Element missionDiv = createMissionDiv(missionJsonObj, costStructJsonObj);
 
 		// Map image
@@ -118,7 +123,37 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createAgentProposalQuestionDiv(File agentPolicyPngFile, File agentPolicyValuesJsonFile) {
+		// Agent's policy image
+		Element agentPolicyImgDiv = HTMLGeneratorUtils
+				.createImgContainerThirdViewportWidth(agentPolicyPngFile.getName(), "Agent's Policy");
+
+		// Agent's policy description and QA table
+		Element agentPolicyDescriptionDiv = createAgentPolicyDescriptionDiv(agentPolicyValuesJsonFile);
+
 		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+		container.appendChild(agentPolicyImgDiv);
+		container.appendChild(agentPolicyDescriptionDiv);
+
+		return container;
+	}
+
+	private Element createAgentPolicyDescriptionDiv(File agentPolicyValuesJsonFile) {
+		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_TWOTHIRD);
+
+		// Agent paragraph
+		List<String> orderedQANames = mTableSettings.getOrderedQANames();
+		String foo = String.join(", ", orderedQANames.subList(0, orderedQANames.size() - 1));
+		foo += ", and" + orderedQANames.get(orderedQANames.size() - 1);
+		String agentParagraph = String.format(AGENT_TEXT, foo);
+
+		Element agentP = new Element("p");
+		agentP.text(agentParagraph);
+
+		// QA table
+		// TODO
+
+		container.appendChild(agentP);
+
 		return container;
 	}
 }

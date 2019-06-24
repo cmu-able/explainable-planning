@@ -152,8 +152,8 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
-	public Element createQAValuesTableVertical(JSONObject policyQAValuesJsonObj) {
-		return createQAValuesTableVertical(policyQAValuesJsonObj, null, 0);
+	public Element createQAValuesTableVertical(JSONObject agentPolicyQAValuesJsonObj) {
+		return createQAValuesTableVertical(agentPolicyQAValuesJsonObj, null, 0);
 	}
 
 	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,

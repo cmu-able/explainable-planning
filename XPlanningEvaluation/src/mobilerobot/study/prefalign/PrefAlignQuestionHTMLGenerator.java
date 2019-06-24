@@ -10,6 +10,7 @@ import org.json.simple.parser.ParseException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
 import mobilerobot.utilities.FileIOUtils;
@@ -17,13 +18,15 @@ import mobilerobot.utilities.FileIOUtils;
 public class PrefAlignQuestionHTMLGenerator {
 
 	private static final String MISSION_TEXT = "Find the best policy from %s to %s that minimizes the following costs:";
-	private static final String AGENT_TEXT = "I'm planning to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
+	private static final String AGENT_TEXT = "The agent is planning to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
 	private static final String JSON_EXTENSION = ".json";
 
 	private HTMLTableSettings mTableSettings;
+	private ExplanationHTMLGenerator mExplanationHTMLGenerator;
 
 	public PrefAlignQuestionHTMLGenerator(HTMLTableSettings tableSettings) {
 		mTableSettings = tableSettings;
+		mExplanationHTMLGenerator = new ExplanationHTMLGenerator(mTableSettings);
 	}
 
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex) throws IOException, ParseException {
@@ -46,7 +49,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Document createPrefAlignQuestionDocument(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			File agentPolicyPngFile, File agentPolicyValuesJsonFile) {
+			File agentPolicyPngFile, File agentPolicyValuesJsonFile) throws IOException, ParseException {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
 
 		Element missionQuestionDiv = createMissionQuestionDiv(missionJsonObj, costStructJsonObj);
@@ -107,8 +110,7 @@ public class PrefAlignQuestionHTMLGenerator {
 		// Header for cost
 		headerRow.appendElement("th").addClass("w3-right-align").text("Cost ($)");
 
-		for (Object keyObj : costStructJsonObj.keySet()) {
-			String qaName = (String) keyObj;
+		for (String qaName : mTableSettings.getOrderedQANames()) {
 			JSONObject unitCostJsonObj = (JSONObject) costStructJsonObj.get(qaName);
 			String descriptiveUnit = (String) unitCostJsonObj.get("unit");
 			String formattedCost = (String) unitCostJsonObj.get("cost");
@@ -122,38 +124,37 @@ public class PrefAlignQuestionHTMLGenerator {
 		return table;
 	}
 
-	private Element createAgentProposalQuestionDiv(File agentPolicyPngFile, File agentPolicyValuesJsonFile) {
+	private Element createAgentProposalQuestionDiv(File agentPolicyPngFile, File agentPolicyValuesJsonFile)
+			throws IOException, ParseException {
 		// Agent's policy image
 		Element agentPolicyImgDiv = HTMLGeneratorUtils
 				.createImgContainerThirdViewportWidth(agentPolicyPngFile.getName(), "Agent's Policy");
 
-		// Agent's policy description and QA table
+		// Agent's policy description and QA values table
 		Element agentPolicyDescriptionDiv = createAgentPolicyDescriptionDiv(agentPolicyValuesJsonFile);
 
 		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
 		container.appendChild(agentPolicyImgDiv);
 		container.appendChild(agentPolicyDescriptionDiv);
-
 		return container;
 	}
 
-	private Element createAgentPolicyDescriptionDiv(File agentPolicyValuesJsonFile) {
-		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_TWOTHIRD);
-
+	private Element createAgentPolicyDescriptionDiv(File agentPolicyValuesJsonFile) throws IOException, ParseException {
 		// Agent paragraph
 		List<String> orderedQANames = mTableSettings.getOrderedQANames();
-		String foo = String.join(", ", orderedQANames.subList(0, orderedQANames.size() - 1));
-		foo += ", and" + orderedQANames.get(orderedQANames.size() - 1);
-		String agentParagraph = String.format(AGENT_TEXT, foo);
-
+		String qaListStr = String.join(", ", orderedQANames.subList(0, orderedQANames.size() - 1));
+		qaListStr += ", and" + orderedQANames.get(orderedQANames.size() - 1);
+		String agentParagraph = String.format(AGENT_TEXT, qaListStr);
 		Element agentP = new Element("p");
 		agentP.text(agentParagraph);
 
-		// QA table
-		// TODO
+		// QA values table
+		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
+		Element qaValuesTable = mExplanationHTMLGenerator.createQAValuesTableVertical(agentPolicyQAValuesJsonObj);
 
+		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_TWOTHIRD);
 		container.appendChild(agentP);
-
+		container.appendChild(qaValuesTable);
 		return container;
 	}
 }

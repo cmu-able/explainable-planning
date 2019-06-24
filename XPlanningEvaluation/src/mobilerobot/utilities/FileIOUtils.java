@@ -180,14 +180,13 @@ public class FileIOUtils {
 	}
 
 	public static File[] listFilesWithFilter(File dir, String nameFilter, String fileExtension) {
-		FilenameFilter filter = (directory, name) -> name.toLowerCase().contains(nameFilter)
-				&& name.toLowerCase().endsWith(fileExtension);
+		FilenameFilter filter = (directory, filename) -> filename.toLowerCase().contains(nameFilter)
+				&& filename.toLowerCase().endsWith(fileExtension);
 		return dir.listFiles(filter);
 	}
 
 	public static File[] listFilesWithRegexFilter(File dir, String nameRegexFilter, String fileExtension) {
-		FilenameFilter filter = (directory, name) -> name.toLowerCase().matches(nameRegexFilter)
-				&& name.toLowerCase().endsWith(fileExtension);
+		FilenameFilter filter = (directory, filename) -> filename.toLowerCase().matches(nameRegexFilter + fileExtension);
 		return dir.listFiles(filter);
 	}
 

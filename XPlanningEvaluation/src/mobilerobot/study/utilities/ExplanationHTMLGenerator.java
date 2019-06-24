@@ -2,7 +2,6 @@ package mobilerobot.study.utilities;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -358,9 +357,8 @@ public class ExplanationHTMLGenerator {
 	}
 
 	public void createAllExplanationHTMLFiles(File rootDir) throws IOException, ParseException {
-		FilenameFilter explanationJsonFileFilter = (dir, name) -> name.toLowerCase().contains("explanation")
-				&& name.toLowerCase().endsWith(".json");
-		for (File explanationJsonFile : rootDir.listFiles(explanationJsonFileFilter)) {
+		File[] explanationJsonFiles = FileIOUtils.listFilesWithFilter(rootDir, "explanation", ".json");
+		for (File explanationJsonFile : explanationJsonFiles) {
 			createExplanationHTMLFile(explanationJsonFile, rootDir);
 		}
 

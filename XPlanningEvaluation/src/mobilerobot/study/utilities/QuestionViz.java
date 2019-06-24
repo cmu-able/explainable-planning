@@ -2,7 +2,6 @@ package mobilerobot.study.utilities;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
@@ -28,9 +27,9 @@ public class QuestionViz {
 
 	public File visualizeMap(File questionDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
-		FilenameFilter missionFileFilter = (dir, name) -> name.toLowerCase().matches("mission[0-9]+.json");
+		File[] missionJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json");
 		// There is only 1 missionX.json file in each question dir
-		File missionJsonFile = questionDir.listFiles(missionFileFilter)[0];
+		File missionJsonFile = missionJsonFiles[0];
 		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
 		String mapFilename = (String) missionJsonObj.get("map-file");
 		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
@@ -44,10 +43,11 @@ public class QuestionViz {
 	public void visualizePolicies(File questionDir, File mapJsonFile)
 			throws MapTopologyException, IOException, ParseException {
 		// There can be 1 or more [policyName].json files in each question dir
-		FilenameFilter policyFileFilter = (dir, name) -> name.toLowerCase().matches(".*policy[0-9]*.json");
+		// Excluding [policyNameValuesX].json from the filter
+		File[] policyJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, ".*policy[0-9]*", ".json");
 
 		// Render all policies at /output/question-missionX/
-		for (File policyJsonFile : questionDir.listFiles(policyFileFilter)) {
+		for (File policyJsonFile : policyJsonFiles) {
 			mPolicyRenderer.render(policyJsonFile, mapJsonFile, questionDir, null);
 		}
 

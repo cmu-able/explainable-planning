@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
@@ -176,6 +177,18 @@ public class FileIOUtils {
 		String name = FilenameUtils.removeExtension(originalFilename);
 		String extension = FilenameUtils.getExtension(originalFilename);
 		return name + index + "." + extension;
+	}
+
+	public static File[] listFilesWithFilter(File dir, String nameFilter, String fileExtension) {
+		FilenameFilter filter = (directory, name) -> name.toLowerCase().contains(nameFilter)
+				&& name.toLowerCase().endsWith(fileExtension);
+		return dir.listFiles(filter);
+	}
+
+	public static File[] listFilesWithRegexFilter(File dir, String nameRegexFilter, String fileExtension) {
+		FilenameFilter filter = (directory, name) -> name.toLowerCase().matches(nameRegexFilter)
+				&& name.toLowerCase().endsWith(fileExtension);
+		return dir.listFiles(filter);
 	}
 
 }

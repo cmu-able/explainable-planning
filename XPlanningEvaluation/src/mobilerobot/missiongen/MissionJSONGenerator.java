@@ -22,6 +22,8 @@ import examples.mobilerobot.dsm.Connection;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.MobileRobotXMDPBuilder;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.Occlusion;
 import mobilerobot.missiongen.ObjectiveInfo.IGetMaxStepValue;
@@ -176,10 +178,10 @@ public class MissionJSONGenerator {
 			}
 		};
 
-		ObjectiveInfo timeInfo = new ObjectiveInfo("travelTime", 0, getMaxStepTravelTime);
-		ObjectiveInfo collisionInfo = new ObjectiveInfo("collision", 0, 1);
-		ObjectiveInfo intrusiveInfo = new ObjectiveInfo("intrusiveness", MobileRobotXMDPBuilder.NON_INTRUSIVE_PENALTY,
-				MobileRobotXMDPBuilder.VERY_INTRUSIVE_PENALTY);
+		ObjectiveInfo timeInfo = new ObjectiveInfo(TravelTimeQFunction.NAME, 0, getMaxStepTravelTime);
+		ObjectiveInfo collisionInfo = new ObjectiveInfo(CollisionEvent.NAME, 0, 1);
+		ObjectiveInfo intrusiveInfo = new ObjectiveInfo(IntrusiveMoveEvent.NAME,
+				MobileRobotXMDPBuilder.NON_INTRUSIVE_PENALTY, MobileRobotXMDPBuilder.VERY_INTRUSIVE_PENALTY);
 
 		List<ObjectiveInfo> objectivesInfo = new ArrayList<>();
 		objectivesInfo.add(timeInfo);

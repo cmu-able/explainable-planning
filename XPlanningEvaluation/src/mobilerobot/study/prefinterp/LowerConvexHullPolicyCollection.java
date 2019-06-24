@@ -21,6 +21,9 @@ import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.TravelTimeQFunction;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
@@ -33,7 +36,8 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInfo, File>> {
 
-	private static final String[] OBJECTIVE_NAMES = { "travelTime", "collision", "intrusiveness" };
+	private static final String[] OBJECTIVE_NAMES = { TravelTimeQFunction.NAME, CollisionEvent.NAME,
+			IntrusiveMoveEvent.NAME };
 	private static final Double[][] PARAM_LISTS = { { 0.6, 0.3, 0.1 }, { 0.6, 0.2, 0.2 }, { 0.4, 0.4, 0.2 },
 			{ 0.33, 0.33, 0.33 } };
 

@@ -11,8 +11,11 @@ import org.jsoup.nodes.Element;
 
 public class HTMLGeneratorUtils {
 
+	// w3 container sizes
+	public static final String W3_THIRD = "w3-third";
+	public static final String W3_TWOTHIRD = "w3-twothird";
+
 	private static final String W3_CONTAINER = "w3-container";
-	private static final String W3_THIRD = "w3-third";
 	private static final String W3_CENTER = "w3-center";
 
 	private HTMLGeneratorUtils() {
@@ -46,10 +49,15 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
-	public static Element createImgContainerThirdViewportWidth(String imgFilename, String imgCaption) {
+	public static Element createBlankContainer(String w3SizeClass) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
-		container.addClass(W3_THIRD);
+		container.addClass(w3SizeClass);
+		return container;
+	}
+
+	public static Element createImgContainerThirdViewportWidth(String imgFilename, String imgCaption) {
+		Element container = createBlankContainer(W3_THIRD);
 		container.addClass(W3_CENTER);
 
 		Element imgCaptionHeader = new Element("h5");

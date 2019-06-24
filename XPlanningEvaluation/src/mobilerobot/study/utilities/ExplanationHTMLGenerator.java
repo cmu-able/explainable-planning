@@ -21,9 +21,6 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class ExplanationHTMLGenerator {
 
-	private static final String W3_CONTAINER = "w3-container";
-	private static final String W3_THIRD = "w3-third";
-
 	private HTMLTableSettings mTableSettings;
 	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[(([^\\[]+)\\.json)\\])");
 
@@ -114,9 +111,7 @@ public class ExplanationHTMLGenerator {
 			Element policyImgDiv = createPolicyImgDiv(pngFilename, imgIndex);
 			container.appendChild(policyImgDiv);
 		} else {
-			Element emptyImgDiv = new Element("div");
-			emptyImgDiv.addClass(W3_CONTAINER);
-			emptyImgDiv.addClass(W3_THIRD);
+			Element emptyImgDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
 			container.appendChild(emptyImgDiv);
 		}
 
@@ -138,9 +133,7 @@ public class ExplanationHTMLGenerator {
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject policyQAValuesJsonObj,
 			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_THIRD);
+		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
 
 		// Verbal explanation
 		Element policyExplanationP = new Element("p");

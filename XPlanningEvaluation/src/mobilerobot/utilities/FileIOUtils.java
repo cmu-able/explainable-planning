@@ -186,7 +186,9 @@ public class FileIOUtils {
 	}
 
 	public static File[] listFilesWithRegexFilter(File dir, String nameRegexFilter, String fileExtension) {
-		FilenameFilter filter = (directory, filename) -> filename.toLowerCase().matches(nameRegexFilter + fileExtension);
+		String escapedFileExtension = fileExtension.replace(".", "\\.");
+		FilenameFilter filter = (directory, filename) -> filename.toLowerCase()
+				.matches(nameRegexFilter + escapedFileExtension);
 		return dir.listFiles(filter);
 	}
 

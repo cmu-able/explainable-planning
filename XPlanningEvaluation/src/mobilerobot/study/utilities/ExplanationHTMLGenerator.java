@@ -21,6 +21,9 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class ExplanationHTMLGenerator {
 
+	private static final String AGENT_POLICY_CAPTION = "Agent's Policy";
+	private static final String ALT_POLICY_CAPTION = "Alternative Policy %d";
+
 	private HTMLTableSettings mTableSettings;
 	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[(([^\\[]+)\\.json)\\])");
 
@@ -63,15 +66,15 @@ public class ExplanationHTMLGenerator {
 				solnPolicyQAValuesJsonObj = policyQAValuesJsonObj;
 			}
 
-			Element policySectionDiv = createPolicySectionDiv(policyExplanation, policyQAValuesJsonObj,
-					solnPolicyQAValuesJsonObj, imgIndex);
+			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
+					policyQAValuesJsonObj, imgIndex);
 			doc.body().appendChild(policySectionDiv);
 		}
 		return doc;
 	}
 
-	private Element createPolicySectionDiv(String policyExplanation, JSONObject policyQAValuesJsonObj,
-			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
+	private Element createPolicySectionDiv(String policyExplanation, JSONObject solnPolicyQAValuesJsonObj,
+			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
 		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
@@ -102,8 +105,8 @@ public class ExplanationHTMLGenerator {
 		}
 
 		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", 0);
-		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef, policyQAValuesJsonObj,
-				solnPolicyQAValuesJsonObj, imgIndex);
+		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef,
+				solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
@@ -122,17 +125,17 @@ public class ExplanationHTMLGenerator {
 		String policyImgCaption;
 		if (imgIndex == 0) {
 			// First policy is always the solution policy
-			policyImgCaption = "Agent's Policy";
+			policyImgCaption = AGENT_POLICY_CAPTION;
 		} else {
 			// Alternative policies start at index 1
-			policyImgCaption = "Alternative Policy " + imgIndex;
+			policyImgCaption = String.format(ALT_POLICY_CAPTION, imgIndex);
 		}
 
 		return HTMLGeneratorUtils.createImgContainerThirdViewportWidth(pngFilename, policyImgCaption);
 	}
 
-	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject policyQAValuesJsonObj,
-			JSONObject solnPolicyQAValuesJsonObj, int imgIndex) {
+	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject solnPolicyQAValuesJsonObj,
+			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
 
 		// Verbal explanation
@@ -149,6 +152,10 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
+	public Element createQAValuesTableVertical(JSONObject policyQAValuesJsonObj) {
+		return createQAValuesTableVertical(policyQAValuesJsonObj, null, 0);
+	}
+
 	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
 			int imgIndex) {
 		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
@@ -160,10 +167,10 @@ public class ExplanationHTMLGenerator {
 		Element tableHeaderRow = table.appendElement("tr");
 		tableHeaderRow.appendElement("th"); // empty header for QA column
 		Element policyHeader = tableHeaderRow.appendElement("th"); // Agent's Policy header
-		policyHeader.text("Agent's Policy");
+		policyHeader.text(AGENT_POLICY_CAPTION);
 		if (imgIndex > 0) {
 			Element altPolicyHeader = tableHeaderRow.appendElement("th"); // Alternative Policy header
-			altPolicyHeader.text("Alternative Policy " + imgIndex);
+			altPolicyHeader.text(String.format(ALT_POLICY_CAPTION, imgIndex));
 		}
 
 		// Table rows:
@@ -238,6 +245,10 @@ public class ExplanationHTMLGenerator {
 		}
 	}
 
+	public Element createQAValuesTableHorizontal(JSONObject agentPolicyQAValuesJsonObj) {
+		return createQAValuesTableHorizontal(null, agentPolicyQAValuesJsonObj, 0);
+	}
+
 	private Element createQAValuesTableHorizontal(JSONObject solnPolicyQAValuesJsonObj,
 			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
@@ -254,8 +265,8 @@ public class ExplanationHTMLGenerator {
 		addPolicyQAValuesRow(policyQAValuesJsonObj, imgIndex, table);
 
 		// If this is alternative policy, add a row for the solution policy to contrast to
-		if (imgIndex > 1) {
-			addPolicyQAValuesRow(solnPolicyQAValuesJsonObj, 1, table);
+		if (imgIndex > 0) {
+			addPolicyQAValuesRow(solnPolicyQAValuesJsonObj, 0, table);
 		}
 
 		return table;
@@ -318,11 +329,12 @@ public class ExplanationHTMLGenerator {
 		Element qaValuesRow = new Element("tr");
 
 		// Highlight the row for solution policy
-		if (imgIndex == 1) {
+		if (imgIndex == 0) {
 			qaValuesRow.addClass("w3-pale-red");
+			qaValuesRow.appendElement("td").text(AGENT_POLICY_CAPTION);
+		} else {
+			qaValuesRow.appendElement("td").text(String.format(ALT_POLICY_CAPTION, imgIndex));
 		}
-
-		qaValuesRow.appendElement("td").text("Figure " + imgIndex);
 
 		for (String qaName : mTableSettings.getOrderedQANames()) {
 			Object qaValueObj = policyQAValuesJsonObj.get(qaName);

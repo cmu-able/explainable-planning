@@ -131,7 +131,8 @@ public class ExplanationHTMLGenerator {
 			policyImgCaption = String.format(ALT_POLICY_CAPTION, imgIndex);
 		}
 
-		return HTMLGeneratorUtils.createImgContainerThirdViewportWidth(pngFilename, policyImgCaption);
+		return HTMLGeneratorUtils.createResponsiveImgContainer(pngFilename, policyImgCaption,
+				HTMLGeneratorUtils.W3_THIRD);
 	}
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject solnPolicyQAValuesJsonObj,

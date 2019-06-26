@@ -13,6 +13,7 @@ public class HTMLGeneratorUtils {
 
 	// w3 container sizes
 	public static final String W3_THIRD = "w3-third";
+	public static final String W3_HALF = "w3-half";
 	public static final String W3_TWOTHIRD = "w3-twothird";
 
 	private static final String W3_CONTAINER = "w3-container";
@@ -56,8 +57,9 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
-	public static Element createImgContainerThirdViewportWidth(String imgFilename, String imgCaption) {
-		Element container = createBlankContainer(W3_THIRD);
+	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption,
+			String w3SizeClass) {
+		Element container = createBlankContainer(w3SizeClass);
 		container.addClass(W3_CENTER);
 
 		Element imgCaptionHeader = new Element("h5");

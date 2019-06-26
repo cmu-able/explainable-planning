@@ -377,6 +377,12 @@ public class ExplanationHTMLGenerator {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
 
+		HTMLTableSettings tableSettings = getMobileRobotHTMLTableSettings();
+		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(tableSettings);
+		generator.createAllExplanationHTMLFiles(rootDir);
+	}
+
+	public static HTMLTableSettings getMobileRobotHTMLTableSettings() {
 		HTMLTableSettings tableSettings = new HTMLTableSettings(true);
 		tableSettings.appendQAName(TravelTimeQFunction.NAME);
 		tableSettings.appendQAName(CollisionEvent.NAME);
@@ -388,9 +394,7 @@ public class ExplanationHTMLGenerator {
 		tableSettings.putQADescriptiveUnit(CollisionEvent.NAME, "expected #");
 		tableSettings.putQADescriptiveUnit(IntrusiveMoveEvent.NAME, "penalty");
 		tableSettings.putEventDescriptiveUnit(IntrusiveMoveEvent.NAME, "# " + IntrusiveMoveEvent.NAME + " locations");
-
-		ExplanationHTMLGenerator generator = new ExplanationHTMLGenerator(tableSettings);
-		generator.createAllExplanationHTMLFiles(rootDir);
+		return tableSettings;
 	}
 
 }

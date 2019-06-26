@@ -104,6 +104,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	private Element createCostStructureTable(JSONObject costStructJsonObj) {
 		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
 		Element table = tableContainer.selectFirst("table");
+		table.attr("style", "max-width:400px");
 		// Header row
 		Element headerRow = table.appendElement("tr");
 
@@ -130,8 +131,8 @@ public class PrefAlignQuestionHTMLGenerator {
 	private Element createAgentProposalQuestionDiv(File agentPolicyPngFile, File agentPolicyValuesJsonFile)
 			throws IOException, ParseException {
 		// Agent's policy image
-		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(
-				agentPolicyPngFile.getName(), "Agent's Policy", HTMLGeneratorUtils.W3_HALF);
+		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(agentPolicyPngFile.getName(),
+				"Agent's Policy", HTMLGeneratorUtils.W3_HALF);
 
 		// Agent's policy description and QA values table
 		Element agentPolicyDescriptionDiv = createAgentPolicyDescriptionDiv(agentPolicyValuesJsonFile);
@@ -153,11 +154,12 @@ public class PrefAlignQuestionHTMLGenerator {
 
 		// QA values table
 		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
-		Element qaValuesTable = mExplanationHTMLGenerator.createQAValuesTableVertical(agentPolicyQAValuesJsonObj);
+		Element qaValuesTableContainer = mExplanationHTMLGenerator.createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj);
+		qaValuesTableContainer.selectFirst("table").attr("style", "max-width:500px");
 
 		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_HALF);
 		container.appendChild(agentP);
-		container.appendChild(qaValuesTable);
+		container.appendChild(qaValuesTableContainer);
 		return container;
 	}
 

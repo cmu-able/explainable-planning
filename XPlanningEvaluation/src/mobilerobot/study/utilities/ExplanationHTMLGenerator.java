@@ -158,7 +158,8 @@ public class ExplanationHTMLGenerator {
 
 	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
 			int imgIndex) {
-		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
+		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
+		Element table = tableContainer.selectFirst("table");
 		table.addClass("w3-border");
 		table.addClass("w3-bordered");
 		table.addClass("w3-centered");
@@ -195,7 +196,7 @@ public class ExplanationHTMLGenerator {
 			}
 		}
 
-		return table;
+		return tableContainer;
 	}
 
 	private void createQAValueCell(JSONObject policyQAValuesJsonObj, String qaName, Element qaTableRow,
@@ -251,7 +252,8 @@ public class ExplanationHTMLGenerator {
 
 	private Element createQAValuesTableHorizontal(JSONObject solnPolicyQAValuesJsonObj,
 			JSONObject policyQAValuesJsonObj, int imgIndex) {
-		Element table = HTMLGeneratorUtils.createResponsiveBlankTable();
+		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
+		Element table = tableContainer.selectFirst("table");
 		table.addClass("w3-border");
 		table.addClass("w3-bordered");
 		table.addClass("w3-centered");
@@ -269,7 +271,7 @@ public class ExplanationHTMLGenerator {
 			addPolicyQAValuesRow(solnPolicyQAValuesJsonObj, 0, table);
 		}
 
-		return table;
+		return tableContainer;
 	}
 
 	private void createQAValuesTableHeader(Element table) {

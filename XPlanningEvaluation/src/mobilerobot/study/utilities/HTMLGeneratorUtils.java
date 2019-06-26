@@ -76,10 +76,13 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
-	public static Element createResponsiveBlankTable() {
+	public static Element createResponsiveBlankTableContainer() {
+		Element container = new Element("div");
+		container.addClass("w3-responsive");
+		// Can't apply w3-responsive class to table directly, because it'd leave a gap in table to fit outer container
 		Element table = new Element("table");
 		table.addClass("w3-table");
-		table.addClass("w3-responsive");
-		return table;
+		container.appendChild(table);
+		return container;
 	}
 }

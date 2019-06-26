@@ -144,20 +144,20 @@ public class ExplanationHTMLGenerator {
 		policyExplanationP.text(policyExplanationWithImgRef);
 
 		// Table of QA values
-		Element qaValuesTable = mTableSettings.isVerticalTable()
-				? createQAValuesTableVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex)
-				: createQAValuesTableHorizontal(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
+		Element qaValuesTableContainer = mTableSettings.isVerticalTable()
+				? createQAValuesTableContainerVertical(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex)
+				: createQAValuesTableContainerHorizontal(solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(policyExplanationP);
-		container.appendChild(qaValuesTable);
+		container.appendChild(qaValuesTableContainer);
 		return container;
 	}
 
-	public Element createQAValuesTableVertical(JSONObject agentPolicyQAValuesJsonObj) {
-		return createQAValuesTableVertical(agentPolicyQAValuesJsonObj, null, 0);
+	public Element createQAValuesTableContainerVertical(JSONObject agentPolicyQAValuesJsonObj) {
+		return createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj, null, 0);
 	}
 
-	private Element createQAValuesTableVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
+	private Element createQAValuesTableContainerVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
 			int imgIndex) {
 		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
 		Element table = tableContainer.selectFirst("table");
@@ -247,11 +247,11 @@ public class ExplanationHTMLGenerator {
 		}
 	}
 
-	public Element createQAValuesTableHorizontal(JSONObject agentPolicyQAValuesJsonObj) {
-		return createQAValuesTableHorizontal(null, agentPolicyQAValuesJsonObj, 0);
+	public Element createQAValuesTableContainerHorizontal(JSONObject agentPolicyQAValuesJsonObj) {
+		return createQAValuesTableContainerHorizontal(null, agentPolicyQAValuesJsonObj, 0);
 	}
 
-	private Element createQAValuesTableHorizontal(JSONObject solnPolicyQAValuesJsonObj,
+	private Element createQAValuesTableContainerHorizontal(JSONObject solnPolicyQAValuesJsonObj,
 			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
 		Element table = tableContainer.selectFirst("table");

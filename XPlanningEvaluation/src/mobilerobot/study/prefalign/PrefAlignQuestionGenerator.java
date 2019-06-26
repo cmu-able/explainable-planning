@@ -2,9 +2,11 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +60,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private QuestionViz mQuestionViz = new QuestionViz();
 	private XPlanningRunner mXPlanningRunner;
 	private VerbalizerSettings mVerbalizerSettings = new VerbalizerSettings();
+	// All unit costs will be rounded to the nearest .5
+	private DecimalFormat mCostDecimalFormat = new DecimalFormat("#.#");
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
@@ -65,6 +69,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		mVerbalizerSettings.setDescribeCosts(false);
 		mVerbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
 		MobileRobotDemo.setVerbalizerOrdering(mVerbalizerSettings);
+		mCostDecimalFormat.setRoundingMode(RoundingMode.HALF_UP);
 	}
 
 	@Override
@@ -176,12 +181,20 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		double unitIntrusiveCost = costStruct.getScaledCostOfEachUnit(intrusiveQFunction);
 
 		JSONObject costStructJsonObj = new JSONObject();
-		costStructJsonObj.put("1 minute", unitTimeCost);
-		costStructJsonObj.put("0.1 E[collision]", unitCollisionCost);
-		costStructJsonObj.put("1 intrusive-penalty", unitIntrusiveCost);
+		putQAUnitCost(TravelTimeQFunction.NAME, "1 minute of travel time", unitTimeCost, costStructJsonObj);
+		putQAUnitCost(CollisionEvent.NAME, "0.1 expected collision", unitCollisionCost, costStructJsonObj);
+		putQAUnitCost(IntrusiveMoveEvent.NAME, "1 intrusiveness-penalty", unitIntrusiveCost, costStructJsonObj);
 
 		File costStructFile = FileIOUtils.createOutFile(questionDir, "simpleCostStructure.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(costStructJsonObj, costStructFile);
+	}
+
+	private void putQAUnitCost(String qaName, String descriptiveUnit, double unitCost, JSONObject costStructJsonObj) {
+		String formattedCost = mCostDecimalFormat.format(unitCost);
+		JSONObject unitCostJsonObj = new JSONObject();
+		unitCostJsonObj.put("unit", descriptiveUnit);
+		unitCostJsonObj.put("cost", formattedCost);
+		costStructJsonObj.put(qaName, unitCostJsonObj);
 	}
 
 	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile)

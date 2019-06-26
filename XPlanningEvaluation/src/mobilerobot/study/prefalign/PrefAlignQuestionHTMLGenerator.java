@@ -1,6 +1,7 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.List;
 
@@ -156,5 +157,29 @@ public class PrefAlignQuestionHTMLGenerator {
 		container.appendChild(agentP);
 		container.appendChild(qaValuesTable);
 		return container;
+	}
+
+	public void createAllPrefAlignQuestionHTMLFiles(File rootDir) throws IOException, ParseException {
+		if (rootDir.getName().matches("question-mission[0-9]+")) {
+			File[] agentPolicyFiles = FileIOUtils.listFilesWithRegexFilter(rootDir, "agentPolicy[0-9]+",
+					JSON_EXTENSION);
+			for (int i = 0; i < agentPolicyFiles.length; i++) {
+				createPrefAlignQuestionHTMLFile(rootDir, i);
+			}
+		} else {
+			FileFilter dirFilter = File::isDirectory;
+			for (File subDir : rootDir.listFiles(dirFilter)) {
+				createAllPrefAlignQuestionHTMLFiles(subDir);
+			}
+		}
+	}
+
+	public static void main(String[] args) throws IOException, ParseException {
+		String pathname = args[0];
+		File rootDir = new File(pathname);
+
+		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
+		PrefAlignQuestionHTMLGenerator generator = new PrefAlignQuestionHTMLGenerator(tableSettings);
+		generator.createAllPrefAlignQuestionHTMLFiles(rootDir);
 	}
 }

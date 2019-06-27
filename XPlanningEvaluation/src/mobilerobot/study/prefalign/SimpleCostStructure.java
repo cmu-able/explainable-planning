@@ -19,6 +19,7 @@ public class SimpleCostStructure {
 	private volatile int hashCode;
 
 	private Map<IQFunction<?, ?>, Double> mQAUnitAmounts;
+	private Map<IQFunction<?, ?>, String> mDescriptiveUnits;
 	private CostFunction mCostFunction;
 	private CostFunction mAdjustedCostFunction;
 
@@ -26,8 +27,10 @@ public class SimpleCostStructure {
 	// and round each unit cost to the nearest integer
 	private Map<IQFunction<?, ?>, Long> mRoundedSimplestCostStruct = new HashMap<>();
 
-	public SimpleCostStructure(Map<IQFunction<?, ?>, Double> qaUnitAmounts, CostFunction costFunction) {
+	public SimpleCostStructure(Map<IQFunction<?, ?>, Double> qaUnitAmounts,
+			Map<IQFunction<?, ?>, String> descriptiveUnits, CostFunction costFunction) {
 		mQAUnitAmounts = qaUnitAmounts;
+		mDescriptiveUnits = descriptiveUnits;
 		mCostFunction = costFunction;
 		createRoundedSimplestCostStruct();
 		mAdjustedCostFunction = createAdjustedCostFunction();
@@ -79,6 +82,10 @@ public class SimpleCostStructure {
 		return mRoundedSimplestCostStruct.get(qFunction);
 	}
 
+	public String getDescriptiveUnit(IQFunction<?, ?> qFunction) {
+		return mDescriptiveUnits.get(qFunction);
+	}
+
 	public CostFunction getAdjustedCostFunction() {
 		return mAdjustedCostFunction;
 	}
@@ -92,7 +99,9 @@ public class SimpleCostStructure {
 			return false;
 		}
 		SimpleCostStructure costStruct = (SimpleCostStructure) obj;
-		return costStruct.mQAUnitAmounts.equals(mQAUnitAmounts) && costStruct.mCostFunction.equals(mCostFunction)
+		return costStruct.mQAUnitAmounts.equals(mQAUnitAmounts)
+				&& costStruct.mDescriptiveUnits.equals(mDescriptiveUnits)
+				&& costStruct.mCostFunction.equals(mCostFunction)
 				&& costStruct.mAdjustedCostFunction.equals(mAdjustedCostFunction);
 	}
 
@@ -102,6 +111,7 @@ public class SimpleCostStructure {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mQAUnitAmounts.hashCode();
+			result = 31 * result + mDescriptiveUnits.hashCode();
 			result = 31 * result + mCostFunction.hashCode();
 			result = 31 * result + mAdjustedCostFunction.hashCode();
 			hashCode = result;

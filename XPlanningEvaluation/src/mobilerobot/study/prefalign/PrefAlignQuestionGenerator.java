@@ -7,10 +7,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
@@ -21,24 +19,13 @@ import org.json.simple.parser.ParseException;
 import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
-import examples.mobilerobot.metrics.CollisionDomain;
-import examples.mobilerobot.metrics.CollisionEvent;
-import examples.mobilerobot.metrics.IntrusiveMoveEvent;
-import examples.mobilerobot.metrics.IntrusivenessDomain;
-import examples.mobilerobot.metrics.TravelTimeQFunction;
-import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
-import language.domain.metrics.CountQFunction;
 import language.domain.metrics.IQFunction;
-import language.domain.metrics.NonStandardMetricQFunction;
 import language.exceptions.XMDPException;
-import language.mdp.QSpace;
-import language.mdp.XMDP;
-import language.objectives.CostFunction;
 import language.policy.Policy;
 import mobilerobot.study.prefinterp.LowerConvexHullPolicyCollection;
 import mobilerobot.study.utilities.IQuestionGenerator;
@@ -89,8 +76,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
 			QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
-			// Each question dir has a simple cost structure defining the preference
-			createSimpleCostStructure(questionDir, solnPolicyInfo.getXMDP());
+			// Each question dir has a simpleCostStructure.json defining the preference
+			SimpleCostStructure simpleCostStruct = lowerConvexHull.getSimpleCostStructure(missionFile);
+			createSimpleCostStructureFile(questionDir, simpleCostStruct);
 
 			// One of the agents in this question dir must be solving this question's XMDP
 			// This agent will generate its explanation using the mission file in this question
@@ -161,40 +149,23 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		FileIOUtils.prettyPrintJSONObjectToFile(agentJsonObj, agentFile);
 	}
 
-	private void createSimpleCostStructure(File questionDir, XMDP xmdp) throws IOException {
-		QSpace qSpace = xmdp.getQSpace();
-		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
-		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace
-				.getQFunction(CountQFunction.class, CollisionEvent.NAME);
-		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = qSpace
-				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
+	private void createSimpleCostStructureFile(File questionDir, SimpleCostStructure simpleCostStruct)
+			throws IOException {
+		JSONObject simpleCostStructJsonObj = new JSONObject();
 
-		Map<IQFunction<?, ?>, Double> qaUnitAmounts = new HashMap<>();
-		qaUnitAmounts.put(timeQFunction, 1.0); // 1 unit-time = 1 minute
-		qaUnitAmounts.put(collideQFunction, 0.1); // 1 unit-collision = 0.1 E[collision]
-		qaUnitAmounts.put(intrusiveQFunction, 1.0); // 1 unit-intrusiveness = 1-penalty of intrusiveness
+		for (IQFunction<?, ?> qFunction : simpleCostStruct.getAdjustedCostFunction().getQFunctions()) {
+			String descriptiveUnit = simpleCostStruct.getDescriptiveUnit(qFunction);
+			double unitCost = simpleCostStruct.getRoundedSimplestCostOfEachUnit(qFunction);
 
-		CostFunction costFunction = xmdp.getCostFunction();
-		SimpleCostStructure costStruct = new SimpleCostStructure(qaUnitAmounts, costFunction);
-		double unitTimeCost = costStruct.getRoundedSimplestCostOfEachUnit(timeQFunction);
-		double unitCollisionCost = costStruct.getRoundedSimplestCostOfEachUnit(collideQFunction);
-		double unitIntrusiveCost = costStruct.getRoundedSimplestCostOfEachUnit(intrusiveQFunction);
+			String formattedCost = mCostDecimalFormat.format(unitCost);
+			JSONObject unitCostJsonObj = new JSONObject();
+			unitCostJsonObj.put("unit", descriptiveUnit);
+			unitCostJsonObj.put("cost", formattedCost);
+			simpleCostStructJsonObj.put(qFunction.getName(), unitCostJsonObj);
+		}
 
-		JSONObject costStructJsonObj = new JSONObject();
-		putQAUnitCost(TravelTimeQFunction.NAME, "1 minute of travel time", unitTimeCost, costStructJsonObj);
-		putQAUnitCost(CollisionEvent.NAME, "0.1 expected collision", unitCollisionCost, costStructJsonObj);
-		putQAUnitCost(IntrusiveMoveEvent.NAME, "1 intrusiveness-penalty", unitIntrusiveCost, costStructJsonObj);
-
-		File costStructFile = FileIOUtils.createOutFile(questionDir, "simpleCostStructure.json");
-		FileIOUtils.prettyPrintJSONObjectToFile(costStructJsonObj, costStructFile);
-	}
-
-	private void putQAUnitCost(String qaName, String descriptiveUnit, double unitCost, JSONObject costStructJsonObj) {
-		String formattedCost = mCostDecimalFormat.format(unitCost);
-		JSONObject unitCostJsonObj = new JSONObject();
-		unitCostJsonObj.put("unit", descriptiveUnit);
-		unitCostJsonObj.put("cost", formattedCost);
-		costStructJsonObj.put(qaName, unitCostJsonObj);
+		File simpleCostStructFile = FileIOUtils.createOutFile(questionDir, "simpleCostStructure.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(simpleCostStructJsonObj, simpleCostStructFile);
 	}
 
 	private void createExplanation(File questionDir, int agentIndex, File agentMissionFile)

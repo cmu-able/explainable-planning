@@ -176,9 +176,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		CostFunction costFunction = xmdp.getCostFunction();
 		SimpleCostStructure costStruct = new SimpleCostStructure(qaUnitAmounts, costFunction);
-		double unitTimeCost = costStruct.getScaledCostOfEachUnit(timeQFunction);
-		double unitCollisionCost = costStruct.getScaledCostOfEachUnit(collideQFunction);
-		double unitIntrusiveCost = costStruct.getScaledCostOfEachUnit(intrusiveQFunction);
+		double unitTimeCost = costStruct.getRoundedSimplestCostOfEachUnit(timeQFunction);
+		double unitCollisionCost = costStruct.getRoundedSimplestCostOfEachUnit(collideQFunction);
+		double unitIntrusiveCost = costStruct.getRoundedSimplestCostOfEachUnit(intrusiveQFunction);
 
 		JSONObject costStructJsonObj = new JSONObject();
 		putQAUnitCost(TravelTimeQFunction.NAME, "1 minute of travel time", unitTimeCost, costStructJsonObj);

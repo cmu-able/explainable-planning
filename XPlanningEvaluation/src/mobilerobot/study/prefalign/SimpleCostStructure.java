@@ -20,38 +20,67 @@ public class SimpleCostStructure {
 
 	private Map<IQFunction<?, ?>, Double> mQAUnitAmounts;
 	private CostFunction mCostFunction;
+	private CostFunction mAdjustedCostFunction;
 
-	// Derived field: scale all cost values such that the lowest cost has a value 1
-	private Map<IQFunction<?, ?>, Double> mScaledCostStruct = new HashMap<>();
+	// Derived field: simplify all unit costs such that the lowest cost has a value 1,
+	// and round each unit cost to the nearest integer
+	private Map<IQFunction<?, ?>, Long> mRoundedSimplestCostStruct = new HashMap<>();
 
 	public SimpleCostStructure(Map<IQFunction<?, ?>, Double> qaUnitAmounts, CostFunction costFunction) {
 		mQAUnitAmounts = qaUnitAmounts;
 		mCostFunction = costFunction;
-		createScaledCostStruct(qaUnitAmounts.keySet());
+		createRoundedSimplestCostStruct();
+		mAdjustedCostFunction = createAdjustedCostFunction();
 	}
 
-	private void createScaledCostStruct(Iterable<IQFunction<?, ?>> qFunctions) {
-		for (IQFunction<?, ?> qFunction : qFunctions) {
-			double unitCost = getCostOfEachUnit(qFunction);
-			mScaledCostStruct.put(qFunction, unitCost);
+	private void createRoundedSimplestCostStruct() {
+		Map<IQFunction<?, ?>, Double> costStruct = new HashMap<>();
+		for (IQFunction<?, ?> qFunction : mCostFunction.getQFunctions()) {
+			double unitCost = getCostOfEachUnit(qFunction, mCostFunction);
+			costStruct.put(qFunction, unitCost);
 		}
-		double minUnitCost = Collections.min(mScaledCostStruct.values());
-		for (Entry<IQFunction<?, ?>, Double> e : mScaledCostStruct.entrySet()) {
-			mScaledCostStruct.put(e.getKey(), e.getValue() / minUnitCost);
+		double minUnitCost = Collections.min(costStruct.values());
+		for (Entry<IQFunction<?, ?>, Double> e : costStruct.entrySet()) {
+			IQFunction<?, ?> qFunction = e.getKey();
+			double unitCost = e.getValue();
+			double simplestUnitCost = unitCost / minUnitCost;
+			long roundedSimplestUnitCost = Math.round(simplestUnitCost);
+			mRoundedSimplestCostStruct.put(qFunction, roundedSimplestUnitCost);
 		}
 	}
 
-	public <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> double getCostOfEachUnit(
-			S qFunction) {
-		AttributeCostFunction<S> attrCostFunc = mCostFunction.getAttributeCostFunction(qFunction);
+	private <E extends IAction, T extends ITransitionStructure<E>, S extends IQFunction<E, T>> double getCostOfEachUnit(
+			S qFunction, CostFunction costFunction) {
+		AttributeCostFunction<S> attrCostFunc = costFunction.getAttributeCostFunction(qFunction);
 		double qaUnitAmount = mQAUnitAmounts.get(qFunction);
 		double nonScaledQAUnitCost = attrCostFunc.getCost(qaUnitAmount);
-		double scalingConst = mCostFunction.getScalingConstant(attrCostFunc);
+		double scalingConst = costFunction.getScalingConstant(attrCostFunc);
 		return scalingConst * nonScaledQAUnitCost;
 	}
 
-	public double getScaledCostOfEachUnit(IQFunction<?, ?> qFunction) {
-		return mScaledCostStruct.get(qFunction);
+	private CostFunction createAdjustedCostFunction() {
+		CostFunction adjustedCostFunction = new CostFunction();
+		for (AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc : mCostFunction
+				.getAttributeCostFunctions()) {
+			IQFunction<?, ?> qFunction = attrCostFunc.getQFunction();
+			// Adjusted unit cost of Q_i(s,a)
+			double roundedSimplestUnitCost = getRoundedSimplestCostOfEachUnit(qFunction);
+			double qaUnitAmount = mQAUnitAmounts.get(qFunction);
+			// C_i(s,a) of 1 unit of Q_i(s,a)
+			double nonScaledQAUnitCost = attrCostFunc.getCost(qaUnitAmount);
+			// k_i * C_i(s,a) of 1 unit of Q_i(s,a) = adjusted unit cost of Q_i(s,a)
+			double adjustedScalingConst = roundedSimplestUnitCost / nonScaledQAUnitCost;
+			adjustedCostFunction.put(attrCostFunc, adjustedScalingConst);
+		}
+		return adjustedCostFunction;
+	}
+
+	public double getRoundedSimplestCostOfEachUnit(IQFunction<?, ?> qFunction) {
+		return mRoundedSimplestCostStruct.get(qFunction);
+	}
+
+	public CostFunction getAdjustedCostFunction() {
+		return mAdjustedCostFunction;
 	}
 
 	@Override
@@ -63,7 +92,8 @@ public class SimpleCostStructure {
 			return false;
 		}
 		SimpleCostStructure costStruct = (SimpleCostStructure) obj;
-		return costStruct.mQAUnitAmounts.equals(mQAUnitAmounts) && costStruct.mCostFunction.equals(mCostFunction);
+		return costStruct.mQAUnitAmounts.equals(mQAUnitAmounts) && costStruct.mCostFunction.equals(mCostFunction)
+				&& costStruct.mAdjustedCostFunction.equals(mAdjustedCostFunction);
 	}
 
 	@Override
@@ -73,6 +103,7 @@ public class SimpleCostStructure {
 			result = 17;
 			result = 31 * result + mQAUnitAmounts.hashCode();
 			result = 31 * result + mCostFunction.hashCode();
+			result = 31 * result + mAdjustedCostFunction.hashCode();
 			hashCode = result;
 		}
 		return result;

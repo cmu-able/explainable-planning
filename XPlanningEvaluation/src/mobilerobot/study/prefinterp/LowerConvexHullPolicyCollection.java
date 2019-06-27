@@ -14,6 +14,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -21,15 +22,28 @@ import examples.common.DSMException;
 import examples.common.XPlanningOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
+import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
+import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import language.domain.metrics.CountQFunction;
+import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.metrics.NonStandardMetricQFunction;
+import language.domain.models.IAction;
 import language.exceptions.XMDPException;
+import language.mdp.QSpace;
+import language.mdp.XMDP;
+import language.objectives.AttributeCostFunction;
+import language.objectives.CostFunction;
 import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
+import mobilerobot.study.prefalign.SimpleCostStructure;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;
@@ -104,13 +118,17 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 	}
 
 	private void populateLowerConvexHullPolicies() throws URISyntaxException, IOException, ResultParsingException,
-			DSMException, XMDPException, PrismException {
+			DSMException, XMDPException, PrismException, ParseException {
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		File outputDir = FileIOUtils.getOutputDir();
 		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);
 		for (File missionJsonFile : missionsOfMapDir.listFiles()) {
+			// Adjust scaling consts in mission file s.t. all QA unit costs are rounded to nearest int
+			XMDP xmdp = demo.loadXMDPFromMissionFile(missionJsonFile);
+			adjustMissionFile(missionJsonFile, xmdp);
+
 			// Run planning using mission.json as input
 			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
 
@@ -125,6 +143,48 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 				mUniquePolicies.add(policy);
 			}
 		}
+	}
+
+	private void adjustMissionFile(File missionJsonFile, XMDP xmdp)
+			throws DSMException, XMDPException, IOException, ParseException {
+		QSpace qSpace = xmdp.getQSpace();
+
+		// Adjust cost function s.t. all QA unit costs are rounded to nearest int
+		SimpleCostStructure simpleCostStruct = createSimpleCostStructure(xmdp);
+		CostFunction adjustedCostFunction = simpleCostStruct.getAdjustedCostFunction();
+
+		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+		JSONArray prefInfoJsonAry = (JSONArray) missionJsonObj.get("preference-info");
+		for (Object obj : prefInfoJsonAry) {
+			JSONObject prefInfoJsonObj = (JSONObject) obj;
+			String qaName = (String) prefInfoJsonObj.get("objective");
+			IQFunction<IAction, ITransitionStructure<IAction>> qFunction = qSpace.getQFunction(IQFunction.class,
+					qaName);
+			AttributeCostFunction<IQFunction<IAction, ITransitionStructure<IAction>>> attrCostFunc = adjustedCostFunction
+					.getAttributeCostFunction(qFunction);
+			double adjustedScalingConst = adjustedCostFunction.getScalingConstant(attrCostFunc);
+			prefInfoJsonObj.put("scaling-const", adjustedScalingConst);
+		}
+
+		// Rewrite mission file with adjusted scaling consts
+		FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, missionJsonFile);
+	}
+
+	private SimpleCostStructure createSimpleCostStructure(XMDP xmdp) {
+		QSpace qSpace = xmdp.getQSpace();
+		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
+		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace
+				.getQFunction(CountQFunction.class, CollisionEvent.NAME);
+		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = qSpace
+				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
+
+		Map<IQFunction<?, ?>, Double> qaUnitAmounts = new HashMap<>();
+		qaUnitAmounts.put(timeQFunction, 1.0); // 1 unit-time = 1 minute
+		qaUnitAmounts.put(collideQFunction, 0.1); // 1 unit-collision = 0.1 E[collision]
+		qaUnitAmounts.put(intrusiveQFunction, 1.0); // 1 unit-intrusiveness = 1-penalty of intrusiveness
+
+		CostFunction costFunction = xmdp.getCostFunction();
+		return new SimpleCostStructure(qaUnitAmounts, costFunction);
 	}
 
 	public int getNextMissionIndex() {

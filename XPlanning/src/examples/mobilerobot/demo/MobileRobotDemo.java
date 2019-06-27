@@ -61,7 +61,7 @@ public class MobileRobotDemo {
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
 
-		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
+		XMDP xmdp = loadXMDPFromMissionFile(missionJsonFile);
 
 		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
@@ -97,7 +97,7 @@ public class MobileRobotDemo {
 		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
 
-		XMDP xmdp = mXMDPLoader.loadXMDP(missionJsonFile);
+		XMDP xmdp = loadXMDPFromMissionFile(missionJsonFile);
 
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
@@ -108,6 +108,10 @@ public class MobileRobotDemo {
 		prismConnector.terminate();
 
 		return policyInfo;
+	}
+
+	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
+		return mXMDPLoader.loadXMDP(missionJsonFile);
 	}
 
 	public static void main(String[] args)

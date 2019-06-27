@@ -68,6 +68,9 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 	// Each value is a mission file corresponding to the key's XMDP.
 	private Map<PolicyInfo, File> mPolicyInfos = new HashMap<>();
 
+	// To keep track of simpleCostStructure corresponding to each adjusted mission file
+	private Map<File, SimpleCostStructure> mSimpleCostStructs = new HashMap<>();
+
 	// For random policy selection: indexed unique quantitative policies
 	// Note: All of these policies are generated from the same map but different objective cost functions,
 	// so comparing QA values across these policies is legitimate.
@@ -168,6 +171,9 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 
 		// Rewrite mission file with adjusted scaling consts
 		FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, missionJsonFile);
+
+		// Keep track of simpleCostStructure corresponding to each adjusted mission file
+		mSimpleCostStructs.put(missionJsonFile, simpleCostStruct);
 	}
 
 	private SimpleCostStructure createSimpleCostStructure(XMDP xmdp) {
@@ -183,8 +189,13 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 		qaUnitAmounts.put(collideQFunction, 0.1); // 1 unit-collision = 0.1 E[collision]
 		qaUnitAmounts.put(intrusiveQFunction, 1.0); // 1 unit-intrusiveness = 1-penalty of intrusiveness
 
+		Map<IQFunction<?, ?>, String> descriptiveUnits = new HashMap<>();
+		descriptiveUnits.put(timeQFunction, "1 minute of travel time");
+		descriptiveUnits.put(collideQFunction, "0.1 expected collision");
+		descriptiveUnits.put(intrusiveQFunction, "1 intrusiveness-penalty");
+
 		CostFunction costFunction = xmdp.getCostFunction();
-		return new SimpleCostStructure(qaUnitAmounts, costFunction);
+		return new SimpleCostStructure(qaUnitAmounts, descriptiveUnits, costFunction);
 	}
 
 	public int getNextMissionIndex() {
@@ -231,6 +242,10 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 			uniqueRandomQuantPolicies.add(randomQuantPolicy);
 		}
 		return uniqueRandomQuantPolicies;
+	}
+
+	public SimpleCostStructure getSimpleCostStructure(File adjustedMissionFile) {
+		return mSimpleCostStructs.get(adjustedMissionFile);
 	}
 
 	/**

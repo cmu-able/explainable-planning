@@ -1,5 +1,14 @@
 {
-  "0.1 E[collision]": 1.0,
-  "1 intrusive-penalty": 9.999999999999996,
-  "1 minute": 1.7451590502006502
+  "collision": {
+    "unit": "0.1 expected collision",
+    "cost": "1"
+  },
+  "travelTime": {
+    "unit": "1 minute of travel time",
+    "cost": "2"
+  },
+  "intrusiveness": {
+    "unit": "1 intrusiveness-penalty",
+    "cost": "10"
+  }
 }

@@ -1,5 +1,7 @@
 package mobilerobot.study.prefalign;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +25,12 @@ public class SimpleCostStructure {
 	private CostFunction mCostFunction;
 	private CostFunction mAdjustedCostFunction;
 
-	// Derived field: simplify all unit costs such that the lowest cost has a value 1,
+	// Derived field: Simplify all unit costs such that the lowest cost has a value 1,
 	// and round each unit cost to the nearest integer
 	private Map<IQFunction<?, ?>, Long> mRoundedSimplestCostStruct = new HashMap<>();
+
+	// For String formatting: All unit costs will be rounded to the nearest int
+	private DecimalFormat mCostDecimalFormat = new DecimalFormat("#");
 
 	public SimpleCostStructure(Map<IQFunction<?, ?>, Double> qaUnitAmounts,
 			Map<IQFunction<?, ?>, String> descriptiveUnits, CostFunction costFunction) {
@@ -34,6 +39,7 @@ public class SimpleCostStructure {
 		mCostFunction = costFunction;
 		createRoundedSimplestCostStruct();
 		mAdjustedCostFunction = createAdjustedCostFunction();
+		mCostDecimalFormat.setRoundingMode(RoundingMode.HALF_UP);
 	}
 
 	private void createRoundedSimplestCostStruct() {
@@ -80,6 +86,10 @@ public class SimpleCostStructure {
 
 	public double getRoundedSimplestCostOfEachUnit(IQFunction<?, ?> qFunction) {
 		return mRoundedSimplestCostStruct.get(qFunction);
+	}
+
+	public String formatUnitCost(double unitCost) {
+		return mCostDecimalFormat.format(unitCost);
 	}
 
 	public String getDescriptiveUnit(IQFunction<?, ?> qFunction) {

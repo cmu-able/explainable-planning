@@ -2,11 +2,9 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.RoundingMode;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -47,8 +45,6 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private QuestionViz mQuestionViz = new QuestionViz();
 	private XPlanningRunner mXPlanningRunner;
 	private VerbalizerSettings mVerbalizerSettings = new VerbalizerSettings();
-	// All unit costs will be rounded to the nearest .5
-	private DecimalFormat mCostDecimalFormat = new DecimalFormat("#.#");
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
@@ -56,7 +52,6 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		mVerbalizerSettings.setDescribeCosts(false);
 		mVerbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
 		MobileRobotDemo.setVerbalizerOrdering(mVerbalizerSettings);
-		mCostDecimalFormat.setRoundingMode(RoundingMode.HALF_UP);
 	}
 
 	@Override
@@ -157,10 +152,10 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			String descriptiveUnit = simpleCostStruct.getDescriptiveUnit(qFunction);
 			double unitCost = simpleCostStruct.getRoundedSimplestCostOfEachUnit(qFunction);
 
-			String formattedCost = mCostDecimalFormat.format(unitCost);
+			String formattedUnitCost = simpleCostStruct.formatUnitCost(unitCost);
 			JSONObject unitCostJsonObj = new JSONObject();
 			unitCostJsonObj.put("unit", descriptiveUnit);
-			unitCostJsonObj.put("cost", formattedCost);
+			unitCostJsonObj.put("cost", formattedUnitCost);
 			simpleCostStructJsonObj.put(qFunction.getName(), unitCostJsonObj);
 		}
 

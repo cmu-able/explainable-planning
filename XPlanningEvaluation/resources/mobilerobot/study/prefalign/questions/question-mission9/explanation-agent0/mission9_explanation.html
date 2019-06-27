@@ -1,0 +1,206 @@
+<html>
+ <head></head>
+ <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+ <body>
+  <div class="w3-container w3-pale-yellow" style="height:100vh;overflow:scroll">
+   <div class="w3-container w3-third w3-center">
+    <h5>Agent's Policy</h5>
+    <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 173 minutes; have 0.2 expected collision; and have intrusiveness-penalty of 10: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 3 locations (9-penalty). It has the lowest expected intrusiveness.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Agent's Policy</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travelTime
+        </div>
+        <div>
+         (minutes)
+        </div></th>
+       <td>173</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0.2</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>10</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>8</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>1</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>3</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third"></div>
+  </div>
+  <div class="w3-container w3-light-grey" style="height:100vh;overflow:scroll">
+   <div class="w3-container w3-third w3-center">
+    <h5>Agent's Policy</h5>
+    <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected collision by 0.2. However, I didn't choose that policy because it would increase the expected travel time by 20 minutes. The decrease in expected collision is not worth the increase in expected travel time.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Agent's Policy</th>
+       <th>Alternative Policy 1</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travelTime
+        </div>
+        <div>
+         (minutes)
+        </div></th>
+       <td>173</td>
+       <td>193</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0.2</td>
+       <td>0</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>10</td>
+       <td>10</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>8</td>
+       <td>8</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>1</td>
+       <td>1</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>3</td>
+       <td>3</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third w3-center">
+    <h5>Alternative Policy 1</h5>
+    <img class="w3-image w3-card" src="altPolicy1.png" style="height:90%">
+   </div>
+  </div>
+  <div class="w3-container w3-pale-yellow" style="height:100vh;overflow:scroll">
+   <div class="w3-container w3-third w3-center">
+    <h5>Agent's Policy</h5>
+    <img class="w3-image w3-card" src="solnPolicy.png" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>Alternatively, following this policy (see "Alternative Policy 2" figure) would reduce the expected travel time by 5 minutes. However, I didn't choose that policy because it would increase the expected intrusiveness by 2: it would be non-intrusive at 7 locations (0-penalty), somewhat-intrusive at 3 locations (3-penalty), and very-intrusive at 3 locations (9-penalty). The decrease in expected travel time is not worth the increase in expected intrusiveness.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Agent's Policy</th>
+       <th>Alternative Policy 2</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travelTime
+        </div>
+        <div>
+         (minutes)
+        </div></th>
+       <td>173</td>
+       <td>168</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0.2</td>
+       <td>0.2</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>10</td>
+       <td>12</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>8</td>
+       <td>7</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>1</td>
+       <td>3</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>3</td>
+       <td>3</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third w3-center">
+    <h5>Alternative Policy 2</h5>
+    <img class="w3-image w3-card" src="altPolicy2.png" style="height:90%">
+   </div>
+  </div>
+ </body>
+</html>

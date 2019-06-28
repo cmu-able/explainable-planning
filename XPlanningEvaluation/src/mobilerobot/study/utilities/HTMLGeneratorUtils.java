@@ -24,11 +24,12 @@ public class HTMLGeneratorUtils {
 	}
 
 	public static Document createHTMLBlankDocument() {
-		Document doc = Jsoup.parse("<html></html>");
+		Document doc = Jsoup.parse("<!DOCTYPE html><html lang=\"en\"></html>");
+		doc.head().appendElement("title").text("Untitled");
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		Element link = new Element("link");
 		link.attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
-		doc.body().before(link);
+		doc.head().appendChild(link);
 		return doc;
 	}
 
@@ -74,6 +75,7 @@ public class HTMLGeneratorUtils {
 		img.addClass("w3-image"); // automatically resize image to fit its container
 		img.addClass("w3-card");
 		img.attr("src", imgFilename);
+		img.attr("alt", imgCaption);
 
 		// Make this image fits the height of the container with room for image caption
 		img.attr("style", "height:90%");

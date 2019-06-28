@@ -25,7 +25,7 @@ public class HTMLGeneratorUtils {
 	}
 
 	public static Document createHTMLBlankDocument() {
-		Document doc = Jsoup.parse("<!DOCTYPE html><html lang=\"en\"></html>");
+		Document doc = Jsoup.parse("<html lang=\"en\"></html>");
 		doc.head().appendElement("title").text("Untitled");
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		Element link = new Element("link");

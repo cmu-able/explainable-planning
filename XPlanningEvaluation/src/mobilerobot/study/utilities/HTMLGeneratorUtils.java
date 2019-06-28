@@ -20,12 +20,14 @@ public class HTMLGeneratorUtils {
 	private static final String W3_ROW = "w3-row"; // container of responsive inner-containers
 	private static final String W3_CENTER = "w3-center";
 
+	private static final String CSS_STYLE = "style";
+
 	private HTMLGeneratorUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
 	public static Document createHTMLBlankDocument() {
-		Document doc = Jsoup.parse("<html lang=\"en\"></html>");
+		Document doc = Jsoup.parse("<!DOCTYPE html><html lang=\"en\"></html>");
 		doc.head().appendElement("title").text("Untitled");
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		Element link = new Element("link");
@@ -48,7 +50,7 @@ public class HTMLGeneratorUtils {
 
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
-		container.attr("style", "height:100vh;overflow:scroll");
+		container.attr(CSS_STYLE, "height:100vh;overflow:auto");
 
 		return container;
 	}
@@ -69,6 +71,8 @@ public class HTMLGeneratorUtils {
 	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption, String w3SizeClass) {
 		Element container = createBlankContainer(w3SizeClass);
 		container.addClass(W3_CENTER);
+		// Vertical image must always be fully displayed within a browser-window height
+		container.attr(CSS_STYLE, "height:100vh");
 
 		Element imgCaptionHeader = new Element("h5");
 		imgCaptionHeader.text(imgCaption);
@@ -80,7 +84,7 @@ public class HTMLGeneratorUtils {
 		img.attr("alt", imgCaption);
 
 		// Make this image fits the height of the container with room for image caption
-		img.attr("style", "height:90%");
+		img.attr(CSS_STYLE, "height:90%");
 
 		container.appendChild(imgCaptionHeader);
 		container.appendChild(img);

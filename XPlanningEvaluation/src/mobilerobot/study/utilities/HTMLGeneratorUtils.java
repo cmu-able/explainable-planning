@@ -50,15 +50,20 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
+	public static Element createBlankContainer() {
+		return createBlankContainer(null);
+	}
+
 	public static Element createBlankContainer(String w3SizeClass) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
-		container.addClass(w3SizeClass);
+		if (w3SizeClass != null) {
+			container.addClass(w3SizeClass);
+		}
 		return container;
 	}
 
-	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption,
-			String w3SizeClass) {
+	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption, String w3SizeClass) {
 		Element container = createBlankContainer(w3SizeClass);
 		container.addClass(W3_CENTER);
 

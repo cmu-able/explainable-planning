@@ -17,6 +17,7 @@ public class HTMLGeneratorUtils {
 	public static final String W3_TWOTHIRD = "w3-twothird";
 
 	private static final String W3_CONTAINER = "w3-container";
+	private static final String W3_ROW = "w3-row"; // container of responsive inner-containers
 	private static final String W3_CENTER = "w3-center";
 
 	private HTMLGeneratorUtils() {
@@ -42,7 +43,8 @@ public class HTMLGeneratorUtils {
 
 	public static Element createBlankContainerFullViewportHeight() {
 		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
+		// w3-row is a container class for responsive inner-containers
+		container.addClass(W3_ROW);
 
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content

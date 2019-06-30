@@ -68,10 +68,13 @@ public class PrefAlignQuestionHTMLGenerator {
 			File agentPolicyValuesJsonFile) throws IOException, ParseException {
 		Element missionDiv = createMissionDiv(missionJsonObj, costStructJsonObj);
 		Element agentProposalDiv = createAgentProposalDiv(agentPolicyValuesJsonFile);
+		Element instructionDiv = HTMLGeneratorUtils
+				.createInstructionContainer("Please scroll down to answer the following questions:");
 
 		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_HALF);
 		container.appendChild(missionDiv);
 		container.appendChild(agentProposalDiv);
+		container.appendChild(instructionDiv);
 		return container;
 	}
 

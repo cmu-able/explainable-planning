@@ -100,4 +100,14 @@ public class HTMLGeneratorUtils {
 		container.appendChild(table);
 		return container;
 	}
+
+	public static Element createInstructionContainer(String instruction) {
+		Element container = createBlankContainer();
+		container.addClass("w3-margin");
+
+		Element instructionHeader = new Element("h4");
+		instructionHeader.appendElement("i").text(instruction);
+		container.appendChild(instructionHeader);
+		return container;
+	}
 }

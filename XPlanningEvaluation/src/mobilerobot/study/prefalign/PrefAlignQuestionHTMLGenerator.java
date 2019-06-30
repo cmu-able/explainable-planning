@@ -13,6 +13,7 @@ import org.jsoup.nodes.Element;
 import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
+import mobilerobot.study.utilities.MTurkHTMLQuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLGenerator {
@@ -61,6 +62,13 @@ public class PrefAlignQuestionHTMLGenerator {
 
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
 		doc.body().appendChild(container);
+
+		// MTurk Crowd HTML
+		Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
+		Element mTurkCrowdFormDiv = createMTurkCrowdFormContainer();
+
+		doc.body().appendChild(crowdScript);
+		doc.body().appendChild(mTurkCrowdFormDiv);
 		return doc;
 	}
 
@@ -154,6 +162,18 @@ public class PrefAlignQuestionHTMLGenerator {
 		}
 
 		return tableContainer;
+	}
+
+	private Element createMTurkCrowdFormContainer() {
+		Element container = MTurkHTMLQuestionUtils.createBlankCrowdFormContainer();
+		Element crowdForm = container.selectFirst("crowd-form");
+		Element questionDiv = MTurkHTMLQuestionUtils.createPrefAlignCrowdQuestionContainer();
+		Element justificationDiv = MTurkHTMLQuestionUtils.createJustificationCrowdQuestionContainer();
+		Element confidenceDiv = MTurkHTMLQuestionUtils.createConfidenceCrowdQuestionContainer();
+		crowdForm.appendChild(questionDiv);
+		crowdForm.appendChild(justificationDiv);
+		crowdForm.appendChild(confidenceDiv);
+		return container;
 	}
 
 	public void createAllPrefAlignQuestionHTMLFiles(File rootDir) throws IOException, ParseException {

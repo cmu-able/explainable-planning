@@ -14,7 +14,7 @@ public class MTurkHTMLQuestionUtils {
 		return crowdHTMLScript;
 	}
 
-	public static Element getBlankCrowdFormContainer() {
+	public static Element createBlankCrowdFormContainer() {
 		Element container = new Element("div");
 		container.addClass("w3-container");
 		container.addClass("w3-margin");
@@ -26,8 +26,8 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element getPrefAlignCrowdQuestionContainer() {
-		Element questionContainer = getBlankQuestionContainer(
+	public static Element createPrefAlignCrowdQuestionContainer() {
+		Element questionContainer = createBlankQuestionContainer(
 				"Is the agent's proposed policy the best one, with respect to the given cost profile?");
 		String[] optionNames = { "answer-yes", "answer-no" };
 		String[] optionLabels = { "Yes", "No" };
@@ -36,8 +36,8 @@ public class MTurkHTMLQuestionUtils {
 		return questionContainer;
 	}
 
-	public static Element getJustificationCrowdQuestionContainer() {
-		Element questionContainer = getBlankQuestionContainer("Please provide justification for your answer:");
+	public static Element createJustificationCrowdQuestionContainer() {
+		Element questionContainer = createBlankQuestionContainer("Please provide justification for your answer:");
 		Element crowdTextArea = new Element("crowd-text-area");
 		crowdTextArea.attr("name", "justification");
 		crowdTextArea.attr("label", "I gave the answer above because...");
@@ -47,8 +47,8 @@ public class MTurkHTMLQuestionUtils {
 		return questionContainer;
 	}
 
-	public static Element getConfidenceCrowdQuestionContainer() {
-		Element questionContainer = getBlankQuestionContainer("How confident are you in your answer?");
+	public static Element createConfidenceCrowdQuestionContainer() {
+		Element questionContainer = createBlankQuestionContainer("How confident are you in your answer?");
 		String[] optionNames = { "confidence-high", "confidence-medium", "confidence-low" };
 		String[] optionLabels = { "Highly Confident", "Somewhat Confident", "Not Confident" };
 		Element options = createCrowdRadioGroup(optionNames, optionLabels);
@@ -56,7 +56,7 @@ public class MTurkHTMLQuestionUtils {
 		return questionContainer;
 	}
 
-	private static Element getBlankQuestionContainer(String question) {
+	private static Element createBlankQuestionContainer(String question) {
 		Element container = new Element("div");
 		container.addClass("w3-container");
 		container.addClass("w3-margin");

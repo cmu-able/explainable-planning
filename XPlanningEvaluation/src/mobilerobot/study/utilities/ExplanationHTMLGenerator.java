@@ -40,14 +40,14 @@ public class ExplanationHTMLGenerator {
 
 	public Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
-		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj);
+		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, "./");
 		for (Element policySectionDiv : policySectionDivs) {
 			doc.body().appendChild(policySectionDiv);
 		}
 		return doc;
 	}
 
-	public List<Element> createExplanationElements(JSONObject explanationJsonObj) {
+	public List<Element> createExplanationElements(JSONObject explanationJsonObj, String explanationSrc) {
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
@@ -76,7 +76,7 @@ public class ExplanationHTMLGenerator {
 			}
 
 			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
-					policyQAValuesJsonObj, imgIndex);
+					policyQAValuesJsonObj, imgIndex, explanationSrc);
 
 			policySectionDivs.add(policySectionDiv);
 		}
@@ -85,7 +85,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicySectionDiv(String policyExplanation, JSONObject solnPolicyQAValuesJsonObj,
-			JSONObject policyQAValuesJsonObj, int imgIndex) {
+			JSONObject policyQAValuesJsonObj, int imgIndex, String explanationSrc) {
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
 		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
@@ -115,14 +115,14 @@ public class ExplanationHTMLGenerator {
 			}
 		}
 
-		Element solnPolicyImgDiv = createPolicyImgDiv("solnPolicy.png", 0);
+		Element solnPolicyImgDiv = createPolicyImgDiv(explanationSrc + "/" + "solnPolicy.png", 0);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef,
 				solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
 		if (imgIndex > 0) {
-			Element policyImgDiv = createPolicyImgDiv(pngFilename, imgIndex);
+			Element policyImgDiv = createPolicyImgDiv(explanationSrc + "/" + pngFilename, imgIndex);
 			container.appendChild(policyImgDiv);
 		} else {
 			Element emptyImgDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);

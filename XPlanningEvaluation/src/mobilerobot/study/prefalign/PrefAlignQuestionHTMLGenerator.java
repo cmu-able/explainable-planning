@@ -46,16 +46,18 @@ public class PrefAlignQuestionHTMLGenerator {
 		JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
 		JSONObject explanationJsonObj = null;
+		String explanationSrc = "";
 		if (withExplanation) {
 			// Only 1 mission[Y]_explanation.json in explanation-agent[agentIndex] sub-dir
 			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
 			File explanationJsonFile = FileIOUtils.listFilesWithRegexFilter(agentExplanationDir,
 					"mission[0-9]+_explanation", JSON_EXTENSION)[0];
 			explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
+			explanationSrc = agentExplanationDir.getName();
 		}
 
 		Document questionDoc = createPrefAlignQuestionDocument(missionJsonObj, costStructJsonObj, agentPolicyPngFile,
-				agentPolicyQAValuesJsonObj, explanationJsonObj);
+				agentPolicyQAValuesJsonObj, explanationJsonObj, explanationSrc);
 		String questionDocName = questionDir.getName() + "-agent" + agentIndex;
 		if (withExplanation) {
 			questionDocName += "-explanation";
@@ -63,8 +65,9 @@ public class PrefAlignQuestionHTMLGenerator {
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, questionDir);
 	}
 
-	private Document createPrefAlignQuestionDocument(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			File agentPolicyPngFile, JSONObject agentPolicyQAValuesJsonObj, JSONObject explanationJsonObj) {
+	public Document createPrefAlignQuestionDocument(JSONObject missionJsonObj, JSONObject costStructJsonObj,
+			File agentPolicyPngFile, JSONObject agentPolicyQAValuesJsonObj, JSONObject explanationJsonObj,
+			String explanationSrc) {
 		String instruction = explanationJsonObj == null ? "Please scroll down to answer the following questions:"
 				: "Please scroll down to read the agent's explanation, and answer the following questions:";
 
@@ -82,7 +85,8 @@ public class PrefAlignQuestionHTMLGenerator {
 
 		if (explanationJsonObj != null) {
 			// Explanation
-			List<Element> explanationElements = mExplanationHTMLGenerator.createExplanationElements(explanationJsonObj);
+			List<Element> explanationElements = mExplanationHTMLGenerator.createExplanationElements(explanationJsonObj,
+					explanationSrc);
 			for (Element explanationElement : explanationElements) {
 				doc.body().appendChild(explanationElement);
 			}

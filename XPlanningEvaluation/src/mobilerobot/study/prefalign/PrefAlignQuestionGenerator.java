@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -75,18 +76,23 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			SimpleCostStructure simpleCostStruct = lowerConvexHull.getSimpleCostStructure(missionFile);
 			createSimpleCostStructureFile(questionDir, simpleCostStruct);
 
+			List<QuantitativePolicy> indexedAgentQuantPolicies = new ArrayList<>();
+
 			// One of the agents in this question dir must be solving this question's XMDP
 			// This agent will generate its explanation using the mission file in this question
 			QuantitativePolicy solnQuantPolicy = solnPolicyInfo.getQuantitativePolicy();
 
 			// Agent-0 is the aligned agent
 			createAgentData(questionDir, solnQuantPolicy, 0, missionFile);
+			indexedAgentQuantPolicies.add(0, solnQuantPolicy);
 
-			// Each agent's policy is unique, taken from the lower convex hull of the mission problem
-			List<QuantitativePolicy> indexedAgentQuantPolicies = lowerConvexHull.getIndexedUniqueQuantitativePolicies();
+			// The rest of the agents in this question dir are unique and different from agent-0,
+			// taken from the lower convex hull of the mission problem
+			List<QuantitativePolicy> indexedLCHQuantPolicies = lowerConvexHull.getIndexedUniqueQuantitativePolicies();
 
-			Iterator<QuantitativePolicy> iter = indexedAgentQuantPolicies.iterator();
-			int agentIndex = 1; // agent-index 0 is for the aligned agent
+			Iterator<QuantitativePolicy> iter = indexedLCHQuantPolicies.iterator();
+			// The rest of the agents start at index 1
+			int agentIndex = 1;
 			while (iter.hasNext()) {
 				QuantitativePolicy agentQuantPolicy = iter.next();
 
@@ -104,6 +110,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				// Create agentPolicy[i].json, agentPolicyValues[i].json, and explanation-agent[i]
 				createAgentData(questionDir, agentQuantPolicy, agentIndex, agentMissionFile);
 
+				indexedAgentQuantPolicies.add(agentIndex, agentQuantPolicy);
 				agentIndex++;
 			}
 

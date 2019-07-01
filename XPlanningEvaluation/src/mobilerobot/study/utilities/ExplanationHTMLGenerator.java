@@ -40,7 +40,7 @@ public class ExplanationHTMLGenerator {
 
 	public Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
-		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, "./");
+		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, ".");
 		for (Element policySectionDiv : policySectionDivs) {
 			doc.body().appendChild(policySectionDiv);
 		}

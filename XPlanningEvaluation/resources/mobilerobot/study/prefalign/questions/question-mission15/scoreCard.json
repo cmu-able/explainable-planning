@@ -1,7 +1,7 @@
 {
-  "agentPolicy3": "yes",
+  "agentPolicy3": "no",
   "agentPolicy4": "no",
-  "agentPolicy0": "no",
+  "agentPolicy0": "yes",
   "agentPolicy1": "no",
   "agentPolicy2": "no"
 }

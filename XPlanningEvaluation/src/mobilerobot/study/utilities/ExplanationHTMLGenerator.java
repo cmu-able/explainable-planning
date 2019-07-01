@@ -38,14 +38,23 @@ public class ExplanationHTMLGenerator {
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
 	}
 
-	private Document createExplanationDocument(JSONObject explanationJsonObj) {
+	public Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
+		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj);
+		for (Element policySectionDiv : policySectionDivs) {
+			doc.body().appendChild(policySectionDiv);
+		}
+		return doc;
+	}
 
+	public List<Element> createExplanationElements(JSONObject explanationJsonObj) {
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
 		// Solution policy's QA values are to be contrasted with those of each alternative policy
 		JSONObject solnPolicyQAValuesJsonObj = null;
+
+		List<Element> policySectionDivs = new ArrayList<>();
 
 		for (int i = 0; i < parts.length; i++) {
 			String policyExplanation = parts[i];
@@ -68,9 +77,11 @@ public class ExplanationHTMLGenerator {
 
 			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
 					policyQAValuesJsonObj, imgIndex);
-			doc.body().appendChild(policySectionDiv);
+
+			policySectionDivs.add(policySectionDiv);
 		}
-		return doc;
+
+		return policySectionDivs;
 	}
 
 	private Element createPolicySectionDiv(String policyExplanation, JSONObject solnPolicyQAValuesJsonObj,
@@ -157,8 +168,8 @@ public class ExplanationHTMLGenerator {
 		return createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj, null, 0);
 	}
 
-	private Element createQAValuesTableContainerVertical(JSONObject solnPolicyQAValuesJsonObj, JSONObject policyQAValuesJsonObj,
-			int imgIndex) {
+	private Element createQAValuesTableContainerVertical(JSONObject solnPolicyQAValuesJsonObj,
+			JSONObject policyQAValuesJsonObj, int imgIndex) {
 		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
 		Element table = tableContainer.selectFirst("table");
 		table.addClass("w3-border");

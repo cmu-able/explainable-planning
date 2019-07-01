@@ -30,8 +30,9 @@ public class PrefAlignQuestionHTMLGenerator {
 		mExplanationHTMLGenerator = new ExplanationHTMLGenerator(mTableSettings);
 	}
 
-	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex) throws IOException, ParseException {
-		// There is only 1 missionX.json and 1 simpleCostStructure.json per question dir
+	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation)
+			throws IOException, ParseException {
+		// There is only 1 mission[X].json and 1 simpleCostStructure.json per question dir
 		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", JSON_EXTENSION)[0];
 		File costStructJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "simpleCostStructure",
 				JSON_EXTENSION)[0];
@@ -43,25 +44,49 @@ public class PrefAlignQuestionHTMLGenerator {
 
 		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
 		JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
+		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
+		JSONObject explanationJsonObj = null;
+		if (withExplanation) {
+			// Only 1 mission[Y]_explanation.json in explanation-agent[agentIndex] sub-dir
+			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
+			File explanationJsonFile = FileIOUtils.listFilesWithRegexFilter(agentExplanationDir,
+					"mission[0-9]+_explanation", JSON_EXTENSION)[0];
+			explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
+		}
+
 		Document questionDoc = createPrefAlignQuestionDocument(missionJsonObj, costStructJsonObj, agentPolicyPngFile,
-				agentPolicyValuesJsonFile);
+				agentPolicyQAValuesJsonObj, explanationJsonObj);
 		String questionDocName = questionDir.getName() + "-agent" + agentIndex;
+		if (withExplanation) {
+			questionDocName += "-explanation";
+		}
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, questionDir);
 	}
 
 	private Document createPrefAlignQuestionDocument(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			File agentPolicyPngFile, File agentPolicyValuesJsonFile) throws IOException, ParseException {
+			File agentPolicyPngFile, JSONObject agentPolicyQAValuesJsonObj, JSONObject explanationJsonObj) {
+		String instruction = explanationJsonObj == null ? "Please scroll down to answer the following questions:"
+				: "Please scroll down to read the agent's explanation, and answer the following questions:";
+
 		Element prefAlignQuestionDiv = createPrefAlignQuestionDiv(missionJsonObj, costStructJsonObj,
-				agentPolicyValuesJsonFile);
+				agentPolicyQAValuesJsonObj, instruction);
 		Element agentPolicyImageDiv = createAgentPolicyImageDiv(agentPolicyPngFile);
 
-		// Full-screen wrapper container
-		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
-		container.appendChild(prefAlignQuestionDiv);
-		container.appendChild(agentPolicyImageDiv);
+		// Full-screen wrapper container for the task
+		Element taskContainer = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+		taskContainer.appendChild(prefAlignQuestionDiv);
+		taskContainer.appendChild(agentPolicyImageDiv);
 
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
-		doc.body().appendChild(container);
+		doc.body().appendChild(taskContainer);
+
+		if (explanationJsonObj != null) {
+			// Explanation
+			List<Element> explanationElements = mExplanationHTMLGenerator.createExplanationElements(explanationJsonObj);
+			for (Element explanationElement : explanationElements) {
+				doc.body().appendChild(explanationElement);
+			}
+		}
 
 		// MTurk Crowd HTML
 		Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
@@ -73,11 +98,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createPrefAlignQuestionDiv(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			File agentPolicyValuesJsonFile) throws IOException, ParseException {
+			JSONObject agentPolicyQAValuesJsonObj, String instruction) {
 		Element missionDiv = createMissionDiv(missionJsonObj, costStructJsonObj);
-		Element agentProposalDiv = createAgentProposalDiv(agentPolicyValuesJsonFile);
-		Element instructionDiv = HTMLGeneratorUtils
-				.createInstructionContainer("Please scroll down to answer the following questions:");
+		Element agentProposalDiv = createAgentProposalDiv(agentPolicyQAValuesJsonObj);
+		Element instructionDiv = HTMLGeneratorUtils.createInstructionContainer(instruction);
 
 		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_HALF);
 		container.appendChild(missionDiv);
@@ -104,7 +128,7 @@ public class PrefAlignQuestionHTMLGenerator {
 		return container;
 	}
 
-	private Element createAgentProposalDiv(File agentPolicyValuesJsonFile) throws IOException, ParseException {
+	private Element createAgentProposalDiv(JSONObject agentPolicyQAValuesJsonObj) {
 		// Agent paragraph
 		List<String> orderedQANames = mTableSettings.getOrderedQANames();
 		String qaListStr = String.join(", ", orderedQANames.subList(0, orderedQANames.size() - 1));
@@ -114,7 +138,6 @@ public class PrefAlignQuestionHTMLGenerator {
 		agentP.text(agentParagraph);
 
 		// QA values table
-		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
 		Element qaValuesTableContainer = mExplanationHTMLGenerator
 				.createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj);
 		qaValuesTableContainer.selectFirst("table").attr("style", "max-width:500px");
@@ -176,17 +199,18 @@ public class PrefAlignQuestionHTMLGenerator {
 		return container;
 	}
 
-	public void createAllPrefAlignQuestionHTMLFiles(File rootDir) throws IOException, ParseException {
+	public void createAllPrefAlignQuestionHTMLFiles(File rootDir, boolean withExplanation)
+			throws IOException, ParseException {
 		if (rootDir.getName().matches("question-mission[0-9]+")) {
 			File[] agentPolicyFiles = FileIOUtils.listFilesWithRegexFilter(rootDir, "agentPolicy[0-9]+",
 					JSON_EXTENSION);
 			for (int i = 0; i < agentPolicyFiles.length; i++) {
-				createPrefAlignQuestionHTMLFile(rootDir, i);
+				createPrefAlignQuestionHTMLFile(rootDir, i, withExplanation);
 			}
 		} else {
 			FileFilter dirFilter = File::isDirectory;
 			for (File subDir : rootDir.listFiles(dirFilter)) {
-				createAllPrefAlignQuestionHTMLFiles(subDir);
+				createAllPrefAlignQuestionHTMLFiles(subDir, withExplanation);
 			}
 		}
 	}
@@ -194,9 +218,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	public static void main(String[] args) throws IOException, ParseException {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
+		boolean withExplanation = args.length >= 2 && args[1].equals("-e");
 
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator generator = new PrefAlignQuestionHTMLGenerator(tableSettings);
-		generator.createAllPrefAlignQuestionHTMLFiles(rootDir);
+		generator.createAllPrefAlignQuestionHTMLFiles(rootDir, withExplanation);
 	}
 }

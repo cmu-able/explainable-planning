@@ -32,9 +32,15 @@ import mobilerobot.utilities.MapTopologyUtils;
 
 public class MapJSONToGraphViz {
 
+	// Area types
 	private static final Color PUBLIC_AREA_COLOR = Color.GREEN;
 	private static final Color SEMI_PRIVATE_AREA_COLOR = Color.YELLOW;
 	private static final Color PRIVATE_AREA_COLOR = Color.RED;
+
+	// Obstacle density
+	private static final String SPARSE_OBSTACLE_LABEL = "SO";
+	private static final String DENSE_OBSTACLE_LABEL = "DO";
+
 	private static final int OCCLUSION_FONT_SIZE = 30;
 	private static final int NODE_FONT_SIZE = 20;
 
@@ -105,9 +111,11 @@ public class MapJSONToGraphViz {
 			if (occlusion == Occlusion.CLEAR) {
 				neighborLink = to(neighborNode);
 			} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of("PO")).with(Font.size(OCCLUSION_FONT_SIZE));
+				neighborLink = to(neighborNode).with(Label.of(SPARSE_OBSTACLE_LABEL))
+						.with(Font.size(OCCLUSION_FONT_SIZE));
 			} else if (occlusion == Occlusion.OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of("O")).with(Font.size(OCCLUSION_FONT_SIZE));
+				neighborLink = to(neighborNode).with(Label.of(DENSE_OBSTACLE_LABEL))
+						.with(Font.size(OCCLUSION_FONT_SIZE));
 			} else {
 				throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 			}

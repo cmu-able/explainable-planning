@@ -137,7 +137,7 @@ public class HTMLGeneratorUtils {
 		closeButton.addClass("w3-button");
 		closeButton.addClass("w3-large");
 		closeButton.attr("onclick", "close_" + sidebarId + "()");
-		closeButton.text("Close &times;");
+		closeButton.html("Close &times;");
 
 		sidebar.appendChild(closeButton);
 		return sidebar;
@@ -158,14 +158,9 @@ public class HTMLGeneratorUtils {
 		String openFunction = getSidebarDisplayFunction(sidebarId, "open", "block");
 		String closeFunction = getSidebarDisplayFunction(sidebarId, "close", "none");
 
-		StringBuilder builder = new StringBuilder();
-		builder.append(openFunction);
-		builder.append("\n\n");
-		builder.append(closeFunction);
-		String scriptText = builder.toString();
-
 		Element script = new Element("script");
-		script.text(scriptText);
+		script.appendText(openFunction);
+		script.appendText(closeFunction);
 		return script;
 	}
 
@@ -175,12 +170,12 @@ public class HTMLGeneratorUtils {
 		builder.append(action);
 		builder.append("_");
 		builder.append(sidebarId);
-		builder.append("() {");
+		builder.append("() { ");
 		builder.append("document.getElementById(\"");
 		builder.append(sidebarId);
 		builder.append("\").style.display = \"");
 		builder.append(display);
-		builder.append("\";");
+		builder.append("\"; }");
 		return builder.toString();
 	}
 }

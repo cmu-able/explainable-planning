@@ -181,7 +181,7 @@ public class PrefAlignQuestionHTMLGenerator {
 				"Agent's Policy", HTMLGeneratorUtils.W3_TWOTHIRD);
 
 		// Legend
-		Element legendDiv = HTMLGeneratorUtils.createBlankRowContainer(HTMLGeneratorUtils.W3_THIRD);
+		Element legendDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
 		Element showLegendButton = HTMLGeneratorUtils.createShowRightSidebarButton(LEGEND_SIDEBAR_ID, "Show Legend");
 		legendDiv.appendChild(showLegendButton);
 

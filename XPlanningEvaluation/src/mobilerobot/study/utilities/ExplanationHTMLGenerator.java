@@ -88,7 +88,7 @@ public class ExplanationHTMLGenerator {
 			JSONObject policyQAValuesJsonObj, int imgIndex, String explanationSrc) {
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
-		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+		Element container = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
 
 		if (Math.floorMod(imgIndex, 2) == 0) {
 			container.addClass("w3-pale-yellow");

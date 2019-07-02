@@ -55,7 +55,7 @@ public class PlanningQuestionHTMLGenerator {
 		Element mapImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(mapPngFilename, "Map",
 				HTMLGeneratorUtils.W3_HALF);
 
-		Element container = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+		Element container = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
 		container.appendChild(missionDiv);
 		container.appendChild(mapImgDiv);
 

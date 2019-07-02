@@ -123,6 +123,7 @@ public class ExplanationHTMLGenerator {
 		container.appendChild(policyExplanationDiv);
 		if (imgIndex > 0) {
 			Element policyImgDiv = createPolicyImgDiv(explanationSrc + "/" + pngFilename, imgIndex);
+			addShowLegendButton(policyImgDiv);
 			container.appendChild(policyImgDiv);
 		} else {
 			Element emptyImgDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
@@ -144,6 +145,16 @@ public class ExplanationHTMLGenerator {
 
 		return HTMLGeneratorUtils.createResponsiveImgContainer(pngFilename, policyImgCaption,
 				HTMLGeneratorUtils.W3_THIRD);
+	}
+
+	private void addShowLegendButton(Element policyImgDiv) {
+		// Make image header inline-block to make room for legend button
+		Element policyImgCaption = policyImgDiv.selectFirst("h5");
+		policyImgCaption.attr(HTMLGeneratorUtils.CSS_STYLE, "display:inline-block");
+
+		// Add legend button after image header
+		Element showLegendButton = HTMLGeneratorUtils.createShowRightSidebarButton("legend", "☰");
+		policyImgCaption.after(showLegendButton);
 	}
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject solnPolicyQAValuesJsonObj,

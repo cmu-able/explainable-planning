@@ -19,7 +19,7 @@ public class TravelTimeQFunction implements IStandardMetricQFunction<MoveToActio
 
 	public static final String NAME = "travelTime";
 
-	private static final double OCCL_DELAY_RATE = 1.5;
+	private static final double OCCL_DELAY_RATE = 1.4;
 	private static final double PARTIAL_OCCL_DELAY_RATE = 1.2;
 
 	/*

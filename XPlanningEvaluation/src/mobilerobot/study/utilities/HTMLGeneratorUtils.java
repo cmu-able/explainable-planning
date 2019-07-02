@@ -11,6 +11,8 @@ import org.jsoup.nodes.Element;
 
 public class HTMLGeneratorUtils {
 
+	public static final String CSS_STYLE = "style";
+
 	// w3 container sizes
 	public static final String W3_THIRD = "w3-third";
 	public static final String W3_HALF = "w3-half";
@@ -19,8 +21,6 @@ public class HTMLGeneratorUtils {
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_ROW = "w3-row"; // container of responsive inner-containers
 	private static final String W3_CENTER = "w3-center";
-
-	private static final String CSS_STYLE = "style";
 
 	private HTMLGeneratorUtils() {
 		throw new IllegalStateException("Utility class");
@@ -43,7 +43,7 @@ public class HTMLGeneratorUtils {
 		Files.write(explanationHTMLPath, explanationHTML.getBytes());
 	}
 
-	public static Element createBlankContainerFullViewportHeight() {
+	public static Element createBlankRowContainerFullViewportHeight() {
 		Element container = new Element("div");
 		// w3-row is a container class for responsive inner-containers
 		container.addClass(W3_ROW);
@@ -52,6 +52,14 @@ public class HTMLGeneratorUtils {
 		// Use scroll for overflow content
 		container.attr(CSS_STYLE, "height:100vh;overflow:auto");
 
+		return container;
+	}
+
+	public static Element createBlankRowContainer(String w3SizeClass) {
+		Element container = new Element("div");
+		// w3-row is a container class for responsive inner-containers
+		container.addClass(W3_ROW);
+		container.addClass(w3SizeClass);
 		return container;
 	}
 
@@ -68,6 +76,14 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
+	public static Element createResponsiveImg(String imgFilename, String imgCaption) {
+		Element img = new Element("img");
+		img.addClass("w3-image"); // automatically resize image to fit its container
+		img.attr("src", imgFilename);
+		img.attr("alt", imgCaption);
+		return img;
+	}
+
 	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption, String w3SizeClass) {
 		Element container = createBlankContainer(w3SizeClass);
 		container.addClass(W3_CENTER);
@@ -77,11 +93,8 @@ public class HTMLGeneratorUtils {
 		Element imgCaptionHeader = new Element("h5");
 		imgCaptionHeader.text(imgCaption);
 
-		Element img = new Element("img");
-		img.addClass("w3-image"); // automatically resize image to fit its container
+		Element img = createResponsiveImg(imgFilename, imgCaption);
 		img.addClass("w3-card");
-		img.attr("src", imgFilename);
-		img.attr("alt", imgCaption);
 
 		// Make this image fits the height of the container with room for image caption
 		img.attr(CSS_STYLE, "height:90%");
@@ -109,5 +122,65 @@ public class HTMLGeneratorUtils {
 		instructionHeader.appendElement("i").text(instruction);
 		container.appendChild(instructionHeader);
 		return container;
+	}
+
+	public static Element createBlankRightSidebar(String sidebarId, double widthPercent) {
+		Element sidebar = new Element("div");
+		sidebar.addClass("w3-sidebar");
+		sidebar.addClass("w3-bar-block");
+		sidebar.attr("id", sidebarId);
+		String style = String.format("width:%.1f%%;display:none;right:0", widthPercent);
+		sidebar.attr(CSS_STYLE, style);
+
+		Element closeButton = new Element("button");
+		closeButton.addClass("w3-bar-item");
+		closeButton.addClass("w3-button");
+		closeButton.addClass("w3-large");
+		closeButton.attr("onclick", "close_" + sidebarId + "()");
+		closeButton.text("Close &times;");
+
+		sidebar.appendChild(closeButton);
+		return sidebar;
+	}
+
+	public static Element createShowRightSidebarButton(String sidebarId, String label) {
+		Element openButton = new Element("button");
+		openButton.addClass("w3-button");
+		openButton.addClass("w3-large");
+		openButton.addClass("w3-teal");
+		openButton.addClass("w3-right");
+		openButton.attr("onclick", "open_" + sidebarId + "()");
+		openButton.text(label);
+		return openButton;
+	}
+
+	public static Element createOpenCloseSidebarScript(String sidebarId) {
+		String openFunction = getSidebarDisplayFunction(sidebarId, "open", "block");
+		String closeFunction = getSidebarDisplayFunction(sidebarId, "close", "none");
+
+		StringBuilder builder = new StringBuilder();
+		builder.append(openFunction);
+		builder.append("\n\n");
+		builder.append(closeFunction);
+		String scriptText = builder.toString();
+
+		Element script = new Element("script");
+		script.text(scriptText);
+		return script;
+	}
+
+	private static String getSidebarDisplayFunction(String sidebarId, String action, String display) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("function ");
+		builder.append(action);
+		builder.append("_");
+		builder.append(sidebarId);
+		builder.append("() {");
+		builder.append("document.getElementById(\"");
+		builder.append(sidebarId);
+		builder.append("\").style.display = \"");
+		builder.append(display);
+		builder.append("\";");
+		return builder.toString();
 	}
 }

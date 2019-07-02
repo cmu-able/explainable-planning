@@ -22,6 +22,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	private static final String AGENT_TEXT = "An agent, which may or may not use the same costs as yours, proposes to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
 	private static final String JSON_EXTENSION = ".json";
 
+	private static final String LEGEND_IMG_PATH = "../../imgs/legend.png";
+	private static final String LEGEND_SIDEBAR_ID = "legend";
+	private static final double LEGEND_WIDTH_PERCENT = 16.0;
+
 	private HTMLTableSettings mTableSettings;
 	private ExplanationHTMLGenerator mExplanationHTMLGenerator;
 
@@ -76,11 +80,16 @@ public class PrefAlignQuestionHTMLGenerator {
 		Element agentPolicyImageDiv = createAgentPolicyImageDiv(agentPolicyPngFile);
 
 		// Full-screen wrapper container for the task
-		Element taskContainer = HTMLGeneratorUtils.createBlankContainerFullViewportHeight();
+		Element taskContainer = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
 		taskContainer.appendChild(prefAlignQuestionDiv);
 		taskContainer.appendChild(agentPolicyImageDiv);
 
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
+
+		// Collapsible legend
+		addCollapsibleLegend(doc);
+
+		// Task
 		doc.body().appendChild(taskContainer);
 
 		if (explanationJsonObj != null) {
@@ -99,6 +108,20 @@ public class PrefAlignQuestionHTMLGenerator {
 		doc.body().appendChild(crowdScript);
 		doc.body().appendChild(mTurkCrowdFormDiv);
 		return doc;
+	}
+
+	private void addCollapsibleLegend(Document doc) {
+		Element legendImg = HTMLGeneratorUtils.createResponsiveImg(LEGEND_IMG_PATH, "Legend");
+		// Make this image fits the height of the screen with room for "Close" button
+		legendImg.attr(HTMLGeneratorUtils.CSS_STYLE, "height:90vh");
+
+		Element sidebar = HTMLGeneratorUtils.createBlankRightSidebar(LEGEND_SIDEBAR_ID, LEGEND_WIDTH_PERCENT);
+		sidebar.appendChild(legendImg);
+
+		Element sidebarScript = HTMLGeneratorUtils.createOpenCloseSidebarScript(LEGEND_SIDEBAR_ID);
+
+		doc.body().appendChild(sidebar);
+		doc.body().appendChild(sidebarScript);
 	}
 
 	private Element createPrefAlignQuestionDiv(JSONObject missionJsonObj, JSONObject costStructJsonObj,
@@ -144,7 +167,7 @@ public class PrefAlignQuestionHTMLGenerator {
 		// QA values table
 		Element qaValuesTableContainer = mExplanationHTMLGenerator
 				.createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj);
-		qaValuesTableContainer.selectFirst("table").attr("style", "max-width:500px");
+		qaValuesTableContainer.selectFirst("table").attr(HTMLGeneratorUtils.CSS_STYLE, "max-width:500px");
 
 		Element container = HTMLGeneratorUtils.createBlankContainer();
 		container.appendChild(agentP);
@@ -157,17 +180,21 @@ public class PrefAlignQuestionHTMLGenerator {
 		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(agentPolicyPngFile.getName(),
 				"Agent's Policy", HTMLGeneratorUtils.W3_TWOTHIRD);
 
-		// TODO: Add legend
+		// Legend
+		Element legendDiv = HTMLGeneratorUtils.createBlankRowContainer(HTMLGeneratorUtils.W3_THIRD);
+		Element showLegendButton = HTMLGeneratorUtils.createShowRightSidebarButton(LEGEND_SIDEBAR_ID, "Show Legend");
+		legendDiv.appendChild(showLegendButton);
 
-		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_HALF);
+		Element container = HTMLGeneratorUtils.createBlankRowContainer(HTMLGeneratorUtils.W3_HALF);
 		container.appendChild(agentPolicyImgDiv);
+		container.appendChild(legendDiv);
 		return container;
 	}
 
 	private Element createCostStructureTable(JSONObject costStructJsonObj) {
 		Element tableContainer = HTMLGeneratorUtils.createResponsiveBlankTableContainer();
 		Element table = tableContainer.selectFirst("table");
-		table.attr("style", "max-width:400px");
+		table.attr(HTMLGeneratorUtils.CSS_STYLE, "max-width:400px");
 		// Header row
 		Element headerRow = table.appendElement("tr");
 

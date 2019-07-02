@@ -14,6 +14,7 @@ import guru.nidi.graphviz.engine.Graphviz;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.FileIOUtils;
+import mobilerobot.utilities.GraphVizUtils;
 
 public class GraphVizRenderer {
 
@@ -39,6 +40,22 @@ public class GraphVizRenderer {
 
 	public void setNodeStyle(MutableNode node) {
 		node.add(Shape.CIRCLE);
+		setCommonNodeStyle(node);
+	}
+
+	public void setStartNodeStyle(MutableNode startNode) {
+		startNode.add(Shape.DOUBLE_CIRCLE);
+		setCommonNodeStyle(startNode);
+		GraphVizUtils.addUniqueNodeXLabel(startNode, "Start");
+	}
+
+	public void setGoalNodeStyle(MutableNode goalNode) {
+		goalNode.add(Shape.DOUBLE_CIRCLE);
+		setCommonNodeStyle(goalNode);
+		GraphVizUtils.addUniqueNodeXLabel(goalNode, "Goal");
+	}
+
+	private void setCommonNodeStyle(MutableNode node) {
 		node.add("fixedsize", "true");
 		node.add("width", NODE_WIDTH);
 	}

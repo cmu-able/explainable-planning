@@ -58,11 +58,15 @@ public class MapJSONToGraphViz {
 	}
 
 	public MutableGraph convertMapJsonToGraph() throws MapTopologyException {
+		return convertMapJsonToGraph(null, null);
+	}
+
+	public MutableGraph convertMapJsonToGraph(String startID, String goalID) throws MapTopologyException {
 		MutableGraph mapGraph = mutGraph("map").setDirected(false);
 		Set<LocationNode> visitedLocNodes = new HashSet<>();
 
 		for (LocationNode locNode : mMapTopology) {
-			MutableNode nodeLink = parseNodeLink(locNode, visitedLocNodes);
+			MutableNode nodeLink = parseNodeLink(locNode, visitedLocNodes, startID, goalID);
 			mapGraph.add(nodeLink);
 		}
 
@@ -70,13 +74,21 @@ public class MapJSONToGraphViz {
 		return mapGraph;
 	}
 
-	private MutableNode parseNodeLink(LocationNode locNode, Set<LocationNode> visitedLocNodes)
-			throws MapTopologyException {
-		MutableNode node = mutNode(locNode.getNodeID());
+	private MutableNode parseNodeLink(LocationNode locNode, Set<LocationNode> visitedLocNodes, String startID,
+			String goalID) throws MapTopologyException {
+		String nodeID = locNode.getNodeID();
+		MutableNode node = mutNode(nodeID);
 
 		mGraphRenderer.setRelativeNodePosition(node, locNode.getNodeXCoordinate(), locNode.getNodeYCoordinate(),
 				mMeterUnitRatio);
-		mGraphRenderer.setNodeStyle(node);
+
+		if (startID != null && nodeID.equals(startID)) {
+			mGraphRenderer.setStartNodeStyle(node);
+		} else if (goalID != null && nodeID.equals(goalID)) {
+			mGraphRenderer.setGoalNodeStyle(node);
+		} else {
+			mGraphRenderer.setNodeStyle(node);
+		}
 
 		Area area = locNode.getNodeAttribute(Area.class, "area");
 		if (area == Area.PUBLIC) {

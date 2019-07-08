@@ -1,14 +1,12 @@
 package mobilerobot.policyviz;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
@@ -18,7 +16,6 @@ import mobilerobot.xplanning.XPlanningRunner;
 
 public class PolicyRenderer {
 
-	private JSONParser mJsonParser = new JSONParser();
 	private PolicyJSONToGraphViz mPolicyToGraph;
 
 	public PolicyRenderer() {
@@ -36,8 +33,12 @@ public class PolicyRenderer {
 			Path policyPath = policiesDirOrFile.toPath();
 			int nameCount = policyPath.getNameCount();
 			String missionName = policyPath.getName(nameCount - 2).toString();
-			File mapJsonFile = getMapJsonFile(missionName + ".json", missionsRootDir);
-			render(policiesDirOrFile, mapJsonFile, FileIOUtils.getOutputDir(), missionName);
+			String missionFilename = missionName + ".json";
+
+			File mapJsonFile = getMapJsonFile(missionFilename, missionsRootDir);
+			String startID = getStringValueFromMission("start-id", missionFilename, missionsRootDir);
+			String goalID = getStringValueFromMission("goal-id", missionFilename, missionsRootDir);
+			render(policiesDirOrFile, mapJsonFile, startID, goalID, FileIOUtils.getOutputDir(), missionName);
 		} else {
 			for (File policiesSubDirOrFile : policiesDirOrFile.listFiles()) {
 				renderAll(policiesSubDirOrFile, missionsRootDir);
@@ -45,23 +46,30 @@ public class PolicyRenderer {
 		}
 	}
 
-	public void render(File policyJsonFile, File mapJsonFile) throws MapTopologyException, IOException, ParseException {
-		render(policyJsonFile, mapJsonFile, FileIOUtils.getOutputDir(), null);
+	public void render(File policyJsonFile, File mapJsonFile, String startID, String goalID)
+			throws MapTopologyException, IOException, ParseException {
+		render(policyJsonFile, mapJsonFile, startID, goalID, FileIOUtils.getOutputDir(), null);
 	}
 
-	public void render(File policyJsonFile, File mapJsonFile, File outDir, String outSubDirname)
-			throws IOException, ParseException, MapTopologyException {
-		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile, true);
+	public void render(File policyJsonFile, File mapJsonFile, String startID, String goalID, File outDir,
+			String outSubDirname) throws IOException, ParseException, MapTopologyException {
+		MutableGraph policyGraph = mPolicyToGraph.convertPolicyJsonToGraph(policyJsonFile, mapJsonFile, true, startID,
+				goalID);
 		String outputName = FilenameUtils.removeExtension(policyJsonFile.getName());
 		GraphVizRenderer.drawGraph(policyGraph, outDir, outSubDirname, outputName);
 	}
 
 	private File getMapJsonFile(String missionJsonFilename, File missionsJsonRootDir)
 			throws IOException, ParseException, URISyntaxException {
-		File missionJsonFile = searchFile(missionJsonFilename, missionsJsonRootDir);
-		JSONObject missionJsonObj = (JSONObject) mJsonParser.parse(new FileReader(missionJsonFile));
-		String mapJsonFilename = (String) missionJsonObj.get("map-file");
+		String mapJsonFilename = getStringValueFromMission("map-file", missionJsonFilename, missionsJsonRootDir);
 		return FileIOUtils.getMapFile(getClass(), mapJsonFilename);
+	}
+
+	private String getStringValueFromMission(String key, String missionJsonFilename, File missionsJsonRootDir)
+			throws IOException, ParseException {
+		File missionJsonFile = searchFile(missionJsonFilename, missionsJsonRootDir);
+		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+		return (String) missionJsonObj.get(key);
 	}
 
 	private File searchFile(String filename, File dirOrFile) {

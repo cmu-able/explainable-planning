@@ -49,8 +49,8 @@ public class PolicyJSONToGraphViz {
 		mShowSetSpeedLabel = showSetSpeedLabel;
 	}
 
-	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile, File mapJsonFile, boolean withMap)
-			throws IOException, ParseException, MapTopologyException {
+	public MutableGraph convertPolicyJsonToGraph(File policyJsonFile, File mapJsonFile, boolean withMap, String startID,
+			String goalID) throws IOException, ParseException, MapTopologyException {
 		FileReader policyReader = new FileReader(policyJsonFile);
 		JSONObject policyJsonObj = (JSONObject) mJsonParser.parse(policyReader);
 		JSONArray policyJsonArray = (JSONArray) policyJsonObj.get("policy");
@@ -71,7 +71,7 @@ public class PolicyJSONToGraphViz {
 
 		if (withMap) {
 			MapJSONToGraphViz mapToGraph = new MapJSONToGraphViz(mapJsonFile, mGraphRenderer);
-			policyGraph = mapToGraph.convertMapJsonToGraph();
+			policyGraph = mapToGraph.convertMapJsonToGraph(startID, goalID);
 			moveToLinkFormatter = decisionJsonObj -> createMoveToLinkWithMap(decisionJsonObj, policyJsonArray);
 		} else {
 			MapTopologyReader mapReader = new MapTopologyReader(new HashSet<>(), new HashSet<>());

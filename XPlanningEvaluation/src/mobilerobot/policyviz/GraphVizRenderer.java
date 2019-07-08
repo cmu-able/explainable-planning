@@ -83,12 +83,14 @@ public class GraphVizRenderer {
 		} else if (option.equals("policy")) {
 			String mapJsonFilename = args[1];
 			String policyJsonFilename = args[2];
+			String startID = args[3];
+			String goalID = args[4];
 			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);
 			policyJsonFile = FileIOUtils.getPolicyFile(GraphVizRenderer.class, policyJsonFilename);
 
 			// Render policy
 			PolicyRenderer policyRenderer = new PolicyRenderer(METER_PER_INCH, SCALING_FACTOR);
-			policyRenderer.render(policyJsonFile, mapJsonFile);
+			policyRenderer.render(policyJsonFile, mapJsonFile, startID, goalID);
 		} else {
 			throw new IllegalArgumentException("Unknown option: " + option);
 		}

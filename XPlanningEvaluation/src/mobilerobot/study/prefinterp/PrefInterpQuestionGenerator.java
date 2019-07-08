@@ -83,7 +83,7 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
 
 		// Visualize map of the mission and all choice policies
-		mQuestionViz.visualizeAll(questionDir);
+		mQuestionViz.visualizeQuestions(questionDir);
 	}
 
 	private JSONObject computeOptimalityScores(File missionFile, List<QuantitativePolicy> indexedMultiChoicePolicies,

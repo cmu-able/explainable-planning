@@ -120,7 +120,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 			// Visualize map of the mission, each agent's proposed policy, and all policies in the explanation of each
 			// agent
-			mQuestionViz.visualizeAll(questionDir);
+			mQuestionViz.visualizeQuestions(questionDir);
 		}
 		return lowerConvexHull.getNextMissionIndex();
 	}

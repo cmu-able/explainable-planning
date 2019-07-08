@@ -126,8 +126,11 @@ public class ExplanationHTMLGenerator {
 			addShowLegendButton(policyImgDiv);
 			container.appendChild(policyImgDiv);
 		} else {
-			Element emptyImgDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
-			container.appendChild(emptyImgDiv);
+			Element emptyDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);
+			// Add legend button on the right side
+			Element showLegendButton = HTMLGeneratorUtils.createShowRightSidebarButton("legend", "☰");
+			emptyDiv.appendChild(showLegendButton);
+			container.appendChild(emptyDiv);
 		}
 
 		return container;

@@ -27,10 +27,8 @@ public class QuestionViz {
 
 	public File visualizeMap(File questionDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
-		File[] missionJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json");
-		// There is only 1 missionX.json file in each question dir
-		File missionJsonFile = missionJsonFiles[0];
-		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+		JSONObject missionJsonObj = getMissionJsonObject(questionDir);
+
 		String mapFilename = (String) missionJsonObj.get("map-file");
 		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
 
@@ -46,9 +44,13 @@ public class QuestionViz {
 		// Excluding [policyNameValuesX].json from the filter
 		File[] policyJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, ".*policy[0-9]*", ".json");
 
+		JSONObject missionJsonObj = getMissionJsonObject(questionDir);
+		String startID = (String) missionJsonObj.get("start-id");
+		String goalID = (String) missionJsonObj.get("goal-id");
+
 		// Render all policies at /output/question-missionX/
 		for (File policyJsonFile : policyJsonFiles) {
-			mPolicyRenderer.render(policyJsonFile, mapJsonFile, questionDir, null);
+			mPolicyRenderer.render(policyJsonFile, mapJsonFile, startID, goalID, questionDir, null);
 		}
 
 		// Visualize all policies in sub-directories recursively
@@ -57,5 +59,21 @@ public class QuestionViz {
 		for (File subDir : questionDir.listFiles(subDirFileFilter)) {
 			visualizePolicies(subDir, mapJsonFile);
 		}
+	}
+
+	private JSONObject getMissionJsonObject(File questionDir) throws IOException, ParseException {
+		File[] missionJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json");
+		// There is only 1 missionX.json file in each question dir
+		File missionJsonFile = missionJsonFiles[0];
+		return FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+	}
+
+	public static void main(String[] args)
+			throws MapTopologyException, IOException, ParseException, URISyntaxException {
+		String questionDirname = args[0];
+		File questionDir = new File(questionDirname);
+
+		QuestionViz questionViz = new QuestionViz();
+		questionViz.visualizeAll(questionDir);
 	}
 }

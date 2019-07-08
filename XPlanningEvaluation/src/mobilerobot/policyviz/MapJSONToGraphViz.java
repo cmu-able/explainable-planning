@@ -42,7 +42,7 @@ public class MapJSONToGraphViz {
 	private static final String DENSE_OBSTACLE_LABEL = "DO";
 
 	private static final int OCCLUSION_FONT_SIZE = 30;
-	private static final int NODE_FONT_SIZE = 20;
+	private static final int NODE_FONT_SIZE = 28;
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;

@@ -4,6 +4,9 @@ import org.jsoup.nodes.Element;
 
 public class MTurkHTMLQuestionUtils {
 
+	private static final String W3_CONTAINER = "w3-container";
+	private static final String W3_MARGIN = "w3-margin";
+
 	private MTurkHTMLQuestionUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -16,13 +19,27 @@ public class MTurkHTMLQuestionUtils {
 
 	public static Element createBlankCrowdFormContainer() {
 		Element container = new Element("div");
-		container.addClass("w3-container");
-		container.addClass("w3-margin");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
 		container.addClass("w3-sand");
 		container.addClass("w3-card");
 
 		Element crowdForm = new Element("crowd-form");
 		container.appendChild(crowdForm);
+		return container;
+	}
+
+	public static Element createCrowdSubmitButtonContainer() {
+		Element container = new Element("div");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
+	
+		Element submitButton = new Element("crowd-button");
+		submitButton.attr("form-action", "submit");
+		submitButton.attr("variant", "primary");
+		submitButton.text("Submit");
+	
+		container.appendChild(submitButton);
 		return container;
 	}
 
@@ -58,8 +75,8 @@ public class MTurkHTMLQuestionUtils {
 
 	private static Element createBlankQuestionContainer(String question) {
 		Element container = new Element("div");
-		container.addClass("w3-container");
-		container.addClass("w3-margin");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
 
 		Element questionHeader = new Element("h5");
 		questionHeader.text(question);

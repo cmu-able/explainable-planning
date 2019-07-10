@@ -227,6 +227,8 @@ public class PrefAlignQuestionHTMLGenerator {
 		crowdForm.appendChild(questionDiv);
 		crowdForm.appendChild(justificationDiv);
 		crowdForm.appendChild(confidenceDiv);
+		Element submitButtonContainer = MTurkHTMLQuestionUtils.createCrowdSubmitButtonContainer();
+		crowdForm.appendChild(submitButtonContainer);
 		return container;
 	}
 

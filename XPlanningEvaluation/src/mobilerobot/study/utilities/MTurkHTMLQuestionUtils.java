@@ -58,6 +58,13 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
+	public static Element getIntermediateCrowdFormNextOnClickScript() {
+		String saveFormDataFunction = ""; // TODO
+		Element script = new Element("script");
+		script.appendText(saveFormDataFunction);
+		return script;
+	}
+
 	private static Element createCrowdFormContainerWithoutButton() {
 		Element container = createBlankCrowdFormContainer();
 		Element crowdForm = container.selectFirst(CROWD_FORM);

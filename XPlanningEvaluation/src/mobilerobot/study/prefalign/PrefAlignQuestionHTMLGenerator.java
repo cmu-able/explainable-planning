@@ -219,17 +219,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createMTurkCrowdFormContainer() {
-		Element container = MTurkHTMLQuestionUtils.createBlankCrowdFormContainer();
-		Element crowdForm = container.selectFirst("crowd-form");
-		Element questionDiv = MTurkHTMLQuestionUtils.createPrefAlignCrowdQuestionContainer();
-		Element justificationDiv = MTurkHTMLQuestionUtils.createJustificationCrowdQuestionContainer();
-		Element confidenceDiv = MTurkHTMLQuestionUtils.createConfidenceCrowdQuestionContainer();
-		crowdForm.appendChild(questionDiv);
-		crowdForm.appendChild(justificationDiv);
-		crowdForm.appendChild(confidenceDiv);
-		Element submitButtonContainer = MTurkHTMLQuestionUtils.createCrowdSubmitButtonContainer();
-		crowdForm.appendChild(submitButtonContainer);
-		return container;
+		return MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(new String[0], new String[0]);
 	}
 
 	public void createAllPrefAlignQuestionHTMLFiles(File rootDir, boolean withExplanation)

@@ -7,6 +7,8 @@ public class MTurkHTMLQuestionUtils {
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_MARGIN = "w3-margin";
 
+	private static final String CROWD_FORM = "crowd-form";
+
 	private MTurkHTMLQuestionUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -17,6 +19,57 @@ public class MTurkHTMLQuestionUtils {
 		return crowdHTMLScript;
 	}
 
+	public static Element createSubmittableCrowdFormContainer(String[] taskIDs, String[] inputTypes) {
+		Element container = createCrowdFormContainerWithoutButton();
+		Element crowdForm = container.selectFirst(CROWD_FORM);
+
+		// Hidden input
+		for (String taskID : taskIDs) {
+			for (String inputType : inputTypes) {
+				String hiddenInputName = taskID + "-" + inputType;
+
+				Element hiddenInput = new Element("input");
+				hiddenInput.attr("type", "hidden");
+				hiddenInput.attr("id", hiddenInputName);
+				hiddenInput.attr("name", hiddenInputName);
+				hiddenInput.attr("value", "");
+
+				crowdForm.appendChild(hiddenInput);
+			}
+		}
+
+		// Submit button
+		Element submitButtonContainer = createCrowdSubmitButtonContainer();
+		crowdForm.appendChild(submitButtonContainer);
+
+		return container;
+	}
+
+	public static Element createIntermediateCrowdFormContainer(String nextUrl) {
+		Element container = createCrowdFormContainerWithoutButton();
+		Element crowdForm = container.selectFirst(CROWD_FORM);
+
+		Element nextButtonContainer = createNextButtonContainer(nextUrl);
+		// Disable submit action for intermediate form
+		Element hiddenSubmitButton = createCrowdSubmitButton(true);
+
+		crowdForm.appendChild(nextButtonContainer);
+		crowdForm.appendChild(hiddenSubmitButton);
+		return container;
+	}
+
+	private static Element createCrowdFormContainerWithoutButton() {
+		Element container = createBlankCrowdFormContainer();
+		Element crowdForm = container.selectFirst(CROWD_FORM);
+		Element questionDiv = createPrefAlignCrowdQuestionContainer();
+		Element justificationDiv = createJustificationCrowdQuestionContainer();
+		Element confidenceDiv = createConfidenceCrowdQuestionContainer();
+		crowdForm.appendChild(questionDiv);
+		crowdForm.appendChild(justificationDiv);
+		crowdForm.appendChild(confidenceDiv);
+		return container;
+	}
+
 	public static Element createBlankCrowdFormContainer() {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
@@ -24,22 +77,8 @@ public class MTurkHTMLQuestionUtils {
 		container.addClass("w3-sand");
 		container.addClass("w3-card");
 
-		Element crowdForm = new Element("crowd-form");
+		Element crowdForm = new Element(CROWD_FORM);
 		container.appendChild(crowdForm);
-		return container;
-	}
-
-	public static Element createCrowdSubmitButtonContainer() {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_MARGIN);
-	
-		Element submitButton = new Element("crowd-button");
-		submitButton.attr("form-action", "submit");
-		submitButton.attr("variant", "primary");
-		submitButton.text("Submit");
-	
-		container.appendChild(submitButton);
 		return container;
 	}
 
@@ -98,5 +137,41 @@ public class MTurkHTMLQuestionUtils {
 			crowdRadioGroup.appendChild(crowdRadioButton);
 		}
 		return crowdRadioGroup;
+	}
+
+	public static Element createNextButtonContainer(String nextUrl) {
+		Element container = new Element("div");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
+
+		Element nextButton = new Element("crowd-button");
+		nextButton.attr("href", nextUrl);
+		nextButton.attr("variant", "normal");
+		nextButton.text("Next Task");
+
+		container.appendChild(nextButton);
+		return container;
+	}
+
+	public static Element createCrowdSubmitButtonContainer() {
+		Element container = new Element("div");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
+
+		Element submitButton = createCrowdSubmitButton(false);
+
+		container.appendChild(submitButton);
+		return container;
+	}
+
+	private static Element createCrowdSubmitButton(boolean hidden) {
+		Element submitButton = new Element("crowd-button");
+		submitButton.attr("form-action", "submit");
+		submitButton.attr("variant", "primary");
+		submitButton.text("Submit");
+		if (hidden) {
+			submitButton.attr("style", "display:none");
+		}
+		return submitButton;
 	}
 }

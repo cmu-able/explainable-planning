@@ -176,11 +176,21 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element getIntermediateCrowdFormNextOnClickScript() {
-		String saveFormDataFunction = ""; // TODO
+	public static Element getIntermediateCrowdFormNextOnClickScript(int questionIndex, String[] dataTypes,
+			Map<String, String[]> dataTypeOptions) {
+		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, dataTypes,
+				dataTypeOptions);
+
+		String saveDataLogic = getSaveDataLogic();
 		Element script = new Element(SCRIPT);
-		script.appendText(saveFormDataFunction);
+		script.appendText(crowdFormToLocalStorageFunction);
+		script.appendText(saveDataLogic);
 		return script;
+	}
+
+	private static String getSaveDataLogic() {
+		String onClickFormat = "document.getElementById(\"save-next\").onclick = function() {\n%s\n};";
+		return String.format(onClickFormat, "crowdFormToLocalStorage();");
 	}
 
 	private static Element createCrowdFormContainerWithoutButton() {
@@ -272,6 +282,7 @@ public class MTurkHTMLQuestionUtils {
 		container.addClass(W3_MARGIN);
 
 		Element nextButton = new Element("crowd-button");
+		nextButton.attr("id", "save-next");
 		nextButton.attr("href", nextUrl);
 		nextButton.attr("variant", "normal");
 		nextButton.text("Next Task");

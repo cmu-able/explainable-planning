@@ -86,7 +86,6 @@ public class MTurkHTMLQuestionUtils {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("function crowdFormToLocalStorage() {\n");
-		builder.append("\t// Check browser support\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 		builder.append("\t\tlocalStorage.clear();\n\n");
 
@@ -98,10 +97,6 @@ public class MTurkHTMLQuestionUtils {
 			if (dataTypeOptions.containsKey(dataType)) {
 				// Multiple-choice input
 				String[] options = dataTypeOptions.get(dataType);
-
-				builder.append("\t\t// ");
-				builder.append(dataType);
-				builder.append("\n");
 
 				boolean firstOption = true;
 
@@ -146,7 +141,6 @@ public class MTurkHTMLQuestionUtils {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("function localStorageToCrowdForm() {\n");
-		builder.append("  // Check browser support\n");
 		builder.append("  if (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {
@@ -226,6 +220,7 @@ public class MTurkHTMLQuestionUtils {
 	public static Element createJustificationCrowdQuestionContainer() {
 		Element questionContainer = createBlankQuestionContainer("Please provide justification for your answer:");
 		Element crowdTextArea = new Element("crowd-text-area");
+		crowdTextArea.attr("id", "justification");
 		crowdTextArea.attr("name", "justification");
 		crowdTextArea.attr("label", "I gave the answer above because...");
 		crowdTextArea.attr("rows", "5");
@@ -263,6 +258,7 @@ public class MTurkHTMLQuestionUtils {
 			String name = optionNames[i];
 			String label = optionLabels[i];
 			Element crowdRadioButton = new Element("crowd-radio-button");
+			crowdRadioButton.attr("id", name);
 			crowdRadioButton.attr("name", name);
 			crowdRadioButton.text(label);
 			crowdRadioGroup.appendChild(crowdRadioButton);

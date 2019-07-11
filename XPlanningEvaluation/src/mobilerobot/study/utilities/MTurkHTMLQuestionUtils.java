@@ -1,5 +1,7 @@
 package mobilerobot.study.utilities;
 
+import java.util.Map;
+
 import org.jsoup.nodes.Element;
 
 public class MTurkHTMLQuestionUtils {
@@ -8,25 +10,35 @@ public class MTurkHTMLQuestionUtils {
 	private static final String W3_MARGIN = "w3-margin";
 
 	private static final String CROWD_FORM = "crowd-form";
+	private static final String SCRIPT = "script";
+
+	private static final String QUESTION = "question";
 
 	private MTurkHTMLQuestionUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
 	public static Element getCrowdHTMLScript() {
-		Element crowdHTMLScript = new Element("script");
+		Element crowdHTMLScript = new Element(SCRIPT);
 		crowdHTMLScript.attr("src", "https://assets.crowd.aws/crowd-html-elements.js");
 		return crowdHTMLScript;
 	}
 
-	public static Element createSubmittableCrowdFormContainer(String[] taskIDs, String[] inputTypes) {
+	public static Element createSubmittableCrowdFormContainer(int numQuestions, String[] dataTypes) {
 		Element container = createCrowdFormContainerWithoutButton();
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
-		// Hidden input
-		for (String taskID : taskIDs) {
-			for (String inputType : inputTypes) {
-				String hiddenInputName = taskID + "-" + inputType;
+		// Hidden inputs:
+		// - question[i]-ref
+		// - question[i]-answer
+		// - question[i]-justification
+		// - question[i]-confidence
+		// All hidden inputs have empty values initially, but will be filled in with values from cookie once submit.
+		for (int i = 0; i < numQuestions; i++) {
+			String keyPrefix = QUESTION + i;
+
+			for (String dataType : dataTypes) {
+				String hiddenInputName = keyPrefix + "-" + dataType;
 
 				Element hiddenInput = new Element("input");
 				hiddenInput.attr("type", "hidden");
@@ -45,6 +57,118 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
+	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions, String[] dataTypes,
+			Map<String, String[]> dataTypeOptions) {
+		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, dataTypes,
+				dataTypeOptions);
+		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormFunction(numQuestions, dataTypes);
+		String submitDataLogic = getSubmitDataLogic();
+
+		Element script = new Element(SCRIPT);
+		script.appendText(crowdFormToLocalStorageFunction);
+		script.appendText(localStorageToCrowdFormFunction);
+		script.appendText(submitDataLogic);
+		return script;
+	}
+
+	private static String getSubmitDataLogic() {
+		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n};";
+		return String.format(onSubmitFormat, "crowdFormToLocalStorage();", "localStorageToCrowdForm();");
+	}
+
+	private static String getCrowdFormToLocalStorageFunction(int questionIndex, String[] dataTypes,
+			Map<String, String[]> dataTypeOptions) {
+		String inputValueOptionFormat = "document.getElementById(\"%s\").checked";
+		String inputValueTextFormat = "document.getElementById(\"%s\").value";
+
+		String localStorageSetStrValueFormat = "localStorage.setItem(\"%s\", \"%s\")";
+		String localStorageSetValueFormat = "localStorage.setItem(\"%s\", %s)";
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("function crowdFormToLocalStorage() {\n");
+		builder.append("\t// Check browser support\n");
+		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
+		builder.append("\t\tlocalStorage.clear();\n\n");
+
+		String keyPrefix = QUESTION + questionIndex;
+
+		for (String dataType : dataTypes) {
+			String localStorageKey = keyPrefix + "-" + dataType;
+
+			if (dataTypeOptions.containsKey(dataType)) {
+				// Multiple-choice input
+				String[] options = dataTypeOptions.get(dataType);
+
+				builder.append("\t\t// ");
+				builder.append(dataType);
+				builder.append("\n");
+
+				boolean firstOption = true;
+
+				for (String option : options) {
+					if (firstOption) {
+						builder.append("\t\tif (");
+						firstOption = false;
+					} else {
+						builder.append("\t\telse if (");
+					}
+
+					String inputOptionId = dataType + "-" + option;
+
+					builder.append(String.format(inputValueOptionFormat, inputOptionId));
+					builder.append(") {\n");
+					builder.append("\t\t\t");
+					builder.append(String.format(localStorageSetStrValueFormat, localStorageKey, option));
+					builder.append(";\n");
+					builder.append("\t\t}\n");
+				}
+			} else {
+				// Text input
+				String inputValueText = String.format(inputValueTextFormat, dataType);
+
+				builder.append("\t\t");
+				builder.append(String.format(localStorageSetValueFormat, localStorageKey, inputValueText));
+				builder.append(";\n");
+			}
+
+			builder.append("\n");
+		}
+
+		builder.append("\t}\n");
+		builder.append("}");
+
+		return builder.toString();
+	}
+
+	private static String getLocalStorageToCrowdFormFunction(int numQuestions, String[] dataTypes) {
+		String hiddenInputValueFormat = "document.getElementById(\"%s\").value";
+		String localStorageValueFormat = "localStorage.getItem(\"%s\")";
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("function localStorageToCrowdForm() {\n");
+		builder.append("  // Check browser support\n");
+		builder.append("  if (typeof(Storage) !== \"undefined\") {\n");
+
+		for (int i = 0; i < numQuestions; i++) {
+			String keyPrefix = QUESTION + i;
+
+			for (String dataType : dataTypes) {
+				String hiddenInputName = keyPrefix + "-" + dataType;
+
+				builder.append("    ");
+				builder.append(String.format(hiddenInputValueFormat, hiddenInputName));
+				builder.append(" = ");
+				builder.append(String.format(localStorageValueFormat, hiddenInputName));
+				builder.append(";\n");
+			}
+		}
+
+		builder.append("  }\n");
+		builder.append("}");
+
+		return builder.toString();
+	}
+
 	public static Element createIntermediateCrowdFormContainer(String nextUrl) {
 		Element container = createCrowdFormContainerWithoutButton();
 		Element crowdForm = container.selectFirst(CROWD_FORM);
@@ -60,7 +184,7 @@ public class MTurkHTMLQuestionUtils {
 
 	public static Element getIntermediateCrowdFormNextOnClickScript() {
 		String saveFormDataFunction = ""; // TODO
-		Element script = new Element("script");
+		Element script = new Element(SCRIPT);
 		script.appendText(saveFormDataFunction);
 		return script;
 	}

@@ -3,7 +3,9 @@ package mobilerobot.study.prefalign;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -105,8 +107,19 @@ public class PrefAlignQuestionHTMLGenerator {
 		Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
 		Element mTurkCrowdFormDiv = createMTurkCrowdFormContainer();
 
+		// FIXME
+		int questionIndex = 0;
+		int numQuestions = 1;
+		String[] dataTypes = new String[] { "answer", "justification", "confidence" };
+		Map<String, String[]> dataTypeOptions = new HashMap<>();
+		dataTypeOptions.put("answer", new String[] { "yes", "no" });
+		dataTypeOptions.put("confidence", new String[] { "high", "medium", "low" });
+		Element crowdSubmitScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(questionIndex,
+				numQuestions, dataTypes, dataTypeOptions);
+
 		doc.body().appendChild(crowdScript);
 		doc.body().appendChild(mTurkCrowdFormDiv);
+		doc.body().appendChild(crowdSubmitScript);
 		return doc;
 	}
 
@@ -219,7 +232,8 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createMTurkCrowdFormContainer() {
-		return MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(new String[0], new String[0]);
+		String[] dataTypes = new String[] { "answer", "justification", "confidence" };
+		return MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(3, dataTypes);
 	}
 
 	public void createAllPrefAlignQuestionHTMLFiles(File rootDir, boolean withExplanation)

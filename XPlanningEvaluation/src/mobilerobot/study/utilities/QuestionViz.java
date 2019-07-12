@@ -16,8 +16,6 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class QuestionViz {
 
-	private static final String QUESTION_DIRNAME_REGEX = "question-mission[0-9]+";
-	private static final String MISSION_NAME_REGEX = "mission[0-9]+";
 	private static final String POLICY_NAME_REGEX = ".*policy[0-9]*";
 
 	private MapRenderer mMapRenderer = new MapRenderer();
@@ -31,7 +29,7 @@ public class QuestionViz {
 
 	public File visualizeMap(File questionDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
-		JSONObject missionJsonObj = getMissionJsonObject(questionDir);
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
 
 		String mapFilename = (String) missionJsonObj.get("map-file");
 		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
@@ -48,7 +46,7 @@ public class QuestionViz {
 		// Excluding [policyNameValuesX].json from the filter
 		File[] policyJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, POLICY_NAME_REGEX, ".json");
 
-		JSONObject missionJsonObj = getMissionJsonObject(questionDir);
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
 		String startID = (String) missionJsonObj.get("start-id");
 		String goalID = (String) missionJsonObj.get("goal-id");
 
@@ -65,21 +63,13 @@ public class QuestionViz {
 		}
 	}
 
-	private JSONObject getMissionJsonObject(File questionDir) throws IOException, ParseException {
-		File[] missionJsonFiles = FileIOUtils.listFilesWithRegexFilter(questionDir, MISSION_NAME_REGEX, ".json");
-		// There is only 1 missionX.json file in each question dir
-		File missionJsonFile = missionJsonFiles[0];
-		return FileIOUtils.readJSONObjectFromFile(missionJsonFile);
-	}
-
 	public void visualizeAllQuestions(File questionDirOrRootDir)
 			throws MapTopologyException, IOException, ParseException, URISyntaxException {
-		if (questionDirOrRootDir.getName().matches(QUESTION_DIRNAME_REGEX)) {
+		if (QuestionUtils.isQuestionDir(questionDirOrRootDir)) {
 			visualizeQuestions(questionDirOrRootDir);
 		} else {
-			FileFilter dirFilter = File::isDirectory;
-			for (File subDir : questionDirOrRootDir.listFiles(dirFilter)) {
-				visualizeAllQuestions(subDir);
+			for (File questionDir : questionDirOrRootDir.listFiles(QuestionUtils.getQuestionDirFileFilter())) {
+				visualizeAllQuestions(questionDir);
 			}
 		}
 	}

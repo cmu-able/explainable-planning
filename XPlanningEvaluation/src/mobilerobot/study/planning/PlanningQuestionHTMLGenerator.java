@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
-import mobilerobot.utilities.FileIOUtils;
+import mobilerobot.study.utilities.QuestionUtils;
 
 public class PlanningQuestionHTMLGenerator {
 
@@ -24,12 +24,10 @@ public class PlanningQuestionHTMLGenerator {
 	}
 
 	public void createPlanningQuestionHTMLFile(File questionDir) throws IOException, ParseException {
-		// There is only 1 missionX.json and 1 simpleCostStructure.json per question dir
-		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json")[0];
-		File costStructJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "simpleCostStructure", ".json")[0];
+		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
+		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
 
-		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
-		JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 		Document questionDoc = createPlanningQuestionDocument(missionJsonObj, costStructJsonObj);
 		String questionDocName = questionDir.getName();
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, questionDir);

@@ -16,6 +16,7 @@ import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
 import mobilerobot.study.utilities.MTurkHTMLQuestionUtils;
+import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLGenerator {
@@ -38,23 +39,20 @@ public class PrefAlignQuestionHTMLGenerator {
 
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation)
 			throws IOException, ParseException {
-		// There is only 1 mission[X].json and 1 simpleCostStructure.json per question dir
-		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", JSON_EXTENSION)[0];
-		File costStructJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "simpleCostStructure",
-				JSON_EXTENSION)[0];
-
 		// Only 1 agentPolicy[agentIndex].png and 1 agentPolicyValues[agentIndex].json per question dir
 		File agentPolicyPngFile = FileIOUtils.listFilesWithFilter(questionDir, "agentPolicy" + agentIndex, ".png")[0];
 		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "agentPolicyValues" + agentIndex,
 				JSON_EXTENSION)[0];
-
-		JSONObject missionJsonObj = FileIOUtils.readJSONObjectFromFile(missionJsonFile);
-		JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
+
+		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
+		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
+
 		JSONObject explanationJsonObj = null;
 		String explanationSrc = "";
 		if (withExplanation) {
-			// Only 1 mission[Y]_explanation.json in explanation-agent[agentIndex] sub-dir
+			// Only 1 mission[j]_explanation.json in explanation-agent[agentIndex] sub-dir
 			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
 			File explanationJsonFile = FileIOUtils.listFilesWithRegexFilter(agentExplanationDir,
 					"mission[0-9]+_explanation", JSON_EXTENSION)[0];

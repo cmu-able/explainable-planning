@@ -1,12 +1,14 @@
 package mobilerobot.study.utilities;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import examples.common.XPlanningOutDirectories;
 import explanation.analysis.PolicyInfo;
@@ -63,5 +65,25 @@ public class QuestionUtils {
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
 				advOutputPath.toString());
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
+	}
+
+	public static FileFilter getQuestionDirFileFilter() {
+		return QuestionUtils::isQuestionDir;
+	}
+
+	static boolean isQuestionDir(File file) {
+		return file.isDirectory() && file.getName().matches("question-mission[0-9]+");
+	}
+
+	public static JSONObject getSimpleCostStructureJSONObject(File questionDir) throws IOException, ParseException {
+		// There is only 1 simpleCostStructure.json per question dir
+		File costStructJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "simpleCostStructure", ".json")[0];
+		return FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
+	}
+
+	public static JSONObject getMissionJSONObject(File questionDir) throws IOException, ParseException {
+		// There is only 1 mission[i].json per question dir
+		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json")[0];
+		return FileIOUtils.readJSONObjectFromFile(missionJsonFile);
 	}
 }

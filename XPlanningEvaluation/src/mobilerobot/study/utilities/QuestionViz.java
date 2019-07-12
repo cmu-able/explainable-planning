@@ -68,7 +68,7 @@ public class QuestionViz {
 		if (QuestionUtils.isQuestionDir(questionDirOrRootDir)) {
 			visualizeQuestions(questionDirOrRootDir);
 		} else {
-			for (File questionDir : questionDirOrRootDir.listFiles(QuestionUtils.getQuestionDirFileFilter())) {
+			for (File questionDir : QuestionUtils.listQuestionDirs(questionDirOrRootDir)) {
 				visualizeAllQuestions(questionDir);
 			}
 		}

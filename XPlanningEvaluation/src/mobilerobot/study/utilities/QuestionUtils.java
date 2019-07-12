@@ -67,11 +67,15 @@ public class QuestionUtils {
 		return new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 	}
 
-	public static FileFilter getQuestionDirFileFilter() {
+	public static File[] listQuestionDirs(File rootDir) {
+		return rootDir.listFiles(getQuestionDirFileFilter());
+	}
+
+	private static FileFilter getQuestionDirFileFilter() {
 		return QuestionUtils::isQuestionDir;
 	}
 
-	static boolean isQuestionDir(File file) {
+	public static boolean isQuestionDir(File file) {
 		return file.isDirectory() && file.getName().matches("question-mission[0-9]+");
 	}
 

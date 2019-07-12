@@ -1,7 +1,6 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -236,16 +235,15 @@ public class PrefAlignQuestionHTMLGenerator {
 
 	public void createAllPrefAlignQuestionHTMLFiles(File rootDir, boolean withExplanation)
 			throws IOException, ParseException {
-		if (rootDir.getName().matches("question-mission[0-9]+")) {
+		if (QuestionUtils.isQuestionDir(rootDir)) {
 			File[] agentPolicyFiles = FileIOUtils.listFilesWithRegexFilter(rootDir, "agentPolicy[0-9]+",
 					JSON_EXTENSION);
 			for (int i = 0; i < agentPolicyFiles.length; i++) {
 				createPrefAlignQuestionHTMLFile(rootDir, i, withExplanation);
 			}
 		} else {
-			FileFilter dirFilter = File::isDirectory;
-			for (File subDir : rootDir.listFiles(dirFilter)) {
-				createAllPrefAlignQuestionHTMLFiles(subDir, withExplanation);
+			for (File questionDir : QuestionUtils.listQuestionDirs(rootDir)) {
+				createAllPrefAlignQuestionHTMLFiles(questionDir, withExplanation);
 			}
 		}
 	}

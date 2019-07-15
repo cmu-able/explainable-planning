@@ -15,19 +15,27 @@ public class Randomizer<E> {
 	private E[] mObjects;
 	private EnumeratedIntegerDistribution mDistribution;
 
-	public Randomizer(E[] objects, long seed) {
+	public Randomizer(E[] objects) {
 		double[] probabilities = new double[objects.length];
 		Arrays.fill(probabilities, 1.0 / objects.length);
 		int[] numsToSample = IntStream.range(0, objects.length).toArray();
 		mObjects = objects;
 		mDistribution = new EnumeratedIntegerDistribution(numsToSample, probabilities);
+	}
+
+	public Randomizer(E[] objects, long seed) {
+		this(objects);
 		mDistribution.reseedRandomGenerator(seed);
 	}
 
-	public Randomizer(E[] objects, double[] probabilities, long seed) {
+	public Randomizer(E[] objects, double[] probabilities) {
 		int[] numsToSample = IntStream.range(0, objects.length).toArray();
 		mObjects = objects;
 		mDistribution = new EnumeratedIntegerDistribution(numsToSample, probabilities);
+	}
+
+	public Randomizer(E[] objects, double[] probabilities, long seed) {
+		this(objects, probabilities);
 		mDistribution.reseedRandomGenerator(seed);
 	}
 

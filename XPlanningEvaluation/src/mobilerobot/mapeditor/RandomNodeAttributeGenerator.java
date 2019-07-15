@@ -12,6 +12,7 @@ import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
+import mobilerobot.utilities.Randomizer;
 
 public class RandomNodeAttributeGenerator<E extends INodeAttribute> {
 

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import examples.mobilerobot.dsm.Connection;
 import examples.mobilerobot.dsm.IEdgeAttribute;
 import examples.mobilerobot.dsm.MapTopology;
+import mobilerobot.utilities.Randomizer;
 
 public class RandomEdgeAttributeGenerator<E extends IEdgeAttribute> {
 

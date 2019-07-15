@@ -390,7 +390,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	public void createAllExplanationHTMLFiles(File rootDir) throws IOException, ParseException {
-		File[] explanationJsonFiles = FileIOUtils.listFilesWithFilter(rootDir, "explanation", ".json");
+		File[] explanationJsonFiles = FileIOUtils.listFilesWithContainFilter(rootDir, "explanation", ".json");
 		for (File explanationJsonFile : explanationJsonFiles) {
 			createExplanationHTMLFile(explanationJsonFile, rootDir);
 		}

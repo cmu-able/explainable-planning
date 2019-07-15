@@ -22,6 +22,8 @@ import uiconnector.PolicyWriter;
 
 public class QuestionUtils {
 
+	private static final String JSON_EXTENSION = ".json";
+
 	private QuestionUtils() {
 		throw new IllegalStateException("Utility class");
 	}
@@ -81,13 +83,20 @@ public class QuestionUtils {
 
 	public static JSONObject getSimpleCostStructureJSONObject(File questionDir) throws IOException, ParseException {
 		// There is only 1 simpleCostStructure.json per question dir
-		File costStructJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "simpleCostStructure", ".json")[0];
+		File costStructJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "simpleCostStructure",
+				JSON_EXTENSION)[0];
 		return FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 	}
 
 	public static JSONObject getMissionJSONObject(File questionDir) throws IOException, ParseException {
 		// There is only 1 mission[i].json per question dir
-		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", ".json")[0];
+		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", JSON_EXTENSION)[0];
 		return FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+	}
+
+	public static JSONObject getScoreCardJSONObject(File questionDir) throws IOException, ParseException {
+		// There is only 1 scoreCard.json per question dir
+		File scoreCardJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "scoreCard", JSON_EXTENSION)[0];
+		return FileIOUtils.readJSONObjectFromFile(scoreCardJsonFile);
 	}
 }

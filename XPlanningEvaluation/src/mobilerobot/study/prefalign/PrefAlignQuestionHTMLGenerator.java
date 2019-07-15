@@ -39,8 +39,8 @@ public class PrefAlignQuestionHTMLGenerator {
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation)
 			throws IOException, ParseException {
 		// Only 1 agentPolicy[agentIndex].png and 1 agentPolicyValues[agentIndex].json per question dir
-		File agentPolicyPngFile = FileIOUtils.listFilesWithFilter(questionDir, "agentPolicy" + agentIndex, ".png")[0];
-		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithFilter(questionDir, "agentPolicyValues" + agentIndex,
+		File agentPolicyPngFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicy" + agentIndex, ".png")[0];
+		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicyValues" + agentIndex,
 				JSON_EXTENSION)[0];
 		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
 

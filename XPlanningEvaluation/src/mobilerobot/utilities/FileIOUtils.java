@@ -179,7 +179,7 @@ public class FileIOUtils {
 		return name + index + "." + extension;
 	}
 
-	public static File[] listFilesWithFilter(File dir, String nameFilter, String fileExtension) {
+	public static File[] listFilesWithContainFilter(File dir, String nameFilter, String fileExtension) {
 		String lcNameFilter = nameFilter.toLowerCase();
 		String lcFileExtension = fileExtension.toLowerCase();
 		FilenameFilter filter = (directory, filename) -> filename.toLowerCase().contains(lcNameFilter)

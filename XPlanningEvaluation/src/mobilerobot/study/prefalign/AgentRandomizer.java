@@ -50,8 +50,15 @@ public class AgentRandomizer {
 
 		String[] allAgents = Stream.concat(alignedAgents.stream(), unalignedAgents.stream()).toArray(String[]::new);
 		double[] allAgentsProbs = new double[allAgents.length];
-		Arrays.fill(allAgentsProbs, 0, alignedAgents.size(), mAlignProb / alignedAgents.size());
-		Arrays.fill(allAgentsProbs, alignedAgents.size(), allAgents.length, (1 - mAlignProb) / unalignedAgents.size());
+
+		if (!alignedAgents.isEmpty()) {
+			Arrays.fill(allAgentsProbs, 0, alignedAgents.size(), mAlignProb / alignedAgents.size());
+		}
+
+		if (!unalignedAgents.isEmpty()) {
+			Arrays.fill(allAgentsProbs, alignedAgents.size(), allAgents.length,
+					(1 - mAlignProb) / unalignedAgents.size());
+		}
 
 		mRandomizer = new Randomizer<>(allAgents, allAgentsProbs);
 	}

@@ -3,6 +3,8 @@ package mobilerobot.study.utilities;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -40,14 +42,14 @@ public class ExplanationHTMLGenerator {
 
 	public Document createExplanationDocument(JSONObject explanationJsonObj) {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
-		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, ".");
+		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, Paths.get("."));
 		for (Element policySectionDiv : policySectionDivs) {
 			doc.body().appendChild(policySectionDiv);
 		}
 		return doc;
 	}
 
-	public List<Element> createExplanationElements(JSONObject explanationJsonObj, String explanationSrc) {
+	public List<Element> createExplanationElements(JSONObject explanationJsonObj, Path explanationPath) {
 		String explanationText = (String) explanationJsonObj.get("Explanation");
 		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
@@ -76,7 +78,7 @@ public class ExplanationHTMLGenerator {
 			}
 
 			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
-					policyQAValuesJsonObj, imgIndex, explanationSrc);
+					policyQAValuesJsonObj, imgIndex, explanationPath);
 
 			policySectionDivs.add(policySectionDiv);
 		}
@@ -85,7 +87,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicySectionDiv(String policyExplanation, JSONObject solnPolicyQAValuesJsonObj,
-			JSONObject policyQAValuesJsonObj, int imgIndex, String explanationSrc) {
+			JSONObject policyQAValuesJsonObj, int imgIndex, Path explanationPath) {
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
 		Element container = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
@@ -115,14 +117,16 @@ public class ExplanationHTMLGenerator {
 			}
 		}
 
-		Element solnPolicyImgDiv = createPolicyImgDiv(explanationSrc + "/" + "solnPolicy.png", 0);
+		Path solnPolicyImgPath = explanationPath.resolve("solnPolicy.png");
+		Element solnPolicyImgDiv = createPolicyImgDiv(solnPolicyImgPath, 0);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef,
 				solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
 		if (imgIndex > 0) {
-			Element policyImgDiv = createPolicyImgDiv(explanationSrc + "/" + pngFilename, imgIndex);
+			Path policyImgPath = explanationPath.resolve(pngFilename);
+			Element policyImgDiv = createPolicyImgDiv(policyImgPath, imgIndex);
 			addShowLegendButton(policyImgDiv);
 			container.appendChild(policyImgDiv);
 		} else {
@@ -136,7 +140,7 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
-	private Element createPolicyImgDiv(String pngFilename, int imgIndex) {
+	private Element createPolicyImgDiv(Path policyImgPath, int imgIndex) {
 		String policyImgCaption;
 		if (imgIndex == 0) {
 			// First policy is always the solution policy
@@ -146,7 +150,7 @@ public class ExplanationHTMLGenerator {
 			policyImgCaption = String.format(ALT_POLICY_CAPTION, imgIndex);
 		}
 
-		return HTMLGeneratorUtils.createResponsiveImgContainer(pngFilename, policyImgCaption,
+		return HTMLGeneratorUtils.createResponsiveImgContainer(policyImgPath.toString(), policyImgCaption,
 				HTMLGeneratorUtils.W3_THIRD);
 	}
 

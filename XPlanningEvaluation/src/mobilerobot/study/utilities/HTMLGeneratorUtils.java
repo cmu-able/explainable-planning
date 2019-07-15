@@ -76,15 +76,15 @@ public class HTMLGeneratorUtils {
 		return container;
 	}
 
-	public static Element createResponsiveImg(String imgFilename, String imgCaption) {
+	public static Element createResponsiveImg(String imgPath, String imgCaption) {
 		Element img = new Element("img");
 		img.addClass("w3-image"); // automatically resize image to fit its container
-		img.attr("src", imgFilename);
+		img.attr("src", imgPath);
 		img.attr("alt", imgCaption);
 		return img;
 	}
 
-	public static Element createResponsiveImgContainer(String imgFilename, String imgCaption, String w3SizeClass) {
+	public static Element createResponsiveImgContainer(String imgPath, String imgCaption, String w3SizeClass) {
 		Element container = createBlankContainer(w3SizeClass);
 		container.addClass(W3_CENTER);
 		// Vertical image must always be fully displayed within a browser-window height
@@ -93,7 +93,7 @@ public class HTMLGeneratorUtils {
 		Element imgCaptionHeader = new Element("h5");
 		imgCaptionHeader.text(imgCaption);
 
-		Element img = createResponsiveImg(imgFilename, imgCaption);
+		Element img = createResponsiveImg(imgPath, imgCaption);
 		img.addClass("w3-card");
 
 		// Make this image fits the height of the container with room for image caption

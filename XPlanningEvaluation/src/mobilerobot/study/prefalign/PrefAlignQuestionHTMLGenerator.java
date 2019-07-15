@@ -2,6 +2,7 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,9 +40,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation)
 			throws IOException, ParseException {
 		// Only 1 agentPolicy[agentIndex].png and 1 agentPolicyValues[agentIndex].json per question dir
-		File agentPolicyPngFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicy" + agentIndex, ".png")[0];
-		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicyValues" + agentIndex,
-				JSON_EXTENSION)[0];
+		File agentPolicyPngFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicy" + agentIndex,
+				".png")[0];
+		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir,
+				"agentPolicyValues" + agentIndex, JSON_EXTENSION)[0];
 		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
 
 		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
@@ -68,15 +70,45 @@ public class PrefAlignQuestionHTMLGenerator {
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, questionDir);
 	}
 
-	public Document createPrefAlignQuestionDocument(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			File agentPolicyPngFile, JSONObject agentPolicyQAValuesJsonObj, JSONObject explanationJsonObj,
-			String explanationSrc) {
+	public Document createPrefAlignQuestionDocument(File questionDir, int agentIndex, boolean withExplanation,
+			File outDir) throws IOException, ParseException {
+		Path questionPath = questionDir.toPath();
+		Path outPath = outDir.toPath();
+
+		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
+		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
+
+		// Only 1 agentPolicyValues[agentIndex].json and 1 agentPolicy[agentIndex].png per question dir
+		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir,
+				"agentPolicyValues" + agentIndex, JSON_EXTENSION)[0];
+		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
+
+		// Use relative path: agentPolicy.png relative to outPath
+		File agentPolicyPngFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicy" + agentIndex,
+				".png")[0];
+		Path outPathToAgentPolicyPngPath = outPath.relativize(agentPolicyPngFile.toPath());
+
+		JSONObject explanationJsonObj = null;
+		Path outPathToAgentExplanationPath = null;
+		if (withExplanation) {
+			// Only 1 mission[j]_explanation.json in explanation-agent[agentIndex] sub-dir
+			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
+			File explanationJsonFile = FileIOUtils.listFilesWithRegexFilter(agentExplanationDir,
+					"mission[0-9]+_explanation", JSON_EXTENSION)[0];
+			explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
+
+			// Use relative path: /explanation-agent[agentIndex] relative to outPath
+			outPathToAgentExplanationPath = outPath.relativize(agentExplanationDir.toPath());
+		}
+
+		///
 		String instruction = explanationJsonObj == null ? "Please scroll down to answer the following questions:"
 				: "Please scroll down to read the agent's explanation, and answer the following questions:";
 
 		Element prefAlignQuestionDiv = createPrefAlignQuestionDiv(missionJsonObj, costStructJsonObj,
 				agentPolicyQAValuesJsonObj, instruction);
-		Element agentPolicyImageDiv = createAgentPolicyImageDiv(agentPolicyPngFile);
+		Element agentPolicyImageDiv = createAgentPolicyImageDiv(outPathToAgentPolicyPngPath);
 
 		// Full-screen wrapper container for the task
 		Element taskContainer = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
@@ -91,10 +123,10 @@ public class PrefAlignQuestionHTMLGenerator {
 		// Task
 		doc.body().appendChild(taskContainer);
 
-		if (explanationJsonObj != null) {
+		if (withExplanation) {
 			// Explanation
 			List<Element> explanationElements = mExplanationHTMLGenerator.createExplanationElements(explanationJsonObj,
-					explanationSrc);
+					outPathToAgentExplanationPath);
 			for (Element explanationElement : explanationElements) {
 				doc.body().appendChild(explanationElement);
 			}
@@ -185,9 +217,9 @@ public class PrefAlignQuestionHTMLGenerator {
 		return container;
 	}
 
-	private Element createAgentPolicyImageDiv(File agentPolicyPngFile) {
+	private Element createAgentPolicyImageDiv(Path agentPolicyPngPath) {
 		// Agent's policy image
-		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(agentPolicyPngFile.getName(),
+		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(agentPolicyPngPath.toString(),
 				"Agent's Policy", HTMLGeneratorUtils.W3_TWOTHIRD);
 
 		// Legend

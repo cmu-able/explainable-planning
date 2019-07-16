@@ -33,10 +33,12 @@ public class PrefAlignQuestionHTMLLinker {
 		mQuestionHTMLGenerator = questionHTMLGenerator;
 	}
 
-	public void createLinkedPrefAlignQuestions(int numQuestions, boolean withExplanation, File rootOutDir)
+	public File[][] createAllLinkedQuestionFiles(int numQuestions, boolean withExplanation, File rootOutDir)
 			throws IOException, ParseException, URISyntaxException {
 		File[][] allLinkedQuestionDirs = mQuestionLinker.getAllLinkedQuestionDirs(numQuestions);
 		int[][] allLinkedQuestionAgentIndices = mQuestionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
+
+		File[][] allLinkedQuestionFiles = new File[allLinkedQuestionDirs.length][numQuestions];
 
 		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
 			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
@@ -44,17 +46,19 @@ public class PrefAlignQuestionHTMLLinker {
 
 			// Linked html questions (of the same cost function) will be placed in the same directory
 			File subOutDir = new File(rootOutDir, "linked-questions-set" + i);
-
-			Document[] questionDocs = createLinkedPrefAlignQuestionsDocuments(linkedQuestionDirs,
+			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedQuestionDirs,
 					linkedQuestionAgentIndices, withExplanation, subOutDir);
+
+			allLinkedQuestionFiles[i] = linkedQuestionFiles;
 		}
+
+		return allLinkedQuestionFiles;
 	}
 
-	private Document[] createLinkedPrefAlignQuestionsDocuments(File[] linkedQuestionDirs,
-			int[] linkedQuestionAgentIndices, boolean withExplanation, File outDir)
-			throws IOException, ParseException, URISyntaxException {
+	private File[] createLinkedQuestionFiles(File[] linkedQuestionDirs, int[] linkedQuestionAgentIndices,
+			boolean withExplanation, File outDir) throws IOException, ParseException, URISyntaxException {
 		int numQuestions = linkedQuestionDirs.length;
-		Document[] questionDocs = new Document[numQuestions];
+		File[] linkedQuestionFiles = new File[numQuestions];
 
 		for (int j = 0; j < numQuestions; j++) {
 			File questionDir = linkedQuestionDirs[j];
@@ -98,11 +102,11 @@ public class PrefAlignQuestionHTMLLinker {
 			questionDoc.body().appendChild(crowdFormActionScript);
 
 			// Write question HTML document to file
-			HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, outDir);
+			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, outDir);
 
-			questionDocs[j] = questionDoc;
+			linkedQuestionFiles[j] = questionFile;
 		}
 
-		return questionDocs;
+		return linkedQuestionFiles;
 	}
 }

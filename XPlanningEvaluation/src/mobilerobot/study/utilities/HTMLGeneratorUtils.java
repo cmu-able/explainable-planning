@@ -36,11 +36,12 @@ public class HTMLGeneratorUtils {
 		return doc;
 	}
 
-	public static void writeHTMLDocumentToFile(Document document, String documentName, File outDir) throws IOException {
+	public static File writeHTMLDocumentToFile(Document document, String documentName, File outDir) throws IOException {
 		String explanationHTML = document.toString();
 		String explanationHTMLFilename = documentName + ".html";
 		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
 		Files.write(explanationHTMLPath, explanationHTML.getBytes());
+		return explanationHTMLPath.toFile();
 	}
 
 	public static Element createBlankRowContainerFullViewportHeight() {

@@ -33,7 +33,7 @@ public class PrefAlignQuestionHTMLLinker {
 		mQuestionHTMLGenerator = questionHTMLGenerator;
 	}
 
-	public void createLinkedPrefAlignQuestions(int numQuestions, boolean withExplanation, File outDir)
+	public void createLinkedPrefAlignQuestions(int numQuestions, boolean withExplanation, File rootOutDir)
 			throws IOException, ParseException, URISyntaxException {
 		File[][] allLinkedQuestionDirs = mQuestionLinker.getAllLinkedQuestionDirs(numQuestions);
 		int[][] allLinkedQuestionAgentIndices = mQuestionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
@@ -42,8 +42,11 @@ public class PrefAlignQuestionHTMLLinker {
 			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
 			int[] linkedQuestionAgentIndices = allLinkedQuestionAgentIndices[i];
 
+			// Linked html questions (of the same cost function) will be placed in the same directory
+			File subOutDir = new File(rootOutDir, "linked-questions-set" + i);
+
 			Document[] questionDocs = createLinkedPrefAlignQuestionsDocuments(linkedQuestionDirs,
-					linkedQuestionAgentIndices, withExplanation, outDir);
+					linkedQuestionAgentIndices, withExplanation, subOutDir);
 		}
 	}
 
@@ -56,6 +59,9 @@ public class PrefAlignQuestionHTMLLinker {
 		for (int j = 0; j < numQuestions; j++) {
 			File questionDir = linkedQuestionDirs[j];
 			int agentIndex = linkedQuestionAgentIndices[j];
+
+			String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
+					withExplanation);
 
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
 					withExplanation, outDir);
@@ -73,14 +79,15 @@ public class PrefAlignQuestionHTMLLinker {
 						nextAgentIndex, withExplanation);
 
 				String nextUrl = nextQuestionDocName + ".html";
-				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(nextUrl);
+				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
+						nextUrl);
 
 				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j, DATA_TYPES,
 						DATA_TYPE_OPTIONS);
 			} else {
 				// Last, submittable crowd-form
-				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(numQuestions,
-						DATA_TYPES);
+				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(questionDocName,
+						numQuestions, DATA_TYPES);
 
 				crowdFormActionScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(j, numQuestions,
 						DATA_TYPES, DATA_TYPE_OPTIONS);
@@ -91,8 +98,6 @@ public class PrefAlignQuestionHTMLLinker {
 			questionDoc.body().appendChild(crowdFormActionScript);
 
 			// Write question HTML document to file
-			String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
-					withExplanation);
 			HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, outDir);
 
 			questionDocs[j] = questionDoc;

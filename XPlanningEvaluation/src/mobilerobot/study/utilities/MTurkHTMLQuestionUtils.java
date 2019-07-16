@@ -1,5 +1,6 @@
 package mobilerobot.study.utilities;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.jsoup.nodes.Element;
@@ -24,20 +25,24 @@ public class MTurkHTMLQuestionUtils {
 		return crowdHTMLScript;
 	}
 
-	public static Element createSubmittableCrowdFormContainer(int numQuestions, String[] dataTypes) {
-		Element container = createCrowdFormContainerWithoutButton();
+	public static Element createSubmittableCrowdFormContainer(String questionDocName, int numQuestions,
+			String[] dataTypes) {
+		Element container = createCrowdFormContainerWithoutButton(questionDocName);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
 		// Hidden inputs:
-		// - question[i]-ref
 		// - question[i]-answer
 		// - question[i]-justification
 		// - question[i]-confidence
-		// All hidden inputs have empty values initially, but will be filled in with values from cookie once submit.
+		// - question[i]-ref: additional data type
+		// All hidden inputs have empty values initially, but will be filled in with values from localStorage once submit.
+		String[] allDatatypes = Arrays.copyOf(dataTypes, dataTypes.length + 1);
+		allDatatypes[allDatatypes.length - 1] = "ref"; // additional ref data type
+
 		for (int i = 0; i < numQuestions; i++) {
 			String keyPrefix = QUESTION + i;
 
-			for (String dataType : dataTypes) {
+			for (String dataType : allDatatypes) {
 				String hiddenInputName = keyPrefix + "-" + dataType;
 
 				Element hiddenInput = new Element("input");
@@ -163,8 +168,8 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	public static Element createIntermediateCrowdFormContainer(String nextUrl) {
-		Element container = createCrowdFormContainerWithoutButton();
+	public static Element createIntermediateCrowdFormContainer(String questionDocName, String nextUrl) {
+		Element container = createCrowdFormContainerWithoutButton(questionDocName);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
 		Element nextButtonContainer = createNextButtonContainer(nextUrl);
@@ -193,8 +198,8 @@ public class MTurkHTMLQuestionUtils {
 		return String.format(onClickFormat, "crowdFormToLocalStorage();");
 	}
 
-	private static Element createCrowdFormContainerWithoutButton() {
-		Element container = createBlankCrowdFormContainer();
+	private static Element createCrowdFormContainerWithoutButton(String questionDocName) {
+		Element container = createBlankCrowdFormContainer(questionDocName);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 		Element questionDiv = createPrefAlignCrowdQuestionContainer();
 		Element justificationDiv = createJustificationCrowdQuestionContainer();
@@ -205,7 +210,7 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element createBlankCrowdFormContainer() {
+	public static Element createBlankCrowdFormContainer(String questionDocName) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_MARGIN);
@@ -213,8 +218,24 @@ public class MTurkHTMLQuestionUtils {
 		container.addClass("w3-card");
 
 		Element crowdForm = new Element(CROWD_FORM);
+		Element questionRefHiddenInput = createQuestionRefHiddenInput(questionDocName);
+		crowdForm.appendChild(questionRefHiddenInput);
+
 		container.appendChild(crowdForm);
 		return container;
+	}
+
+	private static Element createQuestionRefHiddenInput(String questionDocName) {
+		String hiddenInputName = QUESTION + "-ref";
+
+		// This hidden input is attached to each crowd-form
+		// <input type="hidden" id="question-ref" name="question-ref" value=[questionDocName]>
+		Element hiddenInput = new Element("input");
+		hiddenInput.attr("type", "hidden");
+		hiddenInput.attr("id", hiddenInputName);
+		hiddenInput.attr("name", hiddenInputName);
+		hiddenInput.attr("value", questionDocName);
+		return hiddenInput;
 	}
 
 	public static Element createPrefAlignCrowdQuestionContainer() {

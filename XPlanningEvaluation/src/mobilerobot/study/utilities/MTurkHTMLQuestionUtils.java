@@ -36,13 +36,12 @@ public class MTurkHTMLQuestionUtils {
 		// - question[i]-confidence
 		// - question[i]-ref: additional data type
 		// All hidden inputs have empty values initially, but will be filled in with values from localStorage once submit.
-		String[] allDatatypes = Arrays.copyOf(dataTypes, dataTypes.length + 1);
-		allDatatypes[allDatatypes.length - 1] = "ref"; // additional ref data type
+		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
 
 		for (int i = 0; i < numQuestions; i++) {
 			String keyPrefix = QUESTION + i;
 
-			for (String dataType : allDatatypes) {
+			for (String dataType : allHiddenInputDataTypes) {
 				String hiddenInputName = keyPrefix + "-" + dataType;
 
 				Element hiddenInput = new Element("input");
@@ -76,6 +75,12 @@ public class MTurkHTMLQuestionUtils {
 		return script;
 	}
 
+	private static String[] getAllHiddenInputDataTypes(String[] dataTypes) {
+		String[] allDatatypes = Arrays.copyOf(dataTypes, dataTypes.length + 1);
+		allDatatypes[allDatatypes.length - 1] = "ref"; // additional ref data type
+		return allDatatypes;
+	}
+
 	private static String getSubmitDataLogic() {
 		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n};";
 		return String.format(onSubmitFormat, "crowdFormToLocalStorage();", "localStorageToCrowdForm();");
@@ -96,7 +101,10 @@ public class MTurkHTMLQuestionUtils {
 
 		String keyPrefix = QUESTION + questionIndex;
 
-		for (String dataType : dataTypes) {
+		// Add "ref" to data types to be stored in localStorage
+		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
+
+		for (String dataType : allHiddenInputDataTypes) {
 			String localStorageKey = keyPrefix + "-" + dataType;
 
 			if (dataTypeOptions.containsKey(dataType)) {
@@ -151,7 +159,10 @@ public class MTurkHTMLQuestionUtils {
 		for (int i = 0; i < numQuestions; i++) {
 			String keyPrefix = QUESTION + i;
 
-			for (String dataType : dataTypes) {
+			// Add "ref" to data types to be filled in crowd-form's hidden inputs
+			String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
+
+			for (String dataType : allHiddenInputDataTypes) {
 				String hiddenInputName = keyPrefix + "-" + dataType;
 
 				builder.append("    ");
@@ -226,10 +237,10 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static Element createQuestionRefHiddenInput(String questionDocName) {
-		String hiddenInputName = QUESTION + "-ref";
+		String hiddenInputName = "ref";
 
 		// This hidden input is attached to each crowd-form
-		// <input type="hidden" id="question-ref" name="question-ref" value=[questionDocName]>
+		// <input type="hidden" id="ref" name="ref" value=[questionDocName]>
 		Element hiddenInput = new Element("input");
 		hiddenInput.attr("type", "hidden");
 		hiddenInput.attr("id", hiddenInputName);

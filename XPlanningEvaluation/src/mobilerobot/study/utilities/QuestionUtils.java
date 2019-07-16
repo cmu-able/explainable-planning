@@ -22,6 +22,9 @@ import uiconnector.PolicyWriter;
 
 public class QuestionUtils {
 
+	private static final String QUESTION_DOC_NAME_NO_EXPL_FORMAT = "%s-agent%d";
+	private static final String QUESTION_DOC_NAME_EXPL_FORMAT = "%s-agent%d-explanation";
+
 	private static final String JSON_EXTENSION = ".json";
 
 	private QuestionUtils() {
@@ -41,6 +44,11 @@ public class QuestionUtils {
 		Files.copy(missionFile.toPath(), questionDir.toPath().resolve(missionFile.getName()));
 
 		return questionDir;
+	}
+
+	public static String getPrefAlignQuestionDocumentName(File questionDir, int agentIndex, boolean withExplanation) {
+		return String.format(withExplanation ? QUESTION_DOC_NAME_EXPL_FORMAT : QUESTION_DOC_NAME_NO_EXPL_FORMAT,
+				questionDir.getName(), agentIndex);
 	}
 
 	public static void writeSolutionPolicyToQuestionDir(PolicyInfo solnPolicyInfo, File questionDir)

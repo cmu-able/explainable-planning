@@ -37,11 +37,8 @@ public class PrefAlignQuestionHTMLGenerator {
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation, File outDir)
 			throws IOException, ParseException {
 		Document questionDoc = createPrefAlignQuestionDocument(questionDir, agentIndex, withExplanation, outDir);
-		String questionDocName = questionDir.getName() + "-agent" + agentIndex;
-		if (withExplanation) {
-			questionDocName += "-explanation";
-		}
-
+		String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
+				withExplanation);
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, outDir);
 	}
 

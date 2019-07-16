@@ -81,6 +81,10 @@ public class QuestionUtils {
 		return file.isDirectory() && file.getName().matches("question-mission[0-9]+");
 	}
 
+	public static boolean isExplanationDir(File file) {
+		return file.isDirectory() && file.getName().matches("explanation-agent[0-9]+");
+	}
+
 	public static JSONObject getSimpleCostStructureJSONObject(File questionDir) throws IOException, ParseException {
 		// There is only 1 simpleCostStructure.json per question dir
 		File costStructJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "simpleCostStructure",
@@ -98,5 +102,16 @@ public class QuestionUtils {
 		// There is only 1 scoreCard.json per question dir
 		File scoreCardJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "scoreCard", JSON_EXTENSION)[0];
 		return FileIOUtils.readJSONObjectFromFile(scoreCardJsonFile);
+	}
+
+	public static JSONObject getExplanationJSONObject(File explanationDir) throws IOException, ParseException {
+		// There is only 1 [explanation name].json per explanation dir
+		File explanationJsonFile = getExplanationJSONFile(explanationDir);
+		return FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
+	}
+
+	public static File getExplanationJSONFile(File explanationDir) {
+		// There is only 1 [explanation name].json per explanation dir
+		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", JSON_EXTENSION)[0];
 	}
 }

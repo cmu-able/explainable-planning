@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -19,7 +18,6 @@ import org.jsoup.nodes.Element;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import mobilerobot.utilities.FileIOUtils;
 
 public class ExplanationHTMLGenerator {
 
@@ -33,26 +31,27 @@ public class ExplanationHTMLGenerator {
 		mTableSettings = tableSettings;
 	}
 
-	public void createExplanationHTMLFile(File explanationJsonFile, File outDir) throws IOException, ParseException {
-		JSONObject explanationJsonObj = FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-		Document explanationDoc = createExplanationDocument(explanationJsonObj);
+	public void createExplanationHTMLFile(File explanationDir, File outDir) throws IOException, ParseException {
+		Document explanationDoc = HTMLGeneratorUtils.createHTMLBlankDocument();
+
+		List<Element> policySectionDivs = createExplanationElements(explanationDir, outDir);
+		for (Element policySectionDiv : policySectionDivs) {
+			explanationDoc.body().appendChild(policySectionDiv);
+		}
+
+		File explanationJsonFile = QuestionUtils.getExplanationJSONFile(explanationDir);
 		String explanationDocName = FilenameUtils.removeExtension(explanationJsonFile.getName());
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
 	}
 
-	public Document createExplanationDocument(JSONObject explanationJsonObj) {
-		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
-		List<Element> policySectionDivs = createExplanationElements(explanationJsonObj, Paths.get("."));
-		for (Element policySectionDiv : policySectionDivs) {
-			doc.body().appendChild(policySectionDiv);
-		}
-		return doc;
-	}
-
-	public List<Element> createExplanationElements(JSONObject explanationJsonObj, Path explanationPath) {
+	public List<Element> createExplanationElements(File explanationDir, File outDir)
+			throws IOException, ParseException {
+		JSONObject explanationJsonObj = QuestionUtils.getExplanationJSONObject(explanationDir);
 		String explanationText = (String) explanationJsonObj.get("Explanation");
+
 		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
+
 		// Solution policy's QA values are to be contrasted with those of each alternative policy
 		JSONObject solnPolicyQAValuesJsonObj = null;
 
@@ -78,7 +77,7 @@ public class ExplanationHTMLGenerator {
 			}
 
 			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
-					policyQAValuesJsonObj, imgIndex, explanationPath);
+					policyQAValuesJsonObj, imgIndex, explanationDir, outDir);
 
 			policySectionDivs.add(policySectionDiv);
 		}
@@ -87,7 +86,7 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicySectionDiv(String policyExplanation, JSONObject solnPolicyQAValuesJsonObj,
-			JSONObject policyQAValuesJsonObj, int imgIndex, Path explanationPath) {
+			JSONObject policyQAValuesJsonObj, int imgIndex, File explanationDir, File outDir) {
 		// Make this container fits the height of the browser
 		// Use scroll for overflow content
 		Element container = HTMLGeneratorUtils.createBlankRowContainerFullViewportHeight();
@@ -117,16 +116,16 @@ public class ExplanationHTMLGenerator {
 			}
 		}
 
-		Path solnPolicyImgPath = explanationPath.resolve("solnPolicy.png");
-		Element solnPolicyImgDiv = createPolicyImgDiv(solnPolicyImgPath, 0);
+		Path solnPolicyImgPath = explanationDir.toPath().resolve("solnPolicy.png");
+		Element solnPolicyImgDiv = createPolicyImgDiv(solnPolicyImgPath, 0, outDir);
 		Element policyExplanationDiv = createPolicyExplanationDiv(policyExplanationWithImgRef,
 				solnPolicyQAValuesJsonObj, policyQAValuesJsonObj, imgIndex);
 
 		container.appendChild(solnPolicyImgDiv);
 		container.appendChild(policyExplanationDiv);
 		if (imgIndex > 0) {
-			Path policyImgPath = explanationPath.resolve(pngFilename);
-			Element policyImgDiv = createPolicyImgDiv(policyImgPath, imgIndex);
+			Path policyImgPath = explanationDir.toPath().resolve(pngFilename);
+			Element policyImgDiv = createPolicyImgDiv(policyImgPath, imgIndex, outDir);
 			addShowLegendButton(policyImgDiv);
 			container.appendChild(policyImgDiv);
 		} else {
@@ -140,7 +139,8 @@ public class ExplanationHTMLGenerator {
 		return container;
 	}
 
-	private Element createPolicyImgDiv(Path policyImgPath, int imgIndex) {
+	private Element createPolicyImgDiv(Path policyImgPath, int imgIndex, File outDir) {
+		Path policyImgRelativePath = outDir.toPath().relativize(policyImgPath);
 		String policyImgCaption;
 		if (imgIndex == 0) {
 			// First policy is always the solution policy
@@ -149,8 +149,7 @@ public class ExplanationHTMLGenerator {
 			// Alternative policies start at index 1
 			policyImgCaption = String.format(ALT_POLICY_CAPTION, imgIndex);
 		}
-
-		return HTMLGeneratorUtils.createResponsiveImgContainer(policyImgPath.toString(), policyImgCaption,
+		return HTMLGeneratorUtils.createResponsiveImgContainer(policyImgRelativePath.toString(), policyImgCaption,
 				HTMLGeneratorUtils.W3_THIRD);
 	}
 
@@ -394,14 +393,13 @@ public class ExplanationHTMLGenerator {
 	}
 
 	public void createAllExplanationHTMLFiles(File rootDir) throws IOException, ParseException {
-		File[] explanationJsonFiles = FileIOUtils.listFilesWithContainFilter(rootDir, "explanation", ".json");
-		for (File explanationJsonFile : explanationJsonFiles) {
-			createExplanationHTMLFile(explanationJsonFile, rootDir);
-		}
-
-		FileFilter dirFilter = File::isDirectory;
-		for (File subDir : rootDir.listFiles(dirFilter)) {
-			createAllExplanationHTMLFiles(subDir);
+		if (QuestionUtils.isExplanationDir(rootDir)) {
+			createExplanationHTMLFile(rootDir, rootDir);
+		} else {
+			FileFilter dirFilter = File::isDirectory;
+			for (File subDir : rootDir.listFiles(dirFilter)) {
+				createAllExplanationHTMLFiles(subDir);
+			}
 		}
 	}
 

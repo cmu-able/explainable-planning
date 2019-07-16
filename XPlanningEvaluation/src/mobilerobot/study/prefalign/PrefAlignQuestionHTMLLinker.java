@@ -2,6 +2,7 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class PrefAlignQuestionHTMLLinker {
 	}
 
 	public void createLinkedPrefAlignQuestions(int numQuestions, boolean withExplanation, File outDir)
-			throws IOException, ParseException {
+			throws IOException, ParseException, URISyntaxException {
 		File[][] allLinkedQuestionDirs = mQuestionLinker.getAllLinkedQuestionDirs(numQuestions);
 		int[][] allLinkedQuestionAgentIndices = mQuestionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
 
@@ -47,7 +48,8 @@ public class PrefAlignQuestionHTMLLinker {
 	}
 
 	private Document[] createLinkedPrefAlignQuestionsDocuments(File[] linkedQuestionDirs,
-			int[] linkedQuestionAgentIndices, boolean withExplanation, File outDir) throws IOException, ParseException {
+			int[] linkedQuestionAgentIndices, boolean withExplanation, File outDir)
+			throws IOException, ParseException, URISyntaxException {
 		int numQuestions = linkedQuestionDirs.length;
 		Document[] questionDocs = new Document[numQuestions];
 

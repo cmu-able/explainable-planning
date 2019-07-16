@@ -28,10 +28,12 @@ import examples.common.XPlanningOutDirectories;
 
 public class FileIOUtils {
 
-	public static final String MAPS_RESOURCE_PATH = "maps";
-	public static final String MISSIONS_RESOURCE_PATH = "missions";
-	public static final String POLICIES_RESOURCE_PATH = "policies";
-	public static final String OUTPUT_PATH = "output";
+	private static final String MAPS_RESOURCE_PATH = "maps";
+	private static final String MISSIONS_RESOURCE_PATH = "missions";
+	private static final String POLICIES_RESOURCE_PATH = "policies";
+	private static final String OUTPUT_PATH = "output";
+
+	private static final String IMGS_RESOURCE_PATH = "imgs";
 
 	private FileIOUtils() {
 		throw new IllegalStateException("Utility class");
@@ -67,6 +69,10 @@ public class FileIOUtils {
 
 	public static File getPoliciesResourceDir(Class<?> callerClass) throws URISyntaxException {
 		return getResourceDir(callerClass, POLICIES_RESOURCE_PATH);
+	}
+
+	public static File getImgsResourceDir(Class<?> callerClass) throws URISyntaxException {
+		return getResourceDir(callerClass, IMGS_RESOURCE_PATH);
 	}
 
 	public static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {

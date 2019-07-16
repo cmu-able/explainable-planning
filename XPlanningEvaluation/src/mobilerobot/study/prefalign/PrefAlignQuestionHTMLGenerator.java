@@ -2,6 +2,7 @@ package mobilerobot.study.prefalign;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	private static final String AGENT_TEXT = "An agent, which may or may not use the same costs as yours, proposes to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
 	private static final String JSON_EXTENSION = ".json";
 
-	private static final String LEGEND_IMG_PATH = "../../imgs/legend.png";
+	private static final String LEGEND_IMG_FILENAME = "legend.png";
 	private static final String LEGEND_SIDEBAR_ID = "legend";
 	private static final double LEGEND_WIDTH_PERCENT = 16.0;
 
@@ -35,7 +36,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	public void createPrefAlignQuestionHTMLFile(File questionDir, int agentIndex, boolean withExplanation, File outDir)
-			throws IOException, ParseException {
+			throws IOException, ParseException, URISyntaxException {
 		Document questionDoc = createPrefAlignQuestionDocument(questionDir, agentIndex, withExplanation, outDir);
 		String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
 				withExplanation);
@@ -43,7 +44,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	public Document createPrefAlignQuestionDocument(File questionDir, int agentIndex, boolean withExplanation,
-			File outDir) throws IOException, ParseException {
+			File outDir) throws IOException, ParseException, URISyntaxException {
 		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
 		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
 		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
@@ -72,7 +73,8 @@ public class PrefAlignQuestionHTMLGenerator {
 		Document doc = HTMLGeneratorUtils.createHTMLBlankDocument();
 
 		// Collapsible legend
-		addCollapsibleLegend(doc);
+		File legendImgFile = new File(FileIOUtils.getImgsResourceDir(getClass()), LEGEND_IMG_FILENAME);
+		addCollapsibleLegend(doc, legendImgFile, outDir);
 
 		// Task
 		doc.body().appendChild(taskContainer);
@@ -89,8 +91,10 @@ public class PrefAlignQuestionHTMLGenerator {
 		return doc;
 	}
 
-	private void addCollapsibleLegend(Document doc) {
-		Element legendImg = HTMLGeneratorUtils.createResponsiveImg(LEGEND_IMG_PATH, "Legend");
+	private void addCollapsibleLegend(Document doc, File legendImgFile, File outDir) {
+		Path legendImgRelativePath = outDir.toPath().relativize(legendImgFile.toPath());
+
+		Element legendImg = HTMLGeneratorUtils.createResponsiveImg(legendImgRelativePath.toString(), "Legend");
 		// Make this image fits the height of the screen with room for "Close" button
 		legendImg.attr(HTMLGeneratorUtils.CSS_STYLE, "height:90vh");
 
@@ -200,7 +204,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	public void createAllPrefAlignQuestionHTMLFiles(File rootDir, boolean withExplanation)
-			throws IOException, ParseException {
+			throws IOException, ParseException, URISyntaxException {
 		if (QuestionUtils.isQuestionDir(rootDir)) {
 			File[] agentPolicyFiles = FileIOUtils.listFilesWithRegexFilter(rootDir, "agentPolicy[0-9]+",
 					JSON_EXTENSION);
@@ -214,7 +218,7 @@ public class PrefAlignQuestionHTMLGenerator {
 		}
 	}
 
-	public static void main(String[] args) throws IOException, ParseException {
+	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
 		boolean withExplanation = args.length >= 2 && args[1].equals("-e");

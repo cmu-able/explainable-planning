@@ -10,9 +10,12 @@ import org.json.simple.parser.ParseException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
+import mobilerobot.study.utilities.HTMLTableSettings;
 import mobilerobot.study.utilities.MTurkHTMLQuestionUtils;
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLLinker {
 
@@ -22,6 +25,10 @@ public class PrefAlignQuestionHTMLLinker {
 		DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });
 		DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
 	}
+
+	private static final int NUM_QUESTIONS = 3;
+	private static final double ALIGN_PROB = 0.5;
+	private static final double UNALIGN_THRESHOLD = 0.95;
 
 	private PrefAlignQuestionLinker mQuestionLinker;
 	private PrefAlignQuestionHTMLGenerator mQuestionHTMLGenerator;
@@ -46,8 +53,8 @@ public class PrefAlignQuestionHTMLLinker {
 
 			// Linked html questions (of the same cost function) will be placed in the same directory
 			File subOutDir = new File(rootOutDir, "linked-questions-set" + i);
-			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedQuestionDirs,
-					linkedQuestionAgentIndices, withExplanation, subOutDir);
+			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedQuestionDirs, linkedQuestionAgentIndices,
+					withExplanation, subOutDir);
 
 			allLinkedQuestionFiles[i] = linkedQuestionFiles;
 		}
@@ -108,5 +115,21 @@ public class PrefAlignQuestionHTMLLinker {
 		}
 
 		return linkedQuestionFiles;
+	}
+
+	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
+		String rootOutDirname = args[0];
+
+		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
+		File rootOutDir = new File(rootOutDirname);
+		File rootOutDirExplanation = new File(rootOutDirname + "-explanation");
+
+		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
+		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);
+
+		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionsRootDir, ALIGN_PROB,
+				UNALIGN_THRESHOLD, questionHTMLGenerator);
+		questionHTMLLinker.createAllLinkedQuestionFiles(NUM_QUESTIONS, false, rootOutDir);
+		questionHTMLLinker.createAllLinkedQuestionFiles(NUM_QUESTIONS, true, rootOutDirExplanation);
 	}
 }

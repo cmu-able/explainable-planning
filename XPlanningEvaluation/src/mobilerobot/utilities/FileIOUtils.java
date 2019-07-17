@@ -34,6 +34,7 @@ public class FileIOUtils {
 	private static final String OUTPUT_PATH = "output";
 
 	private static final String IMGS_RESOURCE_PATH = "imgs";
+	private static final String QUESTIONS_RESOURCE_PATH = "questions";
 
 	private FileIOUtils() {
 		throw new IllegalStateException("Utility class");
@@ -73,6 +74,10 @@ public class FileIOUtils {
 
 	public static File getImgsResourceDir(Class<?> callerClass) throws URISyntaxException {
 		return getResourceDir(callerClass, IMGS_RESOURCE_PATH);
+	}
+
+	public static File getQuestionsResourceDir(Class<?> callerClass) throws URISyntaxException {
+		return getResourceDir(callerClass, QUESTIONS_RESOURCE_PATH);
 	}
 
 	public static File getResourceDir(Class<?> callerClass, String resourcePath) throws URISyntaxException {

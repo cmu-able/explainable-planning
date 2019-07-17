@@ -140,7 +140,10 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private Element createPolicyImgDiv(Path policyImgPath, int imgIndex, File outDir) {
-		Path policyImgRelativePath = outDir.toPath().relativize(policyImgPath);
+		// To make both paths have the same root
+		Path outAbsPath = outDir.toPath().toAbsolutePath();
+		Path policyImgAbsPath = policyImgPath.toAbsolutePath();
+		Path policyImgRelativePath = outAbsPath.relativize(policyImgAbsPath);
 		String policyImgCaption;
 		if (imgIndex == 0) {
 			// First policy is always the solution policy

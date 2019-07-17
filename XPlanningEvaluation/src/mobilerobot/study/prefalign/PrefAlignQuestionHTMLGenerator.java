@@ -162,7 +162,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createAgentPolicyImageDiv(File agentPolicyImgFile, File outDir) {
-		Path agentPolicyImgRelativePath = outDir.toPath().relativize(agentPolicyImgFile.toPath());
+		// To make both paths have the same root
+		Path outAbsPath = outDir.toPath().toAbsolutePath();
+		Path agentPolicyImgAbsPath = agentPolicyImgFile.toPath().toAbsolutePath();
+		Path agentPolicyImgRelativePath = outAbsPath.relativize(agentPolicyImgAbsPath);
 
 		// Agent's policy image
 		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(

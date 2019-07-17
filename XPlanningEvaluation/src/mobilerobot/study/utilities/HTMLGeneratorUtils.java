@@ -40,6 +40,7 @@ public class HTMLGeneratorUtils {
 		String explanationHTML = document.toString();
 		String explanationHTMLFilename = documentName + ".html";
 		Path explanationHTMLPath = outDir.toPath().resolve(explanationHTMLFilename);
+		Files.createDirectories(outDir.toPath());
 		Files.write(explanationHTMLPath, explanationHTML.getBytes());
 		return explanationHTMLPath.toFile();
 	}

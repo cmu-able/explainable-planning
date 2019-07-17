@@ -92,7 +92,10 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private void addCollapsibleLegend(Document doc, File legendImgFile, File outDir) {
-		Path legendImgRelativePath = outDir.toPath().relativize(legendImgFile.toPath());
+		// To make both paths have the same root
+		Path outAbsPath = outDir.toPath().toAbsolutePath();
+		Path legendImgAbsPath = legendImgFile.toPath().toAbsolutePath();
+		Path legendImgRelativePath = outAbsPath.relativize(legendImgAbsPath);
 
 		Element legendImg = HTMLGeneratorUtils.createResponsiveImg(legendImgRelativePath.toString(), "Legend");
 		// Make this image fits the height of the screen with room for "Close" button

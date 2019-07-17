@@ -97,7 +97,6 @@ public class MTurkHTMLQuestionUtils {
 		StringBuilder builder = new StringBuilder();
 		builder.append("function crowdFormToLocalStorage() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
-		builder.append("\t\tlocalStorage.clear();\n\n");
 
 		String keyPrefix = QUESTION + questionIndex;
 
@@ -154,7 +153,7 @@ public class MTurkHTMLQuestionUtils {
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("function localStorageToCrowdForm() {\n");
-		builder.append("  if (typeof(Storage) !== \"undefined\") {\n");
+		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {
 			String keyPrefix = QUESTION + i;
@@ -165,7 +164,7 @@ public class MTurkHTMLQuestionUtils {
 			for (String dataType : allHiddenInputDataTypes) {
 				String hiddenInputName = keyPrefix + "-" + dataType;
 
-				builder.append("    ");
+				builder.append("\t\t");
 				builder.append(String.format(hiddenInputValueFormat, hiddenInputName));
 				builder.append(" = ");
 				builder.append(String.format(localStorageValueFormat, hiddenInputName));
@@ -173,7 +172,8 @@ public class MTurkHTMLQuestionUtils {
 			}
 		}
 
-		builder.append("  }\n");
+		builder.append("\t\tlocalStorage.clear();\n");
+		builder.append("\t}\n");
 		builder.append("}");
 
 		return builder.toString();

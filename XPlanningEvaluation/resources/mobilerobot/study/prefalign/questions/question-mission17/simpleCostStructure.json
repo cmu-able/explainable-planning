@@ -9,6 +9,6 @@
   },
   "intrusiveness": {
     "unit": "1 intrusiveness-penalty",
-    "cost": "33"
+    "cost": "3"
   }
 }

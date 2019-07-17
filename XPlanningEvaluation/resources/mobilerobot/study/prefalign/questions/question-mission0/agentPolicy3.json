@@ -62,9 +62,9 @@
     },
     {
       "action": {
-        "type": "moveTo",
+        "type": "setSpeed",
         "params": [
-          "LX5"
+          0.35
         ]
       },
       "state": {
@@ -136,6 +136,18 @@
       "action": {
         "type": "moveTo",
         "params": [
+          "LX5"
+        ]
+      },
+      "state": {
+        "rLoc": "L26",
+        "rSpeed": 0.35
+      }
+    },
+    {
+      "action": {
+        "type": "moveTo",
+        "params": [
           "L2"
         ]
       },
@@ -190,6 +202,18 @@
       "state": {
         "rLoc": "L25",
         "rSpeed": 0.68
+      }
+    },
+    {
+      "action": {
+        "type": "setSpeed",
+        "params": [
+          0.68
+        ]
+      },
+      "state": {
+        "rLoc": "LX5",
+        "rSpeed": 0.35
       }
     }
   ]

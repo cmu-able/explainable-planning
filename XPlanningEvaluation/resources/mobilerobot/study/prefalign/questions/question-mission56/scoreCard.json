@@ -1,5 +1,5 @@
 {
-  "agentPolicy0": "yes",
-  "agentPolicy1": "no",
-  "agentPolicy2": "no"
+  "agentPolicy0": 1.0,
+  "agentPolicy1": 0.9786767523971266,
+  "agentPolicy2": 0.990522185782294
 }

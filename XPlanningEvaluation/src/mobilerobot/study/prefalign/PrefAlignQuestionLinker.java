@@ -59,18 +59,21 @@ public class PrefAlignQuestionLinker {
 		int numQuestions = allLinkedQuestionDirs[0].length;
 		int[][] allLinkedQuestionAgentIndices = new int[mQuestionDirsGroupedByCostStruct.size()][numQuestions];
 
-		for (int i = 0; i <= allLinkedQuestionDirs.length; i++) {
+		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
 			// Each list of questions is assigned to a single participant
 			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
 
 			for (int j = 0; j < numQuestions; j++) {
 				File questionDir = linkedQuestionDirs[j];
 
-				// For each question dir, randomly select an agent
-				AgentRandomizer agentRand = new AgentRandomizer(questionDir, mAlignProb, mUnalignThreshold);
-				int agentIndex = agentRand.randomAgentIndex();
+				// questionDir can be null if, for a particular cost structure, there are fewer associated questions than numQuestions
+				if (questionDir != null) {
+					// For each question dir, randomly select an agent
+					AgentRandomizer agentRand = new AgentRandomizer(questionDir, mAlignProb, mUnalignThreshold);
+					int agentIndex = agentRand.randomAgentIndex();
 
-				allLinkedQuestionAgentIndices[i][j] = agentIndex;
+					allLinkedQuestionAgentIndices[i][j] = agentIndex;
+				}
 			}
 		}
 

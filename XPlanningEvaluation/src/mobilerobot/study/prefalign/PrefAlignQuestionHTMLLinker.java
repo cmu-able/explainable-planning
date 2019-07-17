@@ -71,6 +71,12 @@ public class PrefAlignQuestionHTMLLinker {
 			File questionDir = linkedQuestionDirs[j];
 			int agentIndex = linkedQuestionAgentIndices[j];
 
+			// questionDir can be null if, for a particular cost structure, there are fewer associated questions than numQuestions
+			if (questionDir == null) {
+				// No more questionDir
+				break;
+			}
+
 			String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
 					withExplanation);
 
@@ -82,7 +88,9 @@ public class PrefAlignQuestionHTMLLinker {
 			Element mTurkCrowdFormDiv;
 			Element crowdFormActionScript;
 
-			if (j < numQuestions - 1) {
+			boolean hasNextQuestionDir = j < numQuestions - 1 && linkedQuestionDirs[j + 1] != null;
+
+			if (hasNextQuestionDir) {
 				// Intermediate crowd-form
 				File nextQuestionDir = linkedQuestionDirs[j + 1];
 				int nextAgentIndex = linkedQuestionAgentIndices[j + 1];

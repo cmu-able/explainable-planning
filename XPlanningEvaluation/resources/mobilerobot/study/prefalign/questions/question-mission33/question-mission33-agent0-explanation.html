@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <title>Untitled</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+ </head>
+ <body>
+  <div class="w3-sidebar w3-bar-block" id="legend" style="width:16.0%;display:none;right:0">
+   <button class="w3-bar-item w3-button w3-large" onclick="close_legend()">Close ×</button>
+   <img class="w3-image" src="../../../../../../target/classes/mobilerobot/study/prefalign/imgs/legend.png" alt="Legend" style="height:90vh">
+  </div>
+  <script>function open_legend() { document.getElementById("legend").style.display = "block"; }function close_legend() { document.getElementById("legend").style.display = "none"; }</script>
+  <div class="w3-row" style="height:100vh;overflow:auto">
+   <div class="w3-container w3-half">
+    <div class="w3-container">
+     <p>Suppose you need to find the best policy from L1 to L32 that minimizes the following costs:</p>
+     <div class="w3-responsive">
+      <table class="w3-table" style="max-width:400px">
+       <tr>
+        <th></th>
+        <th class="w3-right-align">Cost ($)</th>
+       </tr>
+       <tr>
+        <td>1 minute of travel time</td>
+        <td class="w3-right-align">$1</td>
+       </tr>
+       <tr>
+        <td>0.1 expected collision</td>
+        <td class="w3-right-align">$7</td>
+       </tr>
+       <tr>
+        <td>1 intrusiveness-penalty</td>
+        <td class="w3-right-align">$4</td>
+       </tr>
+      </table>
+     </div>
+    </div>
+    <div class="w3-container">
+     <p>An agent, which may or may not use the same costs as yours, proposes to follow this policy (see "Agent's Policy" figure). The expected travelTime, collision, and intrusiveness of this policy are as follows:</p>
+     <div class="w3-responsive">
+      <table class="w3-table w3-border w3-bordered w3-centered" style="max-width:500px">
+       <tr>
+        <th></th>
+        <th>Agent's Policy</th>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          travelTime
+         </div>
+         <div>
+          (minutes)
+         </div></th>
+        <td>157</td>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          collision
+         </div>
+         <div>
+          (expected #)
+         </div></th>
+        <td>0</td>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          intrusiveness
+         </div>
+         <div>
+          (penalty)
+         </div></th>
+        <td>7</td>
+       </tr>
+       <tr>
+        <td># non-intrusive locations</td>
+        <td>5</td>
+       </tr>
+       <tr>
+        <td># somewhat-intrusive locations</td>
+        <td>7</td>
+       </tr>
+       <tr>
+        <td># very-intrusive locations</td>
+        <td>0</td>
+       </tr>
+      </table>
+     </div>
+    </div>
+    <div class="w3-container w3-margin">
+     <h4><i>Please scroll down to read the agent's explanation, and answer the following questions:</i></h4>
+    </div>
+   </div>
+   <div class="w3-row w3-half">
+    <div class="w3-container w3-twothird w3-center" style="height:100vh">
+     <h5>Agent's Policy</h5>
+     <img class="w3-image w3-card" src="agentPolicy0.png" alt="Agent's Policy" style="height:90%">
+    </div>
+    <div class="w3-container w3-third">
+     <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">Show Legend</button>
+    </div>
+   </div>
+  </div>
+  <div class="w3-row w3-pale-yellow" style="height:100vh;overflow:auto">
+   <div class="w3-container w3-third w3-center" style="height:100vh">
+    <h5>Agent's Policy</h5>
+    <img class="w3-image w3-card" src="explanation-agent0/solnPolicy.png" alt="Agent's Policy" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>I'm planning to follow this policy (see "Agent's Policy" figure). It is expected to take 157 minutes; have 0 expected collision; and have intrusiveness-penalty of 7: it will be non-intrusive at 5 locations (0-penalty), somewhat-intrusive at 7 locations (7-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision, and intrusiveness.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Agent's Policy</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travelTime
+        </div>
+        <div>
+         (minutes)
+        </div></th>
+       <td>157</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>7</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>5</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>7</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>0</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third">
+    <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">☰</button>
+   </div>
+  </div>
+  <div class="w3-row w3-light-grey" style="height:100vh;overflow:auto">
+   <div class="w3-container w3-third w3-center" style="height:100vh">
+    <h5>Agent's Policy</h5>
+    <img class="w3-image w3-card" src="explanation-agent0/solnPolicy.png" alt="Agent's Policy" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>Alternatively, following this policy (see "Alternative Policy 1" figure) would reduce the expected travel time by 11 minutes. However, I didn't choose that policy because it would increase the expected collision by 0.2. The decrease in expected travel time is not worth the increase in expected collision.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Agent's Policy</th>
+       <th>Alternative Policy 1</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travelTime
+        </div>
+        <div>
+         (minutes)
+        </div></th>
+       <td>157</td>
+       <td>145</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0</td>
+       <td>0.2</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>7</td>
+       <td>7</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>5</td>
+       <td>5</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>7</td>
+       <td>7</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>0</td>
+       <td>0</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third w3-center" style="height:100vh">
+    <h5 style="display:inline-block">Alternative Policy 1</h5>
+    <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">☰</button>
+    <img class="w3-image w3-card" src="explanation-agent0/altPolicy1.png" alt="Alternative Policy 1" style="height:90%">
+   </div>
+  </div>
+ </body>
+</html>

@@ -114,9 +114,15 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				agentIndex++;
 			}
 
-			// Create answer key for all questions as scoreCard.json at /output/question-missionX/
+			// Create answer key for all questions as answerKey.json at /output/question-missionX/
 			JSONObject answerKeyJsonObj = createAnswerKey(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
-			QuestionUtils.writeScoreCardToQuestionDir(answerKeyJsonObj, questionDir);
+			File answerKeyFile = FileIOUtils.createOutFile(questionDir, "answerKey.json");
+			FileIOUtils.prettyPrintJSONObjectToFile(answerKeyJsonObj, answerKeyFile);
+
+			// Compute optimality scores of all agent policies
+			JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedAgentQuantPolicies,
+					solnPolicyInfo);
+			QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
 
 			// Visualize map of the mission, each agent's proposed policy, and all policies in the explanation of each
 			// agent
@@ -246,5 +252,28 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		prismConnector.terminate();
 
 		return answerKeyJsonObj;
+	}
+
+	private JSONObject computeOptimalityScores(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
+			PolicyInfo solnPolicyInfo) throws IOException, PrismException, ResultParsingException, XMDPException {
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
+
+		JSONObject scoreCardJsonObj = new JSONObject();
+		for (int i = 0; i < indexedAgentQuantPolicies.size(); i++) {
+			QuantitativePolicy agentQuantPolicy = indexedAgentQuantPolicies.get(i);
+			Policy agentPolicy = agentQuantPolicy.getPolicy();
+
+			// Compute cost of the agent policy, using the cost function of the solution policy
+			double agentPolicyCost = prismConnector.computeObjectiveCost(agentPolicy);
+			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
+			double optimalityScore = solnPolicyCost / agentPolicyCost;
+			String agentPolicyName = "agentPolicy" + i;
+			scoreCardJsonObj.put(agentPolicyName, optimalityScore);
+		}
+
+		// Close down PRISM
+		prismConnector.terminate();
+
+		return scoreCardJsonObj;
 	}
 }

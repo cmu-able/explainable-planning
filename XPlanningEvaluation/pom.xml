@@ -44,7 +44,7 @@
     	<groupId>ch.qos.logback</groupId>
     	<artifactId>logback-classic</artifactId>
     	<version>1.2.3</version>
-</dependency>
+	</dependency>
   	<dependency>
   		<groupId>org.apache.commons</groupId>
   		<artifactId>commons-math3</artifactId>
@@ -59,6 +59,18 @@
   		<groupId>org.jsoup</groupId>
   		<artifactId>jsoup</artifactId>
   		<version>1.12.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>software.amazon.awssdk</groupId>
+  		<artifactId>bom</artifactId>
+  		<version>2.7.6</version>
+  		<type>pom</type>
+  		<scope>import</scope>
+  	</dependency>
+  	<dependency>
+  		<groupId>software.amazon.awssdk</groupId>
+  		<artifactId>mturk</artifactId>
+  		<version>2.7.6</version>
   	</dependency>
   </dependencies>
 </project>

@@ -26,26 +26,18 @@ public class PrefAlignQuestionHTMLLinker {
 		DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
 	}
 
-	private static final int NUM_QUESTIONS = 3;
 	private static final double ALIGN_PROB = 0.5;
 	private static final double UNALIGN_THRESHOLD = 0.95;
 
-	private PrefAlignQuestionLinker mQuestionLinker;
 	private PrefAlignQuestionHTMLGenerator mQuestionHTMLGenerator;
 
-	public PrefAlignQuestionHTMLLinker(File questionsRootDir, double alignProb, double unalignThreshold,
-			PrefAlignQuestionHTMLGenerator questionHTMLGenerator) throws IOException, ParseException {
-		mQuestionLinker = new PrefAlignQuestionLinker(questionsRootDir, alignProb, unalignThreshold);
-		mQuestionLinker.groupQuestionDirsByCostStruct();
+	public PrefAlignQuestionHTMLLinker(PrefAlignQuestionHTMLGenerator questionHTMLGenerator) {
 		mQuestionHTMLGenerator = questionHTMLGenerator;
 	}
 
-	public File[][] createAllLinkedQuestionFiles(int numQuestions, boolean withExplanation, File rootOutDir)
-			throws IOException, ParseException, URISyntaxException {
-		File[][] allLinkedQuestionDirs = mQuestionLinker.getAllLinkedQuestionDirs(numQuestions);
-		int[][] allLinkedQuestionAgentIndices = mQuestionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
-
-		File[][] allLinkedQuestionFiles = new File[allLinkedQuestionDirs.length][numQuestions];
+	public File[][] createAllLinkedQuestionFiles(File[][] allLinkedQuestionDirs, int[][] allLinkedQuestionAgentIndices,
+			boolean withExplanation, File rootOutDir) throws IOException, ParseException, URISyntaxException {
+		File[][] allLinkedQuestionFiles = new File[allLinkedQuestionDirs.length][allLinkedQuestionDirs[0].length];
 
 		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
 			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
@@ -127,17 +119,35 @@ public class PrefAlignQuestionHTMLLinker {
 
 	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
 		String rootOutDirname = args[0];
+		int numQuestions = Integer.parseInt(args[1]);
 
 		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
 		File rootOutDir = new File(rootOutDirname);
 		File rootOutDirExplanation = new File(rootOutDirname + "-explanation");
 
+		linkAllPrefAlignHTMLQuestions(questionsRootDir, numQuestions, ALIGN_PROB, UNALIGN_THRESHOLD, rootOutDir,
+				rootOutDirExplanation);
+	}
+
+	public static void linkAllPrefAlignHTMLQuestions(File questionsRootDir, int numQuestions, double alignProb,
+			double unalignThreshold, File rootOutDir, File rootOutDirExplanation)
+			throws IOException, ParseException, URISyntaxException {
+		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, alignProb,
+				unalignThreshold);
+		questionLinker.groupQuestionDirsByCostStruct();
+
+		File[][] allLinkedQuestionDirs = questionLinker.getAllLinkedQuestionDirs(numQuestions);
+		int[][] allLinkedQuestionAgentIndices = questionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
+
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);
 
-		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionsRootDir, ALIGN_PROB,
-				UNALIGN_THRESHOLD, questionHTMLGenerator);
-		questionHTMLLinker.createAllLinkedQuestionFiles(NUM_QUESTIONS, false, rootOutDir);
-		questionHTMLLinker.createAllLinkedQuestionFiles(NUM_QUESTIONS, true, rootOutDirExplanation);
+		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionHTMLGenerator);
+
+		// Both explanation and no-explanation groups will have the exact same questions in the exact same order
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedQuestionDirs, allLinkedQuestionAgentIndices, false,
+				rootOutDir);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedQuestionDirs, allLinkedQuestionAgentIndices, true,
+				rootOutDirExplanation);
 	}
 }

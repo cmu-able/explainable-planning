@@ -22,7 +22,7 @@ public class HITPublisher {
 	private static final String REWARD = "0.20";
 	private static final long ASSIGNMENT_DURATION = 30 * 60L; // 30 minutes
 	private static final long LIFE_TIME = 1 * 7 * 24 * 60 * 60L; // 1 week
-	private static final int MAX_ASSIGNMENTS = 10;
+	static final int MAX_ASSIGNMENTS = 10;
 
 	private final MTurkClient mClient;
 	private final List<HITInfo> mPublishedHITInfos = new ArrayList<>();
@@ -39,7 +39,10 @@ public class HITPublisher {
 		HIT hit = createHITWithHITType(hitTypeId, question);
 
 		HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
+
+		// Keep track of all published HITs
 		mPublishedHITInfos.add(hitInfo);
+
 		return hitInfo;
 	}
 

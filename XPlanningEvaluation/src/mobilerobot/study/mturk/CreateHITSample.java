@@ -28,7 +28,7 @@ public class CreateHITSample {
 	 *
 	 */
 
-	private static final String SANDBOX_ENDPOINT = "mturk-requester-sandbox.us-east-1.amazonaws.com";
+	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
 
 	private static final String QUESTION_XML_FILE_NAME = "my_question.xml";

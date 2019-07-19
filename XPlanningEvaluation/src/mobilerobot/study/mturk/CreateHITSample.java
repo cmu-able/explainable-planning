@@ -104,7 +104,7 @@ public class CreateHITSample {
 		 * Switch to getProdClient() in production. Uncomment line 60, 61, & 66 below to create your HIT in production.
 		 * 
 		 */
-		File questionXMLFile = new File(FileIOUtils.getResourceDir(CreateHITSample.class, "mturk"),
+		File questionXMLFile = new File(FileIOUtils.getResourceDir(CreateHITSample.class, "examples"),
 				QUESTION_XML_FILE_NAME);
 
 		final CreateHITSample sandboxApp = new CreateHITSample(getSandboxClient());

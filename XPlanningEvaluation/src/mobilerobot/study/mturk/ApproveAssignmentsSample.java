@@ -1,5 +1,6 @@
 package mobilerobot.study.mturk;
 
+import java.net.URISyntaxException;
 import java.util.List;
 
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -55,5 +56,13 @@ public class ApproveAssignmentsSample {
 			System.out.println("Assignment has been approved: " + assignment.assignmentId());
 
 		}
+	}
+
+	// TODO Change this to your HIT ID - see CreateHITSample.java for generating a HIT
+	private static final String HIT_ID_TO_APPROVE = "HIT_ID_FROM_HIT_CREATION";
+
+	public static void main(String[] args) throws URISyntaxException {
+		final ApproveAssignmentsSample sandboxApp = new ApproveAssignmentsSample(CreateHITSample.getSandboxClient());
+		sandboxApp.approveAssignment(HIT_ID_TO_APPROVE);
 	}
 }

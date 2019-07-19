@@ -77,6 +77,11 @@ public class CreateHITSample {
 	}
 
 	public static MTurkClient getSandboxClient() throws URISyntaxException {
+		/*
+		 * Use the Amazon Mechanical Turk Sandbox to publish test Human Intelligence Tasks (HITs) without paying any
+		 * money. Make sure to sign up for a Sanbox account at https://requestersandbox.mturk.com/ with the same
+		 * credentials as your main MTurk account.
+		 */
 		MTurkClientBuilder builder = MTurkClient.builder();
 		builder.endpointOverride(new URI(SANDBOX_ENDPOINT));
 		builder.region(Region.US_EAST_1);

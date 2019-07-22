@@ -1,5 +1,7 @@
 package mobilerobot.study.mturk;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -14,7 +16,8 @@ import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
 
 public class HITAssignmentsCollector {
 
-	private static final String REJECT_FEEDBACK = "Rejection feedback";
+	private static final long MIN_TASK_DURATION_MINUTES = 5L;
+	private static final String REJECT_FEEDBACK = "Sorry, we could not approve your submission as you took too little time answering the questions.";
 
 	private final MTurkClient mClient;
 
@@ -50,11 +53,17 @@ public class HITAssignmentsCollector {
 
 	private void autoRejectSubmittedHITAssignments(List<Assignment> assignments) {
 		for (Assignment assignment : assignments) {
-			// TODO: Auto-reject any assignment that doesn't meet minimum criteria
-			RejectAssignmentRequest rejectRequest = RejectAssignmentRequest.builder()
-					.assignmentId(assignment.assignmentId()).requesterFeedback(REJECT_FEEDBACK).build();
+			Instant acceptTime = assignment.acceptTime();
+			Instant submitTime = assignment.submitTime();
+			long taskDurationMinutes = Duration.between(acceptTime, submitTime).toMinutes();
 
-			mClient.rejectAssignment(rejectRequest);
+			// Reject any assignment that took too little time
+			if (taskDurationMinutes < MIN_TASK_DURATION_MINUTES) {
+				RejectAssignmentRequest rejectRequest = RejectAssignmentRequest.builder()
+						.assignmentId(assignment.assignmentId()).requesterFeedback(REJECT_FEEDBACK).build();
+
+				mClient.rejectAssignment(rejectRequest);
+			}
 		}
 	}
 

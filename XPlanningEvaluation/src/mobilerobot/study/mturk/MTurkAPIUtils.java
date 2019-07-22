@@ -2,7 +2,11 @@ package mobilerobot.study.mturk;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
@@ -11,12 +15,17 @@ import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
 import software.amazon.awssdk.services.mturk.model.HITAccessActions;
 import software.amazon.awssdk.services.mturk.model.Locale;
+import software.amazon.awssdk.services.mturk.model.ParameterMapEntry;
+import software.amazon.awssdk.services.mturk.model.PolicyParameter;
 import software.amazon.awssdk.services.mturk.model.QualificationRequirement;
+import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class MTurkAPIUtils {
 
 	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
+
+	private static final String AUTO_REJECT_REASON = "Reject reason";
 
 	private MTurkAPIUtils() {
 		throw new IllegalStateException("Utility class");
@@ -57,5 +66,48 @@ public class MTurkAPIUtils {
 		builder.localeValues(usLocale, caLocale);
 		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
 		return builder.build();
+	}
+
+	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
+			Map<String, String> answerKey) {
+		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, answerKey);
+
+		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
+				.values("100").build();
+		PolicyParameter rejectReasonParam = PolicyParameter.builder().key("RejectReason").values(AUTO_REJECT_REASON)
+				.build();
+
+		PolicyParameter extendScoreParam = PolicyParameter.builder().key("ExtendIfKnownAnswerScoreIsLessThan")
+				.values("100").build();
+		PolicyParameter extendMaxAssignmentsParam = PolicyParameter.builder().key("ExtendMaximumAssignments")
+				.values(Integer.toString(2 * HITPublisher.MAX_ASSIGNMENTS)).build();
+
+		ReviewPolicy.Builder builder = ReviewPolicy.builder();
+		builder.policyName("ScoreMyKnownAnswers/2011-09-01");
+		builder.parameters(answerKeyParam, rejectScoreParam, rejectReasonParam, extendScoreParam,
+				extendMaxAssignmentsParam);
+		return builder.build();
+	}
+
+	private static PolicyParameter getAnswerKeyPolicyParameter(LinkedPrefAlignQuestions linkedQuestions,
+			Map<String, String> answerKey) {
+		List<ParameterMapEntry> mapEntries = new ArrayList<>();
+		for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
+			String questionDocName = linkedQuestions.getQuestionDocumentName(i, false);
+			String answer = answerKey.get(questionDocName);
+
+			// "question[i]-answer"
+			String questionID = String.format(MTurkHTMLQuestionUtils.QUESTION_ID_FORMAT, i, "answer");
+			ParameterMapEntry.Builder mapEntryBuilder = ParameterMapEntry.builder();
+			mapEntryBuilder.key(questionID);
+			mapEntryBuilder.values(answer);
+
+			mapEntries.add(mapEntryBuilder.build());
+		}
+
+		PolicyParameter.Builder answerKeyBuilder = PolicyParameter.builder();
+		answerKeyBuilder.key("AnswerKey");
+		answerKeyBuilder.mapEntries(mapEntries);
+		return answerKeyBuilder.build();
 	}
 }

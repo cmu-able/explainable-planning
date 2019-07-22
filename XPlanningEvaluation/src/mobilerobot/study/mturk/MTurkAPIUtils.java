@@ -74,8 +74,8 @@ public class MTurkAPIUtils {
 	}
 
 	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
-			Set<String> easyQuestionDocNames) throws IOException, ParseException {
-		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, easyQuestionDocNames);
+			Set<String> validationQuestionDocNames) throws IOException, ParseException {
+		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, validationQuestionDocNames);
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
 				.values("1").build();

@@ -1,11 +1,17 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.Arrays;
 
 import mobilerobot.study.utilities.QuestionUtils;
 
-public class LinkedPrefAlignQuestions {
+public class LinkedPrefAlignQuestions implements Serializable {
+
+	/**
+	 * Auto-generated serial version UID
+	 */
+	private static final long serialVersionUID = -2764050754583200643L;
 
 	/*
 	 * Cached hashCode -- Effective Java

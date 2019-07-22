@@ -11,6 +11,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.XPlanningOutDirectories;
+import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import explanation.analysis.PolicyInfo;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
@@ -24,6 +25,8 @@ public class QuestionUtils {
 
 	private static final String QUESTION_DOC_NAME_NO_EXPL_FORMAT = "%s-agent%d";
 	private static final String QUESTION_DOC_NAME_EXPL_FORMAT = "%s-agent%d-explanation";
+
+	private static final String AGENT_KEY_FORMAT = "agentPolicy%d";
 
 	private static final String JSON_EXTENSION = ".json";
 
@@ -121,5 +124,21 @@ public class QuestionUtils {
 	public static File getExplanationJSONFile(File explanationDir) {
 		// There is only 1 [explanation name].json per explanation dir
 		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", JSON_EXTENSION)[0];
+	}
+
+	public static double getScore(File questionDir, int agentIndex) throws IOException, ParseException {
+		// There is only 1 scoreCard.json per question dir
+		File scoreCardJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "scoreCard", JSON_EXTENSION)[0];
+		JSONObject scoreCardJsonObj = FileIOUtils.readJSONObjectFromFile(scoreCardJsonFile);
+		String agentKey = String.format(AGENT_KEY_FORMAT, agentIndex);
+		return JSONSimpleParserUtils.parseDouble(scoreCardJsonObj.get(agentKey));
+	}
+
+	public static String getAnswer(File questionDir, int agentIndex) throws IOException, ParseException {
+		// There is only 1 answerKey.json per question dir
+		File answerKeyJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "answerKey", JSON_EXTENSION)[0];
+		JSONObject answerKeyJsonObj = FileIOUtils.readJSONObjectFromFile(answerKeyJsonFile);
+		String agentKey = String.format(AGENT_KEY_FORMAT, agentIndex);
+		return (String) answerKeyJsonObj.get(agentKey);
 	}
 }

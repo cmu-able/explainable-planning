@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.mturk.model.CreateHitTypeResponse;
 import software.amazon.awssdk.services.mturk.model.CreateHitWithHitTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateHitWithHitTypeResponse;
 import software.amazon.awssdk.services.mturk.model.HIT;
+import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class HITPublisher {
 
@@ -31,12 +32,13 @@ public class HITPublisher {
 		mClient = client;
 	}
 
-	public HITInfo publishHIT(File questionXMLFile, boolean controlGroup) throws IOException {
+	public HITInfo publishHIT(File questionXMLFile, boolean controlGroup, ReviewPolicy assignmentReviewPolicy)
+			throws IOException {
 		// Read the question XML into a String
 		String question = new String(Files.readAllBytes(questionXMLFile.toPath()));
 
 		String hitTypeId = createHITType(controlGroup);
-		HIT hit = createHITWithHITType(hitTypeId, question);
+		HIT hit = createHITWithHITType(hitTypeId, question, assignmentReviewPolicy);
 
 		HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
 
@@ -63,12 +65,13 @@ public class HITPublisher {
 		return response.hitTypeId();
 	}
 
-	private HIT createHITWithHITType(String hitTypeId, String question) {
+	private HIT createHITWithHITType(String hitTypeId, String question, ReviewPolicy assignmentReviewPolicy) {
 		CreateHitWithHitTypeRequest.Builder builder = CreateHitWithHitTypeRequest.builder();
 		builder.hitTypeId(hitTypeId);
 		builder.question(question);
 		builder.lifetimeInSeconds(LIFE_TIME);
 		builder.maxAssignments(MAX_ASSIGNMENTS);
+		builder.assignmentReviewPolicy(assignmentReviewPolicy);
 		CreateHitWithHitTypeRequest createHITWithHITTypeRequest = builder.build();
 		CreateHitWithHitTypeResponse response = mClient.createHITWithHITType(createHITWithHITTypeRequest);
 		return response.hit();

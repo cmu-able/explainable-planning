@@ -30,7 +30,7 @@ public class MTurkAPIUtils {
 	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
 
-	private static final String AUTO_REJECT_REASON = "Reject reason";
+	private static final String AUTO_REJECT_REASON = "Sorry, we could not approve your submission as you did not correctly answer one or more validation question(s).";
 
 	private MTurkAPIUtils() {
 		throw new IllegalStateException("Utility class");

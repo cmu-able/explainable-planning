@@ -1,12 +1,17 @@
 package mobilerobot.study.mturk;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+
+import org.json.simple.parser.ParseException;
 
 import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
+import mobilerobot.study.utilities.QuestionUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
@@ -69,8 +74,8 @@ public class MTurkAPIUtils {
 	}
 
 	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
-			Map<String, String> answerKey) {
-		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, answerKey);
+			Set<String> easyQuestionDocNames) throws IOException, ParseException {
+		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, easyQuestionDocNames);
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
 				.values("100").build();
@@ -90,19 +95,26 @@ public class MTurkAPIUtils {
 	}
 
 	private static PolicyParameter getAnswerKeyPolicyParameter(LinkedPrefAlignQuestions linkedQuestions,
-			Map<String, String> answerKey) {
+			Set<String> easyQuestionDocNames) throws IOException, ParseException {
 		List<ParameterMapEntry> mapEntries = new ArrayList<>();
 		for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
 			String questionDocName = linkedQuestions.getQuestionDocumentName(i, false);
-			String answer = answerKey.get(questionDocName);
 
-			// "question[i]-answer"
-			String questionID = String.format(MTurkHTMLQuestionUtils.QUESTION_ID_FORMAT, i, "answer");
-			ParameterMapEntry.Builder mapEntryBuilder = ParameterMapEntry.builder();
-			mapEntryBuilder.key(questionID);
-			mapEntryBuilder.values(answer);
+			if (easyQuestionDocNames.contains(questionDocName)) {
+				File questionDir = linkedQuestions.getQuestionDir(i);
+				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
 
-			mapEntries.add(mapEntryBuilder.build());
+				// "yes" or "no" answer
+				String answer = QuestionUtils.getAnswer(questionDir, agentIndex);
+
+				// "question[i]-answer"
+				String questionID = String.format(MTurkHTMLQuestionUtils.QUESTION_ID_FORMAT, i, "answer");
+				ParameterMapEntry.Builder mapEntryBuilder = ParameterMapEntry.builder();
+				mapEntryBuilder.key(questionID);
+				mapEntryBuilder.values(answer);
+
+				mapEntries.add(mapEntryBuilder.build());
+			}
 		}
 
 		PolicyParameter.Builder answerKeyBuilder = PolicyParameter.builder();

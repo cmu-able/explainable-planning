@@ -78,12 +78,12 @@ public class MTurkAPIUtils {
 		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, easyQuestionDocNames);
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
-				.values("100").build();
+				.values("1").build();
 		PolicyParameter rejectReasonParam = PolicyParameter.builder().key("RejectReason").values(AUTO_REJECT_REASON)
 				.build();
 
 		PolicyParameter extendScoreParam = PolicyParameter.builder().key("ExtendIfKnownAnswerScoreIsLessThan")
-				.values("100").build();
+				.values("1").build();
 		PolicyParameter extendMaxAssignmentsParam = PolicyParameter.builder().key("ExtendMaximumAssignments")
 				.values(Integer.toString(2 * HITPublisher.MAX_ASSIGNMENTS)).build();
 

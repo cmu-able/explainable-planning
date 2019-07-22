@@ -7,13 +7,16 @@ import org.jsoup.nodes.Element;
 
 public class MTurkHTMLQuestionUtils {
 
+	/**
+	 * This is the format of QuestionIdentifier in QuestionFormAnswers MTurk data structure
+	 */
+	public static final String QUESTION_ID_FORMAT = "question%d-%s";
+
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_MARGIN = "w3-margin";
 
 	private static final String CROWD_FORM = "crowd-form";
 	private static final String SCRIPT = "script";
-
-	private static final String QUESTION = "question";
 
 	private MTurkHTMLQuestionUtils() {
 		throw new IllegalStateException("Utility class");
@@ -39,10 +42,8 @@ public class MTurkHTMLQuestionUtils {
 		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
 
 		for (int i = 0; i < numQuestions; i++) {
-			String keyPrefix = QUESTION + i;
-
 			for (String dataType : allHiddenInputDataTypes) {
-				String hiddenInputName = keyPrefix + "-" + dataType;
+				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
 
 				Element hiddenInput = new Element("input");
 				hiddenInput.attr("type", "hidden");
@@ -98,13 +99,11 @@ public class MTurkHTMLQuestionUtils {
 		builder.append("function crowdFormToLocalStorage() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
-		String keyPrefix = QUESTION + questionIndex;
-
 		// Add "ref" to data types to be stored in localStorage
 		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
 
 		for (String dataType : allHiddenInputDataTypes) {
-			String localStorageKey = keyPrefix + "-" + dataType;
+			String localStorageKey = String.format(QUESTION_ID_FORMAT, questionIndex, dataType);
 
 			if (dataTypeOptions.containsKey(dataType)) {
 				// Multiple-choice input
@@ -156,13 +155,11 @@ public class MTurkHTMLQuestionUtils {
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {
-			String keyPrefix = QUESTION + i;
-
 			// Add "ref" to data types to be filled in crowd-form's hidden inputs
 			String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
 
 			for (String dataType : allHiddenInputDataTypes) {
-				String hiddenInputName = keyPrefix + "-" + dataType;
+				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
 
 				builder.append("\t\t");
 				builder.append(String.format(hiddenInputValueFormat, hiddenInputName));

@@ -38,7 +38,24 @@ public class PrefAlignQuestionLinker {
 		}
 	}
 
-	public File[][] getAllLinkedQuestionDirs(int numQuestions) {
+	public LinkedPrefAlignQuestions[] getAllLinkedPrefAlignQuestions(int numQuestions)
+			throws IOException, ParseException {
+		File[][] allLinkedQuestionDirs = getAllLinkedQuestionDirs(numQuestions);
+		int[][] allLinkedQuestionAgentIndices = getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
+
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[allLinkedQuestionDirs.length];
+		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
+			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
+			int[] linkedQuestionAgentIndices = allLinkedQuestionAgentIndices[i];
+
+			LinkedPrefAlignQuestions linkedPrefAlignQuestions = new LinkedPrefAlignQuestions(linkedQuestionDirs,
+					linkedQuestionAgentIndices);
+			allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
+		}
+		return allLinkedPrefAlignQuestions;
+	}
+
+	private File[][] getAllLinkedQuestionDirs(int numQuestions) {
 		File[][] allLinkedQuestionDirs = new File[mQuestionDirsGroupedByCostStruct.size()][numQuestions];
 		int i = 0;
 		for (Set<File> questionDirGroup : mQuestionDirsGroupedByCostStruct.values()) {
@@ -55,7 +72,8 @@ public class PrefAlignQuestionLinker {
 		return allLinkedQuestionDirs;
 	}
 
-	public int[][] getAllLinkedQuestionAgentIndices(File[][] allLinkedQuestionDirs) throws IOException, ParseException {
+	private int[][] getAllLinkedQuestionAgentIndices(File[][] allLinkedQuestionDirs)
+			throws IOException, ParseException {
 		int numQuestions = allLinkedQuestionDirs[0].length;
 		int[][] allLinkedQuestionAgentIndices = new int[mQuestionDirsGroupedByCostStruct.size()][numQuestions];
 

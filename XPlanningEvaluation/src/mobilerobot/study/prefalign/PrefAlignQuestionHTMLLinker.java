@@ -14,7 +14,6 @@ import mobilerobot.study.mturk.MTurkHTMLQuestionUtils;
 import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
-import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLLinker {
@@ -35,18 +34,18 @@ public class PrefAlignQuestionHTMLLinker {
 		mQuestionHTMLGenerator = questionHTMLGenerator;
 	}
 
-	public File[][] createAllLinkedQuestionFiles(File[][] allLinkedQuestionDirs, int[][] allLinkedQuestionAgentIndices,
+	public File[][] createAllLinkedQuestionFiles(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
 			boolean withExplanation, File rootOutDir) throws IOException, ParseException, URISyntaxException {
-		File[][] allLinkedQuestionFiles = new File[allLinkedQuestionDirs.length][allLinkedQuestionDirs[0].length];
+		int numQuestions = allLinkedPrefAlignQuestions[0].getNumQuestions();
+		File[][] allLinkedQuestionFiles = new File[allLinkedPrefAlignQuestions.length][numQuestions];
 
-		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
-			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
-			int[] linkedQuestionAgentIndices = allLinkedQuestionAgentIndices[i];
+		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
+			LinkedPrefAlignQuestions linkedPrefAlignQuestions = allLinkedPrefAlignQuestions[i];
 
 			// Linked html questions (of the same cost function) will be placed in the same directory
 			File subOutDir = new File(rootOutDir, "linked-questions-set" + i);
-			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedQuestionDirs, linkedQuestionAgentIndices,
-					withExplanation, subOutDir);
+			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedPrefAlignQuestions, withExplanation,
+					subOutDir);
 
 			allLinkedQuestionFiles[i] = linkedQuestionFiles;
 		}
@@ -54,14 +53,14 @@ public class PrefAlignQuestionHTMLLinker {
 		return allLinkedQuestionFiles;
 	}
 
-	private File[] createLinkedQuestionFiles(File[] linkedQuestionDirs, int[] linkedQuestionAgentIndices,
-			boolean withExplanation, File outDir) throws IOException, ParseException, URISyntaxException {
-		int numQuestions = linkedQuestionDirs.length;
+	private File[] createLinkedQuestionFiles(LinkedPrefAlignQuestions linkedPrefAlignQuestions, boolean withExplanation,
+			File outDir) throws IOException, ParseException, URISyntaxException {
+		int numQuestions = linkedPrefAlignQuestions.getNumQuestions();
 		File[] linkedQuestionFiles = new File[numQuestions];
 
 		for (int j = 0; j < numQuestions; j++) {
-			File questionDir = linkedQuestionDirs[j];
-			int agentIndex = linkedQuestionAgentIndices[j];
+			File questionDir = linkedPrefAlignQuestions.getQuestionDir(j);
+			int agentIndex = linkedPrefAlignQuestions.getQuestionAgentIndex(j);
 
 			// questionDir can be null if, for a particular cost structure, there are fewer associated questions than numQuestions
 			if (questionDir == null) {
@@ -69,9 +68,7 @@ public class PrefAlignQuestionHTMLLinker {
 				break;
 			}
 
-			String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
-					withExplanation);
-
+			String questionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(j, withExplanation);
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
 					withExplanation, outDir);
 
@@ -80,14 +77,9 @@ public class PrefAlignQuestionHTMLLinker {
 			Element mTurkCrowdFormDiv;
 			Element crowdFormActionScript;
 
-			boolean hasNextQuestionDir = j < numQuestions - 1 && linkedQuestionDirs[j + 1] != null;
-
-			if (hasNextQuestionDir) {
+			if (linkedPrefAlignQuestions.hasNextQuestion(j)) {
 				// Intermediate crowd-form
-				File nextQuestionDir = linkedQuestionDirs[j + 1];
-				int nextAgentIndex = linkedQuestionAgentIndices[j + 1];
-				String nextQuestionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(nextQuestionDir,
-						nextAgentIndex, withExplanation);
+				String nextQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(j + 1, withExplanation);
 
 				String nextUrl = nextQuestionDocName + ".html";
 				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
@@ -136,8 +128,8 @@ public class PrefAlignQuestionHTMLLinker {
 				unalignThreshold);
 		questionLinker.groupQuestionDirsByCostStruct();
 
-		File[][] allLinkedQuestionDirs = questionLinker.getAllLinkedQuestionDirs(numQuestions);
-		int[][] allLinkedQuestionAgentIndices = questionLinker.getAllLinkedQuestionAgentIndices(allLinkedQuestionDirs);
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = questionLinker
+				.getAllLinkedPrefAlignQuestions(numQuestions);
 
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);
@@ -145,9 +137,7 @@ public class PrefAlignQuestionHTMLLinker {
 		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionHTMLGenerator);
 
 		// Both explanation and no-explanation groups will have the exact same questions in the exact same order
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedQuestionDirs, allLinkedQuestionAgentIndices, false,
-				rootOutDir);
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedQuestionDirs, allLinkedQuestionAgentIndices, true,
-				rootOutDirExplanation);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, false, rootOutDir);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, true, rootOutDirExplanation);
 	}
 }

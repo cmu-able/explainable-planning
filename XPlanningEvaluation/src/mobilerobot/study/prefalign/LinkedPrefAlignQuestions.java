@@ -72,6 +72,11 @@ public class LinkedPrefAlignQuestions {
 				: mLinkedQuestionDocNames[questionIndex];
 	}
 
+	public boolean hasNextQuestion(int currentQuestionIndex) {
+		File nextQuestionDir = mLinkedQuestionDirs[currentQuestionIndex + 1];
+		return currentQuestionIndex < getNumQuestions() - 1 && nextQuestionDir != null;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

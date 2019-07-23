@@ -1,10 +1,12 @@
 package mobilerobot.study.prefalign;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.Set;
 
 import org.json.simple.parser.ParseException;
@@ -23,7 +25,7 @@ public class PrefAlignHITPublisher {
 
 	public PrefAlignHITPublisher(MTurkClient client) throws IOException {
 		mHITPublisher = new HITPublisher(client);
-		mHITInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
+		mHITInfoCSVFile = createHITInfoCSVFile();
 	}
 
 	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
@@ -37,24 +39,46 @@ public class PrefAlignHITPublisher {
 							.readObject();
 
 					boolean withExplanation = !controlGroup;
-					String questionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(0, withExplanation);
-					File questionXMLFile = createQuestionXMLFile(questionDocName);
+					// All PrefAlign question document names in this HIT will be written to hitInfo.csv
+					String[] linkedQuestionDocNames = linkedPrefAlignQuestions
+							.getLinkedQuestionDocumentNames(withExplanation);
+					String headQuestionDocName = linkedQuestionDocNames[0];
+					File questionXMLFile = createQuestionXMLFile(headQuestionDocName);
 
 					ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils
 							.getAssignmentReviewPolicy(linkedPrefAlignQuestions, validationQuestionDocNames);
-					mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
+					HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
+
+					writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
 				}
 			}
 		}
 	}
 
-	private File createQuestionXMLFile(String questionDocName) {
+	private File createQuestionXMLFile(String headQuestionDocName) {
 		// TODO
 		return null;
 	}
 
-	private void writeHITInfoToCSVFile(HITInfo hitInfo) {
-		// TODO
+	private File createHITInfoCSVFile() throws IOException {
+		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
+		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
+			writer.write("HIT ID, HITType ID, Document Names\n");
+		}
+		return hitInfoCSVFile;
+	}
+
+	private void writeHITInfoToCSVFile(HITInfo hitInfo, String[] linkedQuestionDocNames) throws IOException {
+		try (BufferedWriter writer = Files.newBufferedWriter(mHITInfoCSVFile.toPath())) {
+			writer.write(hitInfo.getHITId());
+			writer.write(", ");
+			writer.write(hitInfo.getHITTypeId());
+			for (String questionDocName : linkedQuestionDocNames) {
+				writer.write(", ");
+				writer.write(questionDocName);
+			}
+			writer.write("\n");
+		}
 	}
 
 	public static void main(String[] args) {

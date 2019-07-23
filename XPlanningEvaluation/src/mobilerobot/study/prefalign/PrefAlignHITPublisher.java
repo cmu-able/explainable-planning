@@ -142,7 +142,7 @@ public class PrefAlignHITPublisher {
 	private File createHITInfoCSVFile() throws IOException {
 		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
 		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
-			writer.write("HIT ID, HITType ID, Document Names\n");
+			writer.write("HIT ID,HITType ID,Document Names\n");
 		}
 		return hitInfoCSVFile;
 	}
@@ -150,10 +150,10 @@ public class PrefAlignHITPublisher {
 	private void writeHITInfoToCSVFile(HITInfo hitInfo, String[] linkedQuestionDocNames) throws IOException {
 		try (BufferedWriter writer = Files.newBufferedWriter(mHITInfoCSVFile.toPath())) {
 			writer.write(hitInfo.getHITId());
-			writer.write(", ");
+			writer.write(",");
 			writer.write(hitInfo.getHITTypeId());
 			for (String questionDocName : linkedQuestionDocNames) {
-				writer.write(", ");
+				writer.write(",");
 				writer.write(questionDocName);
 			}
 			writer.write("\n");

@@ -62,7 +62,7 @@ public class PrefAlignQuestionHTMLLinker {
 		// or /output/linked-questions-explanation/linked-questions-set[i]/
 		//
 		// Later the files will be moved to storageDir
-		File rootOutDir = FileIOUtils.createOutSubDir(FileIOUtils.getOutputDir(), storageDir.getParent());
+		File rootOutDir = FileIOUtils.createOutSubDir(FileIOUtils.getOutputDir(), storageDir.getParentFile().getName());
 		File subOutDir = FileIOUtils.createOutSubDir(rootOutDir, storageDir.getName());
 
 		int numQuestions = linkedPrefAlignQuestions.getNumQuestions();

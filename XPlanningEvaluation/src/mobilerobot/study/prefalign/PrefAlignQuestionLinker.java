@@ -1,7 +1,9 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,6 +14,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionLinker {
 
@@ -51,6 +54,10 @@ public class PrefAlignQuestionLinker {
 			LinkedPrefAlignQuestions linkedPrefAlignQuestions = new LinkedPrefAlignQuestions(linkedQuestionDirs,
 					linkedQuestionAgentIndices);
 			allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
+
+			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
+			// PrefAlignHITPublisher will de-serialize and use it for publishing HIT (e.g., create Assignment Review Policy)
+			serializeLinkedPrefAlignQuestions(linkedPrefAlignQuestions);
 		}
 		return allLinkedPrefAlignQuestions;
 	}
@@ -96,5 +103,18 @@ public class PrefAlignQuestionLinker {
 		}
 
 		return allLinkedQuestionAgentIndices;
+	}
+
+	private void serializeLinkedPrefAlignQuestions(LinkedPrefAlignQuestions linkedPrefAlignQuestions)
+			throws IOException {
+		// Use document name of the first question in the link as name of the serialized LinkedPrefAlignQuestions .ser file
+		String headQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(0, false);
+		File objFile = FileIOUtils.createOutputFile(headQuestionDocName + ".ser");
+
+		try (FileOutputStream fileOut = new FileOutputStream(objFile)) {
+			try (ObjectOutputStream objectOut = new ObjectOutputStream(fileOut)) {
+				objectOut.writeObject(linkedPrefAlignQuestions);
+			}
+		}
 	}
 }

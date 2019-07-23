@@ -37,8 +37,8 @@ public class PrefAlignHITPublisher {
 	/**
 	 * https://<bucket-name>.s3.<AWS-region>.amazonaws.com
 	 */
-	private static final String S3_AWS_URL_FORMAT = "https://%s.s3.%s.amazonaws.com";
-	private static final String XPLANNING_S3_BUCKET_NAME = "xplanning";
+	private static final String S3_AWS_URL_FORMAT = "https://%s.s3-website.%s.amazonaws.com";
+	private static final String XPLANNING_S3_BUCKET_NAME = "xplanning-bucket";
 	private static final String XPLANNING_S3_REGION = "us-east-2";
 
 	/**
@@ -131,7 +131,7 @@ public class PrefAlignHITPublisher {
 	 * Create ExternalURL for ExternalQuestion.
 	 * 
 	 * @param headQuestionDocName
-	 * @return https://<bucket-name>.s3.<AWS-region>.amazonaws.com/study/prefalign/index.html?firstQuestion=<first-question-doc-name>
+	 * @return https://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/index.html?firstQuestion=<first-question-doc-name>
 	 */
 	private String createExternalURL(String headQuestionDocName) {
 		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);

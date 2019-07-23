@@ -34,6 +34,18 @@ import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class PrefAlignHITPublisher {
 
+	/**
+	 * https://<bucket-name>.s3-website-<AWS-region>.amazonaws.com
+	 */
+	private static final String S3_AWS_URL_FORMAT = "https://%s.s3-website-%s.amazonaws.com";
+	private static final String XPLANNING_S3_BUCKET_NAME = "xplanning";
+	private static final String XPLANNING_S3_REGION = "us-east-2";
+
+	/**
+	 * First page of the PrefAlign study, with a parameter pointing to the first PrefAlign question in a HIT
+	 */
+	private static final String FIRST_QUESTION_REL_URL_FORMAT = "/study/prefalign/index.html?firstQuestion=%s";
+
 	private final HITPublisher mHITPublisher;
 	private final File mHITInfoCSVFile;
 
@@ -115,9 +127,16 @@ public class PrefAlignHITPublisher {
 		return questionXMLFile;
 	}
 
+	/**
+	 * Create ExternalURL for ExternalQuestion.
+	 * 
+	 * @param headQuestionDocName
+	 * @return https://<bucket-name>.s3-website-<AWS-region>.amazonaws.com/study/prefalign/index.html?firstQuestion=<first-question-doc-name>
+	 */
 	private String createExternalURL(String headQuestionDocName) {
-		// TODO
-		return null;
+		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);
+		String headQuestionRelURL = String.format(FIRST_QUESTION_REL_URL_FORMAT, headQuestionDocName);
+		return baseURL + headQuestionRelURL;
 	}
 
 	private File createHITInfoCSVFile() throws IOException {

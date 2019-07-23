@@ -35,17 +35,20 @@ public class PrefAlignQuestionHTMLLinker {
 	}
 
 	public File[][] createAllLinkedQuestionFiles(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
-			boolean withExplanation, File rootOutDir) throws IOException, ParseException, URISyntaxException {
+			boolean withExplanation, File rootStorageDir) throws IOException, ParseException, URISyntaxException {
 		int numQuestions = allLinkedPrefAlignQuestions[0].getNumQuestions();
 		File[][] allLinkedQuestionFiles = new File[allLinkedPrefAlignQuestions.length][numQuestions];
 
 		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
 			LinkedPrefAlignQuestions linkedPrefAlignQuestions = allLinkedPrefAlignQuestions[i];
 
-			// Linked html questions (of the same cost function) will be placed in the same directory
-			File subOutDir = new File(rootOutDir, "linked-questions-set" + i);
+			// Linked HTML questions (of the same cost function but different maps) will be stored in the same directory
+			//
+			// But the files will first be created at /output/linked-questions/linked-questions-set[i]/
+			// or /output/linked-questions-explanation/linked-questions-set[i]/
+			File subStorageDir = new File(rootStorageDir, "linked-questions-set" + i);
 			File[] linkedQuestionFiles = createLinkedQuestionFiles(linkedPrefAlignQuestions, withExplanation,
-					subOutDir);
+					subStorageDir);
 
 			allLinkedQuestionFiles[i] = linkedQuestionFiles;
 		}
@@ -54,7 +57,14 @@ public class PrefAlignQuestionHTMLLinker {
 	}
 
 	private File[] createLinkedQuestionFiles(LinkedPrefAlignQuestions linkedPrefAlignQuestions, boolean withExplanation,
-			File outDir) throws IOException, ParseException, URISyntaxException {
+			File storageDir) throws IOException, ParseException, URISyntaxException {
+		// Linked question HTML files will first be created at /output/linked-questions/linked-questions-set[i]/
+		// or /output/linked-questions-explanation/linked-questions-set[i]/
+		//
+		// Later the files will be moved to storageDir
+		File rootOutDir = FileIOUtils.createOutSubDir(FileIOUtils.getOutputDir(), storageDir.getParent());
+		File subOutDir = FileIOUtils.createOutSubDir(rootOutDir, storageDir.getName());
+
 		int numQuestions = linkedPrefAlignQuestions.getNumQuestions();
 		File[] linkedQuestionFiles = new File[numQuestions];
 
@@ -70,7 +80,7 @@ public class PrefAlignQuestionHTMLLinker {
 
 			String questionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(j, withExplanation);
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
-					withExplanation, outDir);
+					withExplanation, storageDir);
 
 			// MTurk Crowd HTML
 			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
@@ -101,7 +111,7 @@ public class PrefAlignQuestionHTMLLinker {
 			questionDoc.body().appendChild(crowdFormActionScript);
 
 			// Write question HTML document to file
-			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, outDir);
+			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, subOutDir);
 
 			linkedQuestionFiles[j] = questionFile;
 		}
@@ -110,19 +120,19 @@ public class PrefAlignQuestionHTMLLinker {
 	}
 
 	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
-		String rootOutDirname = args[0];
+		String rootStorageDirname = args[0];
 		int numQuestions = Integer.parseInt(args[1]);
 
 		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
-		File rootOutDir = new File(rootOutDirname);
-		File rootOutDirExplanation = new File(rootOutDirname + "-explanation");
+		File rootStorageDir = new File(rootStorageDirname);
+		File rootStorageDirExplanation = new File(rootStorageDirname + "-explanation");
 
-		linkAllPrefAlignHTMLQuestions(questionsRootDir, numQuestions, ALIGN_PROB, UNALIGN_THRESHOLD, rootOutDir,
-				rootOutDirExplanation);
+		linkAllPrefAlignHTMLQuestions(questionsRootDir, numQuestions, ALIGN_PROB, UNALIGN_THRESHOLD, rootStorageDir,
+				rootStorageDirExplanation);
 	}
 
 	public static void linkAllPrefAlignHTMLQuestions(File questionsRootDir, int numQuestions, double alignProb,
-			double unalignThreshold, File rootOutDir, File rootOutDirExplanation)
+			double unalignThreshold, File rootStorageDir, File rootStorageDirExplanation)
 			throws IOException, ParseException, URISyntaxException {
 		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, alignProb,
 				unalignThreshold);
@@ -137,7 +147,7 @@ public class PrefAlignQuestionHTMLLinker {
 		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionHTMLGenerator);
 
 		// Both explanation and no-explanation groups will have the exact same questions in the exact same order
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, false, rootOutDir);
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, true, rootOutDirExplanation);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, false, rootStorageDir);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, true, rootStorageDirExplanation);
 	}
 }

@@ -41,10 +41,12 @@ public class LinkedPrefAlignQuestions implements Serializable {
 		for (int i = 0; i < linkedQuestionDirs.length; i++) {
 			File questionDir = linkedQuestionDirs[i];
 			int agentIndex = linkedQuestionAgentIndices[i];
-			String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
-					withExplanation);
 
-			linkedQuestionDocNames[i] = questionDocName;
+			if (questionDir != null) {
+				String questionDocName = QuestionUtils.getPrefAlignQuestionDocumentName(questionDir, agentIndex,
+						withExplanation);
+				linkedQuestionDocNames[i] = questionDocName;
+			}
 		}
 		return linkedQuestionDocNames;
 	}
@@ -79,8 +81,7 @@ public class LinkedPrefAlignQuestions implements Serializable {
 	}
 
 	public boolean hasNextQuestion(int currentQuestionIndex) {
-		File nextQuestionDir = mLinkedQuestionDirs[currentQuestionIndex + 1];
-		return currentQuestionIndex < getNumQuestions() - 1 && nextQuestionDir != null;
+		return currentQuestionIndex < getNumQuestions() - 1 && mLinkedQuestionDirs[currentQuestionIndex + 1] != null;
 	}
 
 	@Override

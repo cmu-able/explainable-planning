@@ -13,6 +13,7 @@ import org.json.simple.parser.ParseException;
 
 import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
@@ -83,8 +84,10 @@ public class MTurkAPIUtils {
 		return builder.build();
 	}
 
-	public static QualificationRequirement createConsentRequirement(MTurkClient client, File consentFormFile,
-			File answerKeyFile) throws IOException {
+	public static QualificationRequirement createConsentRequirement(MTurkClient client)
+			throws IOException, URISyntaxException {
+		File consentFormFile = FileIOUtils.getFile(MTurkAPIUtils.class, "consent-form", "consent-form.xml");
+		File answerKeyFile = FileIOUtils.getFile(MTurkAPIUtils.class, "consent-form", "answer-key.xml");
 		QualificationType consentQualType = createConsentQualificationType(client, consentFormFile, answerKeyFile);
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
 		builder.qualificationTypeId(consentQualType.qualificationTypeId());

@@ -2,6 +2,7 @@ package mobilerobot.study.mturk;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.services.mturk.model.CreateHitTypeResponse;
 import software.amazon.awssdk.services.mturk.model.CreateHitWithHitTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateHitWithHitTypeResponse;
 import software.amazon.awssdk.services.mturk.model.HIT;
+import software.amazon.awssdk.services.mturk.model.QualificationRequirement;
 import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class HITPublisher {
@@ -33,7 +35,7 @@ public class HITPublisher {
 	}
 
 	public HITInfo publishHIT(File questionXMLFile, boolean controlGroup, ReviewPolicy assignmentReviewPolicy)
-			throws IOException {
+			throws IOException, URISyntaxException {
 		// Read the question XML into a String
 		String question = new String(Files.readAllBytes(questionXMLFile.toPath()));
 
@@ -52,14 +54,18 @@ public class HITPublisher {
 		return mPublishedHITInfos;
 	}
 
-	private String createHITType(boolean controlGroup) {
+	private String createHITType(boolean controlGroup) throws IOException, URISyntaxException {
 		CreateHitTypeRequest.Builder builder = CreateHitTypeRequest.builder();
 		builder.title(TITLE);
 		builder.description(controlGroup ? DESCRIPTION_CG : DESCRIPTION_EG);
 		builder.keywords(KEYWORDS);
 		builder.reward(REWARD);
 		builder.assignmentDurationInSeconds(ASSIGNMENT_DURATION);
-		builder.qualificationRequirements(MTurkAPIUtils.getLocaleRequirement());
+
+		QualificationRequirement localeRequirement = MTurkAPIUtils.getLocaleRequirement();
+		QualificationRequirement consentRequirement = MTurkAPIUtils.createConsentRequirement(mClient);
+		builder.qualificationRequirements(localeRequirement, consentRequirement);
+
 		CreateHitTypeRequest createHITTypeRequest = builder.build();
 		CreateHitTypeResponse response = mClient.createHITType(createHITTypeRequest);
 		return response.hitTypeId();

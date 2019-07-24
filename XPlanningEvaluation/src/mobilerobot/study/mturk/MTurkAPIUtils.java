@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,8 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
 import software.amazon.awssdk.services.mturk.model.Comparator;
+import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRequest;
+import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeResponse;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
 import software.amazon.awssdk.services.mturk.model.HITAccessActions;
@@ -23,12 +26,19 @@ import software.amazon.awssdk.services.mturk.model.Locale;
 import software.amazon.awssdk.services.mturk.model.ParameterMapEntry;
 import software.amazon.awssdk.services.mturk.model.PolicyParameter;
 import software.amazon.awssdk.services.mturk.model.QualificationRequirement;
+import software.amazon.awssdk.services.mturk.model.QualificationType;
+import software.amazon.awssdk.services.mturk.model.QualificationTypeStatus;
 import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class MTurkAPIUtils {
 
 	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
+
+	private static final String CONSENT_QUAL_NAME = "Consent Form for Participation in Research";
+	private static final String CONSENT_QUAL_DESCRIPTION = "Description";
+	private static final String CONSENT_QUAL_KEYWORDS = "Keywords";
+	private static final long CONSENT_QUAL_DURATION = 5 * 60L; // 5 minutes
 
 	private static final String AUTO_REJECT_REASON = "Sorry, we could not approve your submission as you did not correctly answer one or more validation question(s).";
 
@@ -71,6 +81,36 @@ public class MTurkAPIUtils {
 		builder.localeValues(usLocale, caLocale);
 		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
 		return builder.build();
+	}
+
+	public static QualificationRequirement createConsentRequirement(MTurkClient client, File consentFormFile,
+			File answerKeyFile) throws IOException {
+		QualificationType consentQualType = createConsentQualificationType(client, consentFormFile, answerKeyFile);
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId(consentQualType.qualificationTypeId());
+		builder.comparator(Comparator.EQUAL_TO);
+		builder.integerValues(100); // 100% answer score
+		return builder.build();
+	}
+
+	private static QualificationType createConsentQualificationType(MTurkClient client, File consentFormFile,
+			File answerKeyFile) throws IOException {
+		String consentFormTest = new String(Files.readAllBytes(consentFormFile.toPath()));
+		String answerKey = new String(Files.readAllBytes(answerKeyFile.toPath()));
+
+		CreateQualificationTypeRequest.Builder builder = CreateQualificationTypeRequest.builder();
+		builder.name(CONSENT_QUAL_NAME);
+		builder.description(CONSENT_QUAL_DESCRIPTION);
+		builder.keywords(CONSENT_QUAL_KEYWORDS);
+		builder.qualificationTypeStatus(QualificationTypeStatus.ACTIVE);
+		builder.test(consentFormTest);
+		builder.answerKey(answerKey);
+		builder.testDurationInSeconds(CONSENT_QUAL_DURATION);
+		builder.autoGranted(false);
+
+		CreateQualificationTypeRequest request = builder.build();
+		CreateQualificationTypeResponse response = client.createQualificationType(request);
+		return response.qualificationType();
 	}
 
 	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,

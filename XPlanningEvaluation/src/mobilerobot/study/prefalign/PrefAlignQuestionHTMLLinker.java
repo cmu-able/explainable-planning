@@ -139,7 +139,7 @@ public class PrefAlignQuestionHTMLLinker {
 		questionLinker.groupQuestionDirsByCostStruct();
 
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = questionLinker
-				.getAllLinkedPrefAlignQuestions(numQuestions);
+				.createAllLinkedPrefAlignQuestions(numQuestions);
 
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);

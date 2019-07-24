@@ -1,0 +1,35 @@
+<AnswerKey xmlns="	http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2005-10-01/AnswerKey.xsd">
+	<Question>
+		<QuestionIdentifier>age_confirmation</QuestionIdentifier>
+		<AnswerOption>
+			<SelectionIdentifier>age_confirmed</SelectionIdentifier>
+			<AnswerScore>1</AnswerScore>
+		</AnswerOption>
+		<AnswerOption>
+			<SelectionIdentifier>age_denied</SelectionIdentifier>
+			<AnswerScore>0</AnswerScore>
+		</AnswerOption>
+	</Question>
+	<Question>
+		<QuestionIdentifier>read_confirmation</QuestionIdentifier>
+		<AnswerOption>
+			<SelectionIdentifier>read_confirmed</SelectionIdentifier>
+			<AnswerScore>1</AnswerScore>
+		</AnswerOption>
+		<AnswerOption>
+			<SelectionIdentifier>read_denied</SelectionIdentifier>
+			<AnswerScore>0</AnswerScore>
+		</AnswerOption>
+	</Question>
+	<Question>
+		<QuestionIdentifier>participate_confirmation</QuestionIdentifier>
+		<AnswerOption>
+			<SelectionIdentifier>participate_confirmed</SelectionIdentifier>
+			<AnswerScore>1</AnswerScore>
+		</AnswerOption>
+		<AnswerOption>
+			<SelectionIdentifier>participate_denied</SelectionIdentifier>
+			<AnswerScore>0</AnswerScore>
+		</AnswerOption>
+	</Question>
+</AnswerKey>

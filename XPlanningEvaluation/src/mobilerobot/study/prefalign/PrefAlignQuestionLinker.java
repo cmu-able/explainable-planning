@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -17,6 +18,9 @@ import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionLinker {
+
+	// To ensure that random-agent-selection from each question dir is deterministic across different program runs
+	private static final long INI_SEED = 0L;
 
 	private Map<JSONObject, Set<File>> mQuestionDirsGroupedByCostStruct = new HashMap<>();
 	private File mRootDir;
@@ -84,6 +88,10 @@ public class PrefAlignQuestionLinker {
 		int numQuestions = allLinkedQuestionDirs[0].length;
 		int[][] allLinkedQuestionAgentIndices = new int[mQuestionDirsGroupedByCostStruct.size()][numQuestions];
 
+		// To ensure that random-agent-selection from each question dir is deterministic across different program runs
+		long[][] seeds = generateSeedsForRandomAgentSelection(INI_SEED, allLinkedQuestionAgentIndices.length,
+				numQuestions);
+
 		for (int i = 0; i < allLinkedQuestionDirs.length; i++) {
 			// Each list of questions is assigned to a single participant
 			File[] linkedQuestionDirs = allLinkedQuestionDirs[i];
@@ -94,7 +102,8 @@ public class PrefAlignQuestionLinker {
 				// questionDir can be null if, for a particular cost structure, there are fewer associated questions than numQuestions
 				if (questionDir != null) {
 					// For each question dir, randomly select an agent
-					AgentRandomizer agentRand = new AgentRandomizer(questionDir, mAlignProb, mUnalignThreshold);
+					long seed = seeds[i][j];
+					AgentRandomizer agentRand = new AgentRandomizer(questionDir, mAlignProb, mUnalignThreshold, seed);
 					int agentIndex = agentRand.randomAgentIndex();
 
 					allLinkedQuestionAgentIndices[i][j] = agentIndex;
@@ -103,6 +112,18 @@ public class PrefAlignQuestionLinker {
 		}
 
 		return allLinkedQuestionAgentIndices;
+	}
+
+	private long[][] generateSeedsForRandomAgentSelection(long iniSeed, int numRows, int numColumns) {
+		Random rand = new Random(iniSeed);
+		long[][] seeds = new long[numRows][numColumns];
+		for (int i = 0; i < numRows; i++) {
+			for (int j = 0; j < numColumns; j++) {
+				long randomLong = rand.nextLong();
+				seeds[i][j] = randomLong;
+			}
+		}
+		return seeds;
 	}
 
 	private void serializeLinkedPrefAlignQuestions(LinkedPrefAlignQuestions linkedPrefAlignQuestions)

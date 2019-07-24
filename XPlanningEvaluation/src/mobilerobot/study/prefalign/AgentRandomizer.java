@@ -25,15 +25,15 @@ public class AgentRandomizer {
 	private double mUnalignThreshold;
 	private Randomizer<String> mRandomizer;
 
-	public AgentRandomizer(File questionDir, double alignProb, double unalignThreshold)
+	public AgentRandomizer(File questionDir, double alignProb, double unalignThreshold, long seed)
 			throws IOException, ParseException {
 		mQuestionDir = questionDir;
 		mAlignProb = alignProb;
 		mUnalignThreshold = unalignThreshold;
-		initializeRandomizer();
+		initializeRandomizer(seed);
 	}
 
-	private void initializeRandomizer() throws IOException, ParseException {
+	private void initializeRandomizer(long seed) throws IOException, ParseException {
 		List<String> alignedAgents = new ArrayList<>();
 		List<String> unalignedAgents = new ArrayList<>();
 		JSONObject scoreCardJsonObj = QuestionUtils.getScoreCardJSONObject(mQuestionDir);
@@ -60,7 +60,7 @@ public class AgentRandomizer {
 					(1 - mAlignProb) / unalignedAgents.size());
 		}
 
-		mRandomizer = new Randomizer<>(allAgents, allAgentsProbs);
+		mRandomizer = new Randomizer<>(allAgents, allAgentsProbs, seed);
 	}
 
 	public int randomAgentIndex() {

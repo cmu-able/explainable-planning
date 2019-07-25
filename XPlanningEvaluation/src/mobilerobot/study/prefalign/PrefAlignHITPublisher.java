@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
@@ -44,7 +45,7 @@ public class PrefAlignHITPublisher {
 	/**
 	 * First page of the PrefAlign study, with a parameter pointing to the first PrefAlign question in a HIT
 	 */
-	private static final String FIRST_QUESTION_REL_URL_FORMAT = "/study/prefalign/index.html?firstQuestion=%s";
+	private static final String FIRST_QUESTION_REL_URL_FORMAT = "/study/prefalign/instruction.html?headQuestion=%s";
 
 	private final HITPublisher mHITPublisher;
 	private final File mHITInfoCSVFile;
@@ -65,13 +66,21 @@ public class PrefAlignHITPublisher {
 							.readObject();
 
 					boolean withExplanation = !controlGroup;
+
 					// All PrefAlign question document names in this HIT will be written to hitInfo.csv
 					String[] linkedQuestionDocNames = linkedPrefAlignQuestions
 							.getLinkedQuestionDocumentNames(withExplanation);
 
-					// ExternalURL contains a parameter that points to the first PrefAlign question HTML document in the link
+					// Document name of the 1st PrefAlign question in this HIT
 					String headQuestionDocName = linkedQuestionDocNames[0];
-					File questionXMLFile = createQuestionXMLFile(headQuestionDocName);
+
+					// Relative path between instruction.html and the 1st PrefAlign question HTML file
+					Path headQuestionFileRelPath = getQuestionHTMLFileRelativePath(headQuestionDocName,
+							withExplanation);
+
+					// ExternalURL contains a parameter that points to the 1st PrefAlign question HTML document
+					File questionXMLFile = createQuestionXMLFile(headQuestionDocName,
+							headQuestionFileRelPath.toString());
 
 					ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils
 							.getAssignmentReviewPolicy(linkedPrefAlignQuestions, validationQuestionDocNames);
@@ -83,7 +92,23 @@ public class PrefAlignHITPublisher {
 		}
 	}
 
-	private File createQuestionXMLFile(String headQuestionDocName)
+	private Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)
+			throws URISyntaxException {
+		String questionDocHTMLFilename = questionDocName + ".html";
+		File linkedQuestionsDir = withExplanation
+				? FileIOUtils.getResourceDir(getClass(), "linked-questions-explanation")
+				: FileIOUtils.getResourceDir(getClass(), "linked-questions");
+		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
+		File instructionHTMLFile = FileIOUtils.getFile(getClass(), "instruction.html");
+
+		// To make both paths have the same root
+		Path baseAbsPath = instructionHTMLFile.toPath().toAbsolutePath();
+		Path questionAbsPath = questionDocHTMLFile.toPath().toAbsolutePath();
+		// Relative path between instruction.html and question-mission[i]-agent[j].html (or question-mission[i]-agent[j]-explanation.html)
+		return baseAbsPath.relativize(questionAbsPath);
+	}
+
+	private File createQuestionXMLFile(String headQuestionDocName, String headQuestionFileRelPath)
 			throws ParserConfigurationException, IOException, TransformerException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 
@@ -103,7 +128,7 @@ public class PrefAlignHITPublisher {
 
 		// <ExternalURL>...</ExternalURL>
 		Element externalURLElement = doc.createElement("ExternalURL");
-		String externalURL = createExternalURL(headQuestionDocName);
+		String externalURL = createExternalURL(headQuestionFileRelPath);
 		Text externalURLText = doc.createTextNode(externalURL);
 		externalURLElement.appendChild(externalURLText);
 		externalQuestionElement.appendChild(externalURLElement);
@@ -131,7 +156,7 @@ public class PrefAlignHITPublisher {
 	 * Create ExternalURL for ExternalQuestion.
 	 * 
 	 * @param headQuestionDocName
-	 * @return http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/index.html?firstQuestion=<first-question-doc-name>
+	 * @return http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/instruction.html?headQuestion=<rel-path>
 	 */
 	private String createExternalURL(String headQuestionDocName) {
 		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);

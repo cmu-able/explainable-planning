@@ -1,12 +1,29 @@
 package mobilerobot.study.mturk;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+
+import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.CreateHitTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateHitTypeResponse;
@@ -81,6 +98,54 @@ public class HITPublisher {
 		CreateHitWithHitTypeRequest createHITWithHITTypeRequest = builder.build();
 		CreateHitWithHitTypeResponse response = mClient.createHITWithHITType(createHITWithHITTypeRequest);
 		return response.hit();
+	}
+
+	public static File createExternalQuestionXMLFile(String externalURL, String questionXMLFilename)
+			throws ParserConfigurationException, IOException, TransformerException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+
+		// Disable external entities
+		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		docFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		Document doc = docBuilder.newDocument();
+
+		// <ExternalQuestion xmlns="[the ExternalQuestion schema URL]">
+		Element externalQuestionElement = doc.createElement("ExternalQuestion");
+		externalQuestionElement.setAttribute("xmlns",
+				"http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd");
+		doc.appendChild(externalQuestionElement);
+
+		// <ExternalURL>...</ExternalURL>
+		Element externalURLElement = doc.createElement("ExternalURL");
+		Text externalURLText = doc.createTextNode(externalURL);
+		externalURLElement.appendChild(externalURLText);
+		externalQuestionElement.appendChild(externalURLElement);
+
+		// <FrameHeight>0</FrameHeight>
+		Element frameHeightElement = doc.createElement("FrameHeight");
+		Text frameHeightText = doc.createTextNode("0");
+		frameHeightElement.appendChild(frameHeightText);
+		externalQuestionElement.appendChild(frameHeightElement);
+
+		File questionXMLFile = FileIOUtils.createOutputFile(questionXMLFilename);
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(questionXMLFile);
+		transformer.transform(source, result);
+
+		return questionXMLFile;
+	}
+
+	public static File getExternalQuestionXMLFile(String questionXMLFilename)
+			throws FileNotFoundException, URISyntaxException {
+		return FileIOUtils.getFile(HITPublisher.class, "external-questions", questionXMLFilename);
 	}
 
 }

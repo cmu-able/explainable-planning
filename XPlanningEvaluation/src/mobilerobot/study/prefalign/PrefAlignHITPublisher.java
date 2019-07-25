@@ -10,21 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.json.simple.parser.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITPublisher;
@@ -55,113 +44,28 @@ public class PrefAlignHITPublisher {
 		mHITInfoCSVFile = createHITInfoCSVFile();
 	}
 
-	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames) throws URISyntaxException,
-			IOException, ClassNotFoundException, ParseException, ParserConfigurationException, TransformerException {
-		File serializedLinkedQuestionsDir = FileIOUtils.getResourceDir(getClass(), "serialized-linked-questions");
+	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
+			throws URISyntaxException, IOException, ClassNotFoundException, ParseException {
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
 
-		for (File file : serializedLinkedQuestionsDir.listFiles()) {
-			try (FileInputStream fileIn = new FileInputStream(file)) {
-				try (ObjectInputStream objectIn = new ObjectInputStream(fileIn)) {
-					LinkedPrefAlignQuestions linkedPrefAlignQuestions = (LinkedPrefAlignQuestions) objectIn
-							.readObject();
+		for (LinkedPrefAlignQuestions linkedPrefAlignQuestions : allLinkedPrefAlignQuestions) {
+			boolean withExplanation = !controlGroup;
 
-					boolean withExplanation = !controlGroup;
+			// All PrefAlign question document names in this HIT will be written to hitInfo.csv
+			String[] linkedQuestionDocNames = linkedPrefAlignQuestions.getLinkedQuestionDocumentNames(withExplanation);
 
-					// All PrefAlign question document names in this HIT will be written to hitInfo.csv
-					String[] linkedQuestionDocNames = linkedPrefAlignQuestions
-							.getLinkedQuestionDocumentNames(withExplanation);
+			// ExternalQuestion xml filename is the same as 1st PrefAlign question document name
+			String headQuestionDocName = linkedQuestionDocNames[0];
+			File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(headQuestionDocName + ".xml");
 
-					// Document name of the 1st PrefAlign question in this HIT
-					String headQuestionDocName = linkedQuestionDocNames[0];
+			// Assignment review policy for auto-reject
+			ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils.getAssignmentReviewPolicy(linkedPrefAlignQuestions,
+					validationQuestionDocNames);
 
-					// Relative path between instruction.html and the 1st PrefAlign question HTML file
-					Path headQuestionFileRelPath = getQuestionHTMLFileRelativePath(headQuestionDocName,
-							withExplanation);
+			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
 
-					// ExternalURL contains a parameter that points to the 1st PrefAlign question HTML document
-					File questionXMLFile = createQuestionXMLFile(headQuestionDocName,
-							headQuestionFileRelPath.toString());
-
-					ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils
-							.getAssignmentReviewPolicy(linkedPrefAlignQuestions, validationQuestionDocNames);
-					HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
-
-					writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
-				}
-			}
+			writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
 		}
-	}
-
-	private Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)
-			throws URISyntaxException {
-		String questionDocHTMLFilename = questionDocName + ".html";
-		File linkedQuestionsDir = withExplanation
-				? FileIOUtils.getResourceDir(getClass(), "linked-questions-explanation")
-				: FileIOUtils.getResourceDir(getClass(), "linked-questions");
-		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
-		File instructionHTMLFile = FileIOUtils.getFile(getClass(), "instruction.html");
-
-		// To make both paths have the same root
-		Path baseAbsPath = instructionHTMLFile.toPath().toAbsolutePath();
-		Path questionAbsPath = questionDocHTMLFile.toPath().toAbsolutePath();
-		// Relative path between instruction.html and question-mission[i]-agent[j].html (or question-mission[i]-agent[j]-explanation.html)
-		return baseAbsPath.relativize(questionAbsPath);
-	}
-
-	private File createQuestionXMLFile(String headQuestionDocName, String headQuestionFileRelPath)
-			throws ParserConfigurationException, IOException, TransformerException {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-
-		// Disable external entities
-		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-		docFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.newDocument();
-
-		// <ExternalQuestion xmlns="[the ExternalQuestion schema URL]">
-		Element externalQuestionElement = doc.createElement("ExternalQuestion");
-		externalQuestionElement.setAttribute("xmlns",
-				"http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd");
-		doc.appendChild(externalQuestionElement);
-
-		// <ExternalURL>...</ExternalURL>
-		Element externalURLElement = doc.createElement("ExternalURL");
-		String externalURL = createExternalURL(headQuestionFileRelPath);
-		Text externalURLText = doc.createTextNode(externalURL);
-		externalURLElement.appendChild(externalURLText);
-		externalQuestionElement.appendChild(externalURLElement);
-
-		// <FrameHeight>0</FrameHeight>
-		Element frameHeightElement = doc.createElement("FrameHeight");
-		Text frameHeightText = doc.createTextNode("0");
-		frameHeightElement.appendChild(frameHeightText);
-		externalQuestionElement.appendChild(frameHeightElement);
-
-		File questionXMLFile = FileIOUtils.createOutputFile(headQuestionDocName + ".xml");
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-		Transformer transformer = transformerFactory.newTransformer();
-		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(questionXMLFile);
-		transformer.transform(source, result);
-
-		return questionXMLFile;
-	}
-
-	/**
-	 * Create ExternalURL for ExternalQuestion.
-	 * 
-	 * @param headQuestionDocName
-	 * @return http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/instruction.html?headQuestion=<rel-path>
-	 */
-	private String createExternalURL(String headQuestionDocName) {
-		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);
-		String headQuestionRelURL = String.format(FIRST_QUESTION_REL_URL_FORMAT, headQuestionDocName);
-		return baseURL + headQuestionRelURL;
 	}
 
 	private File createHITInfoCSVFile() throws IOException {
@@ -183,6 +87,82 @@ public class PrefAlignHITPublisher {
 			}
 			writer.write("\n");
 		}
+	}
+
+	public static File[] createAllExternalQuestionXMLFiles(boolean withExplanation) throws ClassNotFoundException,
+			URISyntaxException, IOException, ParserConfigurationException, TransformerException {
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
+		File[] allQuestionXMLFiles = new File[allLinkedPrefAlignQuestions.length];
+
+		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
+			LinkedPrefAlignQuestions linkedPrefAlignQuestions = allLinkedPrefAlignQuestions[i];
+
+			// Document name of the 1st PrefAlign question in this HIT
+			String headQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(0, withExplanation);
+
+			// Relative path between instruction.html and the 1st PrefAlign question HTML file
+			Path headQuestionFileRelPath = getQuestionHTMLFileRelativePath(headQuestionDocName, withExplanation);
+
+			// ExternalURL contains a parameter that points to the 1st PrefAlign question HTML document
+			String externalURL = createExternalURL(headQuestionFileRelPath.toString());
+
+			File questionXMLFile = HITPublisher.createExternalQuestionXMLFile(externalURL,
+					headQuestionDocName + ".xml");
+			allQuestionXMLFiles[i] = questionXMLFile;
+		}
+
+		return allQuestionXMLFiles;
+	}
+
+	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions()
+			throws URISyntaxException, IOException, ClassNotFoundException {
+		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+				"serialized-linked-questions");
+		File[] serLinkedQuestionsFiles = serLinkedQuestionsDir.listFiles();
+
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[serLinkedQuestionsFiles.length];
+
+		for (int i = 0; i < serLinkedQuestionsFiles.length; i++) {
+			File serLinkedQuestionsFile = serLinkedQuestionsFiles[i];
+
+			try (FileInputStream fileIn = new FileInputStream(serLinkedQuestionsFile)) {
+				try (ObjectInputStream objectIn = new ObjectInputStream(fileIn)) {
+					LinkedPrefAlignQuestions linkedPrefAlignQuestions = (LinkedPrefAlignQuestions) objectIn
+							.readObject();
+
+					allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
+				}
+			}
+		}
+		return allLinkedPrefAlignQuestions;
+	}
+
+	private static Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)
+			throws URISyntaxException {
+		String questionDocHTMLFilename = questionDocName + ".html";
+		File linkedQuestionsDir = withExplanation
+				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions-explanation")
+				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions");
+		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
+		File instructionHTMLFile = FileIOUtils.getFile(PrefAlignHITPublisher.class, "instruction.html");
+
+		// To make both paths have the same root
+		Path baseAbsPath = instructionHTMLFile.toPath().toAbsolutePath();
+		Path questionAbsPath = questionDocHTMLFile.toPath().toAbsolutePath();
+		// Relative path between instruction.html and question-mission[i]-agent[j].html (or question-mission[i]-agent[j]-explanation.html)
+		return baseAbsPath.relativize(questionAbsPath);
+	}
+
+	/**
+	 * Create ExternalURL for ExternalQuestion.
+	 * 
+	 * @param headQuestionDocName
+	 * @return http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/instruction.html?headQuestion=<rel-path>
+	 */
+	private static String createExternalURL(String headQuestionDocName) {
+		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);
+		String headQuestionRelURL = String.format(FIRST_QUESTION_REL_URL_FORMAT, headQuestionDocName);
+		return baseURL + headQuestionRelURL;
 	}
 
 	public static void main(String[] args) {

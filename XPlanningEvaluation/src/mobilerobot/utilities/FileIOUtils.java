@@ -50,6 +50,11 @@ public class FileIOUtils {
 		return getFile(callerClass, POLICIES_RESOURCE_PATH, policyFilename);
 	}
 
+	public static File getFile(Class<?> callerClass, String filename) throws URISyntaxException {
+		URL resourceFileURL = callerClass.getResource(filename);
+		return new File(resourceFileURL.toURI());
+	}
+
 	public static File getFile(Class<?> callerClass, String resourcePath, String filename)
 			throws URISyntaxException, FileNotFoundException {
 		File resourceFolder = getResourceDir(callerClass, resourcePath);
@@ -205,6 +210,23 @@ public class FileIOUtils {
 		String escapedFilenameRegex = lcNameRegexFilter + escapedFileExtension;
 		FilenameFilter filter = (directory, filename) -> filename.toLowerCase().matches(escapedFilenameRegex);
 		return dir.listFiles(filter);
+	}
+
+	public static File searchFileRecursively(File dirOrFile, String filename) {
+		if (dirOrFile.isFile() && dirOrFile.getName().equals(filename)) {
+			return dirOrFile;
+		} else if (dirOrFile.isFile()) {
+			return null;
+		} else if (dirOrFile.isDirectory()) {
+			for (File file : dirOrFile.listFiles()) {
+				File res = searchFileRecursively(file, filename);
+
+				if (res != null) {
+					return res;
+				}
+			}
+		}
+		return null;
 	}
 
 }

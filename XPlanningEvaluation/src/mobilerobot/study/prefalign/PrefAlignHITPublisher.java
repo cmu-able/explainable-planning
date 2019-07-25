@@ -144,10 +144,12 @@ public class PrefAlignHITPublisher {
 				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions-explanation")
 				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions");
 		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
-		File instructionHTMLFile = FileIOUtils.getFile(PrefAlignHITPublisher.class, "instruction.html");
+
+		// Directory where instruction.html is located
+		File baseDir = new File(PrefAlignHITPublisher.class.getResource(".").toURI());
 
 		// To make both paths have the same root
-		Path baseAbsPath = instructionHTMLFile.toPath().toAbsolutePath();
+		Path baseAbsPath = baseDir.toPath().toAbsolutePath();
 		Path questionAbsPath = questionDocHTMLFile.toPath().toAbsolutePath();
 		// Relative path between instruction.html and question-mission[i]-agent[j].html (or question-mission[i]-agent[j]-explanation.html)
 		return baseAbsPath.relativize(questionAbsPath);
@@ -165,9 +167,10 @@ public class PrefAlignHITPublisher {
 		return baseURL + headQuestionRelURL;
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
+			ParserConfigurationException, TransformerException {
+		createAllExternalQuestionXMLFiles(false);
+		createAllExternalQuestionXMLFiles(true);
 	}
 
 }

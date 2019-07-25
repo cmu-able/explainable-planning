@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Instruction</title>
+		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+		<script src="scripts/utils.js"></script>
+	</head>
+	<body>
+		<div class="w3-container">
+			<p>TODO: Instruction</p>
+		</div>
+		<div class="w3-container">
+			<p>TODO: Demo</p>
+		</div>
+		<div class="w3-container">
+			<a class="w3-button w3-block w3-teal" href="#" id="linkToHeadQuestion">Continue to the Task</a>
+		</div>
+		<script>
+			document.getElementById("linkToHeadQuestion").onclick = function() {
+				var url = window.location.href;
+				alert(url);
+				var query_string_params = getQueryStringParameters(url);
+				var headQuestionRelUrl = query_string_params["headQuestion"];
+				location.href = headQuestionRelUrl;
+				return false;
+			};
+		</script>
+	</body>
+</html>

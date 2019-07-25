@@ -151,7 +151,7 @@ public class PrefAlignHITPublisher {
 		// To make both paths have the same root
 		Path baseAbsPath = baseDir.toPath().toAbsolutePath();
 		Path questionAbsPath = questionDocHTMLFile.toPath().toAbsolutePath();
-		// Relative path between instruction.html and question-mission[i]-agent[j].html (or question-mission[i]-agent[j]-explanation.html)
+		// Relative path between dir of instruction.html and question-mission[i]-agent[j](-explanation).html
 		return baseAbsPath.relativize(questionAbsPath);
 	}
 

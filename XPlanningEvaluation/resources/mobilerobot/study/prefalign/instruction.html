@@ -19,7 +19,6 @@
 		<script>
 			document.getElementById("linkToHeadQuestion").onclick = function() {
 				var url = window.location.href;
-				alert(url);
 				var query_string_params = getQueryStringParameters(url);
 				var headQuestionRelUrl = query_string_params["headQuestion"];
 				location.href = headQuestionRelUrl;

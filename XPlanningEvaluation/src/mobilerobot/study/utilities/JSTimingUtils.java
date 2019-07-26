@@ -26,7 +26,7 @@ public class JSTimingUtils {
 		StringBuilder builder = new StringBuilder();
 		builder.append("$(document).ready(function() {\n");
 		builder.append("\tstart = Date.now();\n");
-		builder.append("}");
+		builder.append("});");
 		return builder.toString();
 	}
 

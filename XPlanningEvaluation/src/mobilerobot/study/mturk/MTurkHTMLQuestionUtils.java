@@ -75,7 +75,8 @@ public class MTurkHTMLQuestionUtils {
 			String[] fillableDataTypes, Map<String, String[]> fillableDataTypeOptions) {
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
-		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormFunction(numQuestions, fillableDataTypes);
+		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormSubmitFunction(numQuestions,
+				fillableDataTypes);
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
@@ -103,7 +104,7 @@ public class MTurkHTMLQuestionUtils {
 
 	private static String getSubmitDataLogic() {
 		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n};";
-		return String.format(onSubmitFormat, "crowdFormInputToLocalStorage();", "localStorageToCrowdForm();");
+		return String.format(onSubmitFormat, "crowdFormInputToLocalStorage();", "localStorageToCrowdFormSubmit();");
 	}
 
 	private static String getCrowdFormInputToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,
@@ -166,12 +167,12 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	private static String getLocalStorageToCrowdFormFunction(int numQuestions, String[] fillableDataTypes) {
+	private static String getLocalStorageToCrowdFormSubmitFunction(int numQuestions, String[] fillableDataTypes) {
 		String hiddenInputValueFormat = "document.getElementById(\"%s\").value";
 		String localStorageValueFormat = "localStorage.getItem(\"%s\")";
 
 		StringBuilder builder = new StringBuilder();
-		builder.append("function localStorageToCrowdForm() {\n");
+		builder.append("function localStorageToCrowdFormSubmit() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {

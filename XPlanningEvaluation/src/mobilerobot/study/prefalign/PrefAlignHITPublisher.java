@@ -2,9 +2,7 @@ package mobilerobot.study.prefalign;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,7 +44,8 @@ public class PrefAlignHITPublisher {
 
 	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
 			throws URISyntaxException, IOException, ClassNotFoundException, ParseException {
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
+				.readAllLinkedPrefAlignQuestions();
 
 		for (LinkedPrefAlignQuestions linkedPrefAlignQuestions : allLinkedPrefAlignQuestions) {
 			boolean withExplanation = !controlGroup;
@@ -91,7 +90,8 @@ public class PrefAlignHITPublisher {
 
 	public static File[] createAllExternalQuestionXMLFiles(boolean withExplanation) throws ClassNotFoundException,
 			URISyntaxException, IOException, ParserConfigurationException, TransformerException {
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
+				.readAllLinkedPrefAlignQuestions();
 		File[] allQuestionXMLFiles = new File[allLinkedPrefAlignQuestions.length];
 
 		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
@@ -112,29 +112,6 @@ public class PrefAlignHITPublisher {
 		}
 
 		return allQuestionXMLFiles;
-	}
-
-	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions()
-			throws URISyntaxException, IOException, ClassNotFoundException {
-		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
-				"serialized-linked-questions");
-		File[] serLinkedQuestionsFiles = serLinkedQuestionsDir.listFiles();
-
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[serLinkedQuestionsFiles.length];
-
-		for (int i = 0; i < serLinkedQuestionsFiles.length; i++) {
-			File serLinkedQuestionsFile = serLinkedQuestionsFiles[i];
-
-			try (FileInputStream fileIn = new FileInputStream(serLinkedQuestionsFile)) {
-				try (ObjectInputStream objectIn = new ObjectInputStream(fileIn)) {
-					LinkedPrefAlignQuestions linkedPrefAlignQuestions = (LinkedPrefAlignQuestions) objectIn
-							.readObject();
-
-					allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
-				}
-			}
-		}
-		return allLinkedPrefAlignQuestions;
 	}
 
 	private static Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)

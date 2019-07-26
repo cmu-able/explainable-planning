@@ -1,9 +1,12 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,6 +21,9 @@ import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionLinker {
+
+	private static final double ALIGN_PROB = 0.5;
+	private static final double UNALIGN_THRESHOLD = 0.95;
 
 	// To ensure that random-agent-selection from each question dir is deterministic across different program runs
 	private static final long INI_SEED = 0L;
@@ -60,7 +66,6 @@ public class PrefAlignQuestionLinker {
 			allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
 
 			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
-			// PrefAlignHITPublisher will de-serialize and use it for publishing HIT (e.g., create Assignment Review Policy)
 			serializeLinkedPrefAlignQuestions(linkedPrefAlignQuestions);
 		}
 		return allLinkedPrefAlignQuestions;
@@ -137,5 +142,40 @@ public class PrefAlignQuestionLinker {
 				objectOut.writeObject(linkedPrefAlignQuestions);
 			}
 		}
+	}
+
+	public static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions()
+			throws URISyntaxException, IOException, ClassNotFoundException {
+		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+				"serialized-linked-questions");
+		File[] serLinkedQuestionsFiles = serLinkedQuestionsDir.listFiles();
+
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[serLinkedQuestionsFiles.length];
+
+		for (int i = 0; i < serLinkedQuestionsFiles.length; i++) {
+			File serLinkedQuestionsFile = serLinkedQuestionsFiles[i];
+
+			try (FileInputStream fileIn = new FileInputStream(serLinkedQuestionsFile)) {
+				try (ObjectInputStream objectIn = new ObjectInputStream(fileIn)) {
+					LinkedPrefAlignQuestions linkedPrefAlignQuestions = (LinkedPrefAlignQuestions) objectIn
+							.readObject();
+
+					allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
+				}
+			}
+		}
+		return allLinkedPrefAlignQuestions;
+	}
+
+	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
+		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
+		int numQuestions = Integer.parseInt(args[0]);
+
+		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, ALIGN_PROB,
+				UNALIGN_THRESHOLD);
+		questionLinker.groupQuestionDirsByCostStruct();
+
+		// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
+		questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
 	}
 }

@@ -30,9 +30,8 @@ public class JSTimingUtils {
 		return builder.toString();
 	}
 
-	public static String getRecordElapsedTimeToLocalStorageFunction(String keyPrefix) {
+	public static String getRecordElapsedTimeToLocalStorageFunction(String key) {
 		String localStorageSetValueFormat = "localStorage.setItem(\"%s\", %s)";
-		String key = keyPrefix + "-elapsed";
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("function recordElapsedTimeToLocalStorage() {\n");
@@ -42,6 +41,16 @@ public class JSTimingUtils {
 		builder.append(String.format(localStorageSetValueFormat, key, "elapsed"));
 		builder.append(";\n");
 		builder.append("}");
+		return builder.toString();
+	}
+
+	public static String getTimeMeasurementSnippet(String keyPrefix) {
+		StringBuilder builder = new StringBuilder();
+		builder.append(getTimingGlobalVarsDeclaration());
+		builder.append("\n\n");
+		builder.append(getRecordStartTimeWhenDOMReadyLogic());
+		builder.append("\n\n");
+		builder.append(getRecordElapsedTimeToLocalStorageFunction(keyPrefix));
 		return builder.toString();
 	}
 }

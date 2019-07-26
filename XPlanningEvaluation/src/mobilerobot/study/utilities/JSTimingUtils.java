@@ -14,16 +14,34 @@ public class JSTimingUtils {
 		return jqueryScript;
 	}
 
-	public static void recordStartTimeToLocalStorage(String activityName) {
-		// TODO
+	public static String getTimingGlobalVarsDeclaration() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("var start;\n");
+		builder.append("var end;\n");
+		builder.append("var elapsed;\n");
+		return builder.toString();
 	}
 
-	public static void recordEndTimeToLocalStorage(String activityName) {
-		// TODO
+	public static String getRecordStartTimeWhenDOMReadyLogic() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("$(document).ready(function() {\n");
+		builder.append("\tstart = Date.now();\n");
+		builder.append("}");
+		return builder.toString();
 	}
 
-	public static String getElapsedTimeInMilliSeconds(String activityName) {
-		// TODO
-		return null;
+	public static String getRecordElapsedTimeToLocalStorageFunction(String keyPrefix) {
+		String localStorageSetValueFormat = "localStorage.setItem(\"%s\", %s)";
+		String key = keyPrefix + "-elapsed";
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("function recordElapsedTimeToLocalStorage() {\n");
+		builder.append("\tend = Date.now();\n");
+		builder.append("\telapsed = end - start;\n");
+		builder.append("\t");
+		builder.append(String.format(localStorageSetValueFormat, key, "elapsed"));
+		builder.append(";\n");
+		builder.append("}");
+		return builder.toString();
 	}
 }

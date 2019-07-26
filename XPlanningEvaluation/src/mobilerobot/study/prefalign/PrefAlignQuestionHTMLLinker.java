@@ -14,6 +14,7 @@ import mobilerobot.study.mturk.MTurkHTMLQuestionUtils;
 import mobilerobot.study.utilities.ExplanationHTMLGenerator;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
+import mobilerobot.study.utilities.JSTimingUtils;
 import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLLinker {
@@ -84,6 +85,7 @@ public class PrefAlignQuestionHTMLLinker {
 
 			// MTurk Crowd HTML
 			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
+			Element jqueryScript = JSTimingUtils.getJQueryScript();
 			Element mTurkCrowdFormDiv;
 			Element crowdFormActionScript;
 
@@ -95,8 +97,8 @@ public class PrefAlignQuestionHTMLLinker {
 				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
 						nextUrl);
 
-				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j, FILLABLE_DATA_TYPES,
-						FILLABLE_DATA_TYPE_OPTIONS);
+				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j,
+						FILLABLE_DATA_TYPES, FILLABLE_DATA_TYPE_OPTIONS);
 			} else {
 				// Last, submittable crowd-form
 				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(questionDocName,
@@ -107,6 +109,7 @@ public class PrefAlignQuestionHTMLLinker {
 			}
 
 			questionDoc.body().appendChild(crowdScript);
+			questionDoc.body().appendChild(jqueryScript);
 			questionDoc.body().appendChild(mTurkCrowdFormDiv);
 			questionDoc.body().appendChild(crowdFormActionScript);
 

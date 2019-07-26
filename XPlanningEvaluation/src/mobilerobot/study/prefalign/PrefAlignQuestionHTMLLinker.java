@@ -26,9 +26,6 @@ public class PrefAlignQuestionHTMLLinker {
 		FILLABLE_DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
 	}
 
-	private static final double ALIGN_PROB = 0.5;
-	private static final double UNALIGN_THRESHOLD = 0.95;
-
 	private PrefAlignQuestionHTMLGenerator mQuestionHTMLGenerator;
 
 	public PrefAlignQuestionHTMLLinker(PrefAlignQuestionHTMLGenerator questionHTMLGenerator) {
@@ -122,27 +119,19 @@ public class PrefAlignQuestionHTMLLinker {
 		return linkedQuestionFiles;
 	}
 
-	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
+	public static void main(String[] args)
+			throws URISyntaxException, IOException, ParseException, ClassNotFoundException {
 		String rootStorageDirname = args[0];
-		int numQuestions = Integer.parseInt(args[1]);
 
-		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
 		File rootStorageDir = new File(rootStorageDirname);
 		File rootStorageDirExplanation = new File(rootStorageDirname + "-explanation");
-
-		linkAllPrefAlignHTMLQuestions(questionsRootDir, numQuestions, ALIGN_PROB, UNALIGN_THRESHOLD, rootStorageDir,
-				rootStorageDirExplanation);
+		linkAllPrefAlignHTMLQuestions(rootStorageDir, rootStorageDirExplanation);
 	}
 
-	public static void linkAllPrefAlignHTMLQuestions(File questionsRootDir, int numQuestions, double alignProb,
-			double unalignThreshold, File rootStorageDir, File rootStorageDirExplanation)
-			throws IOException, ParseException, URISyntaxException {
-		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, alignProb,
-				unalignThreshold);
-		questionLinker.groupQuestionDirsByCostStruct();
-
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = questionLinker
-				.createAllLinkedPrefAlignQuestions(numQuestions);
+	public static void linkAllPrefAlignHTMLQuestions(File rootStorageDir, File rootStorageDirExplanation)
+			throws IOException, ParseException, URISyntaxException, ClassNotFoundException {
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
+				.readAllLinkedPrefAlignQuestions();
 
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);

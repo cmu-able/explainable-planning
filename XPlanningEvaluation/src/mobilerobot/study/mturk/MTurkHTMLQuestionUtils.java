@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 
+import mobilerobot.study.utilities.JSTimingUtils;
+
 public class MTurkHTMLQuestionUtils {
 
 	/**
@@ -16,7 +18,8 @@ public class MTurkHTMLQuestionUtils {
 	/**
 	 * Additional data type collected for each question
 	 */
-	private static final String[] AUX_DATA_TYPES = { "ref", "elapsedTime" };
+	private static final String ELAPSED_TIME = "elapsedTime";
+	private static final String[] AUX_DATA_TYPES = { "ref", ELAPSED_TIME };
 
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_MARGIN = "w3-margin";
@@ -73,15 +76,18 @@ public class MTurkHTMLQuestionUtils {
 
 	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions,
 			String[] fillableDataTypes, Map<String, String[]> fillableDataTypeOptions) {
+		String timeMeasurementSnippet = JSTimingUtils
+				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
-		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormSubmitFunction(numQuestions,
+		String localStorageToCrowdFormSubmitFunction = getLocalStorageToCrowdFormSubmitFunction(numQuestions,
 				fillableDataTypes);
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
+		script.appendText(timeMeasurementSnippet);
 		script.appendText(crowdFormInputToLocalStorageFunction);
-		script.appendText(localStorageToCrowdFormFunction);
+		script.appendText(localStorageToCrowdFormSubmitFunction);
 		script.appendText(submitDataLogic);
 		return script;
 	}
@@ -103,8 +109,9 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static String getSubmitDataLogic() {
-		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n};";
-		return String.format(onSubmitFormat, "crowdFormInputToLocalStorage();", "localStorageToCrowdFormSubmit();");
+		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n%s\n};";
+		return String.format(onSubmitFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();",
+				"localStorageToCrowdFormSubmit();");
 	}
 
 	private static String getCrowdFormInputToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,
@@ -212,19 +219,22 @@ public class MTurkHTMLQuestionUtils {
 
 	public static Element getIntermediateCrowdFormNextOnClickScript(int questionIndex, String[] fillableDataTypes,
 			Map<String, String[]> fillableDataTypeOptions) {
+		String timeMeasurementSnippet = JSTimingUtils
+				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
 
 		String saveDataLogic = getSaveDataLogic();
 		Element script = new Element(SCRIPT);
+		script.appendText(timeMeasurementSnippet);
 		script.appendText(crowdFormInputToLocalStorageFunction);
 		script.appendText(saveDataLogic);
 		return script;
 	}
 
 	private static String getSaveDataLogic() {
-		String onClickFormat = "document.getElementById(\"save-next\").onclick = function() {\n%s\n};";
-		return String.format(onClickFormat, "crowdFormInputToLocalStorage();");
+		String onClickFormat = "document.getElementById(\"save-next\").onclick = function() {\n%s\n%s\n};";
+		return String.format(onClickFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();");
 	}
 
 	private static Element createCrowdFormContainerWithoutButton(String questionDocName) {

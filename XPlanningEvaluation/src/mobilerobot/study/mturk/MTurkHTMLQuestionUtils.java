@@ -2,6 +2,7 @@ package mobilerobot.study.mturk;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 
@@ -11,6 +12,11 @@ public class MTurkHTMLQuestionUtils {
 	 * This is the format of QuestionIdentifier in QuestionFormAnswers MTurk data structure
 	 */
 	public static final String QUESTION_ID_FORMAT = "question%d-%s";
+
+	/**
+	 * Additional data type collected for each question
+	 */
+	private static final String[] AUX_DATA_TYPES = { "ref", "elapsedTime" };
 
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_MARGIN = "w3-margin";
@@ -29,17 +35,20 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	public static Element createSubmittableCrowdFormContainer(String questionDocName, int numQuestions,
-			String[] dataTypes) {
+			String[] fillableDataTypes) {
 		Element container = createCrowdFormContainerWithoutButton(questionDocName);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
-		// Hidden inputs:
+		// Hidden inputs in the submittable form:
+		// for each question:
 		// - question[i]-answer
 		// - question[i]-justification
 		// - question[i]-confidence
 		// - question[i]-ref: additional data type
+		// - question[i]-elapsedTime: additional data type
+		//
 		// All hidden inputs have empty values initially, but will be filled in with values from localStorage once submit.
-		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
+		String[] allHiddenInputDataTypes = getAllDataTypes(fillableDataTypes);
 
 		for (int i = 0; i < numQuestions; i++) {
 			for (String dataType : allHiddenInputDataTypes) {
@@ -62,11 +71,11 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions, String[] dataTypes,
-			Map<String, String[]> dataTypeOptions) {
-		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, dataTypes,
-				dataTypeOptions);
-		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormFunction(numQuestions, dataTypes);
+	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions,
+			String[] fillableDataTypes, Map<String, String[]> fillableDataTypeOptions) {
+		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, fillableDataTypes,
+				fillableDataTypeOptions);
+		String localStorageToCrowdFormFunction = getLocalStorageToCrowdFormFunction(numQuestions, fillableDataTypes);
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
@@ -76,10 +85,20 @@ public class MTurkHTMLQuestionUtils {
 		return script;
 	}
 
-	private static String[] getAllHiddenInputDataTypes(String[] dataTypes) {
-		String[] allDatatypes = Arrays.copyOf(dataTypes, dataTypes.length + 1);
-		allDatatypes[allDatatypes.length - 1] = "ref"; // additional ref data type
-		return allDatatypes;
+	private static String[] getAllCrowdFormInputDataTypes(String[] fillableDataTypes) {
+		// All input data types in crowd-form include:
+		// - fillable data types: answer, justification, and confidence
+		// - hidden data type: ref
+		String[] allFormDataTypes = Arrays.copyOf(fillableDataTypes, fillableDataTypes.length + 1);
+		allFormDataTypes[allFormDataTypes.length - 1] = "ref";
+		return allFormDataTypes;
+	}
+
+	private static String[] getAllDataTypes(String[] fillableDataTypes) {
+		// All data types that will be stored in localStorage and submit to MTurk, for each question, include:
+		// - fillable data types: answer, justification, and confidence
+		// - additional data type: ref, elapsedTime
+		return Stream.concat(Arrays.stream(fillableDataTypes), Arrays.stream(AUX_DATA_TYPES)).toArray(String[]::new);
 	}
 
 	private static String getSubmitDataLogic() {
@@ -87,8 +106,8 @@ public class MTurkHTMLQuestionUtils {
 		return String.format(onSubmitFormat, "crowdFormToLocalStorage();", "localStorageToCrowdForm();");
 	}
 
-	private static String getCrowdFormToLocalStorageFunction(int questionIndex, String[] dataTypes,
-			Map<String, String[]> dataTypeOptions) {
+	private static String getCrowdFormToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,
+			Map<String, String[]> fillableDataTypeOptions) {
 		String inputValueOptionFormat = "document.getElementById(\"%s\").checked";
 		String inputValueTextFormat = "document.getElementById(\"%s\").value";
 
@@ -99,15 +118,16 @@ public class MTurkHTMLQuestionUtils {
 		builder.append("function crowdFormToLocalStorage() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
-		// Add "ref" to data types to be stored in localStorage
-		String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
+		// All crowd-form input data types include fillable data types and "ref"
+		// Input from fillable data types and "ref" will be stored in localStorage
+		String[] allCrowdFormInputDataTypes = getAllCrowdFormInputDataTypes(fillableDataTypes);
 
-		for (String dataType : allHiddenInputDataTypes) {
+		for (String dataType : allCrowdFormInputDataTypes) {
 			String localStorageKey = String.format(QUESTION_ID_FORMAT, questionIndex, dataType);
 
-			if (dataTypeOptions.containsKey(dataType)) {
+			if (fillableDataTypeOptions.containsKey(dataType)) {
 				// Multiple-choice input
-				String[] options = dataTypeOptions.get(dataType);
+				String[] options = fillableDataTypeOptions.get(dataType);
 
 				boolean firstOption = true;
 
@@ -146,7 +166,7 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	private static String getLocalStorageToCrowdFormFunction(int numQuestions, String[] dataTypes) {
+	private static String getLocalStorageToCrowdFormFunction(int numQuestions, String[] fillableDataTypes) {
 		String hiddenInputValueFormat = "document.getElementById(\"%s\").value";
 		String localStorageValueFormat = "localStorage.getItem(\"%s\")";
 
@@ -156,7 +176,7 @@ public class MTurkHTMLQuestionUtils {
 
 		for (int i = 0; i < numQuestions; i++) {
 			// Add "ref" to data types to be filled in crowd-form's hidden inputs
-			String[] allHiddenInputDataTypes = getAllHiddenInputDataTypes(dataTypes);
+			String[] allHiddenInputDataTypes = getAllDataTypes(fillableDataTypes);
 
 			for (String dataType : allHiddenInputDataTypes) {
 				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
@@ -189,10 +209,10 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element getIntermediateCrowdFormNextOnClickScript(int questionIndex, String[] dataTypes,
-			Map<String, String[]> dataTypeOptions) {
-		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, dataTypes,
-				dataTypeOptions);
+	public static Element getIntermediateCrowdFormNextOnClickScript(int questionIndex, String[] fillableDataTypes,
+			Map<String, String[]> fillableDataTypeOptions) {
+		String crowdFormToLocalStorageFunction = getCrowdFormToLocalStorageFunction(questionIndex, fillableDataTypes,
+				fillableDataTypeOptions);
 
 		String saveDataLogic = getSaveDataLogic();
 		Element script = new Element(SCRIPT);
@@ -236,7 +256,7 @@ public class MTurkHTMLQuestionUtils {
 	private static Element createQuestionRefHiddenInput(String questionDocName) {
 		String hiddenInputName = "ref";
 
-		// This hidden input is attached to each crowd-form
+		// This hidden input is attached to each crowd-form (either intermediate and submittable crowd-form)
 		// <input type="hidden" id="ref" name="ref" value=[questionDocName]>
 		Element hiddenInput = new Element("input");
 		hiddenInput.attr("type", "hidden");

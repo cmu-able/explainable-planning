@@ -18,11 +18,11 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLLinker {
 
-	private static final String[] DATA_TYPES = new String[] { "answer", "justification", "confidence" };
-	private static final Map<String, String[]> DATA_TYPE_OPTIONS = new HashMap<>();
+	private static final String[] FILLABLE_DATA_TYPES = new String[] { "answer", "justification", "confidence" };
+	private static final Map<String, String[]> FILLABLE_DATA_TYPE_OPTIONS = new HashMap<>();
 	static {
-		DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });
-		DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
+		FILLABLE_DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });
+		FILLABLE_DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
 	}
 
 	private static final double ALIGN_PROB = 0.5;
@@ -95,15 +95,15 @@ public class PrefAlignQuestionHTMLLinker {
 				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
 						nextUrl);
 
-				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j, DATA_TYPES,
-						DATA_TYPE_OPTIONS);
+				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j, FILLABLE_DATA_TYPES,
+						FILLABLE_DATA_TYPE_OPTIONS);
 			} else {
 				// Last, submittable crowd-form
 				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(questionDocName,
-						numQuestions, DATA_TYPES);
+						numQuestions, FILLABLE_DATA_TYPES);
 
 				crowdFormActionScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(j, numQuestions,
-						DATA_TYPES, DATA_TYPE_OPTIONS);
+						FILLABLE_DATA_TYPES, FILLABLE_DATA_TYPE_OPTIONS);
 			}
 
 			questionDoc.body().appendChild(crowdScript);

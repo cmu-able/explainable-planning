@@ -37,9 +37,11 @@ public class JSTimingUtils {
 		builder.append("function recordElapsedTimeToLocalStorage() {\n");
 		builder.append("\tend = Date.now();\n");
 		builder.append("\telapsed = end - start;\n");
-		builder.append("\t");
+		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
+		builder.append("\t\t");
 		builder.append(String.format(localStorageSetValueFormat, key, "elapsed"));
 		builder.append(";\n");
+		builder.append("\t}\n");
 		builder.append("}");
 		return builder.toString();
 	}

@@ -9,6 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import mobilerobot.study.mturk.HITAssignmentsCollector;
 import mobilerobot.study.mturk.HITInfo;
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -23,7 +27,7 @@ public class PrefAlignHITAssignmentsCollector {
 	}
 
 	public Map<HITInfo, List<Assignment>> collectAllPendingReviewHITAssignments(File hitInfoCSVFile)
-			throws IOException {
+			throws IOException, ParserConfigurationException, SAXException {
 		Map<HITInfo, List<Assignment>> allPendingReviewAssignments = new HashMap<>();
 		for (HITInfo hitInfo : readAllHITInfos(hitInfoCSVFile)) {
 			List<Assignment> pendingReviewAssignments = mHITCollector.collectPendingReviewHITAssignments(hitInfo);

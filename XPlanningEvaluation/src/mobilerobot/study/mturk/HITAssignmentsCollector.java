@@ -1,9 +1,17 @@
 package mobilerobot.study.mturk;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.io.IOException;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
@@ -16,8 +24,8 @@ import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
 
 public class HITAssignmentsCollector {
 
-	private static final long MIN_TASK_DURATION_MINUTES = 5L;
-	private static final String REJECT_FEEDBACK = "Sorry, we could not approve your submission as you took too little time answering the questions.";
+	private static final long MIN_ELAPSED_TIME_MS = 30 * 1000L; // minimum of 30 seconds/question
+	private static final String REJECT_FEEDBACK = "Sorry, we could not approve your submission as you took too little time answering at least one of the questions.";
 
 	private final MTurkClient mClient;
 
@@ -31,7 +39,8 @@ public class HITAssignmentsCollector {
 		return getHITResponse.hit().hitStatus();
 	}
 
-	public List<Assignment> collectPendingReviewHITAssignments(HITInfo hitInfo) {
+	public List<Assignment> collectPendingReviewHITAssignments(HITInfo hitInfo)
+			throws ParserConfigurationException, SAXException, IOException {
 		// Collect the assignments that have been submitted for this HIT
 		// These assignments have not failed the Assignment Review Policy
 		List<Assignment> submittedAssignments = collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
@@ -51,20 +60,45 @@ public class HITAssignmentsCollector {
 		return listHITResponse.assignments();
 	}
 
-	private void autoRejectSubmittedHITAssignments(List<Assignment> assignments) {
+	private void autoRejectSubmittedHITAssignments(List<Assignment> assignments)
+			throws ParserConfigurationException, SAXException, IOException {
 		for (Assignment assignment : assignments) {
-			Instant acceptTime = assignment.acceptTime();
-			Instant submitTime = assignment.submitTime();
-			long taskDurationMinutes = Duration.between(acceptTime, submitTime).toMinutes();
+			boolean autoReject = autoRejectAssignmentInsufficientTime(assignment);
 
 			// Reject any assignment that took too little time
-			if (taskDurationMinutes < MIN_TASK_DURATION_MINUTES) {
+			if (autoReject) {
 				RejectAssignmentRequest rejectRequest = RejectAssignmentRequest.builder()
 						.assignmentId(assignment.assignmentId()).requesterFeedback(REJECT_FEEDBACK).build();
 
 				mClient.rejectAssignment(rejectRequest);
 			}
 		}
+	}
+
+	private boolean autoRejectAssignmentInsufficientTime(Assignment assignment)
+			throws ParserConfigurationException, SAXException, IOException {
+		String answerXMLStr = assignment.answer();
+		Document answerXML = FileIOUtils.parseXMLString(answerXMLStr);
+		NodeList answerNodeList = answerXML.getElementsByTagName("Answer");
+
+		for (int i = 0; i < answerNodeList.getLength(); i++) {
+			Node answerNode = answerNodeList.item(i);
+
+			if (answerNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element answerElement = (Element) answerNode;
+				String questionID = answerElement.getElementsByTagName("QuestionIdentifier").item(0).getTextContent();
+
+				if (questionID.matches("question[0-9]+-elapsedTime")) {
+					String elapsedTimeStr = answerElement.getElementsByTagName("FreeText").item(0).getTextContent();
+					long elapsedTimeinMS = Long.parseLong(elapsedTimeStr);
+
+					if (elapsedTimeinMS < MIN_ELAPSED_TIME_MS) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	public List<Assignment> collectApprovedHITAssignments(HITInfo hitInfo) {

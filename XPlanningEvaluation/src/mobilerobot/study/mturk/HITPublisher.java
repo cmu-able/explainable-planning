@@ -86,7 +86,9 @@ public class HITPublisher {
 		builder.question(question);
 		builder.lifetimeInSeconds(LIFE_TIME);
 		builder.maxAssignments(MAX_ASSIGNMENTS);
-		builder.assignmentReviewPolicy(assignmentReviewPolicy);
+		if (assignmentReviewPolicy != null) {
+			builder.assignmentReviewPolicy(assignmentReviewPolicy);
+		}
 		CreateHitWithHitTypeRequest createHITWithHITTypeRequest = builder.build();
 		CreateHitWithHitTypeResponse response = mClient.createHITWithHITType(createHITWithHITTypeRequest);
 		return response.hit();

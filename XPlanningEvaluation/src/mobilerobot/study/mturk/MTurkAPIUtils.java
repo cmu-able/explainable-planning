@@ -23,6 +23,8 @@ import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRespon
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
 import software.amazon.awssdk.services.mturk.model.HITAccessActions;
+import software.amazon.awssdk.services.mturk.model.ListQualificationTypesRequest;
+import software.amazon.awssdk.services.mturk.model.ListQualificationTypesResponse;
 import software.amazon.awssdk.services.mturk.model.Locale;
 import software.amazon.awssdk.services.mturk.model.ParameterMapEntry;
 import software.amazon.awssdk.services.mturk.model.PolicyParameter;
@@ -98,6 +100,15 @@ public class MTurkAPIUtils {
 
 	private static QualificationType createConsentQualificationType(MTurkClient client, File consentFormFile,
 			File answerKeyFile) throws IOException {
+		// Check if consent-form Qualification Type has already been created
+		ListQualificationTypesRequest listQualTypesRequest = ListQualificationTypesRequest.builder()
+				.query(CONSENT_QUAL_NAME).mustBeRequestable(Boolean.FALSE).build();
+		ListQualificationTypesResponse listQualTypesResponse = client.listQualificationTypes(listQualTypesRequest);
+		if (listQualTypesResponse.numResults() > 0) {
+			return listQualTypesResponse.qualificationTypes().get(0);
+		}
+
+		// Consent-form Qualification-Type has not been created yet
 		String consentFormTest = new String(Files.readAllBytes(consentFormFile.toPath()));
 		String answerKey = new String(Files.readAllBytes(answerKeyFile.toPath()));
 
@@ -118,6 +129,10 @@ public class MTurkAPIUtils {
 
 	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
 			Set<String> validationQuestionDocNames) throws IOException, ParseException {
+		if (validationQuestionDocNames.isEmpty()) {
+			return null;
+		}
+
 		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, validationQuestionDocNames);
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")

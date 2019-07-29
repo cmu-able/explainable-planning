@@ -14,10 +14,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -227,6 +240,41 @@ public class FileIOUtils {
 			}
 		}
 		return null;
+	}
+
+	public static Document parseXMLFile(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		// Disable external entities
+		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		docFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		Document doc = docBuilder.parse(xmlFile);
+		doc.getDocumentElement().normalize();
+		return doc;
+	}
+
+	public static Document createXMLDocument() throws ParserConfigurationException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		// Disable external entities
+		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		docFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		return docBuilder.newDocument();
+	}
+
+	public static void writeXMLDocumentToFile(Document doc, File outXMLFile) throws TransformerException {
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+		Transformer transformer = transformerFactory.newTransformer();
+		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		DOMSource source = new DOMSource(doc);
+		StreamResult result = new StreamResult(outXMLFile);
+		transformer.transform(source, result);
 	}
 
 }

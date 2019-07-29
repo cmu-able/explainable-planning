@@ -8,16 +8,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -102,15 +94,7 @@ public class HITPublisher {
 
 	public static File createExternalQuestionXMLFile(String externalURL, String questionXMLFilename)
 			throws ParserConfigurationException, IOException, TransformerException {
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-
-		// Disable external entities
-		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-		docFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-
-		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.newDocument();
+		Document doc = FileIOUtils.createXMLDocument();
 
 		// <ExternalQuestion xmlns="[the ExternalQuestion schema URL]">
 		Element externalQuestionElement = doc.createElement("ExternalQuestion");
@@ -131,14 +115,7 @@ public class HITPublisher {
 		externalQuestionElement.appendChild(frameHeightElement);
 
 		File questionXMLFile = FileIOUtils.createOutputFile(questionXMLFilename);
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-
-		Transformer transformer = transformerFactory.newTransformer();
-		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		DOMSource source = new DOMSource(doc);
-		StreamResult result = new StreamResult(questionXMLFile);
-		transformer.transform(source, result);
+		FileIOUtils.writeXMLDocumentToFile(doc, questionXMLFile);
 
 		return questionXMLFile;
 	}

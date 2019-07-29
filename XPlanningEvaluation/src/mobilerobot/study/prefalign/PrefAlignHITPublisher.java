@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -77,7 +78,7 @@ public class PrefAlignHITPublisher {
 	}
 
 	private void writeHITInfoToCSVFile(HITInfo hitInfo, String[] linkedQuestionDocNames) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(mHITInfoCSVFile.toPath())) {
+		try (BufferedWriter writer = Files.newBufferedWriter(mHITInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
 			writer.write(hitInfo.getHITId());
 			writer.write(",");
 			writer.write(hitInfo.getHITTypeId());

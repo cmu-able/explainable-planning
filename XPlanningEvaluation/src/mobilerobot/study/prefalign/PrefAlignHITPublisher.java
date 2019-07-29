@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -145,9 +146,18 @@ public class PrefAlignHITPublisher {
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
-			ParserConfigurationException, TransformerException {
-		createAllExternalQuestionXMLFiles(false);
-		createAllExternalQuestionXMLFiles(true);
+			ParserConfigurationException, TransformerException, ParseException {
+		String option = args[0];
+
+		if (option.equals("createExternalQuestions")) {
+			createAllExternalQuestionXMLFiles(false);
+			createAllExternalQuestionXMLFiles(true);
+		} else if (option.equals("publishHITs")) {
+			boolean withExplanation = args.length >= 2 && args[1].equals("-e");
+			Set<String> validationQuestionDocNames = new HashSet<>();
+			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
+			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);
+		}
 	}
 
 }

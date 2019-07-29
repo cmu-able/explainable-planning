@@ -24,9 +24,9 @@ import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 public class PrefAlignHITPublisher {
 
 	/**
-	 * http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com
+	 * https://<bucket-name>.s3.<AWS-region>.amazonaws.com
 	 */
-	private static final String S3_AWS_URL_FORMAT = "http://%s.s3-website.%s.amazonaws.com";
+	private static final String S3_AWS_URL_FORMAT = "https://%s.s3.%s.amazonaws.com";
 	private static final String XPLANNING_S3_BUCKET_NAME = "xplanning-bucket";
 	private static final String XPLANNING_S3_REGION = "us-east-2";
 
@@ -137,7 +137,7 @@ public class PrefAlignHITPublisher {
 	 * Create ExternalURL for ExternalQuestion.
 	 * 
 	 * @param headQuestionDocName
-	 * @return http://<bucket-name>.s3-website.<AWS-region>.amazonaws.com/study/prefalign/instruction.html?headQuestion=<rel-path>
+	 * @return https://<bucket-name>.s3.<AWS-region>.amazonaws.com/study/prefalign/instruction.html?headQuestion=<rel-path>
 	 */
 	private static String createExternalURL(String headQuestionDocName) {
 		String baseURL = String.format(S3_AWS_URL_FORMAT, XPLANNING_S3_BUCKET_NAME, XPLANNING_S3_REGION);

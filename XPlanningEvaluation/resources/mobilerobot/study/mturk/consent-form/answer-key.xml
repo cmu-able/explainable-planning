@@ -32,4 +32,9 @@
 			<AnswerScore>0</AnswerScore>
 		</AnswerOption>
 	</Question>
+	<QualificationValueMapping>
+		<PercentageMapping>
+			<MaximumSummedScore>3</MaximumSummedScore>
+		</PercentageMapping>
+	</QualificationValueMapping>
 </AnswerKey>

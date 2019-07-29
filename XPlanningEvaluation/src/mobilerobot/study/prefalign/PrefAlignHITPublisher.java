@@ -82,8 +82,10 @@ public class PrefAlignHITPublisher {
 			writer.write(",");
 			writer.write(hitInfo.getHITTypeId());
 			for (String questionDocName : linkedQuestionDocNames) {
-				writer.write(",");
-				writer.write(questionDocName);
+				if (questionDocName != null) {
+					writer.write(",");
+					writer.write(questionDocName);
+				}
 			}
 			writer.write("\n");
 		}

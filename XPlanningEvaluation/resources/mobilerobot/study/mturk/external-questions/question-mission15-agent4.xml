@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
-<ExternalURL>http://xplanning-bucket.s3-website.us-east-2.amazonaws.com/study/prefalign/instruction.html?headQuestion=linked-questions/linked-questions-set35/question-mission15-agent4.html</ExternalURL>
+<ExternalURL>https://xplanning-bucket.s3.us-east-2.amazonaws.com/study/prefalign/instruction.html?headQuestion=linked-questions/linked-questions-set10/question-mission15-agent4.html</ExternalURL>
 <FrameHeight>0</FrameHeight>
 </ExternalQuestion>

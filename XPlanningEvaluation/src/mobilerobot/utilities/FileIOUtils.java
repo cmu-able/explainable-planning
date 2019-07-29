@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -30,6 +31,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
@@ -242,7 +244,8 @@ public class FileIOUtils {
 		return null;
 	}
 
-	public static Document parseXMLFile(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
+	public static Document parseXMLString(String xmlString)
+			throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		// Disable external entities
 		docFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
@@ -250,7 +253,8 @@ public class FileIOUtils {
 		docFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		Document doc = docBuilder.parse(xmlFile);
+		InputSource in = new InputSource(new StringReader(xmlString));
+		Document doc = docBuilder.parse(in);
 		doc.getDocumentElement().normalize();
 		return doc;
 	}

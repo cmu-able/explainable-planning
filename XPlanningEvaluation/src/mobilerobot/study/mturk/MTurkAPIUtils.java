@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.simple.parser.ParseException;
 
@@ -20,9 +22,13 @@ import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
 import software.amazon.awssdk.services.mturk.model.Comparator;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeResponse;
+import software.amazon.awssdk.services.mturk.model.DeleteHitRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
+import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.HITAccessActions;
+import software.amazon.awssdk.services.mturk.model.ListHiTsRequest;
+import software.amazon.awssdk.services.mturk.model.ListHiTsResponse;
 import software.amazon.awssdk.services.mturk.model.ListQualificationTypesRequest;
 import software.amazon.awssdk.services.mturk.model.ListQualificationTypesResponse;
 import software.amazon.awssdk.services.mturk.model.Locale;
@@ -32,6 +38,7 @@ import software.amazon.awssdk.services.mturk.model.QualificationRequirement;
 import software.amazon.awssdk.services.mturk.model.QualificationType;
 import software.amazon.awssdk.services.mturk.model.QualificationTypeStatus;
 import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
+import software.amazon.awssdk.services.mturk.model.UpdateExpirationForHitRequest;
 
 public class MTurkAPIUtils {
 
@@ -179,5 +186,26 @@ public class MTurkAPIUtils {
 		answerKeyBuilder.key("AnswerKey");
 		answerKeyBuilder.mapEntries(mapEntries);
 		return answerKeyBuilder.build();
+	}
+
+	public static void deleteHITs(MTurkClient client, String hitTypeId) {
+		ListHiTsRequest listHITsRequest = ListHiTsRequest.builder().build();
+		ListHiTsResponse listHITsResponse = client.listHITs(listHITsRequest);
+		List<HIT> allHITs = listHITsResponse.hiTs();
+		List<HIT> selectedHITs = allHITs.stream().filter(hit -> hit.hitTypeId().equals(hitTypeId))
+				.collect(Collectors.toList());
+
+		// Set all HITs of the type to expire now
+		for (HIT hit : selectedHITs) {
+			UpdateExpirationForHitRequest updateHITRequest = UpdateExpirationForHitRequest.builder().hitId(hit.hitId())
+					.expireAt(Instant.now()).build();
+			client.updateExpirationForHIT(updateHITRequest);
+		}
+
+		// Delete all HITs of the type
+		for (HIT hit : selectedHITs) {
+			DeleteHitRequest deleteHITRequest = DeleteHitRequest.builder().hitId(hit.hitId()).build();
+			client.deleteHIT(deleteHITRequest);
+		}
 	}
 }

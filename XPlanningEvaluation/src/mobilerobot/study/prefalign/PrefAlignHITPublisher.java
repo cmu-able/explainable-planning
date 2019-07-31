@@ -160,6 +160,9 @@ public class PrefAlignHITPublisher {
 			Set<String> validationQuestionDocNames = new HashSet<>();
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
 			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);
+		} else if (option.equals("deleteHITs")) {
+			String hitTypeId = args[1];
+			MTurkAPIUtils.deleteHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);
 		}
 	}
 

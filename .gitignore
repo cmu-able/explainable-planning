@@ -26,3 +26,6 @@ hs_err_pid*
 /.sonarlint/
 
 *.DS_Store
+
+# virtualenv for aws-shell
+env/

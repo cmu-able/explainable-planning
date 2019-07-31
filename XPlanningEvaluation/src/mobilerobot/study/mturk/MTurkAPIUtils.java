@@ -188,24 +188,28 @@ public class MTurkAPIUtils {
 		return answerKeyBuilder.build();
 	}
 
-	public static void deleteHITs(MTurkClient client, String hitTypeId) {
+	public static List<HIT> getHITs(MTurkClient client, String hitTypeId) {
 		ListHiTsRequest listHITsRequest = ListHiTsRequest.builder().build();
 		ListHiTsResponse listHITsResponse = client.listHITs(listHITsRequest);
 		List<HIT> allHITs = listHITsResponse.hiTs();
-		List<HIT> selectedHITs = allHITs.stream().filter(hit -> hit.hitTypeId().equals(hitTypeId))
-				.collect(Collectors.toList());
+		return allHITs.stream().filter(hit -> hit.hitTypeId().equals(hitTypeId)).collect(Collectors.toList());
+	}
 
-		// Set all HITs of the type to expire now
-		for (HIT hit : selectedHITs) {
-			UpdateExpirationForHitRequest updateHITRequest = UpdateExpirationForHitRequest.builder().hitId(hit.hitId())
-					.expireAt(Instant.now()).build();
-			client.updateExpirationForHIT(updateHITRequest);
-		}
+	public static void deleteHITs(MTurkClient client, String hitTypeId) {
+		List<HIT> selectedHITs;
+		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
+			// Set all HITs of the type to expire now
+			for (HIT hit : selectedHITs) {
+				UpdateExpirationForHitRequest updateHITRequest = UpdateExpirationForHitRequest.builder()
+						.hitId(hit.hitId()).expireAt(Instant.now()).build();
+				client.updateExpirationForHIT(updateHITRequest);
+			}
 
-		// Delete all HITs of the type
-		for (HIT hit : selectedHITs) {
-			DeleteHitRequest deleteHITRequest = DeleteHitRequest.builder().hitId(hit.hitId()).build();
-			client.deleteHIT(deleteHITRequest);
+			// Delete all HITs of the type
+			for (HIT hit : selectedHITs) {
+				DeleteHitRequest deleteHITRequest = DeleteHitRequest.builder().hitId(hit.hitId()).build();
+				client.deleteHIT(deleteHITRequest);
+			}
 		}
 	}
 }

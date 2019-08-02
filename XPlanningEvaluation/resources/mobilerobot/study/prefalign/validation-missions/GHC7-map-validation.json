@@ -465,5 +465,87 @@
       ],
       "area": "PRIVATE"
     }
+  ],
+  "obstacles": [
+  	{
+  	  "from-id": "L2",
+  	  "to-id": "L3",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L3",
+  	  "to-id": "L4",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L4",
+  	  "to-id": "L9",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L8",
+  	  "to-id": "L11",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L9",
+  	  "to-id": "L11",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L11",
+  	  "to-id": "L13",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L13",
+  	  "to-id": "L17",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L17",
+  	  "to-id": "L18",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L18",
+  	  "to-id": "L22",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L22",
+  	  "to-id": "L26",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L25",
+  	  "to-id": "L26",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L26",
+  	  "to-id": "LX5",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "LX5",
+  	  "to-id": "L31",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L11",
+  	  "to-id": "L12",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "L12",
+  	  "to-id": "LX3",
+  	  "occlusion": "OCCLUDED"
+  	},
+  	{
+  	  "from-id": "LX3",
+  	  "to-id": "L18",
+  	  "occlusion": "OCCLUDED"
+  	}
   ]
 }

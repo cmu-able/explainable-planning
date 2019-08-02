@@ -9,7 +9,8 @@
       },
       "connected-to": [
         "L2"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L2",
@@ -21,7 +22,8 @@
         "L1",
         "L3",
         "L7"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L3",
@@ -78,7 +80,8 @@
         "L2",
         "L6",
         "L8"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L8",
@@ -90,7 +93,8 @@
         "L7",
         "L11",
         "LX2"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L9",
@@ -184,7 +188,8 @@
         "L15",
         "L17",
         "LX2"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L17",
@@ -197,7 +202,8 @@
         "L16",
         "L18",
         "L21"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L18",
@@ -244,7 +250,8 @@
       "connected-to": [
         "L17",
         "L25"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L22",
@@ -291,7 +298,8 @@
         "L21",
         "L26",
         "L27"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L26",
@@ -315,7 +323,8 @@
         "L24",
         "L25",
         "L28"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L28",
@@ -326,7 +335,8 @@
       "connected-to": [
         "L27",
         "L29"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L29",
@@ -339,7 +349,8 @@
         "L30",
         "L31",
         "LX4"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L30",
@@ -361,7 +372,8 @@
         "L29",
         "L32",
         "LX5"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "L32",
@@ -371,7 +383,8 @@
       },
       "connected-to": [
         "L31"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "LX1",
@@ -393,7 +406,8 @@
       "connected-to": [
         "L8",
         "L16"
-      ]
+      ],
+      "area" : "PUBLIC"
     },
     {
       "node-id": "LX3",

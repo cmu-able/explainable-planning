@@ -34,7 +34,8 @@
       "connected-to": [
         "L2",
         "L4"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L4",
@@ -46,7 +47,8 @@
         "L3",
         "L5",
         "L9"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L5",
@@ -57,7 +59,8 @@
       "connected-to": [
         "L4",
         "L10"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L6",
@@ -68,7 +71,8 @@
       "connected-to": [
         "L7",
         "LX1"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L7",
@@ -105,7 +109,8 @@
       "connected-to": [
         "L4",
         "L11"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L10",
@@ -116,7 +121,8 @@
       "connected-to": [
         "L5",
         "L12"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L11",
@@ -129,7 +135,8 @@
         "L9",
         "L12",
         "L13"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L12",
@@ -141,7 +148,8 @@
         "L10",
         "L11",
         "LX3"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L13",
@@ -152,7 +160,8 @@
       "connected-to": [
         "L11",
         "L17"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L14",
@@ -163,7 +172,8 @@
       "connected-to": [
         "L15",
         "LX1"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L15",
@@ -176,7 +186,8 @@
         "L16",
         "L19",
         "L20"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L16",
@@ -215,7 +226,8 @@
         "L17",
         "L22",
         "LX3"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L19",
@@ -227,7 +239,8 @@
         "L15",
         "L20",
         "L23"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L20",
@@ -239,7 +252,8 @@
         "L15",
         "L19",
         "L23"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L21",
@@ -262,7 +276,8 @@
       "connected-to": [
         "L18",
         "L26"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L23",
@@ -275,7 +290,8 @@
         "L20",
         "L24",
         "LX4"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L24",
@@ -286,7 +302,8 @@
       "connected-to": [
         "L23",
         "L27"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L25",
@@ -311,7 +328,8 @@
         "L22",
         "L25",
         "LX5"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L27",
@@ -360,7 +378,8 @@
       },
       "connected-to": [
         "L29"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "L31",
@@ -395,7 +414,8 @@
       "connected-to": [
         "L6",
         "L14"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "LX2",
@@ -418,7 +438,8 @@
       "connected-to": [
         "L12",
         "L18"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "LX4",
@@ -429,7 +450,8 @@
       "connected-to": [
         "L23",
         "L29"
-      ]
+      ],
+      "area": "PRIVATE"
     },
     {
       "node-id": "LX5",
@@ -440,7 +462,8 @@
       "connected-to": [
         "L26",
         "L31"
-      ]
+      ],
+      "area": "PRIVATE"
     }
   ]
 }

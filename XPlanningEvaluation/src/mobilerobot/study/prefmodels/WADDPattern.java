@@ -1,4 +1,4 @@
-package mobilerobot.study.prefinterp;
+package mobilerobot.study.prefmodels;
 
 import java.util.HashMap;
 import java.util.Map;

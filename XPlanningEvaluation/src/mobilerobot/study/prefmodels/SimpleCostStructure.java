@@ -1,4 +1,4 @@
-package mobilerobot.study.prefalign;
+package mobilerobot.study.prefmodels;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;

@@ -17,6 +17,7 @@ import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import language.exceptions.XMDPException;
 import language.policy.Policy;
+import mobilerobot.study.prefmodels.LowerConvexHullPolicyCollection;
 import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;

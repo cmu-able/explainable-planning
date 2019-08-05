@@ -1,4 +1,4 @@
-package mobilerobot.study.prefinterp;
+package mobilerobot.study.prefmodels;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +43,6 @@ import language.objectives.CostFunction;
 import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
-import mobilerobot.study.prefalign.SimpleCostStructure;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ResultParsingException;

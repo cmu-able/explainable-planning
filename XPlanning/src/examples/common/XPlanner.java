@@ -43,14 +43,14 @@ public class XPlanner {
 		mVocabulary = vocabulary;
 	}
 
-	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
-		return mXMDPLoader.loadXMDP(missionJsonFile);
+	public XMDP loadXMDPFromProblemFile(File problemFile) throws DSMException, XMDPException {
+		return mXMDPLoader.loadXMDP(problemFile);
 	}
 
-	public PolicyInfo runXPlanning(File missionJsonFile, CostCriterion costCriterion,
+	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion,
 			VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return runXPlanning(missionJsonFile, costCriterion, verbalizerSettings, null);
+		return runXPlanning(problemFile, costCriterion, verbalizerSettings, null);
 	}
 
 	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion, VerbalizerSettings verbalizerSettings,

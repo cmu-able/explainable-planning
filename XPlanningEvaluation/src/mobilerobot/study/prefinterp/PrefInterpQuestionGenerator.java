@@ -15,6 +15,7 @@ import examples.common.DSMException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.policy.Policy;
 import mobilerobot.study.prefmodels.LowerConvexHullPolicyCollection;
@@ -24,6 +25,7 @@ import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.PolicyWriter;
 
@@ -45,7 +47,7 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 	@Override
 	public int generateQuestions(File mapJsonFile, String startNodeID, String goalNodeID, int startMissionIndex)
 			throws ResultParsingException, URISyntaxException, IOException, ParseException, DSMException, XMDPException,
-			PrismException {
+			PrismException, ExplicitModelParsingException, GRBException {
 		LowerConvexHullPolicyCollection lowerConvexHull = new LowerConvexHullPolicyCollection(mapJsonFile, startNodeID,
 				goalNodeID, startMissionIndex);
 		for (Entry<PolicyInfo, File> e : lowerConvexHull) {

@@ -30,6 +30,7 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
@@ -45,6 +46,7 @@ import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInfo, File>> {
@@ -85,7 +87,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 
 	public LowerConvexHullPolicyCollection(File mapJsonFile, String startNodeID, String goalNodeID,
 			int startMissionIndex) throws URISyntaxException, IOException, ParseException, ResultParsingException,
-			DSMException, XMDPException, PrismException {
+			DSMException, XMDPException, PrismException, ExplicitModelParsingException, GRBException {
 		mMapName = FilenameUtils.removeExtension(mapJsonFile.getName());
 		createMissionJSONFiles(mapJsonFile, startNodeID, goalNodeID, startMissionIndex);
 		populateLowerConvexHullPolicies();
@@ -120,7 +122,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 	}
 
 	private void populateLowerConvexHullPolicies() throws URISyntaxException, IOException, ResultParsingException,
-			DSMException, XMDPException, PrismException, ParseException {
+			DSMException, XMDPException, PrismException, ParseException, ExplicitModelParsingException, GRBException {
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);

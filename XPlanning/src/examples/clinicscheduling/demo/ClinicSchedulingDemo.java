@@ -5,106 +5,50 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FilenameUtils;
-
 import examples.clinicscheduling.metrics.IdleTimeQFunction;
 import examples.clinicscheduling.metrics.LeadTimeQFunction;
 import examples.clinicscheduling.metrics.OvertimeQFunction;
 import examples.clinicscheduling.metrics.RevenueQFunction;
 import examples.clinicscheduling.metrics.SwitchABPQFunction;
 import examples.common.DSMException;
+import examples.common.IXMDPLoader;
+import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
-import explanation.analysis.DifferenceScaler;
-import explanation.analysis.Explainer;
-import explanation.analysis.ExplainerSettings;
-import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
-import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
-import language.mdp.QSpace;
-import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import prism.PrismException;
-import solver.gurobiconnector.GRBConnector;
-import solver.gurobiconnector.GRBConnectorSettings;
-import solver.prismconnector.PrismConnector;
-import solver.prismconnector.PrismConnectorSettings;
-import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
-import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
-import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
-import uiconnector.ExplanationWriter;
 
 public class ClinicSchedulingDemo {
 
 	public static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/clinicscheduling/missions";
 	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
-	private ClinicSchedulingXMDPLoader mXMDPLoader;
-	private XPlannerOutDirectories mOutputDirs;
+	private XPlanner mXPlanner;
 
 	public ClinicSchedulingDemo(int branchFactor, XPlannerOutDirectories outputDirs) {
-		mXMDPLoader = new ClinicSchedulingXMDPLoader(branchFactor);
-		mOutputDirs = outputDirs;
+		IXMDPLoader xmdpLoader = new ClinicSchedulingXMDPLoader(branchFactor);
+		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary());
 	}
 
-	public void runXPlanning(File problemFile) throws ExplicitModelParsingException, ResultParsingException,
-			PrismException, XMDPException, IOException, GRBException, DSMException {
-		runXPlanning(problemFile, null);
+	public PolicyInfo runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
+			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.AVERAGE_COST, verbalizerSettings);
 	}
 
-	public void runXPlanning(File problemFile, DifferenceScaler diffScaler) throws PrismException, XMDPException,
-			IOException, ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
-		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(problemName);
-		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(problemName);
-
-		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
-
-		// Use PrismConnector to export XMDP to explicit model files
-		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath.toString(),
-				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.AVERAGE_COST, prismConnSettings);
-		PrismExplicitModelPointer prismExplicitModelPtr = prismConnector.exportExplicitModelFiles();
-		ValueEncodingScheme encodings = prismConnector.getPrismMDPTranslator().getValueEncodingScheme();
-		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
-				encodings);
-
-		// Close down PRISM -- before explainer creates a new PrismConnector
-		prismConnector.terminate();
-
-		// GRBConnector reads from explicit model files
-		GRBConnectorSettings grbConnSettings = new GRBConnectorSettings(prismExplicitModelReader);
-		GRBConnector grbConnector = new GRBConnector(xmdp, CostCriterion.AVERAGE_COST, grbConnSettings);
-		PolicyInfo policyInfo = grbConnector.generateOptimalPolicy();
-
-		// ExplainerSettings define what DifferenceScaler to use, if any
-		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
-		explainerSettings.setDifferenceScaler(diffScaler);
-		Explainer explainer = new Explainer(explainerSettings);
-		Explanation explanation = explainer.explain(xmdp, CostCriterion.AVERAGE_COST, policyInfo);
-
-		Vocabulary vocabulary = getVocabulary(xmdp);
-		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(problemName);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.AVERAGE_COST, policyJsonPath.toFile(),
-				verbalizerSettings);
-
-		String explanationJsonFilename = String.format("%s_explanation.json", problemName);
-		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
-		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
-		File explanationJsonFile = explanationWriter.writeExplanation(problemFile.getName(), explanation,
-				explanationJsonFilename);
-
-		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());
+	public PolicyInfo runPlanning(File missionJsonFile) throws DSMException, XMDPException, PrismException, IOException,
+			ResultParsingException, ExplicitModelParsingException, GRBException {
+		return mXPlanner.runPlanning(missionJsonFile, CostCriterion.AVERAGE_COST);
 	}
 
-	public static void main(String[] args) throws PrismException, XMDPException, IOException,
-			ExplicitModelParsingException, GRBException, DSMException, ResultParsingException {
+	public static void main(String[] args)
+			throws PrismException, XMDPException, IOException, GRBException, DSMException, PrismConnectorException {
 		String problemFilename = args[0];
 		File problemFile = new File(PROBLEMS_PATH, problemFilename);
 
@@ -115,37 +59,29 @@ public class ClinicSchedulingDemo {
 				prismOutputPath);
 
 		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
-		demo.runXPlanning(problemFile);
+		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
+		demo.runXPlanning(problemFile, defaultVerbalizerSettings);
 	}
 
-	public static Vocabulary getVocabulary(XMDP xmdp) {
-		QSpace qSpace = xmdp.getQSpace();
-
-		RevenueQFunction revenueQFunction = qSpace.getQFunction(RevenueQFunction.class, RevenueQFunction.NAME);
-		OvertimeQFunction overtimeQFunction = qSpace.getQFunction(OvertimeQFunction.class, OvertimeQFunction.NAME);
-		IdleTimeQFunction idleTimeQFunction = qSpace.getQFunction(IdleTimeQFunction.class, IdleTimeQFunction.NAME);
-		LeadTimeQFunction leadTimeQFunction = qSpace.getQFunction(LeadTimeQFunction.class, LeadTimeQFunction.NAME);
-		SwitchABPQFunction switchABPQFunction = qSpace.getQFunction(SwitchABPQFunction.class, SwitchABPQFunction.NAME);
-
+	public static Vocabulary getVocabulary() {
 		Vocabulary vocab = new Vocabulary();
-		vocab.putNoun(revenueQFunction, "revenue");
-		vocab.putVerb(revenueQFunction, "have");
-		vocab.putUnit(revenueQFunction, "dollar in revenue", "dollars in revenue");
-		vocab.putNoun(overtimeQFunction, "overtime cost");
-		vocab.putVerb(overtimeQFunction, "have");
-		vocab.putUnit(overtimeQFunction, "dollar in overtime cost", "dollars in overtime cost");
-		vocab.putNoun(idleTimeQFunction, "idle time cost");
-		vocab.putVerb(idleTimeQFunction, "have");
-		vocab.putUnit(idleTimeQFunction, "dollar in idle time cost", "dollars in idle time cost");
-		vocab.putNoun(leadTimeQFunction, "appointment lead time cost");
-		vocab.putVerb(leadTimeQFunction, "have");
-		vocab.putUnit(leadTimeQFunction, "dollar in appointment lead time cost",
+		vocab.putNoun(RevenueQFunction.NAME, "revenue");
+		vocab.putVerb(RevenueQFunction.NAME, "have");
+		vocab.putUnit(RevenueQFunction.NAME, "dollar in revenue", "dollars in revenue");
+		vocab.putNoun(OvertimeQFunction.NAME, "overtime cost");
+		vocab.putVerb(OvertimeQFunction.NAME, "have");
+		vocab.putUnit(OvertimeQFunction.NAME, "dollar in overtime cost", "dollars in overtime cost");
+		vocab.putNoun(IdleTimeQFunction.NAME, "idle time cost");
+		vocab.putVerb(IdleTimeQFunction.NAME, "have");
+		vocab.putUnit(IdleTimeQFunction.NAME, "dollar in idle time cost", "dollars in idle time cost");
+		vocab.putNoun(LeadTimeQFunction.NAME, "appointment lead time cost");
+		vocab.putVerb(LeadTimeQFunction.NAME, "have");
+		vocab.putUnit(LeadTimeQFunction.NAME, "dollar in appointment lead time cost",
 				"dollars in appointment lead time cost");
-		vocab.putNoun(switchABPQFunction, "switching ABP cost");
-		vocab.putVerb(switchABPQFunction, "have");
-		vocab.putUnit(switchABPQFunction, "dollar in switching ABP cost", "dollars in switching ABP cost");
+		vocab.putNoun(SwitchABPQFunction.NAME, "switching ABP cost");
+		vocab.putVerb(SwitchABPQFunction.NAME, "have");
+		vocab.putUnit(SwitchABPQFunction.NAME, "dollar in switching ABP cost", "dollars in switching ABP cost");
 		vocab.setPeriodUnit("day");
-
 		return vocab;
 	}
 

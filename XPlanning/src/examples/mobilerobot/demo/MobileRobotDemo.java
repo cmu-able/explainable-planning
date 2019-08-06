@@ -19,7 +19,9 @@ import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
+import language.objectives.CostCriterion;
 import prism.PrismException;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
@@ -34,18 +36,18 @@ public class MobileRobotDemo {
 		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary());
 	}
 
+	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
+		return mXPlanner.loadXMDPFromProblemFile(missionJsonFile);
+	}
+
 	public PolicyInfo runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return mXPlanner.runXPlanning(missionJsonFile, verbalizerSettings);
+		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.TOTAL_COST, verbalizerSettings);
 	}
 
-	public PolicyInfo runPlanning(File missionJsonFile)
-			throws DSMException, XMDPException, PrismException, IOException, ResultParsingException {
-		return mXPlanner.runPlanning(missionJsonFile);
-	}
-
-	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
-		return mXPlanner.loadXMDPFromMissionFile(missionJsonFile);
+	public PolicyInfo runPlanning(File missionJsonFile) throws DSMException, XMDPException, PrismException, IOException,
+			ResultParsingException, ExplicitModelParsingException, GRBException {
+		return mXPlanner.runPlanning(missionJsonFile, CostCriterion.TOTAL_COST);
 	}
 
 	public static void main(String[] args)

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class XPlanningOutDirectories {
+public class XPlannerOutDirectories {
 
 	public static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
 	public static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
@@ -26,7 +26,7 @@ public class XPlanningOutDirectories {
 	private Path mPrismOutputModelsPath;
 	private Path mPrismOutputAdvsPath;
 
-	public XPlanningOutDirectories(Path policiesOutputPath, Path explanationsOutputPath, Path prismOutputPath) throws IOException {
+	public XPlannerOutDirectories(Path policiesOutputPath, Path explanationsOutputPath, Path prismOutputPath) throws IOException {
 		mPoliciesOutputPath = policiesOutputPath;
 		mExplanationsOutputPath = explanationsOutputPath;
 		mPrismOutputModelsPath = prismOutputPath.resolve("models");
@@ -62,10 +62,10 @@ public class XPlanningOutDirectories {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof XPlanningOutDirectories)) {
+		if (!(obj instanceof XPlannerOutDirectories)) {
 			return false;
 		}
-		XPlanningOutDirectories dirs = (XPlanningOutDirectories) obj;
+		XPlannerOutDirectories dirs = (XPlannerOutDirectories) obj;
 		return dirs.mPoliciesOutputPath.equals(mPoliciesOutputPath)
 				&& dirs.mExplanationsOutputPath.equals(mExplanationsOutputPath)
 				&& dirs.mPrismOutputModelsPath.equals(mPrismOutputModelsPath)

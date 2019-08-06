@@ -39,7 +39,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 
 public class FileIOUtils {
 
@@ -179,12 +179,12 @@ public class FileIOUtils {
 		return outSubDir;
 	}
 
-	public static XPlanningOutDirectories createXPlanningOutDirectories() throws IOException {
+	public static XPlannerOutDirectories createXPlannerOutDirectories() throws IOException {
 		Path outputPath = FileIOUtils.getOutputDir().toPath();
-		Path policiesOutputPath = outputPath.resolve(XPlanningOutDirectories.POLICIES_SUBDIR_NAME);
-		Path explanationsOutputPath = outputPath.resolve(XPlanningOutDirectories.EXPLANATIONS_SUBDIR_NAME);
-		Path prismOutputPath = outputPath.resolve(XPlanningOutDirectories.PRISM_SUBDIR_NAME);
-		return new XPlanningOutDirectories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
+		Path policiesOutputPath = outputPath.resolve(XPlannerOutDirectories.POLICIES_SUBDIR_NAME);
+		Path explanationsOutputPath = outputPath.resolve(XPlannerOutDirectories.EXPLANATIONS_SUBDIR_NAME);
+		Path prismOutputPath = outputPath.resolve(XPlannerOutDirectories.PRISM_SUBDIR_NAME);
+		return new XPlannerOutDirectories(policiesOutputPath, explanationsOutputPath, prismOutputPath);
 	}
 
 	public static void prettyPrintJSONObjectToFile(JSONObject jsonObj, File outputFile) throws FileNotFoundException {

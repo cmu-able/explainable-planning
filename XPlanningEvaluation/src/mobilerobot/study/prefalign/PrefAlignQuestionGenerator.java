@@ -16,7 +16,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
@@ -49,7 +49,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private VerbalizerSettings mVerbalizerSettings = new VerbalizerSettings();
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
-		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		mXPlanningRunner = new XPlanningRunner(mapsJsonDir, outputDirs);
 		mVerbalizerSettings.setDescribeCosts(false);
 		mVerbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
@@ -190,7 +190,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		// Check if missionY of agent[i] has already been explained
 		// If so, no need to run XPlanning on missionY.json again
-		XPlanningOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
+		XPlannerOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
 		Path explanationsOutPath = xplanningOutDirs.getExplanationsOutputPath();
 		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
 		String agentExplanationFilename = agentMissionName + "_explanation.json";

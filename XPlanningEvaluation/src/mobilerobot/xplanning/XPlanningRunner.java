@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import examples.common.DSMException;
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
@@ -18,9 +18,9 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 public class XPlanningRunner {
 
 	private MobileRobotDemo mDemo;
-	private XPlanningOutDirectories mOutputDirs;
+	private XPlannerOutDirectories mOutputDirs;
 
-	public XPlanningRunner(File mapsJsonDir, XPlanningOutDirectories outputDirs) {
+	public XPlanningRunner(File mapsJsonDir, XPlannerOutDirectories outputDirs) {
 		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		mOutputDirs = outputDirs;
 	}
@@ -41,13 +41,13 @@ public class XPlanningRunner {
 		}
 	}
 
-	public XPlanningOutDirectories getXPlanningOutDirectories() {
+	public XPlannerOutDirectories getXPlanningOutDirectories() {
 		return mOutputDirs;
 	}
 
 	public static void main(String[] args) throws URISyntaxException, PrismException, IOException, XMDPException,
 			PrismConnectorException, GRBException, DSMException {
-		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		File missionsJsonRootDir;

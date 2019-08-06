@@ -10,7 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import explanation.analysis.PolicyInfo;
 import language.mdp.XMDP;
@@ -71,7 +71,7 @@ public class QuestionUtils {
 	public static PrismConnector createPrismConnector(File missionFile, XMDP xmdp) throws IOException, PrismException {
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
-		XPlanningOutDirectories outputDirs = FileIOUtils.createXPlanningOutDirectories();
+		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(missionName);
 		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(missionName);
 

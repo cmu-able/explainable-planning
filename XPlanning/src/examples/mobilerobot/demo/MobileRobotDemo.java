@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FilenameUtils;
 
 import examples.common.DSMException;
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
@@ -43,9 +43,9 @@ public class MobileRobotDemo {
 	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 
 	private MobileRobotXMDPLoader mXMDPLoader;
-	private XPlanningOutDirectories mOutputDirs;
+	private XPlannerOutDirectories mOutputDirs;
 
-	public MobileRobotDemo(File mapsJsonDir, XPlanningOutDirectories outputDirs) {
+	public MobileRobotDemo(File mapsJsonDir, XPlannerOutDirectories outputDirs) {
 		mXMDPLoader = new MobileRobotXMDPLoader(mapsJsonDir);
 		mOutputDirs = outputDirs;
 	}
@@ -120,10 +120,10 @@ public class MobileRobotDemo {
 		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
 		File mapsJsonDir = new File(MAPS_PATH);
 
-		Path policiesOutputPath = Paths.get(XPlanningOutDirectories.POLICIES_OUTPUT_PATH);
-		Path explanationOutputPath = Paths.get(XPlanningOutDirectories.EXPLANATIONS_OUTPUT_PATH);
-		Path prismOutputPath = Paths.get(XPlanningOutDirectories.PRISM_OUTPUT_PATH);
-		XPlanningOutDirectories outputDirs = new XPlanningOutDirectories(policiesOutputPath, explanationOutputPath,
+		Path policiesOutputPath = Paths.get(XPlannerOutDirectories.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(XPlannerOutDirectories.PRISM_OUTPUT_PATH);
+		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
 				prismOutputPath);
 
 		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);

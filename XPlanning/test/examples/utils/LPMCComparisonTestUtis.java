@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
@@ -36,8 +36,8 @@ public class LPMCComparisonTestUtis {
 			throws PrismException, XMDPException, IOException, PrismConnectorException, GRBException {
 		// Problem file
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		String modelOutputPath = XPlanningOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
-		String advOutputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
+		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
+		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
 
 		// Create PRISM connector
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
@@ -88,8 +88,8 @@ public class LPMCComparisonTestUtis {
 
 		// Problem file
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		String modelOutputPath = XPlanningOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
-		String advOutputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
+		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
+		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
 
 		// Create PRISM connector
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);

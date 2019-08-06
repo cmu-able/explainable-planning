@@ -9,7 +9,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.common.DSMException;
-import examples.common.XPlanningOutDirectories;
+import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.demo.MobileRobotDemo;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.SimpleConsoleLogger;
@@ -37,8 +37,8 @@ public class MobileRobotExplanationTest {
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
 			ResultParsingException, XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String modelOutputPath = XPlanningOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-		String advOutputPath = XPlanningOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
+		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
 		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSettings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
@@ -52,7 +52,7 @@ public class MobileRobotExplanationTest {
 
 		Vocabulary vocabulary = MobileRobotDemo.getVocabulary(xmdp.getQSpace());
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		File policyJsonDir = new File(XPlanningOutDirectories.POLICIES_OUTPUT_PATH + "/" + missionName);
+		File policyJsonDir = new File(XPlannerOutDirectories.POLICIES_OUTPUT_PATH + "/" + missionName);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonDir, verbalizerSettings);
 		String verbalization = verbalizer.verbalize(explanation);
 

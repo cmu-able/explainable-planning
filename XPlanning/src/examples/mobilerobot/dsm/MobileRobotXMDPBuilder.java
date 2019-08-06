@@ -239,10 +239,12 @@ public class MobileRobotXMDPBuilder {
 
 		// Intrusiveness
 		IntrusivenessDomain intrusiveDomain = new IntrusivenessDomain(moveToDef, rLocDef);
-		IntrusiveMoveEvent nonIntrusive = new IntrusiveMoveEvent("non-intrusive", intrusiveDomain, Area.PUBLIC);
-		IntrusiveMoveEvent somewhatIntrusive = new IntrusiveMoveEvent("somewhat-intrusive", intrusiveDomain,
-				Area.SEMI_PRIVATE);
-		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent("very-intrusive", intrusiveDomain, Area.PRIVATE);
+		IntrusiveMoveEvent nonIntrusive = new IntrusiveMoveEvent(IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME,
+				intrusiveDomain, Area.PUBLIC);
+		IntrusiveMoveEvent somewhatIntrusive = new IntrusiveMoveEvent(IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME,
+				intrusiveDomain, Area.SEMI_PRIVATE);
+		IntrusiveMoveEvent veryIntrusive = new IntrusiveMoveEvent(IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME,
+				intrusiveDomain, Area.PRIVATE);
 		EventBasedMetric<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> metric = new EventBasedMetric<>(
 				IntrusiveMoveEvent.NAME, intrusiveDomain);
 		metric.putEventValue(nonIntrusive, NON_INTRUSIVE_PENALTY);

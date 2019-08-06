@@ -11,6 +11,10 @@ public class IntrusiveMoveEvent implements IEvent<MoveToAction, IntrusivenessDom
 
 	public static final String NAME = "intrusiveness";
 
+	public static final String NON_INTRUSIVE_EVENT_NAME = "non-intrusive";
+	public static final String SOMEWHAT_INTRUSIVE_EVENT_NAME = "somewhat-intrusive";
+	public static final String VERY_INTRUSIVE_EVENT_NAME = "very-intrusive";
+
 	/*
 	 * Cached hashCode -- Effective Java
 	 */

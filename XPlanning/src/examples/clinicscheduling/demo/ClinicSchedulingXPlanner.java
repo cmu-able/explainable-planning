@@ -60,9 +60,9 @@ public class ClinicSchedulingXPlanner {
 				prismOutputPath);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		ClinicSchedulingXPlanner demo = new ClinicSchedulingXPlanner(DEFAULT_BRANCH_FACTOR, outputDirs,
+		ClinicSchedulingXPlanner xplanner = new ClinicSchedulingXPlanner(DEFAULT_BRANCH_FACTOR, outputDirs,
 				defaultVerbalizerSettings);
-		demo.runXPlanning(problemFile);
+		xplanner.runXPlanning(problemFile);
 	}
 
 	public static Vocabulary getVocabulary() {

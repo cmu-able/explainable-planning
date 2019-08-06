@@ -32,7 +32,6 @@ import mobilerobot.study.utilities.IQuestionGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
-import mobilerobot.xplanning.XPlanningRunner;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.exceptions.PrismConnectorException;
@@ -45,15 +44,20 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private static final double EQUALITY_TOL = 1e-5;
 
 	private QuestionViz mQuestionViz = new QuestionViz();
-	private XPlanningRunner mXPlanningRunner;
-	private VerbalizerSettings mVerbalizerSettings = new VerbalizerSettings();
+	private MobileRobotDemo mXPlanner;
+	private XPlannerOutDirectories mOutputDirs;
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
-		mXPlanningRunner = new XPlanningRunner(mapsJsonDir, outputDirs);
-		mVerbalizerSettings.setDescribeCosts(false);
-		mVerbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
-		MobileRobotDemo.setVerbalizerOrdering(mVerbalizerSettings);
+
+		// Configure verbalizer settings
+		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
+		verbalizerSettings.setDescribeCosts(false);
+		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
+		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
+
+		mXPlanner = new MobileRobotDemo(mapsJsonDir, outputDirs, verbalizerSettings);
+		mOutputDirs = outputDirs;
 	}
 
 	@Override
@@ -139,7 +143,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
 		writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", agentIndex, questionDir);
 
-		QADecimalFormatter decimalFormatter = mVerbalizerSettings.getQADecimalFormatter();
+		QADecimalFormatter decimalFormatter = MobileRobotDemo.getQADecimalFormatter();
 
 		// Write the QA values of each agent policy as json file
 		JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy,
@@ -190,8 +194,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		// Check if missionY of agent[i] has already been explained
 		// If so, no need to run XPlanning on missionY.json again
-		XPlannerOutDirectories xplannerOutDirs = mXPlanningRunner.getXPlannerOutDirectories();
-		Path explanationsOutPath = xplannerOutDirs.getExplanationsOutputPath();
+		Path explanationsOutPath = mOutputDirs.getExplanationsOutputPath();
 		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
 		String agentExplanationFilename = agentMissionName + "_explanation.json";
 		Path agentExplanationPath = explanationsOutPath.resolve(agentExplanationFilename);
@@ -199,14 +202,14 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		if (!agentExplanationPath.toFile().exists()) {
 			// missionY_explanation.json does not exist -- missionY has not been explained yet
 			// Run XPlanning on missionY.json to create explanation for agent[i]'s policy
-			mXPlanningRunner.runMission(agentMissionFile, mVerbalizerSettings);
+			mXPlanner.runXPlanning(agentMissionFile);
 		}
 
 		// Copy solution policy, alternative policies, and explanation from XPlanningOutDirectories to the explanation
 		// sub-dir
 
 		// Copy solnPolicy.json and all altPolicy[j].json from /output/policies/missionY/ to the explanation sub-dir
-		Path policiesOutPath = xplannerOutDirs.getPoliciesOutputPath();
+		Path policiesOutPath = mOutputDirs.getPoliciesOutputPath();
 		Path agentMissionPoliciesOutPath = policiesOutPath.resolve(agentMissionName);
 		FileUtils.copyDirectory(agentMissionPoliciesOutPath.toFile(), explanationDir);
 

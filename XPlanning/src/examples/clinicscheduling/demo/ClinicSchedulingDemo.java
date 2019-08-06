@@ -32,14 +32,15 @@ public class ClinicSchedulingDemo {
 
 	private XPlanner mXPlanner;
 
-	public ClinicSchedulingDemo(int branchFactor, XPlannerOutDirectories outputDirs) {
+	public ClinicSchedulingDemo(int branchFactor, XPlannerOutDirectories outputDirs,
+			VerbalizerSettings verbalizerSettings) {
 		IXMDPLoader xmdpLoader = new ClinicSchedulingXMDPLoader(branchFactor);
-		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary());
+		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
 	}
 
-	public PolicyInfo runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
+	public PolicyInfo runXPlanning(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.AVERAGE_COST, verbalizerSettings);
+		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.AVERAGE_COST);
 	}
 
 	public PolicyInfo runPlanning(File missionJsonFile) throws DSMException, XMDPException, PrismException, IOException,
@@ -58,9 +59,10 @@ public class ClinicSchedulingDemo {
 		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
 				prismOutputPath);
 
-		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs);
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		demo.runXPlanning(problemFile, defaultVerbalizerSettings);
+		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs,
+				defaultVerbalizerSettings);
+		demo.runXPlanning(problemFile);
 	}
 
 	public static Vocabulary getVocabulary() {

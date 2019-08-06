@@ -36,25 +36,26 @@ public class XPlanner {
 	private IXMDPLoader mXMDPLoader;
 	private XPlannerOutDirectories mOutputDirs;
 	private Vocabulary mVocabulary;
+	private VerbalizerSettings mVerbalizerSettings;
 
-	public XPlanner(IXMDPLoader xmdpLoader, XPlannerOutDirectories outputDirs, Vocabulary vocabulary) {
+	public XPlanner(IXMDPLoader xmdpLoader, XPlannerOutDirectories outputDirs, Vocabulary vocabulary,
+			VerbalizerSettings verbalizerSettings) {
 		mXMDPLoader = xmdpLoader;
 		mOutputDirs = outputDirs;
 		mVocabulary = vocabulary;
+		mVerbalizerSettings = verbalizerSettings;
 	}
 
 	public XMDP loadXMDPFromProblemFile(File problemFile) throws DSMException, XMDPException {
 		return mXMDPLoader.loadXMDP(problemFile);
 	}
 
-	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion,
-			VerbalizerSettings verbalizerSettings)
+	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return runXPlanning(problemFile, costCriterion, verbalizerSettings, null);
+		return runXPlanning(problemFile, costCriterion, null);
 	}
 
-	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion, VerbalizerSettings verbalizerSettings,
-			DifferenceScaler diffScaler)
+	public PolicyInfo runXPlanning(File problemFile, CostCriterion costCriterion, DifferenceScaler diffScaler)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		// Run regular planning
 		PolicyInfo policyInfo = runPlanning(problemFile, costCriterion);
@@ -70,7 +71,8 @@ public class XPlanner {
 
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(problemName);
-		Verbalizer verbalizer = new Verbalizer(mVocabulary, costCriterion, policyJsonPath.toFile(), verbalizerSettings);
+		Verbalizer verbalizer = new Verbalizer(mVocabulary, costCriterion, policyJsonPath.toFile(),
+				mVerbalizerSettings);
 
 		// Write explanation to output file
 		String explanationJsonFilename = String.format("%s_explanation.json", problemName);

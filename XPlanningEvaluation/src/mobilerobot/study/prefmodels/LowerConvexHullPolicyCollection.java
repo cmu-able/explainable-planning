@@ -30,6 +30,7 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.MoveToAction;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
+import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.IQFunction;
@@ -125,7 +126,8 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 			DSMException, XMDPException, PrismException, ParseException, ExplicitModelParsingException, GRBException {
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
-		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
+		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings();
+		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		File outputDir = FileIOUtils.getOutputDir();
 		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);
 		for (File missionJsonFile : missionsOfMapDir.listFiles()) {

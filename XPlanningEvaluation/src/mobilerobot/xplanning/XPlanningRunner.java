@@ -20,23 +20,23 @@ public class XPlanningRunner {
 	private MobileRobotDemo mDemo;
 	private XPlannerOutDirectories mOutputDirs;
 
-	public XPlanningRunner(File mapsJsonDir, XPlannerOutDirectories outputDirs) {
-		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs);
+	public XPlanningRunner(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
+		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs, verbalizerSettings);
 		mOutputDirs = outputDirs;
 	}
 
-	public void runMission(File missionJsonFile, VerbalizerSettings verbalizerSettings)
+	public void runMission(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		mDemo.runXPlanning(missionJsonFile, verbalizerSettings);
+		mDemo.runXPlanning(missionJsonFile);
 	}
 
-	public void runAllMissions(File missionsJsonDir, VerbalizerSettings verbalizerSettings)
+	public void runAllMissions(File missionsJsonDir)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		if (!missionsJsonDir.isDirectory()) {
-			runMission(missionsJsonDir, verbalizerSettings);
+			runMission(missionsJsonDir);
 		} else {
 			for (File subDirOrFile : missionsJsonDir.listFiles()) {
-				runAllMissions(subDirOrFile, verbalizerSettings);
+				runAllMissions(subDirOrFile);
 			}
 		}
 	}
@@ -58,11 +58,12 @@ public class XPlanningRunner {
 			missionsJsonRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
 		}
 
-		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs);
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings(); // describe costs
 		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
 		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
-		runner.runAllMissions(missionsJsonRootDir, verbalizerSettings);
+
+		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs, verbalizerSettings);
+		runner.runAllMissions(missionsJsonRootDir);
 	}
 
 }

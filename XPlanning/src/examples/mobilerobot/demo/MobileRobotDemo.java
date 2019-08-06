@@ -31,18 +31,18 @@ public class MobileRobotDemo {
 
 	private XPlanner mXPlanner;
 
-	public MobileRobotDemo(File mapsJsonDir, XPlannerOutDirectories outputDirs) {
+	public MobileRobotDemo(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
 		IXMDPLoader xmdpLoader = new MobileRobotXMDPLoader(mapsJsonDir);
-		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary());
+		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
 	}
 
 	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
 		return mXPlanner.loadXMDPFromProblemFile(missionJsonFile);
 	}
 
-	public PolicyInfo runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
+	public PolicyInfo runXPlanning(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.TOTAL_COST, verbalizerSettings);
+		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.TOTAL_COST);
 	}
 
 	public PolicyInfo runPlanning(File missionJsonFile) throws DSMException, XMDPException, PrismException, IOException,
@@ -62,9 +62,9 @@ public class MobileRobotDemo {
 		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
 				prismOutputPath);
 
-		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs);
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		demo.runXPlanning(missionJsonFile, defaultVerbalizerSettings);
+		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		demo.runXPlanning(missionJsonFile);
 	}
 
 	public static Vocabulary getVocabulary() {

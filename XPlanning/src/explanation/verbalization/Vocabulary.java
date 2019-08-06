@@ -5,50 +5,45 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import language.domain.metrics.IEvent;
-import language.domain.metrics.IQFunction;
-import language.domain.metrics.NonStandardMetricQFunction;
-
 public class Vocabulary {
 
-	private Map<IQFunction<?, ?>, String> mNouns = new HashMap<>();
-	private Map<NonStandardMetricQFunction<?, ?, ?>, Map<IEvent<?, ?>, String>> mCategoricalValues = new HashMap<>();
-	private Map<IQFunction<?, ?>, String> mVerbs = new HashMap<>();
-	private Map<IQFunction<?, ?>, String> mPrepositions = new HashMap<>();
-	private Map<IQFunction<?, ?>, String> mSingularUnits = new HashMap<>();
-	private Map<IQFunction<?, ?>, String> mPluralUnits = new HashMap<>();
-	private Set<IQFunction<?, ?>> mOmitUnits = new HashSet<>();
+	private Map<String, String> mNouns = new HashMap<>();
+	private Map<String, Map<String, String>> mCategoricalValues = new HashMap<>();
+	private Map<String, String> mVerbs = new HashMap<>();
+	private Map<String, String> mPrepositions = new HashMap<>();
+	private Map<String, String> mSingularUnits = new HashMap<>();
+	private Map<String, String> mPluralUnits = new HashMap<>();
+	private Set<String> mOmitUnits = new HashSet<>();
 	private String mPeriodUnit;
 
-	public void putNoun(IQFunction<?, ?> qFunction, String noun) {
-		mNouns.put(qFunction, noun);
+	public void putNoun(String qFunctionName, String noun) {
+		mNouns.put(qFunctionName, noun);
 	}
 
-	public void putVerb(IQFunction<?, ?> qFunction, String verb) {
-		mVerbs.put(qFunction, verb);
+	public void putVerb(String qFunctionName, String verb) {
+		mVerbs.put(qFunctionName, verb);
 	}
 
-	public void putPreposition(IQFunction<?, ?> qFunction, String preposition) {
-		mPrepositions.put(qFunction, preposition);
+	public void putPreposition(String qFunctionName, String preposition) {
+		mPrepositions.put(qFunctionName, preposition);
 	}
 
-	public void putUnit(IQFunction<?, ?> qFunction, String singularUnit, String pluralUnit) {
-		mSingularUnits.put(qFunction, singularUnit);
-		mPluralUnits.put(qFunction, pluralUnit);
+	public void putUnit(String qFunctionName, String singularUnit, String pluralUnit) {
+		mSingularUnits.put(qFunctionName, singularUnit);
+		mPluralUnits.put(qFunctionName, pluralUnit);
 	}
 
-	public void setOmitUnitWhenNounPresent(IQFunction<?, ?> qFunction) {
-		mOmitUnits.add(qFunction);
+	public void setOmitUnitWhenNounPresent(String qFunctionName) {
+		mOmitUnits.add(qFunctionName);
 	}
 
-	public void putCategoricalValue(NonStandardMetricQFunction<?, ?, ?> qFunction, IEvent<?, ?> event,
-			String categoricalValue) {
-		if (!mCategoricalValues.containsKey(qFunction)) {
-			Map<IEvent<?, ?>, String> catValues = new HashMap<>();
-			catValues.put(event, categoricalValue);
-			mCategoricalValues.put(qFunction, catValues);
+	public void putCategoricalValue(String qFunctionName, String eventName, String categoricalValue) {
+		if (!mCategoricalValues.containsKey(qFunctionName)) {
+			Map<String, String> catValues = new HashMap<>();
+			catValues.put(eventName, categoricalValue);
+			mCategoricalValues.put(qFunctionName, catValues);
 		} else {
-			mCategoricalValues.get(qFunction).put(event, categoricalValue);
+			mCategoricalValues.get(qFunctionName).put(eventName, categoricalValue);
 		}
 	}
 
@@ -56,32 +51,32 @@ public class Vocabulary {
 		mPeriodUnit = periodUnit;
 	}
 
-	public String getNoun(IQFunction<?, ?> qFunction) {
-		return mNouns.get(qFunction);
+	public String getNoun(String qFunctionName) {
+		return mNouns.get(qFunctionName);
 	}
 
-	public String getVerb(IQFunction<?, ?> qFunction) {
-		return mVerbs.get(qFunction);
+	public String getVerb(String qFunctionName) {
+		return mVerbs.get(qFunctionName);
 	}
 
-	public String getPreposition(IQFunction<?, ?> qFunction) {
-		return mPrepositions.get(qFunction);
+	public String getPreposition(String qFunctionName) {
+		return mPrepositions.get(qFunctionName);
 	}
 
-	public String getSingularUnit(IQFunction<?, ?> qFunction) {
-		return mSingularUnits.get(qFunction);
+	public String getSingularUnit(String qFunctionName) {
+		return mSingularUnits.get(qFunctionName);
 	}
 
-	public String getPluralUnit(IQFunction<?, ?> qFunction) {
-		return mPluralUnits.get(qFunction);
+	public String getPluralUnit(String qFunctionName) {
+		return mPluralUnits.get(qFunctionName);
 	}
 
-	public boolean omitUnitWhenNounPresent(IQFunction<?, ?> qFunction) {
-		return mOmitUnits.contains(qFunction);
+	public boolean omitUnitWhenNounPresent(String qFunctionName) {
+		return mOmitUnits.contains(qFunctionName);
 	}
 
-	public String getCategoricalValue(NonStandardMetricQFunction<?, ?, ?> qFunction, IEvent<?, ?> event) {
-		return mCategoricalValues.get(qFunction).get(event);
+	public String getCategoricalValue(String qFunctionName, String eventName) {
+		return mCategoricalValues.get(qFunctionName).get(eventName);
 	}
 
 	public String getPeriodUnit() {

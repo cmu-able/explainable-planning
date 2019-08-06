@@ -124,7 +124,7 @@ public class Verbalizer {
 
 				// Then describe event-based QA value break-down
 				builder.append("it will ");
-				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(mVocabulary.getVerb(qFunction.getName()));
 				builder.append(" ");
 
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
@@ -133,7 +133,7 @@ public class Verbalizer {
 			} else {
 				// Standard metric or count
 				// Use only 1 verb
-				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(mVocabulary.getVerb(qFunction.getName()));
 				builder.append(" ");
 				builder.append(verbalizeQAValue(qFunction, qaValue, scaledQACost, false, false));
 			}
@@ -158,10 +158,10 @@ public class Verbalizer {
 		builder.append(formattedQAValue);
 
 		// Include unit of the QA only when the noun is not present, or when it must not be omitted
-		if (!isNounPresent || !mVocabulary.omitUnitWhenNounPresent(qFunction)) {
+		if (!isNounPresent || !mVocabulary.omitUnitWhenNounPresent(qFunction.getName())) {
 			builder.append(" ");
-			builder.append(
-					roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction) : mVocabulary.getSingularUnit(qFunction));
+			builder.append(roundedQAValue > 1 ? mVocabulary.getPluralUnit(qFunction.getName())
+					: mVocabulary.getSingularUnit(qFunction.getName()));
 		}
 
 		if (mSettings.describeCosts()) {
@@ -198,14 +198,14 @@ public class Verbalizer {
 			String formattedExpectedCount = mSettings.formatQAValue(nonStdQFunction, expectedCount);
 			double roundedExpectedCount = Double.parseDouble(formattedExpectedCount);
 
-			builder.append(mVocabulary.getCategoricalValue(nonStdQFunction, event)); // event name
+			builder.append(mVocabulary.getCategoricalValue(nonStdQFunction.getName(), event.getName())); // event name
 			builder.append(" ");
-			builder.append(mVocabulary.getPreposition(nonStdQFunction)); // linking event to measurement unit
+			builder.append(mVocabulary.getPreposition(nonStdQFunction.getName())); // linking event to measurement unit
 			builder.append(" ");
 			builder.append(formattedExpectedCount); // number of events
 			builder.append(" ");
-			builder.append(roundedExpectedCount > 1 ? mVocabulary.getPluralUnit(nonStdQFunction)
-					: mVocabulary.getSingularUnit(nonStdQFunction));
+			builder.append(roundedExpectedCount > 1 ? mVocabulary.getPluralUnit(nonStdQFunction.getName())
+					: mVocabulary.getSingularUnit(nonStdQFunction.getName()));
 
 			// Total value from all events
 			double eventValue = eventBasedMetric.getEventValue(event);
@@ -319,7 +319,7 @@ public class Verbalizer {
 			} else {
 				builder.append(", ");
 			}
-			builder.append(mVocabulary.getNoun(qFunction));
+			builder.append(mVocabulary.getNoun(qFunction.getName()));
 		}
 		return builder.toString();
 	}
@@ -369,7 +369,7 @@ public class Verbalizer {
 			}
 
 			builder.append(diffQAValue < 0 ? "reduce the expected " : "increase the expected ");
-			builder.append(mVocabulary.getNoun(qFunction));
+			builder.append(mVocabulary.getNoun(qFunction.getName()));
 
 			// Use either relative contrast, or absolute contrast
 			double altContrastValue;
@@ -390,7 +390,7 @@ public class Verbalizer {
 				// Then describe event-based QA value break-down, but in absolute term
 				builder.append(": ");
 				builder.append("it would ");
-				builder.append(mVocabulary.getVerb(qFunction));
+				builder.append(mVocabulary.getVerb(qFunction.getName()));
 				builder.append(" ");
 
 				NonStandardMetricQFunction<?, ?, IEvent<?, ?>> nonStdQFunction = (NonStandardMetricQFunction<?, ?, IEvent<?, ?>>) qFunction;
@@ -435,7 +435,7 @@ public class Verbalizer {
 			}
 
 			builder.append(diffQAValue < 0 ? "decrease in expected " : "increase in expected ");
-			builder.append(mVocabulary.getNoun(qFunction));
+			builder.append(mVocabulary.getNoun(qFunction.getName()));
 		}
 		return builder.toString();
 	}

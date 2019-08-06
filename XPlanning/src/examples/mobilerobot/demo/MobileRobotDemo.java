@@ -5,113 +5,47 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FilenameUtils;
-
 import examples.common.DSMException;
+import examples.common.IXMDPLoader;
+import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
-import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
-import examples.mobilerobot.models.MoveToAction;
-import explanation.analysis.DifferenceScaler;
-import explanation.analysis.Explainer;
-import explanation.analysis.ExplainerSettings;
-import explanation.analysis.Explanation;
 import explanation.analysis.PolicyInfo;
 import explanation.verbalization.QADecimalFormatter;
-import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
-import language.domain.metrics.CountQFunction;
-import language.domain.metrics.NonStandardMetricQFunction;
 import language.exceptions.XMDPException;
-import language.mdp.QSpace;
 import language.mdp.XMDP;
-import language.objectives.CostCriterion;
 import prism.PrismException;
-import solver.prismconnector.PrismConnector;
-import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
-import uiconnector.ExplanationWriter;
 
 public class MobileRobotDemo {
 	public static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
 	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 
-	private MobileRobotXMDPLoader mXMDPLoader;
-	private XPlannerOutDirectories mOutputDirs;
+	private XPlanner mXPlanner;
 
 	public MobileRobotDemo(File mapsJsonDir, XPlannerOutDirectories outputDirs) {
-		mXMDPLoader = new MobileRobotXMDPLoader(mapsJsonDir);
-		mOutputDirs = outputDirs;
+		IXMDPLoader xmdpLoader = new MobileRobotXMDPLoader(mapsJsonDir);
+		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary());
 	}
 
-	public void runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
+	public PolicyInfo runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		runXPlanning(missionJsonFile, verbalizerSettings, null);
-	}
-
-	public void runXPlanning(File missionJsonFile, VerbalizerSettings verbalizerSettings, DifferenceScaler diffScaler)
-			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
-		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
-
-		XMDP xmdp = loadXMDPFromMissionFile(missionJsonFile);
-
-		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath.toString(),
-				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSettings);
-		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
-
-		// Close down PRISM -- before explainer creates a new PrismConnector
-		prismConnector.terminate();
-
-		// ExplainerSettings define what DifferenceScaler to use, if any
-		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
-		explainerSettings.setDifferenceScaler(diffScaler);
-		Explainer explainer = new Explainer(explainerSettings);
-		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
-
-		Vocabulary vocabulary = getVocabulary(xmdp.getQSpace());
-		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
-		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonPath.toFile(),
-				verbalizerSettings);
-
-		String explanationJsonFilename = String.format("%s_explanation.json", missionName);
-		Path explanationOutputPath = mOutputDirs.getExplanationsOutputPath();
-		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
-		File explanationJsonFile = explanationWriter.writeExplanation(missionJsonFile.getName(), explanation,
-				explanationJsonFilename);
-
-		System.out.println("Explanation JSON file: " + explanationJsonFile.getAbsolutePath());
+		return mXPlanner.runXPlanning(missionJsonFile, verbalizerSettings);
 	}
 
 	public PolicyInfo runPlanning(File missionJsonFile)
 			throws DSMException, XMDPException, PrismException, IOException, ResultParsingException {
-		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(missionName);
-		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(missionName);
-
-		XMDP xmdp = loadXMDPFromMissionFile(missionJsonFile);
-
-		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath.toString(),
-				advOutputPath.toString());
-		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
-		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
-
-		// Close down PRISM
-		prismConnector.terminate();
-
-		return policyInfo;
+		return mXPlanner.runPlanning(missionJsonFile);
 	}
 
 	public XMDP loadXMDPFromMissionFile(File missionJsonFile) throws DSMException, XMDPException {
-		return mXMDPLoader.loadXMDP(missionJsonFile);
+		return mXPlanner.loadXMDPFromMissionFile(missionJsonFile);
 	}
 
 	public static void main(String[] args)
@@ -131,28 +65,25 @@ public class MobileRobotDemo {
 		demo.runXPlanning(missionJsonFile, defaultVerbalizerSettings);
 	}
 
-	public static Vocabulary getVocabulary(QSpace qSpace) {
-		TravelTimeQFunction timeQFunction = qSpace.getQFunction(TravelTimeQFunction.class, TravelTimeQFunction.NAME);
-		CountQFunction<MoveToAction, CollisionDomain, CollisionEvent> collideQFunction = qSpace
-				.getQFunction(CountQFunction.class, CollisionEvent.NAME);
-		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = qSpace
-				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
-
+	public static Vocabulary getVocabulary() {
 		Vocabulary vocab = new Vocabulary();
-		vocab.putNoun(timeQFunction, "travel time");
-		vocab.putVerb(timeQFunction, "take");
-		vocab.putUnit(timeQFunction, "minute", "minutes");
-		vocab.putNoun(collideQFunction, "collision");
-		vocab.putVerb(collideQFunction, "have");
-		vocab.putUnit(collideQFunction, "expected collision", "expected collisions");
-		vocab.setOmitUnitWhenNounPresent(collideQFunction);
-		vocab.putNoun(intrusiveQFunction, "intrusiveness");
-		vocab.putVerb(intrusiveQFunction, "be");
-		for (IntrusiveMoveEvent event : intrusiveQFunction.getEventBasedMetric().getEvents()) {
-			vocab.putCategoricalValue(intrusiveQFunction, event, event.getName());
-		}
-		vocab.putPreposition(intrusiveQFunction, "at");
-		vocab.putUnit(intrusiveQFunction, "location", "locations");
+		vocab.putNoun(TravelTimeQFunction.NAME, "travel time");
+		vocab.putVerb(TravelTimeQFunction.NAME, "take");
+		vocab.putUnit(TravelTimeQFunction.NAME, "minute", "minutes");
+		vocab.putNoun(CollisionEvent.NAME, "collision");
+		vocab.putVerb(CollisionEvent.NAME, "have");
+		vocab.putUnit(CollisionEvent.NAME, "expected collision", "expected collisions");
+		vocab.setOmitUnitWhenNounPresent(CollisionEvent.NAME);
+		vocab.putNoun(IntrusiveMoveEvent.NAME, "intrusiveness");
+		vocab.putVerb(IntrusiveMoveEvent.NAME, "be");
+		vocab.putCategoricalValue(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME,
+				"non-intrusive");
+		vocab.putCategoricalValue(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME,
+				"somewhat-intrusive");
+		vocab.putCategoricalValue(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME,
+				"very-intrusive");
+		vocab.putPreposition(IntrusiveMoveEvent.NAME, "at");
+		vocab.putUnit(IntrusiveMoveEvent.NAME, "location", "locations");
 		return vocab;
 	}
 
@@ -168,9 +99,9 @@ public class MobileRobotDemo {
 		verbalizerSettings.appendQFunctionName(TravelTimeQFunction.NAME);
 		verbalizerSettings.appendQFunctionName(CollisionEvent.NAME);
 		verbalizerSettings.appendQFunctionName(IntrusiveMoveEvent.NAME);
-		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "non-intrusive");
-		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "somewhat-intrusive");
-		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, "very-intrusive");
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME);
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME);
+		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME);
 	}
 
 }

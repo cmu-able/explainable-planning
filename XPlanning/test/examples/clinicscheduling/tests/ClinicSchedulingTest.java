@@ -11,7 +11,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import examples.clinicscheduling.demo.ClinicSchedulingDemo;
+import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.clinicscheduling.demo.ClinicSchedulingXMDPLoader;
 import examples.common.DSMException;
 import examples.utils.LPMCComparisonTestUtis;
@@ -58,8 +58,8 @@ public class ClinicSchedulingTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String problemsPath = ClinicSchedulingDemo.PROBLEMS_PATH;
-		int branchFactor = ClinicSchedulingDemo.DEFAULT_BRANCH_FACTOR;
+		String problemsPath = ClinicSchedulingXPlanner.PROBLEMS_PATH;
+		int branchFactor = ClinicSchedulingXPlanner.DEFAULT_BRANCH_FACTOR;
 
 		ClinicSchedulingXMDPLoader testLoader = new ClinicSchedulingXMDPLoader(branchFactor);
 		return XMDPDataProvider.loadXMDPs(problemsPath, testLoader);

@@ -25,14 +25,14 @@ import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
-public class ClinicSchedulingDemo {
+public class ClinicSchedulingXPlanner {
 
 	public static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/clinicscheduling/missions";
 	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
 	private XPlanner mXPlanner;
 
-	public ClinicSchedulingDemo(int branchFactor, XPlannerOutDirectories outputDirs,
+	public ClinicSchedulingXPlanner(int branchFactor, XPlannerOutDirectories outputDirs,
 			VerbalizerSettings verbalizerSettings) {
 		IXMDPLoader xmdpLoader = new ClinicSchedulingXMDPLoader(branchFactor);
 		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
@@ -60,7 +60,7 @@ public class ClinicSchedulingDemo {
 				prismOutputPath);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		ClinicSchedulingDemo demo = new ClinicSchedulingDemo(DEFAULT_BRANCH_FACTOR, outputDirs,
+		ClinicSchedulingXPlanner demo = new ClinicSchedulingXPlanner(DEFAULT_BRANCH_FACTOR, outputDirs,
 				defaultVerbalizerSettings);
 		demo.runXPlanning(problemFile);
 	}

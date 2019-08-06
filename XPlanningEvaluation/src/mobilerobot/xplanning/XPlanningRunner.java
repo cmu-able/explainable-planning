@@ -41,7 +41,7 @@ public class XPlanningRunner {
 		}
 	}
 
-	public XPlannerOutDirectories getXPlanningOutDirectories() {
+	public XPlannerOutDirectories getXPlannerOutDirectories() {
 		return mOutputDirs;
 	}
 

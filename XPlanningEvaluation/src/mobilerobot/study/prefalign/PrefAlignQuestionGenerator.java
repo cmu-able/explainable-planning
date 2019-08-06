@@ -190,8 +190,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 		// Check if missionY of agent[i] has already been explained
 		// If so, no need to run XPlanning on missionY.json again
-		XPlannerOutDirectories xplanningOutDirs = mXPlanningRunner.getXPlanningOutDirectories();
-		Path explanationsOutPath = xplanningOutDirs.getExplanationsOutputPath();
+		XPlannerOutDirectories xplannerOutDirs = mXPlanningRunner.getXPlannerOutDirectories();
+		Path explanationsOutPath = xplannerOutDirs.getExplanationsOutputPath();
 		String agentMissionName = FilenameUtils.removeExtension(agentMissionFile.getName());
 		String agentExplanationFilename = agentMissionName + "_explanation.json";
 		Path agentExplanationPath = explanationsOutPath.resolve(agentExplanationFilename);
@@ -206,7 +206,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		// sub-dir
 
 		// Copy solnPolicy.json and all altPolicy[j].json from /output/policies/missionY/ to the explanation sub-dir
-		Path policiesOutPath = xplanningOutDirs.getPoliciesOutputPath();
+		Path policiesOutPath = xplannerOutDirs.getPoliciesOutputPath();
 		Path agentMissionPoliciesOutPath = policiesOutPath.resolve(agentMissionName);
 		FileUtils.copyDirectory(agentMissionPoliciesOutPath.toFile(), explanationDir);
 

@@ -12,7 +12,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import examples.common.DSMException;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.LPMCComparisonTestUtis;
 import examples.utils.SimpleConsoleLogger;
@@ -57,8 +57,8 @@ public class MobileRobotLPMCComparisonTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String mapsJsonDirPath = MobileRobotDemo.MAPS_PATH;
-		String missionsJsonDirPath = MobileRobotDemo.MISSIONS_PATH;
+		String mapsJsonDirPath = MobileRobotXPlanner.MAPS_PATH;
+		String missionsJsonDirPath = MobileRobotXPlanner.MISSIONS_PATH;
 		File mapsJsonDir = new File(mapsJsonDirPath);
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);

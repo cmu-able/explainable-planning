@@ -17,7 +17,7 @@ import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import explanation.verbalization.QADecimalFormatter;
@@ -44,7 +44,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 	private static final double EQUALITY_TOL = 1e-5;
 
 	private QuestionViz mQuestionViz = new QuestionViz();
-	private MobileRobotDemo mXPlanner;
+	private MobileRobotXPlanner mXPlanner;
 	private XPlannerOutDirectories mOutputDirs;
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
@@ -53,10 +53,10 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		// Configure verbalizer settings
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		verbalizerSettings.setDescribeCosts(false);
-		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
-		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
+		verbalizerSettings.setQADecimalFormatter(MobileRobotXPlanner.getQADecimalFormatter());
+		MobileRobotXPlanner.setVerbalizerOrdering(verbalizerSettings);
 
-		mXPlanner = new MobileRobotDemo(mapsJsonDir, outputDirs, verbalizerSettings);
+		mXPlanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
 		mOutputDirs = outputDirs;
 	}
 
@@ -143,7 +143,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		JSONObject agentPolicyJsonObj = PolicyWriter.writePolicyJSONObject(agentQuantPolicy.getPolicy());
 		writeAgentJSONObjectToFile(agentPolicyJsonObj, "agentPolicy.json", agentIndex, questionDir);
 
-		QADecimalFormatter decimalFormatter = MobileRobotDemo.getQADecimalFormatter();
+		QADecimalFormatter decimalFormatter = MobileRobotXPlanner.getQADecimalFormatter();
 
 		// Write the QA values of each agent policy as json file
 		JSONObject agentPolicyValuesJsonObj = ExplanationWriter.writeQAValuesToJSONObject(agentQuantPolicy,

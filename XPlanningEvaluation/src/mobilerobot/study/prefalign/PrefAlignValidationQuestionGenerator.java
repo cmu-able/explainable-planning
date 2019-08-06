@@ -11,7 +11,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.verbalization.VerbalizerSettings;
@@ -23,7 +23,7 @@ import mobilerobot.utilities.MapTopologyUtils;
 public class PrefAlignValidationQuestionGenerator {
 
 	private File mMapsJsonDir;
-	private MobileRobotDemo mXPlanner;
+	private MobileRobotXPlanner mXPlanner;
 
 	public PrefAlignValidationQuestionGenerator(File mapsJsonDir) throws IOException {
 		mMapsJsonDir = mapsJsonDir;
@@ -31,10 +31,10 @@ public class PrefAlignValidationQuestionGenerator {
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		verbalizerSettings.setDescribeCosts(false);
-		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
-		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
+		verbalizerSettings.setQADecimalFormatter(MobileRobotXPlanner.getQADecimalFormatter());
+		MobileRobotXPlanner.setVerbalizerOrdering(verbalizerSettings);
 
-		mXPlanner = new MobileRobotDemo(mapsJsonDir, outputDirs, verbalizerSettings);
+		mXPlanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
 	}
 
 	public File[][] generateValidationMissionFiles(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,

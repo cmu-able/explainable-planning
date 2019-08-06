@@ -25,13 +25,13 @@ import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
-public class MobileRobotDemo {
+public class MobileRobotXPlanner {
 	public static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
 	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
 
 	private XPlanner mXPlanner;
 
-	public MobileRobotDemo(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
+	public MobileRobotXPlanner(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
 		IXMDPLoader xmdpLoader = new MobileRobotXMDPLoader(mapsJsonDir);
 		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
 	}
@@ -63,7 +63,7 @@ public class MobileRobotDemo {
 				prismOutputPath);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		MobileRobotXPlanner demo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		demo.runXPlanning(missionJsonFile);
 	}
 

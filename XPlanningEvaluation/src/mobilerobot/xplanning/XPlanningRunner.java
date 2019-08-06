@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 
 import examples.common.DSMException;
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
@@ -17,11 +17,11 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 
 public class XPlanningRunner {
 
-	private MobileRobotDemo mDemo;
+	private MobileRobotXPlanner mDemo;
 	private XPlannerOutDirectories mOutputDirs;
 
 	public XPlanningRunner(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
-		mDemo = new MobileRobotDemo(mapsJsonDir, outputDirs, verbalizerSettings);
+		mDemo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
 		mOutputDirs = outputDirs;
 	}
 
@@ -59,8 +59,8 @@ public class XPlanningRunner {
 		}
 
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings(); // describe costs
-		verbalizerSettings.setQADecimalFormatter(MobileRobotDemo.getQADecimalFormatter());
-		MobileRobotDemo.setVerbalizerOrdering(verbalizerSettings);
+		verbalizerSettings.setQADecimalFormatter(MobileRobotXPlanner.getQADecimalFormatter());
+		MobileRobotXPlanner.setVerbalizerOrdering(verbalizerSettings);
 
 		XPlanningRunner runner = new XPlanningRunner(mapsJsonDir, outputDirs, verbalizerSettings);
 		runner.runAllMissions(missionsJsonRootDir);

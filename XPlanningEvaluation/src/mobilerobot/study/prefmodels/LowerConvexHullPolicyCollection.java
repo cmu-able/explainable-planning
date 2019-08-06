@@ -20,7 +20,7 @@ import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
@@ -127,7 +127,7 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings();
-		MobileRobotDemo demo = new MobileRobotDemo(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		MobileRobotXPlanner demo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		File outputDir = FileIOUtils.getOutputDir();
 		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);
 		for (File missionJsonFile : missionsOfMapDir.listFiles()) {

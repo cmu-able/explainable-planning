@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 
 import examples.common.DSMException;
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotDemo;
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
@@ -50,7 +50,7 @@ public class MobileRobotExplanationTest {
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
-		Vocabulary vocabulary = MobileRobotDemo.getVocabulary();
+		Vocabulary vocabulary = MobileRobotXPlanner.getVocabulary();
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		File policyJsonDir = new File(XPlannerOutDirectories.POLICIES_OUTPUT_PATH + "/" + missionName);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonDir, verbalizerSettings);
@@ -61,8 +61,8 @@ public class MobileRobotExplanationTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String mapsJsonDirPath = MobileRobotDemo.MAPS_PATH;
-		String missionsJsonDirPath = MobileRobotDemo.MISSIONS_PATH;
+		String mapsJsonDirPath = MobileRobotXPlanner.MAPS_PATH;
+		String missionsJsonDirPath = MobileRobotXPlanner.MISSIONS_PATH;
 		File mapsJsonDir = new File(mapsJsonDirPath);
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);

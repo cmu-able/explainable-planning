@@ -127,16 +127,16 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings();
-		MobileRobotXPlanner demo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		File outputDir = FileIOUtils.getOutputDir();
 		File missionsOfMapDir = new File(outputDir, "missions-of-" + mMapName);
 		for (File missionJsonFile : missionsOfMapDir.listFiles()) {
 			// Adjust scaling consts in mission file s.t. all QA unit costs are rounded to nearest int
-			XMDP xmdp = demo.loadXMDPFromMissionFile(missionJsonFile);
+			XMDP xmdp = xplanner.loadXMDPFromMissionFile(missionJsonFile);
 			adjustMissionFile(missionJsonFile, xmdp);
 
 			// Run planning using mission.json as input
-			PolicyInfo policyInfo = demo.runPlanning(missionJsonFile);
+			PolicyInfo policyInfo = xplanner.runPlanning(missionJsonFile);
 
 			// Keep track of each LCH policy, its XMDP, and mission file that generates it
 			mPolicyInfos.put(policyInfo, missionJsonFile);

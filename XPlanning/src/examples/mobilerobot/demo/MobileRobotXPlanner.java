@@ -63,8 +63,8 @@ public class MobileRobotXPlanner {
 				prismOutputPath);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
-		MobileRobotXPlanner demo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
-		demo.runXPlanning(missionJsonFile);
+		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		xplanner.runXPlanning(missionJsonFile);
 	}
 
 	public static Vocabulary getVocabulary() {

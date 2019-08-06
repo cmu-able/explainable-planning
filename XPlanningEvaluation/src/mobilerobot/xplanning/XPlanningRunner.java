@@ -17,17 +17,17 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 
 public class XPlanningRunner {
 
-	private MobileRobotXPlanner mDemo;
+	private MobileRobotXPlanner mXPlanner;
 	private XPlannerOutDirectories mOutputDirs;
 
 	public XPlanningRunner(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
-		mDemo = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
+		mXPlanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
 		mOutputDirs = outputDirs;
 	}
 
 	public void runMission(File missionJsonFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		mDemo.runXPlanning(missionJsonFile);
+		mXPlanner.runXPlanning(missionJsonFile);
 	}
 
 	public void runAllMissions(File missionsJsonDir)

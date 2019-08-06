@@ -50,7 +50,7 @@ public class MobileRobotExplanationTest {
 		Explainer explainer = new Explainer(explainerSettings);
 		Explanation explanation = explainer.explain(xmdp, CostCriterion.TOTAL_COST, policyInfo);
 
-		Vocabulary vocabulary = MobileRobotDemo.getVocabulary(xmdp.getQSpace());
+		Vocabulary vocabulary = MobileRobotDemo.getVocabulary();
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
 		File policyJsonDir = new File(XPlannerOutDirectories.POLICIES_OUTPUT_PATH + "/" + missionName);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonDir, verbalizerSettings);

@@ -131,7 +131,7 @@ public class PrefAlignQuestionLinker {
 		return seeds;
 	}
 
-	private void serializeLinkedPrefAlignQuestions(LinkedPrefAlignQuestions linkedPrefAlignQuestions)
+	public static void serializeLinkedPrefAlignQuestions(LinkedPrefAlignQuestions linkedPrefAlignQuestions)
 			throws IOException {
 		// Use document name of the first question in the link as name of the serialized LinkedPrefAlignQuestions .ser file
 		String headQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(0, false);

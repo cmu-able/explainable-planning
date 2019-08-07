@@ -3,6 +3,8 @@ package mobilerobot.study.prefalign;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,8 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 
 public class PrefAlignValidationQuestionGenerator {
 
+	private static final String SIMPLE_COST_STRUCTURE_JSON = "simpleCostStructure.json";
+
 	private File mMapsJsonDir;
 	private PrefAlignAgentGenerator mAgentGenerator;
 
@@ -48,7 +52,7 @@ public class PrefAlignValidationQuestionGenerator {
 			LinkedPrefAlignQuestions linkedQuestions = allLinkedPrefAlignQuestions[i];
 
 			// All PrefAlign questions in a link have the same cost structure
-			File costStructJsonFile = new File(linkedQuestions.getQuestionDir(0), "simpleCostStruture.json");
+			File costStructJsonFile = new File(linkedQuestions.getQuestionDir(0), SIMPLE_COST_STRUCTURE_JSON);
 			JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 
 			for (int j = 0; j < validationMapFiles.length; j++) {
@@ -85,9 +89,12 @@ public class PrefAlignValidationQuestionGenerator {
 		return validationMissionFiles;
 	}
 
-	public void generateValidationQuestions(File[][] validationMissionFiles)
+	public void generateValidationQuestions(File[][] validationMissionFiles,
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		for (int i = 0; i < validationMissionFiles.length; i++) {
+			LinkedPrefAlignQuestions linkedQuestions = allLinkedPrefAlignQuestions[i];
+
 			for (int j = 0; j < validationMissionFiles[0].length; j++) {
 				File validationMissonFile = validationMissionFiles[i][j];
 
@@ -108,7 +115,18 @@ public class PrefAlignValidationQuestionGenerator {
 				// Create explanation dir that contains agent's mission file, solution policy, alternative
 				// policies, and explanation at /question-mission[X]/explanation-agent[i]/
 				mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissonFile, 0);
+
+				// Copy simpleCostStructure.json from linked questions to /question-mission[X]/
+				copySimpleCostStructureFile(linkedQuestions, validationQuestionDir);
 			}
 		}
+	}
+
+	private void copySimpleCostStructureFile(LinkedPrefAlignQuestions linkedQuestions, File validationQuestionDir)
+			throws IOException {
+		File srcDir = linkedQuestions.getQuestionDir(0);
+		Path costStructSrcPath = srcDir.toPath().resolve(SIMPLE_COST_STRUCTURE_JSON);
+		Path costStructDestPath = validationQuestionDir.toPath().resolve(SIMPLE_COST_STRUCTURE_JSON);
+		Files.copy(costStructSrcPath, costStructDestPath);
 	}
 }

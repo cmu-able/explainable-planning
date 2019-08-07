@@ -10,31 +10,28 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.demo.MobileRobotXPlanner;
+import examples.common.DSMException;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import explanation.verbalization.VerbalizerSettings;
+import explanation.analysis.PolicyInfo;
+import gurobi.GRBException;
+import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
+import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import mobilerobot.utilities.MapTopologyUtils;
+import prism.PrismException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 
 public class PrefAlignValidationQuestionGenerator {
 
 	private File mMapsJsonDir;
-	private MobileRobotXPlanner mXPlanner;
+	private PrefAlignAgentGenerator mAgentGenerator;
 
 	public PrefAlignValidationQuestionGenerator(File mapsJsonDir) throws IOException {
 		mMapsJsonDir = mapsJsonDir;
-
-		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
-		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		verbalizerSettings.setDescribeCosts(false);
-		verbalizerSettings.setQADecimalFormatter(MobileRobotXPlanner.getQADecimalFormatter());
-		MobileRobotXPlanner.setVerbalizerOrdering(verbalizerSettings);
-
-		mXPlanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
+		mAgentGenerator = new PrefAlignAgentGenerator(mapsJsonDir);
 	}
 
 	public File[][] generateValidationMissionFiles(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
@@ -74,6 +71,7 @@ public class PrefAlignValidationQuestionGenerator {
 						MissionJSONGenerator.DEFAULT_START_NODE_ID, MissionJSONGenerator.DEFAULT_GOAL_NODE_ID,
 						scalingConsts);
 
+				// All validation missions files are outputted to /output/validation-missions/
 				String missionFilename = FileIOUtils.insertIndexToFilename("mission.json", missionIndex);
 				File missionFile = FileIOUtils.createOutputFile("validation-missions", missionFilename);
 				FileIOUtils.prettyPrintJSONObjectToFile(missionJsonObj, missionFile);
@@ -87,10 +85,29 @@ public class PrefAlignValidationQuestionGenerator {
 		return validationMissionFiles;
 	}
 
-	public void generateValidationQuestions(File[][] validationMissionFiles) {
+	public void generateValidationQuestions(File[][] validationMissionFiles)
+			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		for (int i = 0; i < validationMissionFiles.length; i++) {
 			for (int j = 0; j < validationMissionFiles[0].length; j++) {
 				File validationMissonFile = validationMissionFiles[i][j];
+
+				// Create a question dir, /question-mission[X]/, for each validation mission
+				// Each question dir contains multiple questions, all of which have the same mission but different agent's
+				// proposed policies
+				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissonFile);
+
+				// Run xplanning on the validation mission, and write solution policy to /question-mission[X]/solnPolicy.json
+				PolicyInfo solnPolicyInfo = mAgentGenerator.getXPlanner().runXPlanning(validationMissonFile);
+				QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, validationQuestionDir);
+
+				// Create an aligned agent[0]
+				// Write agentPolicy0.json and agentPolicyValues0.json to /question-mission[X]/
+				mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir, solnPolicyInfo.getQuantitativePolicy(),
+						0);
+
+				// Create explanation dir that contains agent's mission file, solution policy, alternative
+				// policies, and explanation at /question-mission[X]/explanation-agent[i]/
+				mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissonFile, 0);
 			}
 		}
 	}

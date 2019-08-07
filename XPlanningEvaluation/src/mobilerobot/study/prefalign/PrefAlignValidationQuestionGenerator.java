@@ -98,6 +98,8 @@ public class PrefAlignValidationQuestionGenerator {
 			for (int j = 0; j < validationMissionFiles[0].length; j++) {
 				File validationMissonFile = validationMissionFiles[i][j];
 
+				// Each validation question dir is created at /output/question-mission[X]/
+
 				// Create a question dir, /question-mission[X]/, for each validation mission
 				// Each question dir contains multiple questions, all of which have the same mission but different agent's
 				// proposed policies
@@ -128,5 +130,19 @@ public class PrefAlignValidationQuestionGenerator {
 		Path costStructSrcPath = srcDir.toPath().resolve(SIMPLE_COST_STRUCTURE_JSON);
 		Path costStructDestPath = validationQuestionDir.toPath().resolve(SIMPLE_COST_STRUCTURE_JSON);
 		Files.copy(costStructSrcPath, costStructDestPath);
+	}
+
+	public static void main(String[] args) throws IOException, URISyntaxException, ClassNotFoundException,
+			ParseException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
+		int startMissionIndex = Integer.parseInt(args[0]);
+		File mapsJsonDir = FileIOUtils.getResourceDir(MissionJSONGenerator.class, "validation-maps");
+
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
+				.readAllLinkedPrefAlignQuestions();
+
+		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(mapsJsonDir);
+		File[][] validationMissionFiles = generator.generateValidationMissionFiles(allLinkedPrefAlignQuestions,
+				startMissionIndex);
+		generator.generateValidationQuestions(validationMissionFiles, allLinkedPrefAlignQuestions);
 	}
 }

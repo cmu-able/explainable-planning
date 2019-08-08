@@ -169,7 +169,7 @@ public class PrefAlignQuestionLinker {
 	}
 
 	public static LinkedPrefAlignQuestions[] insertValidationQuestions(
-			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions)
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions, boolean controlGroup)
 			throws URISyntaxException, IOException, ParseException {
 		File validationQuestionsRootDir = FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class,
 				"validation-questions");
@@ -208,11 +208,16 @@ public class PrefAlignQuestionLinker {
 					currLinkedQuestionDirs = ArrayUtils.insert(middleIndex, currLinkedQuestionDirs,
 							validationQuestionDir);
 
-					// Randomly select agent for each validation question
-					long seed = seeds[i][numTotalQuestionsPerLink - currLinkedQuestionDirs.length];
-					AgentRandomizer validationAgentRand = new AgentRandomizer(validationQuestionDir, ALIGN_PROB,
-							UNALIGN_THRESHOLD, seed);
-					int validationAgentIndex = validationAgentRand.randomAgentIndex();
+					// For control group, validation question(s) can have either aligned or unaligned agent(s)
+					// For experimental group, validation question(s) can only have aligned agent(s)
+					int validationAgentIndex = 0; // Aligned agent always has index 0
+					if (controlGroup) {
+						// Randomly select agent for each validation question
+						long seed = seeds[i][numTotalQuestionsPerLink - currLinkedQuestionDirs.length];
+						AgentRandomizer validationAgentRand = new AgentRandomizer(validationQuestionDir, ALIGN_PROB,
+								UNALIGN_THRESHOLD, seed);
+						validationAgentIndex = validationAgentRand.randomAgentIndex();
+					}
 					currLinkedQuestionAgentIndices = ArrayUtils.insert(middleIndex, currLinkedQuestionAgentIndices,
 							validationAgentIndex);
 				}

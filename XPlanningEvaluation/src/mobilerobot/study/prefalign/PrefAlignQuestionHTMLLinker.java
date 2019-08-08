@@ -121,25 +121,27 @@ public class PrefAlignQuestionHTMLLinker {
 
 	public static void main(String[] args)
 			throws URISyntaxException, IOException, ParseException, ClassNotFoundException {
-		String rootStorageDirname = args[0];
+		String rootStorageDirname = args[0]; // e.g., "linked-questions"
+		String serLinkedQuestionsDirname = args[1]; // e.g., "serialized-linked-questions"
+		boolean withExplanation = args.length >= 3 && args[2].equals("-e");
 
 		File rootStorageDir = new File(rootStorageDirname);
-		File rootStorageDirExplanation = new File(rootStorageDirname + "-explanation");
-		linkAllPrefAlignHTMLQuestions(rootStorageDir, rootStorageDirExplanation);
+		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignQuestionHTMLLinker.class,
+				serLinkedQuestionsDirname);
+
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
+				.readAllLinkedPrefAlignQuestions(serLinkedQuestionsDir);
+		linkAllPrefAlignHTMLQuestions(allLinkedPrefAlignQuestions, withExplanation, rootStorageDir);
 	}
 
-	public static void linkAllPrefAlignHTMLQuestions(File rootStorageDir, File rootStorageDirExplanation)
-			throws IOException, ParseException, URISyntaxException, ClassNotFoundException {
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
-				.readAllLinkedPrefAlignQuestions();
-
+	private static void linkAllPrefAlignHTMLQuestions(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
+			boolean withExplanation, File rootStorageDir) throws IOException, ParseException, URISyntaxException {
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator questionHTMLGenerator = new PrefAlignQuestionHTMLGenerator(tableSettings);
 
 		PrefAlignQuestionHTMLLinker questionHTMLLinker = new PrefAlignQuestionHTMLLinker(questionHTMLGenerator);
 
 		// Both explanation and no-explanation groups will have the exact same questions in the exact same order
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, false, rootStorageDir);
-		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, true, rootStorageDirExplanation);
+		questionHTMLLinker.createAllLinkedQuestionFiles(allLinkedPrefAlignQuestions, withExplanation, rootStorageDir);
 	}
 }

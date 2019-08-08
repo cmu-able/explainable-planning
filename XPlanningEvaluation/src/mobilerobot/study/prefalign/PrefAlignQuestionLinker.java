@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
@@ -119,7 +120,7 @@ public class PrefAlignQuestionLinker {
 		return allLinkedQuestionAgentIndices;
 	}
 
-	private long[][] generateSeedsForRandomAgentSelection(long iniSeed, int numRows, int numColumns) {
+	private static long[][] generateSeedsForRandomAgentSelection(long iniSeed, int numRows, int numColumns) {
 		Random rand = new Random(iniSeed);
 		long[][] seeds = new long[numRows][numColumns];
 		for (int i = 0; i < numRows; i++) {
@@ -167,8 +168,69 @@ public class PrefAlignQuestionLinker {
 		return allLinkedPrefAlignQuestions;
 	}
 
+	public static LinkedPrefAlignQuestions[] insertValidationQuestions(
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions)
+			throws URISyntaxException, IOException, ParseException {
+		File validationQuestionsRootDir = FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class,
+				"validation-questions");
+		File[] validationQuestionDirs = QuestionUtils.listQuestionDirs(validationQuestionsRootDir);
+
+		int numLinks = allLinkedPrefAlignQuestions.length;
+		int numValidationQuestionsPerLink = validationQuestionDirs.length / numLinks;
+		int numTotalQuestionsPerLink = allLinkedPrefAlignQuestions[0].getNumQuestions() + numValidationQuestionsPerLink;
+
+		long[][] seeds = generateSeedsForRandomAgentSelection(INI_SEED, numLinks, numValidationQuestionsPerLink);
+
+		// Directories for all linked PrefAlign questions, including validation questions
+		File[][] allLinkedQuestionDirs = new File[numLinks][numTotalQuestionsPerLink];
+
+		LinkedPrefAlignQuestions[] res = new LinkedPrefAlignQuestions[numLinks];
+
+		for (int i = 0; i < numLinks; i++) {
+			LinkedPrefAlignQuestions linkedQuestions = allLinkedPrefAlignQuestions[i];
+
+			// Link that includes validation question(s) so far
+			File[] currLinkedQuestionDirs = linkedQuestions.getLinkedQuestionDirs();
+			int[] currLinkedQuestionAgentIndices = linkedQuestions.getLinkedQuestionAgentIndices();
+
+			// All PrefAlign questions in a link have the same simple cost structure
+			JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(currLinkedQuestionDirs[0]);
+
+			// Find validation question(s) for each link
+			for (File validationQuestionDir : validationQuestionDirs) {
+				JSONObject validationCostStructJsonObj = QuestionUtils
+						.getSimpleCostStructureJSONObject(validationQuestionDir);
+
+				// Validation question must have the same cost structure as the linked questions
+				if (costStructJsonObj.equals(validationCostStructJsonObj)) {
+					// Insert each validation question into the middle of the link, which includes validation question(s) so far
+					int middleIndex = currLinkedQuestionDirs.length / 2;
+					currLinkedQuestionDirs = ArrayUtils.insert(middleIndex, currLinkedQuestionDirs,
+							validationQuestionDir);
+
+					// Randomly select agent for each validation question
+					long seed = seeds[i][numTotalQuestionsPerLink - currLinkedQuestionDirs.length];
+					AgentRandomizer validationAgentRand = new AgentRandomizer(validationQuestionDir, ALIGN_PROB,
+							UNALIGN_THRESHOLD, seed);
+					int validationAgentIndex = validationAgentRand.randomAgentIndex();
+					currLinkedQuestionAgentIndices = ArrayUtils.insert(middleIndex, currLinkedQuestionAgentIndices,
+							validationAgentIndex);
+				}
+			}
+
+			// Copy each link of question dirs, including validation question(s), into allLinkedQuestionDirs
+			System.arraycopy(currLinkedQuestionDirs, 0, allLinkedQuestionDirs[i], 0, currLinkedQuestionDirs.length);
+
+			LinkedPrefAlignQuestions updatedLinkedQuestions = new LinkedPrefAlignQuestions(currLinkedQuestionDirs,
+					currLinkedQuestionAgentIndices);
+			res[i] = updatedLinkedQuestions;
+		}
+
+		return res;
+	}
+
 	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
-		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionHTMLLinker.class);
+		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionLinker.class);
 		int numQuestions = Integer.parseInt(args[0]);
 
 		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, ALIGN_PROB,

@@ -145,8 +145,11 @@ public class PrefAlignValidationQuestionGenerator {
 		int startMissionIndex = Integer.parseInt(args[0]);
 		File mapsJsonDir = FileIOUtils.getResourceDir(MissionJSONGenerator.class, "validation-maps");
 
+		// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
+		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+				"serialized-linked-questions");
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
-				.readAllLinkedPrefAlignQuestions();
+				.readAllLinkedPrefAlignQuestions(serLinkedQuestionsDir);
 
 		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(mapsJsonDir,
 				allLinkedPrefAlignQuestions);

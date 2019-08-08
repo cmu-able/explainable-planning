@@ -46,13 +46,13 @@ public class PrefAlignHITPublisher {
 
 	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
 			throws URISyntaxException, IOException, ClassNotFoundException, ParseException {
+		boolean withExplanation = !controlGroup;
+
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestionsWithValidation(
-				controlGroup);
+				withExplanation);
 
 		for (LinkedPrefAlignQuestions linkedPrefAlignQuestions : allLinkedPrefAlignQuestions) {
-			boolean withExplanation = !controlGroup;
-
 			// All PrefAlign question document names in this HIT will be written to hitInfo.csv
 			String[] linkedQuestionDocNames = linkedPrefAlignQuestions.getLinkedQuestionDocumentNames(withExplanation);
 
@@ -97,7 +97,7 @@ public class PrefAlignHITPublisher {
 			URISyntaxException, IOException, ParserConfigurationException, TransformerException {
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestionsWithValidation(
-				!withExplanation);
+				withExplanation);
 		File[] allQuestionXMLFiles = new File[allLinkedPrefAlignQuestions.length];
 
 		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
@@ -120,11 +120,11 @@ public class PrefAlignHITPublisher {
 		return allQuestionXMLFiles;
 	}
 
-	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestionsWithValidation(boolean controlGroup)
+	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestionsWithValidation(boolean withExplanation)
 			throws URISyntaxException, ClassNotFoundException, IOException {
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
-		String servLinkedQuestionsDirname = controlGroup ? "serialized-vlinked-questions"
-				: "serialized-vlinked-questions-explanation";
+		String servLinkedQuestionsDirname = withExplanation ? "serialized-vlinked-questions-explanation"
+				: "serialized-vlinked-questions";
 		File servLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
 				servLinkedQuestionsDirname);
 		return PrefAlignQuestionLinker.readAllLinkedPrefAlignQuestions(servLinkedQuestionsDir);

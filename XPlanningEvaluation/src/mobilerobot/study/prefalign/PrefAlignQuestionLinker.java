@@ -66,7 +66,8 @@ public class PrefAlignQuestionLinker {
 					linkedQuestionAgentIndices);
 			allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
 
-			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
+			// Serialize each LinkedPrefAlignQuestions object at /output/
+			// These .ser files will be moved to /study/prefalign/serialized-linked-questions/
 			serializeLinkedPrefAlignQuestions(linkedPrefAlignQuestions);
 		}
 		return allLinkedPrefAlignQuestions;
@@ -229,20 +230,32 @@ public class PrefAlignQuestionLinker {
 			LinkedPrefAlignQuestions updatedLinkedQuestions = new LinkedPrefAlignQuestions(currLinkedQuestionDirs,
 					currLinkedQuestionAgentIndices);
 			res[i] = updatedLinkedQuestions;
+
+			// Serialized each updated link, which includes validation question(s)
+			serializeLinkedPrefAlignQuestions(updatedLinkedQuestions);
 		}
 
 		return res;
 	}
 
-	public static void main(String[] args) throws URISyntaxException, IOException, ParseException {
-		File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionLinker.class);
-		int numQuestions = Integer.parseInt(args[0]);
+	public static void main(String[] args)
+			throws URISyntaxException, IOException, ParseException, ClassNotFoundException {
+		String option = args[0];
 
-		PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, ALIGN_PROB,
-				UNALIGN_THRESHOLD);
-		questionLinker.groupQuestionDirsByCostStruct();
+		if (option.equals("linkQuestions")) {
+			File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionLinker.class);
+			int numQuestions = Integer.parseInt(args[1]);
 
-		// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
-		questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
+			PrefAlignQuestionLinker questionLinker = new PrefAlignQuestionLinker(questionsRootDir, ALIGN_PROB,
+					UNALIGN_THRESHOLD);
+			questionLinker.groupQuestionDirsByCostStruct();
+
+			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
+			questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
+		} else if (option.equals("insertValidationQuestions")) {
+			boolean controlGroup = !(args.length >= 2 && args[1].equals("-e"));
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
+			insertValidationQuestions(allLinkedPrefAlignQuestions, controlGroup);
+		}
 	}
 }

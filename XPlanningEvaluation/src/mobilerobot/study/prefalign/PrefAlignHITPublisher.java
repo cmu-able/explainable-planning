@@ -46,8 +46,9 @@ public class PrefAlignHITPublisher {
 
 	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
 			throws URISyntaxException, IOException, ClassNotFoundException, ParseException {
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
-				.readAllLinkedPrefAlignQuestions();
+		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestionsWithValidation(
+				controlGroup);
 
 		for (LinkedPrefAlignQuestions linkedPrefAlignQuestions : allLinkedPrefAlignQuestions) {
 			boolean withExplanation = !controlGroup;
@@ -94,8 +95,9 @@ public class PrefAlignHITPublisher {
 
 	public static File[] createAllExternalQuestionXMLFiles(boolean withExplanation) throws ClassNotFoundException,
 			URISyntaxException, IOException, ParserConfigurationException, TransformerException {
-		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
-				.readAllLinkedPrefAlignQuestions();
+		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
+		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestionsWithValidation(
+				!withExplanation);
 		File[] allQuestionXMLFiles = new File[allLinkedPrefAlignQuestions.length];
 
 		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
@@ -116,6 +118,16 @@ public class PrefAlignHITPublisher {
 		}
 
 		return allQuestionXMLFiles;
+	}
+
+	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestionsWithValidation(boolean controlGroup)
+			throws URISyntaxException, ClassNotFoundException, IOException {
+		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
+		String servLinkedQuestionsDirname = controlGroup ? "serialized-vlinked-questions"
+				: "serialized-vlinked-questions-explanation";
+		File servLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+				servLinkedQuestionsDirname);
+		return PrefAlignQuestionLinker.readAllLinkedPrefAlignQuestions(servLinkedQuestionsDir);
 	}
 
 	private static Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)

@@ -31,31 +31,37 @@ public class PrefAlignValidationQuestionGenerator {
 	private static final String SIMPLE_COST_STRUCTURE_JSON = "simpleCostStructure.json";
 
 	private File mMapsJsonDir;
+	private LinkedPrefAlignQuestions[] mAllLinkedPrefAlignQuestions;
 	private PrefAlignAgentGenerator mAgentGenerator;
 
-	public PrefAlignValidationQuestionGenerator(File mapsJsonDir) throws IOException {
+	public PrefAlignValidationQuestionGenerator(File mapsJsonDir,
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions) throws IOException {
 		mMapsJsonDir = mapsJsonDir;
+		mAllLinkedPrefAlignQuestions = allLinkedPrefAlignQuestions;
 		mAgentGenerator = new PrefAlignAgentGenerator(mapsJsonDir);
 	}
 
-	public File[][] generateValidationMissionFiles(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
-			int startMissionIndex) throws MapTopologyException, IOException, ParseException, URISyntaxException {
+	public File[][] generateValidationMissionFiles(int startMissionIndex)
+			throws MapTopologyException, IOException, ParseException, URISyntaxException {
 		File[] validationMapFiles = mMapsJsonDir.listFiles();
+		int numLinks = mAllLinkedPrefAlignQuestions.length;
+		int numValidationMissions = validationMapFiles.length;
+
 		// All validation missions in a row will have the same cost structure
-		File[][] validationMissionFiles = new File[allLinkedPrefAlignQuestions.length][validationMapFiles.length];
+		File[][] validationMissionFiles = new File[numLinks][numValidationMissions];
 		int missionIndex = startMissionIndex;
 
 		List<ObjectiveInfo> objectivesInfo = MissionJSONGenerator.getDefaultObjectivesInfo();
 		MissionJSONGenerator missionGenerator = new MissionJSONGenerator(objectivesInfo);
 
-		for (int i = 0; i < allLinkedPrefAlignQuestions.length; i++) {
-			LinkedPrefAlignQuestions linkedQuestions = allLinkedPrefAlignQuestions[i];
+		for (int i = 0; i < numLinks; i++) {
+			LinkedPrefAlignQuestions linkedQuestions = mAllLinkedPrefAlignQuestions[i];
 
 			// All PrefAlign questions in a link have the same cost structure
 			File costStructJsonFile = new File(linkedQuestions.getQuestionDir(0), SIMPLE_COST_STRUCTURE_JSON);
 			JSONObject costStructJsonObj = FileIOUtils.readJSONObjectFromFile(costStructJsonFile);
 
-			for (int j = 0; j < validationMapFiles.length; j++) {
+			for (int j = 0; j < numValidationMissions; j++) {
 				File mapJsonFile = validationMapFiles[j];
 				MapTopology mapTopology = MapTopologyUtils.parseMapTopology(mapJsonFile, true);
 
@@ -89,13 +95,15 @@ public class PrefAlignValidationQuestionGenerator {
 		return validationMissionFiles;
 	}
 
-	public void generateValidationQuestions(File[][] validationMissionFiles,
-			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions)
+	public void generateValidationQuestions(File[][] validationMissionFiles)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		for (int i = 0; i < validationMissionFiles.length; i++) {
-			LinkedPrefAlignQuestions linkedQuestions = allLinkedPrefAlignQuestions[i];
+		int numLinks = validationMissionFiles.length;
+		int numValidationMissions = validationMissionFiles[0].length;
 
-			for (int j = 0; j < validationMissionFiles[0].length; j++) {
+		for (int i = 0; i < numLinks; i++) {
+			LinkedPrefAlignQuestions linkedQuestions = mAllLinkedPrefAlignQuestions[i];
+
+			for (int j = 0; j < numValidationMissions; j++) {
 				File validationMissonFile = validationMissionFiles[i][j];
 
 				// Each validation question dir is created at /output/question-mission[X]/
@@ -140,9 +148,9 @@ public class PrefAlignValidationQuestionGenerator {
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
 				.readAllLinkedPrefAlignQuestions();
 
-		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(mapsJsonDir);
-		File[][] validationMissionFiles = generator.generateValidationMissionFiles(allLinkedPrefAlignQuestions,
-				startMissionIndex);
-		generator.generateValidationQuestions(validationMissionFiles, allLinkedPrefAlignQuestions);
+		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(mapsJsonDir,
+				allLinkedPrefAlignQuestions);
+		File[][] validationMissionFiles = generator.generateValidationMissionFiles(startMissionIndex);
+		generator.generateValidationQuestions(validationMissionFiles);
 	}
 }

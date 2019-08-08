@@ -146,12 +146,9 @@ public class PrefAlignQuestionLinker {
 		}
 	}
 
-	public static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions()
-			throws URISyntaxException, IOException, ClassNotFoundException {
-		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
-				"serialized-linked-questions");
+	public static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions(File serLinkedQuestionsDir)
+			throws IOException, ClassNotFoundException {
 		File[] serLinkedQuestionsFiles = serLinkedQuestionsDir.listFiles();
-
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[serLinkedQuestionsFiles.length];
 
 		for (int i = 0; i < serLinkedQuestionsFiles.length; i++) {
@@ -254,7 +251,12 @@ public class PrefAlignQuestionLinker {
 			questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
 		} else if (option.equals("insertValidationQuestions")) {
 			boolean controlGroup = !(args.length >= 2 && args[1].equals("-e"));
-			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions();
+
+			// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
+			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+					"serialized-linked-questions");
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions(
+					serLinkedQuestionsDir);
 			insertValidationQuestions(allLinkedPrefAlignQuestions, controlGroup);
 		}
 	}

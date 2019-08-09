@@ -121,11 +121,11 @@ public class PrefAlignQuestionHTMLLinker {
 
 	public static void main(String[] args)
 			throws URISyntaxException, IOException, ParseException, ClassNotFoundException {
-		String rootStorageDirname = args[0]; // e.g., "linked-questions"
-		String serLinkedQuestionsDirname = args[1]; // e.g., "serialized-linked-questions"
+		String rootStorageDirPath = args[0]; // e.g., "linked-questions", "vlinked-questions"
+		String serLinkedQuestionsDirname = args[1]; // e.g., "serialized-linked-questions", "serialized-vlinked-questions"
 		boolean withExplanation = args.length > 2 && args[2].equals("-e");
 
-		File rootStorageDir = new File(rootStorageDirname);
+		File rootStorageDir = new File(rootStorageDirPath);
 		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignQuestionHTMLLinker.class,
 				serLinkedQuestionsDirname);
 

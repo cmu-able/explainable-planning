@@ -20,19 +20,22 @@ public class QuestionViz {
 
 	private MapRenderer mMapRenderer = new MapRenderer();
 	private PolicyRenderer mPolicyRenderer = new PolicyRenderer();
+	private File mMapsResourceDir;
 
-	public void visualizeQuestions(File questionDir)
-			throws MapTopologyException, IOException, ParseException, URISyntaxException {
+	public QuestionViz(File mapsResourceDir) {
+		mMapsResourceDir = mapsResourceDir;
+	}
+
+	public void visualizeQuestions(File questionDir) throws MapTopologyException, IOException, ParseException {
 		File mapJsonFile = visualizeMap(questionDir);
 		visualizePolicies(questionDir, mapJsonFile);
 	}
 
-	public File visualizeMap(File questionDir)
-			throws IOException, ParseException, URISyntaxException, MapTopologyException {
+	public File visualizeMap(File questionDir) throws IOException, ParseException, MapTopologyException {
 		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
 
 		String mapFilename = (String) missionJsonObj.get("map-file");
-		File mapJsonFile = FileIOUtils.getMapFile(MissionJSONGenerator.class, mapFilename);
+		File mapJsonFile = new File(mMapsResourceDir, mapFilename);
 
 		// Render map of the mission at /output/question-missionX/
 		mMapRenderer.render(mapJsonFile, questionDir);
@@ -79,7 +82,17 @@ public class QuestionViz {
 		String questionsRootDirname = args[0];
 		File questionsRootDir = new File(questionsRootDirname);
 
-		QuestionViz questionViz = new QuestionViz();
+		File mapsResourceDir;
+		if (args.length > 1 && args[1].equals("-v")) {
+			// Validation maps resource dir is /missiongen/validation-maps/
+			mapsResourceDir = FileIOUtils.getResourceDir(MissionJSONGenerator.class, "validation-maps");
+		} else {
+			// Default maps resource dir is /missiongen/maps/
+			mapsResourceDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
+
+		}
+
+		QuestionViz questionViz = new QuestionViz(mapsResourceDir);
 		questionViz.visualizeAllQuestions(questionsRootDir);
 	}
 }

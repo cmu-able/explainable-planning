@@ -3,7 +3,7 @@ package mobilerobot.utilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
+import uiconnector.JSONSimpleParserUtils;
 
 public class PolicyJSONParserUtils {
 

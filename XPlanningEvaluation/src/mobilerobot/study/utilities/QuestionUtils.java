@@ -11,7 +11,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import examples.common.XPlannerOutDirectories;
-import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import explanation.analysis.PolicyInfo;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
@@ -19,6 +18,7 @@ import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
+import uiconnector.JSONSimpleParserUtils;
 import uiconnector.PolicyWriter;
 
 public class QuestionUtils {

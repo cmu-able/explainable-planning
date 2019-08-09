@@ -18,7 +18,6 @@ import examples.mobilerobot.dsm.Connection;
 import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
@@ -29,6 +28,7 @@ import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.MapTopologyUtils;
+import uiconnector.JSONSimpleParserUtils;
 
 public class MapJSONToGraphViz {
 

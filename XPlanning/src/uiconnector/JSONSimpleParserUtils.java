@@ -1,4 +1,4 @@
-package examples.mobilerobot.dsm.parser;
+package uiconnector;
 
 import org.json.simple.JSONObject;
 
@@ -17,6 +17,11 @@ public class JSONSimpleParserUtils {
 		// JSONSimple uses "long" type for whole numbers
 		Long valueLong = (Long) jsonObject.get(key);
 		return valueLong.intValue();
+	}
+
+	public static boolean parseBoolean(JSONObject jsonObject, String key) {
+		Boolean valueBoolean = (Boolean) jsonObject.get(key);
+		return valueBoolean.booleanValue();
 	}
 
 	public static double parseDouble(Object obj) {

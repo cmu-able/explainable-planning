@@ -22,6 +22,7 @@ import examples.mobilerobot.dsm.exceptions.ConnectionNotFoundException;
 import examples.mobilerobot.dsm.exceptions.LocationNodeNotFoundException;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
+import uiconnector.JSONSimpleParserUtils;
 
 public class MapTopologyReader {
 

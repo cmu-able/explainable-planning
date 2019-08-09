@@ -18,7 +18,6 @@ import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeIDNotFoundException;
-import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
@@ -28,6 +27,7 @@ import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.GraphVizUtils;
 import mobilerobot.utilities.PolicyJSONParserUtils;
+import uiconnector.JSONSimpleParserUtils;
 
 public class PolicyJSONToGraphViz {
 

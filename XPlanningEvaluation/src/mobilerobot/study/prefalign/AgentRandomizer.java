@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import examples.mobilerobot.dsm.parser.JSONSimpleParserUtils;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.Randomizer;
+import uiconnector.JSONSimpleParserUtils;
 
 public class AgentRandomizer {
 

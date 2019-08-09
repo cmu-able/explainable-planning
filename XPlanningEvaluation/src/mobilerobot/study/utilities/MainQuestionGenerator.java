@@ -50,7 +50,7 @@ public class MainQuestionGenerator {
 		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		IQuestionGenerator questionGenerator;
 		if (studyName.equals("PrefInterp")) {
-			questionGenerator = new PrefInterpQuestionGenerator();
+			questionGenerator = new PrefInterpQuestionGenerator(mapsDir);
 		} else if (studyName.equals("PrefAlign")) {
 			questionGenerator = new PrefAlignQuestionGenerator(mapsDir);
 		} else {

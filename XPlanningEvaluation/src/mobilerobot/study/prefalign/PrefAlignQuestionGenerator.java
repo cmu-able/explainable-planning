@@ -33,10 +33,11 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	private static final double EQUALITY_TOL = 1e-5;
 
-	private QuestionViz mQuestionViz = new QuestionViz();
+	private QuestionViz mQuestionViz;
 	private PrefAlignAgentGenerator mAgentGenerator;
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
+		mQuestionViz = new QuestionViz(mapsJsonDir);
 		mAgentGenerator = new PrefAlignAgentGenerator(mapsJsonDir);
 	}
 

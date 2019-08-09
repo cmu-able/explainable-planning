@@ -33,14 +33,15 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 
 	private static final int DEFAULT_NUM_MULTI_CHOICE = 5;
 
-	private QuestionViz mQuestionViz = new QuestionViz();
+	private QuestionViz mQuestionViz;
 	private int mNumMultiChoicePolicies;
 
-	public PrefInterpQuestionGenerator() {
-		this(DEFAULT_NUM_MULTI_CHOICE);
+	public PrefInterpQuestionGenerator(File mapsJsonDir) {
+		this(mapsJsonDir, DEFAULT_NUM_MULTI_CHOICE);
 	}
 
-	public PrefInterpQuestionGenerator(int numMultiChoicePolicies) {
+	public PrefInterpQuestionGenerator(File mapsJsonDir, int numMultiChoicePolicies) {
+		mQuestionViz = new QuestionViz(mapsJsonDir);
 		mNumMultiChoicePolicies = numMultiChoicePolicies;
 	}
 
@@ -64,7 +65,7 @@ public class PrefInterpQuestionGenerator implements IQuestionGenerator {
 
 	private void createQuestionDir(File missionFile, Set<QuantitativePolicy> multiChoicePolicies,
 			PolicyInfo solnPolicyInfo) throws IOException, ResultParsingException, PrismException, XMDPException,
-			MapTopologyException, ParseException, URISyntaxException {
+			MapTopologyException, ParseException {
 		File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
 		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 

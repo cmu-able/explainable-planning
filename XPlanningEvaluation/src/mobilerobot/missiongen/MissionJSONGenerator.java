@@ -153,7 +153,7 @@ public class MissionJSONGenerator {
 			throws MapTopologyException, URISyntaxException, IOException, ParseException {
 		String startNodeID;
 		String goalNodeID;
-		if (args.length >= 2) {
+		if (args.length > 1) {
 			startNodeID = args[0];
 			goalNodeID = args[1];
 		} else {

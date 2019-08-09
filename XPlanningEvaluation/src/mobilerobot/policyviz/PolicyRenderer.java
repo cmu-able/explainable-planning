@@ -90,7 +90,7 @@ public class PolicyRenderer {
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
 		File policiesDir;
 		File missionsRootDir;
-		if (args.length >= 2) {
+		if (args.length > 1) {
 			String policiesPath = args[0];
 			String missionsPath = args[1];
 			policiesDir = new File(policiesPath);

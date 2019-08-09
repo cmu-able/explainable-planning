@@ -88,8 +88,11 @@ public class PolicyReader {
 		return objA.equals(objB);
 	}
 
-	private IAction readAction(JSONObject actionJsonObj) {
-		// TODO
-		return null;
+	private IAction readAction(JSONObject decisionJsonObj) {
+		String actionType = PolicyJSONParserUtils.parseActionType(decisionJsonObj);
+		// FIXME
+		String actionParam = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
+		String actionName = actionType + "(" + actionParam + ")";
+		return mXMDP.getActionSpace().getAction(actionName);
 	}
 }

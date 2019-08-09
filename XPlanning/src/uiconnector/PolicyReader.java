@@ -29,21 +29,18 @@ public class PolicyReader {
 		JSONArray policyJsonArray = (JSONArray) policyJsonObj.get("policy");
 		for (Object obj : policyJsonArray) {
 			JSONObject decisionJsonObj = (JSONObject) obj;
-			JSONObject stateJsonObj = (JSONObject) decisionJsonObj.get("state");
-			JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get("action");
 
-			StateVarTuple state = readState(stateJsonObj);
-			IAction action = readAction(actionJsonObj);
+			StateVarTuple state = readState(decisionJsonObj);
+			IAction action = readAction(decisionJsonObj);
 			policy.put(state, action);
 		}
 		return policy;
 	}
 
-	private StateVarTuple readState(JSONObject stateJsonObj) {
+	private StateVarTuple readState(JSONObject decisionJsonObj) {
 		StateVarTuple state = new StateVarTuple();
-		for (Object keyObj : stateJsonObj.keySet()) {
-			String varName = (String) keyObj;
-			StateVarDefinition<IStateVarValue> varDef = mXMDP.getStateSpace().getStateVarDefinition(varName);
+		for (StateVarDefinition<IStateVarValue> varDef : mXMDP.getStateSpace()) {
+			String varName = varDef.getName();
 
 			Iterator<IStateVarValue> iter = varDef.getPossibleValues().iterator();
 			boolean addedVar = false;
@@ -53,24 +50,24 @@ public class PolicyReader {
 
 				if (value instanceof IStateVarBoolean) {
 					IStateVarBoolean boolValue = (IStateVarBoolean) value;
-					boolean bv = JSONSimpleParserUtils.parseBoolean(stateJsonObj, varName);
+					boolean bv = PolicyJSONParserUtils.parseBooleanVar(varName, decisionJsonObj);
 
 					addedVar = (addStateVar(state, varDef, boolValue, Boolean.valueOf(boolValue.getValue()),
 							Boolean.valueOf(bv)));
 				} else if (value instanceof IStateVarInt) {
 					IStateVarInt intValue = (IStateVarInt) value;
-					int iv = JSONSimpleParserUtils.parseInt(stateJsonObj, varName);
+					int iv = PolicyJSONParserUtils.parseIntVar(varName, decisionJsonObj);
 
 					addedVar = addStateVar(state, varDef, intValue, Integer.valueOf(intValue.getValue()),
 							Integer.valueOf(iv));
 				} else if (value instanceof IStateVarDouble) {
 					IStateVarDouble doubleValue = (IStateVarDouble) value;
-					double dv = JSONSimpleParserUtils.parseDouble(stateJsonObj, varName);
+					double dv = PolicyJSONParserUtils.parseDoubleVar(varName, decisionJsonObj);
 
 					addedVar = addStateVar(state, varDef, doubleValue, Double.valueOf(doubleValue.getValue()),
 							Double.valueOf(dv));
 				} else {
-					String sv = (String) stateJsonObj.get(varName);
+					String sv = PolicyJSONParserUtils.parseStringVar(varName, decisionJsonObj);
 
 					addedVar = addStateVar(state, varDef, value, value.toString(), sv);
 				}

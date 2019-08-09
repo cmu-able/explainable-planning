@@ -1,9 +1,7 @@
-package mobilerobot.utilities;
+package uiconnector;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import uiconnector.JSONSimpleParserUtils;
 
 public class PolicyJSONParserUtils {
 

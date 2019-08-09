@@ -26,8 +26,8 @@ import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
 import mobilerobot.utilities.GraphVizUtils;
-import mobilerobot.utilities.PolicyJSONParserUtils;
 import uiconnector.JSONSimpleParserUtils;
+import uiconnector.PolicyJSONParserUtils;
 
 public class PolicyJSONToGraphViz {
 

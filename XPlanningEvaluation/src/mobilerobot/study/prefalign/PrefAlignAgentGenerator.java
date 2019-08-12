@@ -8,19 +8,27 @@ import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
 import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.demo.MobileRobotXPlanner;
+import explanation.analysis.PolicyInfo;
 import explanation.analysis.QuantitativePolicy;
 import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.VerbalizerSettings;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
+import language.mdp.XMDP;
+import language.policy.Policy;
+import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
+import solver.prismconnector.PrismConnector;
 import solver.prismconnector.exceptions.PrismConnectorException;
+import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.ExplanationWriter;
+import uiconnector.PolicyReader;
 import uiconnector.PolicyWriter;
 
 public class PrefAlignAgentGenerator {
@@ -99,5 +107,15 @@ public class PrefAlignAgentGenerator {
 
 		// Copy mission[Y]_explanation.json from /[XPlannerOutDir]/explanations/ to the explanation sub-dir
 		Files.copy(agentExplanationPath, explanationDir.toPath().resolve(agentExplanationFilename));
+	}
+
+	public PolicyInfo computeUnalignedAgentPolicyInfo(File validationMissionFile, File agentPolicyJsonFile)
+			throws DSMException, XMDPException, IOException, ParseException, PrismException, ResultParsingException {
+		XMDP xmdp = mXPlanner.loadXMDPFromMissionFile(validationMissionFile);
+		PolicyReader policyReader = new PolicyReader(xmdp);
+		Policy agentPolicy = policyReader.readPolicy(agentPolicyJsonFile);
+
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(validationMissionFile, xmdp);
+		return prismConnector.buildPolicyInfo(agentPolicy);
 	}
 }

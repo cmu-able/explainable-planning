@@ -95,8 +95,9 @@ public class PrefAlignValidationQuestionGenerator {
 		return validationMissionFiles;
 	}
 
-	public void generateValidationQuestions(File[][] validationMissionFiles)
-			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
+	public void generateValidationQuestions(File[][] validationMissionFiles, File unalignedAgentPolicyFile)
+			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException,
+			ParseException {
 		int numLinks = validationMissionFiles.length;
 		int numValidationMissions = validationMissionFiles[0].length;
 
@@ -104,17 +105,17 @@ public class PrefAlignValidationQuestionGenerator {
 			LinkedPrefAlignQuestions linkedQuestions = mAllLinkedPrefAlignQuestions[i];
 
 			for (int j = 0; j < numValidationMissions; j++) {
-				File validationMissonFile = validationMissionFiles[i][j];
+				File validationMissionFile = validationMissionFiles[i][j];
 
 				// Each validation question dir is created at /output/question-mission[X]/
 
 				// Create a question dir, /question-mission[X]/, for each validation mission
 				// Each question dir contains multiple questions, all of which have the same mission but different agent's
 				// proposed policies
-				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissonFile);
+				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissionFile);
 
 				// Run xplanning on the validation mission, and write solution policy to /question-mission[X]/solnPolicy.json
-				PolicyInfo solnPolicyInfo = mAgentGenerator.getXPlanner().runXPlanning(validationMissonFile);
+				PolicyInfo solnPolicyInfo = mAgentGenerator.getXPlanner().runXPlanning(validationMissionFile);
 				QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, validationQuestionDir);
 
 				// Create an aligned agent[0]
@@ -124,10 +125,17 @@ public class PrefAlignValidationQuestionGenerator {
 
 				// Create explanation dir that contains agent's mission file, solution policy, alternative
 				// policies, and explanation at /question-mission[X]/explanation-agent[i]/
-				mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissonFile, 0);
+				mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissionFile, 0);
 
 				// Copy simpleCostStructure.json from linked questions to /question-mission[X]/
 				copySimpleCostStructureFile(linkedQuestions, validationQuestionDir);
+
+				// Create an unaligned agent[1]
+				// Write agentPolicy1.json and agentPolicyValues1.json to /question-mission[X]/
+				PolicyInfo unalignedAgentPolicyInfo = mAgentGenerator
+						.computeUnalignedAgentPolicyInfo(validationMissionFile, unalignedAgentPolicyFile);
+				mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir,
+						unalignedAgentPolicyInfo.getQuantitativePolicy(), 1);
 			}
 		}
 	}

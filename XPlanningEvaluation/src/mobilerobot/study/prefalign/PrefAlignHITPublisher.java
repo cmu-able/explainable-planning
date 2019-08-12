@@ -168,7 +168,7 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
-			boolean withExplanation = args.length >= 2 && args[1].equals("-e");
+			boolean withExplanation = args.length > 1 && args[1].equals("-e");
 			Set<String> validationQuestionDocNames = new HashSet<>();
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
 			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);

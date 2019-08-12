@@ -250,7 +250,7 @@ public class PrefAlignQuestionLinker {
 			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
 			questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
 		} else if (option.equals("insertValidationQuestions")) {
-			boolean controlGroup = !(args.length >= 2 && args[1].equals("-e"));
+			boolean controlGroup = !(args.length > 1 && args[1].equals("-e"));
 
 			// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
 			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,

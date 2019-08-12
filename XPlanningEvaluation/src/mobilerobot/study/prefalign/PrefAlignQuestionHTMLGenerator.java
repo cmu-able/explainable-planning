@@ -227,7 +227,7 @@ public class PrefAlignQuestionHTMLGenerator {
 	public static void main(String[] args) throws IOException, ParseException, URISyntaxException {
 		String pathname = args[0];
 		File rootDir = new File(pathname);
-		boolean withExplanation = args.length >= 2 && args[1].equals("-e");
+		boolean withExplanation = args.length > 1 && args[1].equals("-e");
 
 		HTMLTableSettings tableSettings = ExplanationHTMLGenerator.getMobileRobotHTMLTableSettings();
 		PrefAlignQuestionHTMLGenerator generator = new PrefAlignQuestionHTMLGenerator(tableSettings);

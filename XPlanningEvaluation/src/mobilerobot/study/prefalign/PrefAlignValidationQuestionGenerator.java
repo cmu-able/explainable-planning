@@ -197,7 +197,7 @@ public class PrefAlignValidationQuestionGenerator {
 		File validationPoliciesDir = FileIOUtils.getResourceDir(PolicyRenderer.class, "validation-policies");
 
 		// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
-		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class,
 				"serialized-linked-questions");
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
 				.readAllLinkedPrefAlignQuestions(serLinkedQuestionsDir);

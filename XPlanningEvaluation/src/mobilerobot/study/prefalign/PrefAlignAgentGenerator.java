@@ -25,6 +25,7 @@ import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
+import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import uiconnector.ExplanationWriter;
@@ -49,9 +50,9 @@ public class PrefAlignAgentGenerator {
 		mOutputDirs = outputDirs;
 	}
 
-	public PolicyInfo computeAlignedAgentPolicyInfo(File validationMissionFile)
-			throws DSMException, XMDPException, PrismException, IOException, GRBException, PrismConnectorException {
-		return mXPlanner.runXPlanning(validationMissionFile);
+	public PolicyInfo computeAlignedAgentPolicyInfo(File validationMissionFile) throws ResultParsingException,
+			ExplicitModelParsingException, DSMException, XMDPException, PrismException, IOException, GRBException {
+		return mXPlanner.runPlanning(validationMissionFile);
 	}
 
 	public PolicyInfo computeUnalignedAgentPolicyInfo(File validationMissionFile, File policyJsonFile)
@@ -59,7 +60,7 @@ public class PrefAlignAgentGenerator {
 		XMDP xmdp = mXPlanner.loadXMDPFromMissionFile(validationMissionFile);
 		PolicyReader policyReader = new PolicyReader(xmdp);
 		Policy agentPolicy = policyReader.readPolicy(policyJsonFile);
-	
+
 		PrismConnector prismConnector = QuestionUtils.createPrismConnector(validationMissionFile, xmdp);
 		return prismConnector.buildPolicyInfo(agentPolicy);
 	}

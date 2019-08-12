@@ -54,10 +54,33 @@ public class PolicyJSONParserUtils {
 		return JSONSimpleParserUtils.parseDouble(paramObj);
 	}
 
+	public static int parseIntActionParameter(int index, JSONObject decisionJsonObj) {
+		return parseActionParameter(Integer.class, index, decisionJsonObj);
+	}
+
+	public static boolean parseBooleanActionParameter(int index, JSONObject decisionJsonObj) {
+		return parseActionParameter(Boolean.class, index, decisionJsonObj);
+	}
+
 	private static <T> T parseActionParameter(Class<T> paramType, int index, JSONObject decisionJsonObj) {
+		Object param = getActionParameterObject(index, decisionJsonObj);
+		return paramType.cast(param);
+	}
+
+	public static int getNumActionParameters(JSONObject decisionJsonObj) {
 		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get(ACTION_KEY);
 		JSONArray actionParamJsonArray = (JSONArray) actionJsonObj.get("params");
-		Object param = actionParamJsonArray.get(index);
-		return paramType.cast(param);
+		return actionParamJsonArray.size();
+	}
+
+	public static Class<?> getActionParameterType(int index, JSONObject decisionJsonObj) {
+		Object param = getActionParameterObject(index, decisionJsonObj);
+		return param.getClass();
+	}
+
+	private static Object getActionParameterObject(int index, JSONObject decisionJsonObj) {
+		JSONObject actionJsonObj = (JSONObject) decisionJsonObj.get(ACTION_KEY);
+		JSONArray actionParamJsonArray = (JSONArray) actionJsonObj.get("params");
+		return actionParamJsonArray.get(index);
 	}
 }

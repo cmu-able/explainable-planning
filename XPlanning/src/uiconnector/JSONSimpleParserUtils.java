@@ -19,11 +19,6 @@ public class JSONSimpleParserUtils {
 		return valueLong.intValue();
 	}
 
-	public static boolean parseBoolean(JSONObject jsonObject, String key) {
-		Boolean valueBoolean = (Boolean) jsonObject.get(key);
-		return valueBoolean.booleanValue();
-	}
-
 	public static double parseDouble(Object obj) {
 		if (obj instanceof Long) {
 			// JSONSimple uses "long" type for whole numbers

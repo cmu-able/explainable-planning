@@ -87,9 +87,28 @@ public class PolicyReader {
 
 	private IAction readAction(JSONObject decisionJsonObj) {
 		String actionType = PolicyJSONParserUtils.parseActionType(decisionJsonObj);
-		// FIXME
-		String actionParam = PolicyJSONParserUtils.parseStringActionParameter(0, decisionJsonObj);
-		String actionName = actionType + "(" + actionParam + ")";
+		int numActionParams = PolicyJSONParserUtils.getNumActionParameters(decisionJsonObj);
+		String[] actionParams = new String[numActionParams];
+		for (int i = 0; i < numActionParams; i++) {
+			Class<?> actionParamType = PolicyJSONParserUtils.getActionParameterType(i, decisionJsonObj);
+			String actionParam;
+			if (actionParamType.equals(Boolean.class)) {
+				boolean boolParam = PolicyJSONParserUtils.parseBooleanActionParameter(i, decisionJsonObj);
+				actionParam = String.valueOf(boolParam);
+			} else if (actionParamType.equals(Integer.class)) {
+				int intParam = PolicyJSONParserUtils.parseIntActionParameter(i, decisionJsonObj);
+				actionParam = String.valueOf(intParam);
+			} else if (actionParamType.equals(Double.class)) {
+				double doubleParam = PolicyJSONParserUtils.parseDoubleActionParameter(i, decisionJsonObj);
+				actionParam = String.valueOf(doubleParam);
+			} else {
+				actionParam = PolicyJSONParserUtils.parseStringActionParameter(i, decisionJsonObj);
+			}
+
+			actionParams[i] = actionParam;
+		}
+
+		String actionName = actionType + "(" + String.join(",", actionParams) + ")";
 		return mXMDP.getActionSpace().getAction(actionName);
 	}
 }

@@ -24,6 +24,7 @@ import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
 import mobilerobot.policyviz.PolicyRenderer;
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.study.utilities.QuestionViz;
 import mobilerobot.utilities.FileIOUtils;
 import mobilerobot.utilities.MapTopologyUtils;
 import prism.PrismException;
@@ -37,12 +38,14 @@ public class PrefAlignValidationQuestionGenerator {
 	private File mValidationMapsDir;
 	private LinkedPrefAlignQuestions[] mAllLinkedPrefAlignQuestions;
 	private PrefAlignAgentGenerator mAgentGenerator;
+	private QuestionViz mQuestionViz;
 
 	public PrefAlignValidationQuestionGenerator(File validationMapsDir,
 			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions) throws IOException {
 		mValidationMapsDir = validationMapsDir;
 		mAllLinkedPrefAlignQuestions = allLinkedPrefAlignQuestions;
 		mAgentGenerator = new PrefAlignAgentGenerator(validationMapsDir);
+		mQuestionViz = new QuestionViz(validationMapsDir);
 	}
 
 	public File[][] generateValidationMissionFiles(int startMissionIndex)
@@ -132,6 +135,8 @@ public class PrefAlignValidationQuestionGenerator {
 
 				PrefAlignQuestionGenerator.writeAnswerKeyAndScoreCard(validationQuestionDir, validationMissionFile,
 						indexedAgentQuantPolicies, solnPolicyInfo);
+
+				mQuestionViz.visualizeQuestions(validationQuestionDir);
 			}
 		}
 	}

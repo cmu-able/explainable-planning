@@ -67,7 +67,7 @@ public class PrefAlignQuestionLinker {
 			allLinkedPrefAlignQuestions[i] = linkedPrefAlignQuestions;
 
 			// Serialize each LinkedPrefAlignQuestions object at /output/
-			// These .ser files will be moved to /study/prefalign/serialized-linked-questions/
+			// The output .ser files will be moved to /study/prefalign/serialized-linked-questions/
 			serializeLinkedPrefAlignQuestions(linkedPrefAlignQuestions);
 		}
 		return allLinkedPrefAlignQuestions;
@@ -247,7 +247,8 @@ public class PrefAlignQuestionLinker {
 					UNALIGN_THRESHOLD);
 			questionLinker.groupQuestionDirsByCostStruct();
 
-			// Serialize each LinkedPrefAlignQuestions object and save it at /study/prefalign/serialized-linked-questions/
+			// Serialize each LinkedPrefAlignQuestions object
+			// The output .ser files will be moved to /study/prefalign/serialized-linked-questions/
 			questionLinker.createAllLinkedPrefAlignQuestions(numQuestions);
 		} else if (option.equals("insertValidationQuestions")) {
 			boolean controlGroup = !(args.length > 1 && args[1].equals("-e"));
@@ -257,6 +258,10 @@ public class PrefAlignQuestionLinker {
 					"serialized-linked-questions");
 			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions(
 					serLinkedQuestionsDir);
+
+			// Insert validation question(s) into each link and serialize the new LinkedPrefAlignQuestions
+			// The output .ser files will be moved to /study/prefalign/serialized-vlinked-questions/ 
+			// or /study/prefalign/serialized-vlinked-questions-explanation/
 			insertValidationQuestions(allLinkedPrefAlignQuestions, controlGroup);
 		}
 	}

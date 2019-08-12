@@ -1,9 +1,14 @@
 package uiconnector;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import language.domain.models.IAction;
 import language.domain.models.IStateVarBoolean;
@@ -22,6 +27,13 @@ public class PolicyReader {
 
 	public PolicyReader(XMDP xmdp) {
 		mXMDP = xmdp;
+	}
+
+	public Policy readPolicy(File policyJsonFile) throws IOException, ParseException {
+		FileReader reader = new FileReader(policyJsonFile);
+		JSONParser jsonParser = new JSONParser();
+		JSONObject policyJsonObj = (JSONObject) jsonParser.parse(reader);
+		return readPolicy(policyJsonObj);
 	}
 
 	public Policy readPolicy(JSONObject policyJsonObj) {

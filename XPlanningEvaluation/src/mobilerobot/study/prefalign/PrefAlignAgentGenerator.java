@@ -49,8 +49,19 @@ public class PrefAlignAgentGenerator {
 		mOutputDirs = outputDirs;
 	}
 
-	public MobileRobotXPlanner getXPlanner() {
-		return mXPlanner;
+	public PolicyInfo computeAlignedAgentPolicyInfo(File validationMissionFile)
+			throws DSMException, XMDPException, PrismException, IOException, GRBException, PrismConnectorException {
+		return mXPlanner.runXPlanning(validationMissionFile);
+	}
+
+	public PolicyInfo computeUnalignedAgentPolicyInfo(File validationMissionFile, File policyJsonFile)
+			throws DSMException, XMDPException, IOException, ParseException, PrismException, ResultParsingException {
+		XMDP xmdp = mXPlanner.loadXMDPFromMissionFile(validationMissionFile);
+		PolicyReader policyReader = new PolicyReader(xmdp);
+		Policy agentPolicy = policyReader.readPolicy(policyJsonFile);
+	
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(validationMissionFile, xmdp);
+		return prismConnector.buildPolicyInfo(agentPolicy);
 	}
 
 	public void writeAgentPolicyAndValues(File questionDir, QuantitativePolicy agentQuantPolicy, int agentIndex)
@@ -107,15 +118,5 @@ public class PrefAlignAgentGenerator {
 
 		// Copy mission[Y]_explanation.json from /[XPlannerOutDir]/explanations/ to the explanation sub-dir
 		Files.copy(agentExplanationPath, explanationDir.toPath().resolve(agentExplanationFilename));
-	}
-
-	public PolicyInfo computeUnalignedAgentPolicyInfo(File validationMissionFile, File agentPolicyJsonFile)
-			throws DSMException, XMDPException, IOException, ParseException, PrismException, ResultParsingException {
-		XMDP xmdp = mXPlanner.loadXMDPFromMissionFile(validationMissionFile);
-		PolicyReader policyReader = new PolicyReader(xmdp);
-		Policy agentPolicy = policyReader.readPolicy(agentPolicyJsonFile);
-
-		PrismConnector prismConnector = QuestionUtils.createPrismConnector(validationMissionFile, xmdp);
-		return prismConnector.buildPolicyInfo(agentPolicy);
 	}
 }

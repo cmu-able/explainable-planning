@@ -20,30 +20,32 @@ import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.missiongen.ObjectiveInfo;
+import mobilerobot.policyviz.PolicyRenderer;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import mobilerobot.utilities.MapTopologyUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.PrismConnectorException;
+import solver.prismconnector.exceptions.ResultParsingException;
 
 public class PrefAlignValidationQuestionGenerator {
 
 	private static final String SIMPLE_COST_STRUCTURE_JSON = "simpleCostStructure.json";
 
-	private File mMapsJsonDir;
+	private File mValidationMapsDir;
 	private LinkedPrefAlignQuestions[] mAllLinkedPrefAlignQuestions;
 	private PrefAlignAgentGenerator mAgentGenerator;
 
-	public PrefAlignValidationQuestionGenerator(File mapsJsonDir,
+	public PrefAlignValidationQuestionGenerator(File validationMapsDir,
 			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions) throws IOException {
-		mMapsJsonDir = mapsJsonDir;
+		mValidationMapsDir = validationMapsDir;
 		mAllLinkedPrefAlignQuestions = allLinkedPrefAlignQuestions;
-		mAgentGenerator = new PrefAlignAgentGenerator(mapsJsonDir);
+		mAgentGenerator = new PrefAlignAgentGenerator(validationMapsDir);
 	}
 
 	public File[][] generateValidationMissionFiles(int startMissionIndex)
 			throws MapTopologyException, IOException, ParseException, URISyntaxException {
-		File[] validationMapFiles = mMapsJsonDir.listFiles();
+		File[] validationMapFiles = mValidationMapsDir.listFiles();
 		int numLinks = mAllLinkedPrefAlignQuestions.length;
 		int numValidationMissions = validationMapFiles.length;
 
@@ -95,7 +97,7 @@ public class PrefAlignValidationQuestionGenerator {
 		return validationMissionFiles;
 	}
 
-	public void generateValidationQuestions(File[][] validationMissionFiles, File unalignedAgentPolicyFile)
+	public void generateValidationQuestions(File[][] validationMissionFiles, File validationPoliciesDir)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException,
 			ParseException {
 		int numLinks = validationMissionFiles.length;
@@ -114,29 +116,45 @@ public class PrefAlignValidationQuestionGenerator {
 				// proposed policies
 				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissionFile);
 
-				// Run xplanning on the validation mission, and write solution policy to /question-mission[X]/solnPolicy.json
-				PolicyInfo solnPolicyInfo = mAgentGenerator.getXPlanner().runXPlanning(validationMissionFile);
-				QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, validationQuestionDir);
-
-				// Create an aligned agent[0]
-				// Write agentPolicy0.json and agentPolicyValues0.json to /question-mission[X]/
-				mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir, solnPolicyInfo.getQuantitativePolicy(),
-						0);
-
-				// Create explanation dir that contains agent's mission file, solution policy, alternative
-				// policies, and explanation at /question-mission[X]/explanation-agent[i]/
-				mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissionFile, 0);
+				createAlignedAgent(validationQuestionDir, validationMissionFile);
+				createUnalignedAgents(validationQuestionDir, validationMissionFile, validationPoliciesDir);
 
 				// Copy simpleCostStructure.json from linked questions to /question-mission[X]/
 				copySimpleCostStructureFile(linkedQuestions, validationQuestionDir);
-
-				// Create an unaligned agent[1]
-				// Write agentPolicy1.json and agentPolicyValues1.json to /question-mission[X]/
-				PolicyInfo unalignedAgentPolicyInfo = mAgentGenerator
-						.computeUnalignedAgentPolicyInfo(validationMissionFile, unalignedAgentPolicyFile);
-				mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir,
-						unalignedAgentPolicyInfo.getQuantitativePolicy(), 1);
 			}
+		}
+	}
+
+	private void createAlignedAgent(File validationQuestionDir, File validationMissionFile)
+			throws DSMException, XMDPException, PrismException, IOException, GRBException, PrismConnectorException {
+		// Run xplanning on the validation mission, and write solution policy to /question-mission[X]/solnPolicy.json
+		PolicyInfo solnPolicyInfo = mAgentGenerator.computeAlignedAgentPolicyInfo(validationMissionFile);
+		QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, validationQuestionDir);
+
+		// Create an aligned agent[0]
+		// Write agentPolicy0.json and agentPolicyValues0.json to /question-mission[X]/
+		mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir, solnPolicyInfo.getQuantitativePolicy(), 0);
+
+		// Create explanation dir that contains agent's mission file, solution policy, alternative
+		// policies, and explanation at /question-mission[X]/explanation-agent[i]/
+		mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissionFile, 0);
+	}
+
+	private void createUnalignedAgents(File validationQuestionDir, File validationMissionFile,
+			File validationPoliciesDir)
+			throws ResultParsingException, DSMException, XMDPException, IOException, ParseException, PrismException {
+		int unalignedAgentIndex = 1; // unaligned agents start at index 1
+		for (File policyJsonFile : validationPoliciesDir.listFiles()) {
+			// Create an unaligned agent[i]
+			// Write agentPolicy[i].json and agentPolicyValues[i].json to /question-mission[X]/
+			PolicyInfo unalignedAgentPolicyInfo = mAgentGenerator.computeUnalignedAgentPolicyInfo(validationMissionFile,
+					policyJsonFile);
+			mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir,
+					unalignedAgentPolicyInfo.getQuantitativePolicy(), unalignedAgentIndex);
+
+			// No explanation of unaligned agent for validation mission
+
+			unalignedAgentIndex++;
 		}
 	}
 
@@ -151,7 +169,8 @@ public class PrefAlignValidationQuestionGenerator {
 	public static void main(String[] args) throws IOException, URISyntaxException, ClassNotFoundException,
 			ParseException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		int startMissionIndex = Integer.parseInt(args[0]);
-		File mapsJsonDir = FileIOUtils.getResourceDir(MissionJSONGenerator.class, "validation-maps");
+		File validationMapsDir = FileIOUtils.getResourceDir(MissionJSONGenerator.class, "validation-maps");
+		File validationPoliciesDir = FileIOUtils.getResourceDir(PolicyRenderer.class, "validation-policies");
 
 		// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
 		File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
@@ -159,9 +178,9 @@ public class PrefAlignValidationQuestionGenerator {
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = PrefAlignQuestionLinker
 				.readAllLinkedPrefAlignQuestions(serLinkedQuestionsDir);
 
-		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(mapsJsonDir,
+		PrefAlignValidationQuestionGenerator generator = new PrefAlignValidationQuestionGenerator(validationMapsDir,
 				allLinkedPrefAlignQuestions);
 		File[][] validationMissionFiles = generator.generateValidationMissionFiles(startMissionIndex);
-		generator.generateValidationQuestions(validationMissionFiles);
+		generator.generateValidationQuestions(validationMissionFiles, validationPoliciesDir);
 	}
 }

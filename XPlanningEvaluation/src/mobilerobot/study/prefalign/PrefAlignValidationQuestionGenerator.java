@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,7 @@ import examples.common.DSMException;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import explanation.analysis.PolicyInfo;
+import explanation.analysis.QuantitativePolicy;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
@@ -116,16 +118,25 @@ public class PrefAlignValidationQuestionGenerator {
 				// proposed policies
 				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissionFile);
 
-				createAlignedAgent(validationQuestionDir, validationMissionFile);
-				createUnalignedAgents(validationQuestionDir, validationMissionFile, validationPoliciesDir);
-
 				// Copy simpleCostStructure.json from linked questions to /question-mission[X]/
 				copySimpleCostStructureFile(linkedQuestions, validationQuestionDir);
+
+				// Create aligned agent and unaligned agent(s)
+				PolicyInfo solnPolicyInfo = createAlignedAgent(validationQuestionDir, validationMissionFile);
+				List<QuantitativePolicy> unalignedAgentQuantPolicies = createUnalignedAgents(validationQuestionDir,
+						validationMissionFile, validationPoliciesDir);
+
+				List<QuantitativePolicy> indexedAgentQuantPolicies = new ArrayList<>();
+				indexedAgentQuantPolicies.add(solnPolicyInfo.getQuantitativePolicy());
+				indexedAgentQuantPolicies.addAll(unalignedAgentQuantPolicies);
+
+				PrefAlignQuestionGenerator.writeAnswerKeyAndScoreCard(validationQuestionDir, validationMissionFile,
+						indexedAgentQuantPolicies, solnPolicyInfo);
 			}
 		}
 	}
 
-	private void createAlignedAgent(File validationQuestionDir, File validationMissionFile)
+	private PolicyInfo createAlignedAgent(File validationQuestionDir, File validationMissionFile)
 			throws DSMException, XMDPException, PrismException, IOException, GRBException, PrismConnectorException {
 		// Run xplanning on the validation mission, and write solution policy to /question-mission[X]/solnPolicy.json
 		PolicyInfo solnPolicyInfo = mAgentGenerator.computeAlignedAgentPolicyInfo(validationMissionFile);
@@ -138,24 +149,32 @@ public class PrefAlignValidationQuestionGenerator {
 		// Create explanation dir that contains agent's mission file, solution policy, alternative
 		// policies, and explanation at /question-mission[X]/explanation-agent[i]/
 		mAgentGenerator.createAgentExplanationDir(validationQuestionDir, validationMissionFile, 0);
+
+		return solnPolicyInfo;
 	}
 
-	private void createUnalignedAgents(File validationQuestionDir, File validationMissionFile,
+	private List<QuantitativePolicy> createUnalignedAgents(File validationQuestionDir, File validationMissionFile,
 			File validationPoliciesDir)
 			throws ResultParsingException, DSMException, XMDPException, IOException, ParseException, PrismException {
+		List<QuantitativePolicy> unalignedAgentQuantPolicies = new ArrayList<>();
+
 		int unalignedAgentIndex = 1; // unaligned agents start at index 1
 		for (File policyJsonFile : validationPoliciesDir.listFiles()) {
 			// Create an unaligned agent[i]
 			// Write agentPolicy[i].json and agentPolicyValues[i].json to /question-mission[X]/
 			PolicyInfo unalignedAgentPolicyInfo = mAgentGenerator.computeUnalignedAgentPolicyInfo(validationMissionFile,
 					policyJsonFile);
-			mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir,
-					unalignedAgentPolicyInfo.getQuantitativePolicy(), unalignedAgentIndex);
+			QuantitativePolicy unalignedAgentQuantPolicy = unalignedAgentPolicyInfo.getQuantitativePolicy();
+			mAgentGenerator.writeAgentPolicyAndValues(validationQuestionDir, unalignedAgentQuantPolicy,
+					unalignedAgentIndex);
 
 			// No explanation of unaligned agent for validation mission
 
+			unalignedAgentQuantPolicies.add(unalignedAgentQuantPolicy);
 			unalignedAgentIndex++;
 		}
+
+		return unalignedAgentQuantPolicies;
 	}
 
 	private void copySimpleCostStructureFile(LinkedPrefAlignQuestions linkedQuestions, File validationQuestionDir)

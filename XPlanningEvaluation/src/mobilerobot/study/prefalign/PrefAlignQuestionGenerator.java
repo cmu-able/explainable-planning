@@ -100,15 +100,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				agentIndex++;
 			}
 
-			// Create answer key for all questions as answerKey.json at /output/question-missionX/
-			JSONObject answerKeyJsonObj = createAnswerKey(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
-			File answerKeyFile = FileIOUtils.createOutFile(questionDir, "answerKey.json");
-			FileIOUtils.prettyPrintJSONObjectToFile(answerKeyJsonObj, answerKeyFile);
-
-			// Compute optimality scores of all agent policies
-			JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedAgentQuantPolicies,
-					solnPolicyInfo);
-			QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
+			// Create answerKey.json and scoreCard.json
+			writeAnswerKeyAndScoreCard(questionDir, missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
 
 			// Visualize map of the mission, each agent's proposed policy, and all policies in the explanation of each
 			// agent
@@ -143,7 +136,20 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		FileIOUtils.prettyPrintJSONObjectToFile(simpleCostStructJsonObj, simpleCostStructFile);
 	}
 
-	private JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
+	static void writeAnswerKeyAndScoreCard(File questionDir, File missionFile,
+			List<QuantitativePolicy> indexedAgentQuantPolicies, PolicyInfo solnPolicyInfo)
+			throws ResultParsingException, IOException, PrismException, XMDPException {
+		// Create answer key for all questions as answerKey.json at /output/question-missionX/
+		JSONObject answerKeyJsonObj = createAnswerKey(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
+		File answerKeyFile = FileIOUtils.createOutFile(questionDir, "answerKey.json");
+		FileIOUtils.prettyPrintJSONObjectToFile(answerKeyJsonObj, answerKeyFile);
+
+		// Compute optimality scores of all agent policies
+		JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
+		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
+	}
+
+	private static JSONObject createAnswerKey(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
 			PolicyInfo solnPolicyInfo) throws IOException, PrismException, ResultParsingException, XMDPException {
 		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
 
@@ -184,8 +190,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return answerKeyJsonObj;
 	}
 
-	private JSONObject computeOptimalityScores(File missionFile, List<QuantitativePolicy> indexedAgentQuantPolicies,
-			PolicyInfo solnPolicyInfo) throws IOException, PrismException, ResultParsingException, XMDPException {
+	private static JSONObject computeOptimalityScores(File missionFile,
+			List<QuantitativePolicy> indexedAgentQuantPolicies, PolicyInfo solnPolicyInfo)
+			throws IOException, PrismException, ResultParsingException, XMDPException {
 		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
 
 		JSONObject scoreCardJsonObj = new JSONObject();

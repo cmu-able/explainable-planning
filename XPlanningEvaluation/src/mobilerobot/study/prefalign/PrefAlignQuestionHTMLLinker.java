@@ -66,6 +66,9 @@ public class PrefAlignQuestionHTMLLinker {
 		int numQuestions = linkedPrefAlignQuestions.getNumQuestions();
 		File[] linkedQuestionFiles = new File[numQuestions];
 
+		PrefAlignQuestionFormGenerator formGenerator = new PrefAlignQuestionFormGenerator(numQuestions,
+				FILLABLE_DATA_TYPES, FILLABLE_DATA_TYPE_OPTIONS);
+
 		for (int j = 0; j < numQuestions; j++) {
 			File questionDir = linkedPrefAlignQuestions.getQuestionDir(j);
 			int agentIndex = linkedPrefAlignQuestions.getQuestionAgentIndex(j);
@@ -80,35 +83,31 @@ public class PrefAlignQuestionHTMLLinker {
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
 					withExplanation, storageDir);
 
-			// MTurk Crowd HTML
-			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
+			// MTurk Crowd HTML and externalHIT script
+			Element externalHITScript = MTurkHTMLQuestionUtils.getExternalHITScript();
+			// Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
 			Element jqueryScript = JSTimingUtils.getJQueryScript();
-			Element mTurkCrowdFormDiv;
-			Element crowdFormActionScript;
+			Element[] formElements;
 
 			if (linkedPrefAlignQuestions.hasNextQuestion(j)) {
 				// Intermediate crowd-form
 				String nextQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(j + 1, withExplanation);
-
 				String nextUrl = nextQuestionDocName + ".html";
-				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
-						nextUrl);
 
-				crowdFormActionScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(j,
-						FILLABLE_DATA_TYPES, FILLABLE_DATA_TYPE_OPTIONS);
+				formElements = formGenerator.createIntermediateFormElements(questionDocName, j, nextUrl);
 			} else {
 				// Last, submittable crowd-form
-				mTurkCrowdFormDiv = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(questionDocName,
-						numQuestions, FILLABLE_DATA_TYPES);
-
-				crowdFormActionScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(j, numQuestions,
-						FILLABLE_DATA_TYPES, FILLABLE_DATA_TYPE_OPTIONS);
+				formElements = formGenerator.createSubmittableFormElements(questionDocName, j);
 			}
 
-			questionDoc.body().appendChild(crowdScript);
+			questionDoc.body().appendChild(externalHITScript);
+			// questionDoc.body().appendChild(crowdScript);
 			questionDoc.body().appendChild(jqueryScript);
-			questionDoc.body().appendChild(mTurkCrowdFormDiv);
-			questionDoc.body().appendChild(crowdFormActionScript);
+
+			// Form UI and form-action script
+			for (Element formElement : formElements) {
+				questionDoc.body().appendChild(formElement);
+			}
 
 			// Write question HTML document to file
 			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, subOutDir);

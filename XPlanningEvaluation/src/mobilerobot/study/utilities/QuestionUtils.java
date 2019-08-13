@@ -2,9 +2,13 @@ package mobilerobot.study.utilities;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.JSONObject;
@@ -14,6 +18,7 @@ import examples.common.XPlannerOutDirectories;
 import explanation.analysis.PolicyInfo;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
+import mobilerobot.study.prefalign.PrefAlignValidationQuestionGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
@@ -140,5 +145,22 @@ public class QuestionUtils {
 		JSONObject answerKeyJsonObj = FileIOUtils.readJSONObjectFromFile(answerKeyJsonFile);
 		String agentKey = String.format(AGENT_KEY_FORMAT, agentIndex);
 		return (String) answerKeyJsonObj.get(agentKey);
+	}
+
+	public static Set<String> getValidationQuestionDocNames(boolean withExplanation) throws URISyntaxException {
+		Set<String> validationQuestionDocNames = new HashSet<>();
+		File validationQuestionsRootDir = FileIOUtils.getResourceDir(PrefAlignValidationQuestionGenerator.class,
+				"validation-questions");
+		for (File questionDir : listQuestionDirs(validationQuestionsRootDir)) {
+			FilenameFilter agentPolicyFilenameFilter = (dir, name) -> name.matches("agentPolicy[0-9]+.json");
+			int numAgents = questionDir.listFiles(agentPolicyFilenameFilter).length;
+			for (int i = 0; i < numAgents; i++) {
+				String validationQuestionDocName = String.format(
+						withExplanation ? QUESTION_DOC_NAME_EXPL_FORMAT : QUESTION_DOC_NAME_NO_EXPL_FORMAT,
+						questionDir.getName(), i);
+				validationQuestionDocNames.add(validationQuestionDocName);
+			}
+		}
+		return validationQuestionDocNames;
 	}
 }

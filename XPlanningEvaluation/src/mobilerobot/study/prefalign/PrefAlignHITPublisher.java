@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,6 +17,7 @@ import org.json.simple.parser.ParseException;
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITPublisher;
 import mobilerobot.study.mturk.MTurkAPIUtils;
+import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
@@ -134,10 +134,10 @@ public class PrefAlignHITPublisher {
 			throws URISyntaxException {
 		String questionDocHTMLFilename = questionDocName + ".html";
 		// Use linked PrefAlign questions that contain validation questions
-		File linkedQuestionsDir = withExplanation
+		File linkedQuestionsRootDir = withExplanation
 				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions-explanation")
 				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions");
-		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
+		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsRootDir, questionDocHTMLFilename);
 
 		// Directory where instruction.html is located
 		File baseDir = new File(PrefAlignHITPublisher.class.getResource(".").toURI());
@@ -170,7 +170,7 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
 			boolean withExplanation = args.length > 1 && args[1].equals("-e");
-			Set<String> validationQuestionDocNames = new HashSet<>();
+			Set<String> validationQuestionDocNames = QuestionUtils.getValidationQuestionDocNames(withExplanation);
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
 			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);
 		} else if (option.equals("deleteHITs")) {

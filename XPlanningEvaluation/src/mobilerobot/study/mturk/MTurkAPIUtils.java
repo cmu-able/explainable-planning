@@ -109,7 +109,7 @@ public class MTurkAPIUtils {
 			File answerKeyFile) throws IOException {
 		// Check if consent-form Qualification Type has already been created
 		ListQualificationTypesRequest listQualTypesRequest = ListQualificationTypesRequest.builder()
-				.query(CONSENT_QUAL_NAME).mustBeRequestable(Boolean.FALSE).build();
+				.query(CONSENT_QUAL_NAME).mustBeRequestable(Boolean.FALSE).mustBeOwnedByCaller(Boolean.TRUE).build();
 		ListQualificationTypesResponse listQualTypesResponse = client.listQualificationTypes(listQualTypesRequest);
 		if (listQualTypesResponse.numResults() > 0) {
 			return listQualTypesResponse.qualificationTypes().get(0);

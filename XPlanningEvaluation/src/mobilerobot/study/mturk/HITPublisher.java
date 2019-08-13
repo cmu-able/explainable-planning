@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -37,6 +39,7 @@ public class HITPublisher {
 	static final int MAX_ASSIGNMENTS = 10;
 
 	private final MTurkClient mClient;
+	private final Map<Boolean, String> mHITTypeIds = new HashMap<>();
 	private final List<HITInfo> mPublishedHITInfos = new ArrayList<>();
 
 	public HITPublisher(MTurkClient client) {
@@ -48,7 +51,8 @@ public class HITPublisher {
 		// Read the question XML into a String
 		String question = new String(Files.readAllBytes(questionXMLFile.toPath()));
 
-		String hitTypeId = createHITType(controlGroup);
+		String hitTypeId = mHITTypeIds.containsKey(controlGroup) ? mHITTypeIds.get(controlGroup)
+				: createHITType(controlGroup);
 		HIT hit = createHITWithHITType(hitTypeId, question, assignmentReviewPolicy);
 
 		HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
@@ -77,7 +81,11 @@ public class HITPublisher {
 
 		CreateHitTypeRequest createHITTypeRequest = builder.build();
 		CreateHitTypeResponse response = mClient.createHITType(createHITTypeRequest);
-		return response.hitTypeId();
+		String hitTypeId = response.hitTypeId();
+
+		// Only create HIT Type for each group once
+		mHITTypeIds.put(controlGroup, hitTypeId);
+		return hitTypeId;
 	}
 
 	private HIT createHITWithHITType(String hitTypeId, String question, ReviewPolicy assignmentReviewPolicy) {

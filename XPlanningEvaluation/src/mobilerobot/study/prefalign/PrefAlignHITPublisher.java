@@ -133,9 +133,10 @@ public class PrefAlignHITPublisher {
 	private static Path getQuestionHTMLFileRelativePath(String questionDocName, boolean withExplanation)
 			throws URISyntaxException {
 		String questionDocHTMLFilename = questionDocName + ".html";
+		// Use linked PrefAlign questions that contain validation questions
 		File linkedQuestionsDir = withExplanation
-				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions-explanation")
-				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "linked-questions");
+				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions-explanation")
+				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions");
 		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsDir, questionDocHTMLFilename);
 
 		// Directory where instruction.html is located

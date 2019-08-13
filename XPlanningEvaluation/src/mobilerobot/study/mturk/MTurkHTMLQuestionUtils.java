@@ -31,16 +31,38 @@ public class MTurkHTMLQuestionUtils {
 		throw new IllegalStateException("Utility class");
 	}
 
+	public static Element getExternalHITScript() {
+		Element externalHITScript = new Element(SCRIPT);
+		externalHITScript.attr("src", "https://s3.amazonaws.com/mturk-public/externalHIT_v1.js");
+		return externalHITScript;
+	}
+
 	public static Element getCrowdHTMLScript() {
 		Element crowdHTMLScript = new Element(SCRIPT);
 		crowdHTMLScript.attr("src", "https://assets.crowd.aws/crowd-html-elements.js");
 		return crowdHTMLScript;
 	}
 
-	public static Element createSubmittableCrowdFormContainer(String questionDocName, int numQuestions,
-			String[] fillableDataTypes) {
-		Element container = createCrowdFormContainerWithoutButton(questionDocName);
+	public static Element createSubmittableCrowdFormContainer(String questionDocName, Element... inputUIElements) {
+		Element container = createCrowdFormContainerWithoutButton(questionDocName, inputUIElements);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
+
+		// Submit button
+		Element submitButtonContainer = createCrowdSubmitButtonContainer();
+		crowdForm.appendChild(submitButtonContainer);
+		return container;
+	}
+
+	public static Element createSubmittableForm(String externalSubmitUrl, int numQuestions,
+			String[] fillableDataTypes) {
+		Element form = new Element("form");
+		form.attr("action", externalSubmitUrl);
+		form.attr("method", "POST");
+		form.attr("id", "mturk_form");
+		form.attr("name", "mturk_form");
+		form.attr("style", "display:none");
+
+		addHiddenInputToForm("assignmentId", null, form);
 
 		// Hidden inputs in the submittable form:
 		// for each question:
@@ -56,22 +78,33 @@ public class MTurkHTMLQuestionUtils {
 		for (int i = 0; i < numQuestions; i++) {
 			for (String dataType : allHiddenInputDataTypes) {
 				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
-
-				Element hiddenInput = new Element("input");
-				hiddenInput.attr("type", "hidden");
-				hiddenInput.attr("id", hiddenInputName);
-				hiddenInput.attr("name", hiddenInputName);
-				hiddenInput.attr("value", "");
-
-				crowdForm.appendChild(hiddenInput);
+				addHiddenInputToForm(hiddenInputName, null, form);
 			}
 		}
 
-		// Submit button
-		Element submitButtonContainer = createCrowdSubmitButtonContainer();
-		crowdForm.appendChild(submitButtonContainer);
+		Element submitButton = new Element("input");
+		submitButton.attr("type", "submit");
+		submitButton.attr("id", "submitButton");
+		submitButton.attr("value", "Submit");
 
-		return container;
+		return form;
+	}
+
+	public static Element getTurkSetAssignmentIDScript() {
+		// Call to turkSetAssignmentID() to set assignmentId field in <form>
+		Element script = new Element(SCRIPT);
+		script.appendText("turkSetAssignmentID();");
+		return script;
+	}
+
+	private static void addHiddenInputToForm(String hiddenInputName, String value, Element form) {
+		Element hiddenInput = new Element("input");
+		hiddenInput.attr("type", "hidden");
+		hiddenInput.attr("id", hiddenInputName);
+		hiddenInput.attr("name", hiddenInputName);
+		hiddenInput.attr("value", value == null ? "" : value);
+
+		form.appendChild(hiddenInput);
 	}
 
 	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions,
@@ -204,8 +237,9 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	public static Element createIntermediateCrowdFormContainer(String questionDocName, String nextUrl) {
-		Element container = createCrowdFormContainerWithoutButton(questionDocName);
+	public static Element createIntermediateCrowdFormContainer(String questionDocName, String nextUrl,
+			Element... inputUIElements) {
+		Element container = createCrowdFormContainerWithoutButton(questionDocName, inputUIElements);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
 		Element nextButtonContainer = createNextButtonContainer(nextUrl);
@@ -237,19 +271,16 @@ public class MTurkHTMLQuestionUtils {
 		return String.format(onClickFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();");
 	}
 
-	private static Element createCrowdFormContainerWithoutButton(String questionDocName) {
+	private static Element createCrowdFormContainerWithoutButton(String questionDocName, Element... inputUIElements) {
 		Element container = createBlankCrowdFormContainer(questionDocName);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
-		Element questionDiv = createPrefAlignCrowdQuestionContainer();
-		Element justificationDiv = createJustificationCrowdQuestionContainer();
-		Element confidenceDiv = createConfidenceCrowdQuestionContainer();
-		crowdForm.appendChild(questionDiv);
-		crowdForm.appendChild(justificationDiv);
-		crowdForm.appendChild(confidenceDiv);
+		for (Element inputUIElement : inputUIElements) {
+			crowdForm.appendChild(inputUIElement);
+		}
 		return container;
 	}
 
-	public static Element createBlankCrowdFormContainer(String questionDocName) {
+	private static Element createBlankCrowdFormContainer(String questionDocName) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_MARGIN);
@@ -257,86 +288,15 @@ public class MTurkHTMLQuestionUtils {
 		container.addClass("w3-card");
 
 		Element crowdForm = new Element(CROWD_FORM);
-		Element questionRefHiddenInput = createQuestionRefHiddenInput(questionDocName);
-		crowdForm.appendChild(questionRefHiddenInput);
+		// This hidden input is attached to each crowd-form (either intermediate and submittable crowd-form)
+		// <input type="hidden" id="ref" name="ref" value=[questionDocName]>
+		addHiddenInputToForm("ref", questionDocName, crowdForm);
 
 		container.appendChild(crowdForm);
 		return container;
 	}
 
-	private static Element createQuestionRefHiddenInput(String questionDocName) {
-		String hiddenInputName = "ref";
-
-		// This hidden input is attached to each crowd-form (either intermediate and submittable crowd-form)
-		// <input type="hidden" id="ref" name="ref" value=[questionDocName]>
-		Element hiddenInput = new Element("input");
-		hiddenInput.attr("type", "hidden");
-		hiddenInput.attr("id", hiddenInputName);
-		hiddenInput.attr("name", hiddenInputName);
-		hiddenInput.attr("value", questionDocName);
-		return hiddenInput;
-	}
-
-	public static Element createPrefAlignCrowdQuestionContainer() {
-		Element questionContainer = createBlankQuestionContainer(
-				"Is the agent's proposed policy the best one, with respect to the given cost profile?");
-		String[] optionNames = { "answer-yes", "answer-no" };
-		String[] optionLabels = { "Yes", "No" };
-		Element answerOptions = createCrowdRadioGroup(optionNames, optionLabels);
-		questionContainer.appendChild(answerOptions);
-		return questionContainer;
-	}
-
-	public static Element createJustificationCrowdQuestionContainer() {
-		Element questionContainer = createBlankQuestionContainer("Please provide justification for your answer:");
-		Element crowdTextArea = new Element("crowd-text-area");
-		crowdTextArea.attr("id", "justification");
-		crowdTextArea.attr("name", "justification");
-		crowdTextArea.attr("label", "I gave the answer above because...");
-		crowdTextArea.attr("rows", "5");
-		crowdTextArea.attr("max-rows", "5");
-		questionContainer.appendChild(crowdTextArea);
-		return questionContainer;
-	}
-
-	public static Element createConfidenceCrowdQuestionContainer() {
-		Element questionContainer = createBlankQuestionContainer("How confident are you in your answer?");
-		String[] optionNames = { "confidence-high", "confidence-medium", "confidence-low" };
-		String[] optionLabels = { "Highly Confident", "Somewhat Confident", "Not Confident" };
-		Element options = createCrowdRadioGroup(optionNames, optionLabels);
-		questionContainer.appendChild(options);
-		return questionContainer;
-	}
-
-	private static Element createBlankQuestionContainer(String question) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_MARGIN);
-
-		Element questionHeader = new Element("h5");
-		questionHeader.text(question);
-		container.appendChild(questionHeader);
-		return container;
-	}
-
-	private static Element createCrowdRadioGroup(String[] optionNames, String[] optionLabels) {
-		Element crowdRadioGroup = new Element("crowd-radio-group");
-		crowdRadioGroup.attr("allow-empty-selection", false);
-		crowdRadioGroup.attr("disabled", false);
-
-		for (int i = 0; i < optionNames.length; i++) {
-			String name = optionNames[i];
-			String label = optionLabels[i];
-			Element crowdRadioButton = new Element("crowd-radio-button");
-			crowdRadioButton.attr("id", name);
-			crowdRadioButton.attr("name", name);
-			crowdRadioButton.text(label);
-			crowdRadioGroup.appendChild(crowdRadioButton);
-		}
-		return crowdRadioGroup;
-	}
-
-	public static Element createNextButtonContainer(String nextUrl) {
+	private static Element createNextButtonContainer(String nextUrl) {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_MARGIN);
@@ -351,7 +311,7 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	public static Element createCrowdSubmitButtonContainer() {
+	private static Element createCrowdSubmitButtonContainer() {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_MARGIN);
@@ -371,5 +331,33 @@ public class MTurkHTMLQuestionUtils {
 			submitButton.attr("style", "display:none");
 		}
 		return submitButton;
+	}
+
+	public static Element createCrowdQuestionContainer(String question) {
+		Element container = new Element("div");
+		container.addClass(W3_CONTAINER);
+		container.addClass(W3_MARGIN);
+
+		Element questionHeader = new Element("h5");
+		questionHeader.text(question);
+		container.appendChild(questionHeader);
+		return container;
+	}
+
+	public static Element createCrowdRadioGroup(String[] optionNames, String[] optionLabels) {
+		Element crowdRadioGroup = new Element("crowd-radio-group");
+		crowdRadioGroup.attr("allow-empty-selection", false);
+		crowdRadioGroup.attr("disabled", false);
+
+		for (int i = 0; i < optionNames.length; i++) {
+			String name = optionNames[i];
+			String label = optionLabels[i];
+			Element crowdRadioButton = new Element("crowd-radio-button");
+			crowdRadioButton.attr("id", name);
+			crowdRadioButton.attr("name", name);
+			crowdRadioButton.text(label);
+			crowdRadioGroup.appendChild(crowdRadioButton);
+		}
+		return crowdRadioGroup;
 	}
 }

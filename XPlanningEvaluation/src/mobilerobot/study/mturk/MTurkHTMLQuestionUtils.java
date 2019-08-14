@@ -93,11 +93,7 @@ public class MTurkHTMLQuestionUtils {
 			}
 		}
 
-		Element submitButton = new Element("input");
-		submitButton.attr("type", "submit");
-		submitButton.attr("id", "submit-button");
-		submitButton.attr("value", "Submit");
-
+		// No need for <input type="submit" ...> since this form is hidden
 		return form;
 	}
 
@@ -147,9 +143,17 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static String getSubmitDataLogic() {
-		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n%s\n};";
-		return String.format(onSubmitFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();",
-				"localStorageToSubmittableForm();");
+		StringBuilder builder = new StringBuilder();
+		builder.append("document.getElementById(\"invoke-submit\").onclick = function() {\n");
+		builder.append("\trecordElapsedTimeToLocalStorage();\n");
+		builder.append("\tcrowdFormInputToLocalStorage();\n");
+		builder.append("\tlocalStorageToSubmittableForm();\n");
+		builder.append("\tsetFormSubmitToHost();\n");
+		// Clear localStorage after retrieving all data and filling them in the submittable form
+		builder.append("\tlocalStorage.clear();\n");
+		builder.append("\tdocument.getElementById(\"mturk-form\").submit();\n");
+		builder.append("}");
+		return builder.toString();
 	}
 
 	private static String getSetFormSubmitToHostFunction() {
@@ -251,8 +255,6 @@ public class MTurkHTMLQuestionUtils {
 		builder.append(String.format(localStorageValueFormat, ASSIGNMENT_ID));
 		builder.append(";\n");
 
-		// Clear localStorage after retrieving all data and filling them in the submittable form
-		builder.append("\t\tlocalStorage.clear();\n");
 		builder.append("\t}\n");
 		builder.append("}");
 

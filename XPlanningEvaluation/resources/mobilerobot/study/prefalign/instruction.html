@@ -17,6 +17,10 @@
 			<a class="w3-button w3-block w3-teal" href="#" id="linkToHeadQuestion">Continue to the Task</a>
 		</div>
 		<script>
+		  // Save assignmentId and turkSubmitTo params from the url to localStorage
+			saveMTurkExternalSubmitParamsToLocalStorage();
+			
+			// Direct to the 1st page of linked questions
 			document.getElementById("linkToHeadQuestion").onclick = function() {
 				var url = window.location.href;
 				var query_string_params = getQueryStringParameters(url);

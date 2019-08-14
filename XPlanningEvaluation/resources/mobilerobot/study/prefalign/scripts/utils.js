@@ -29,3 +29,18 @@ function getQueryStringParameters(url) {
 	}
 	return urlParams;
 }
+
+function saveQueryStringParameterToLocalStorage(url, paramName) {
+	var query_string_params = getQueryStringParameters(url);
+	var paramValue = query_string_params[paramName];
+	
+	if (typeof(Storage) !== "undefined") {
+		localStorage.setItem(paramName, paramValue);
+	}
+}
+
+function saveMTurkExternalSubmitParamsToLocalStorage() {
+	var url = window.location.href;
+	saveQueryStringParameterToLocalStorage(url, "assignmentId");
+	saveQueryStringParameterToLocalStorage(url, "turkSubmitTo");
+}

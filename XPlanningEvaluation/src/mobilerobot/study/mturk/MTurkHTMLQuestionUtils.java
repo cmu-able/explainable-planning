@@ -47,9 +47,14 @@ public class MTurkHTMLQuestionUtils {
 		Element container = createCrowdFormContainerWithoutButton(questionDocName, inputUIElements);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
-		// Submit button
-		Element submitButtonContainer = createCrowdSubmitButtonContainer();
-		crowdForm.appendChild(submitButtonContainer);
+		// Indirect submit button
+		Element indirectSubmitButtonContainer = createIndirectSubmitButtonContainer();
+
+		// Disable submit-action of final <crowd-form>
+		Element hiddenSubmitButton = createCrowdSubmitButton(true, false);
+
+		crowdForm.appendChild(indirectSubmitButtonContainer);
+		crowdForm.appendChild(hiddenSubmitButton);
 		return container;
 	}
 
@@ -242,9 +247,11 @@ public class MTurkHTMLQuestionUtils {
 		Element container = createCrowdFormContainerWithoutButton(questionDocName, inputUIElements);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
+		// Next button
 		Element nextButtonContainer = createNextButtonContainer(nextUrl);
-		// Disable submit action for intermediate form
-		Element hiddenSubmitButton = createCrowdSubmitButton(true);
+
+		// Disable submit-action of intermediate <crowd-form>
+		Element hiddenSubmitButton = createCrowdSubmitButton(true, false);
 
 		crowdForm.appendChild(nextButtonContainer);
 		crowdForm.appendChild(hiddenSubmitButton);
@@ -281,9 +288,7 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static Element createBlankCrowdFormContainer(String questionDocName) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_MARGIN);
+		Element container = createBlankContainerWithMargin();
 		container.addClass("w3-sand");
 		container.addClass("w3-card");
 
@@ -297,9 +302,7 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static Element createNextButtonContainer(String nextUrl) {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_MARGIN);
+		Element container = createBlankContainerWithMargin();
 
 		Element nextButton = new Element("crowd-button");
 		nextButton.attr("id", "save-next");
@@ -311,33 +314,47 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	private static Element createCrowdSubmitButtonContainer() {
-		Element container = new Element("div");
-		container.addClass(W3_CONTAINER);
-		container.addClass(W3_MARGIN);
-
-		Element submitButton = createCrowdSubmitButton(false);
-
-		container.appendChild(submitButton);
+	private static Element createIndirectSubmitButtonContainer() {
+		Element container = createBlankContainerWithMargin();
+		Element indirectSubmitButton = createCrowdSubmitButton(false, true);
+		container.appendChild(indirectSubmitButton);
 		return container;
 	}
 
-	private static Element createCrowdSubmitButton(boolean hidden) {
+	/**
+	 * 
+	 * @param hidden
+	 *            : If true, then adding this element to <crowd-form> will disable its "submit" form-action
+	 * @param indirect
+	 *            : If true, then this button will invoke the actual submittable form's "submit" action
+	 * @return Crowd "Submit" button
+	 */
+	private static Element createCrowdSubmitButton(boolean hidden, boolean indirect) {
 		Element submitButton = new Element("crowd-button");
-		submitButton.attr("form-action", "submit");
+		if (indirect) {
+			submitButton.attr("id", "invoke-submit");
+		} else {
+			submitButton.attr("form-action", "submit");
+		}
+
 		submitButton.attr("variant", "primary");
 		submitButton.text("Submit");
+
 		if (hidden) {
 			submitButton.attr("style", "display:none");
 		}
 		return submitButton;
 	}
 
-	public static Element createCrowdQuestionContainer(String question) {
+	private static Element createBlankContainerWithMargin() {
 		Element container = new Element("div");
 		container.addClass(W3_CONTAINER);
 		container.addClass(W3_MARGIN);
+		return container;
+	}
 
+	public static Element createCrowdQuestionContainer(String question) {
+		Element container = createBlankContainerWithMargin();
 		Element questionHeader = new Element("h5");
 		questionHeader.text(question);
 		container.appendChild(questionHeader);

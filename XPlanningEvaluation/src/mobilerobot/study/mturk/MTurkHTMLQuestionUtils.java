@@ -118,14 +118,14 @@ public class MTurkHTMLQuestionUtils {
 				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
-		String localStorageToCrowdFormSubmitFunction = getLocalStorageToCrowdFormSubmitFunction(numQuestions,
+		String localStorageToSubmittableFormFunction = getLocalStorageToSubmittableFormFunction(numQuestions,
 				fillableDataTypes);
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
 		script.appendText(timeMeasurementSnippet);
 		script.appendText(crowdFormInputToLocalStorageFunction);
-		script.appendText(localStorageToCrowdFormSubmitFunction);
+		script.appendText(localStorageToSubmittableFormFunction);
 		script.appendText(submitDataLogic);
 		return script;
 	}
@@ -149,7 +149,7 @@ public class MTurkHTMLQuestionUtils {
 	private static String getSubmitDataLogic() {
 		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n%s\n};";
 		return String.format(onSubmitFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();",
-				"localStorageToCrowdFormSubmit();");
+				"localStorageToSubmittableForm();");
 	}
 
 	private static String getCrowdFormInputToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,
@@ -212,12 +212,12 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	private static String getLocalStorageToCrowdFormSubmitFunction(int numQuestions, String[] fillableDataTypes) {
+	private static String getLocalStorageToSubmittableFormFunction(int numQuestions, String[] fillableDataTypes) {
 		String hiddenInputValueFormat = "document.getElementById(\"%s\").value";
 		String localStorageValueFormat = "localStorage.getItem(\"%s\")";
 
 		StringBuilder builder = new StringBuilder();
-		builder.append("function localStorageToCrowdFormSubmit() {\n");
+		builder.append("function localStorageToSubmittableForm() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {

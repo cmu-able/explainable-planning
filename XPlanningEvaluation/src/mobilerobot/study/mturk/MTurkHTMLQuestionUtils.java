@@ -36,12 +36,6 @@ public class MTurkHTMLQuestionUtils {
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static Element getExternalHITScript() {
-		Element externalHITScript = new Element(SCRIPT);
-		externalHITScript.attr("src", "https://s3.amazonaws.com/mturk-public/externalHIT_v1.js");
-		return externalHITScript;
-	}
-
 	public static Element getCrowdHTMLScript() {
 		Element crowdHTMLScript = new Element(SCRIPT);
 		crowdHTMLScript.attr("src", "https://assets.crowd.aws/crowd-html-elements.js");
@@ -257,7 +251,6 @@ public class MTurkHTMLQuestionUtils {
 
 		builder.append("\t}\n");
 		builder.append("}");
-
 		return builder.toString();
 	}
 

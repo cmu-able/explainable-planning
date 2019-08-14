@@ -83,12 +83,13 @@ public class PrefAlignQuestionHTMLLinker {
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
 					withExplanation, storageDir);
 
-			// MTurk Crowd HTML and externalHIT script
-			Element externalHITScript = MTurkHTMLQuestionUtils.getExternalHITScript();
-			// Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
+			// MTurk Crowd HTML and javascript code to submit external question to MTurk
+			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
 			Element jqueryScript = JSTimingUtils.getJQueryScript();
-			Element[] formElements;
+			questionDoc.body().appendChild(crowdScript);
+			questionDoc.body().appendChild(jqueryScript);
 
+			Element[] formElements;
 			if (linkedPrefAlignQuestions.hasNextQuestion(j)) {
 				// Intermediate crowd-form
 				String nextQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(j + 1, withExplanation);
@@ -99,10 +100,6 @@ public class PrefAlignQuestionHTMLLinker {
 				// Last, submittable crowd-form
 				formElements = formGenerator.createSubmittableFormElements(questionDocName, j);
 			}
-
-			questionDoc.body().appendChild(externalHITScript);
-			// questionDoc.body().appendChild(crowdScript);
-			questionDoc.body().appendChild(jqueryScript);
 
 			// Form UI and form-action script
 			for (Element formElement : formElements) {

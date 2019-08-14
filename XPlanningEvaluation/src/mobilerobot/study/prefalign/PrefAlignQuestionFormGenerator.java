@@ -33,7 +33,7 @@ public class PrefAlignQuestionFormGenerator {
 		Element submittableForm = MTurkHTMLQuestionUtils.createSubmittableForm(SANDBOX_EXTERNAL_SUBMIT_URL,
 				mNumQuestions, mFillableDataTypes);
 
-		// <crowd-form>'s "submit" action will copy data from localStorage to <form> and trigger <form>'s submit action
+		// <crowd-form>'s "submit" button-click will copy data from localStorage to <form> and trigger <form>'s submit action
 		Element crowdFormOnSubmitScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(questionIndex,
 				mNumQuestions, mFillableDataTypes, mFillableDataTypeOptions);
 

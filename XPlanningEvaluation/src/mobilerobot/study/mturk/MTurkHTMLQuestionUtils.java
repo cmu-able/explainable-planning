@@ -68,8 +68,8 @@ public class MTurkHTMLQuestionUtils {
 		Element form = new Element("form");
 		form.attr("action", externalSubmitUrl);
 		form.attr("method", "POST");
-		form.attr("id", "mturk_form");
-		form.attr("name", "mturk_form");
+		form.attr("id", "mturk-form");
+		form.attr("name", "mturk-form");
 		form.attr("style", "display:none");
 
 		// Field assignmentId will be processed by MTurk
@@ -95,17 +95,10 @@ public class MTurkHTMLQuestionUtils {
 
 		Element submitButton = new Element("input");
 		submitButton.attr("type", "submit");
-		submitButton.attr("id", "submitButton");
+		submitButton.attr("id", "submit-button");
 		submitButton.attr("value", "Submit");
 
 		return form;
-	}
-
-	public static Element getTurkSetAssignmentIDScript() {
-		// Call to turkSetAssignmentID() to set assignmentId field in <form>
-		Element script = new Element(SCRIPT);
-		script.appendText("turkSetAssignmentID();");
-		return script;
 	}
 
 	private static void addHiddenInputToForm(String hiddenInputName, String value, Element form) {
@@ -126,12 +119,14 @@ public class MTurkHTMLQuestionUtils {
 				fillableDataTypes, fillableDataTypeOptions);
 		String localStorageToSubmittableFormFunction = getLocalStorageToSubmittableFormFunction(numQuestions,
 				fillableDataTypes);
+		String setFormSubmitToHostFunction = getSetFormSubmitToHostFunction();
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
 		script.appendText(timeMeasurementSnippet);
 		script.appendText(crowdFormInputToLocalStorageFunction);
 		script.appendText(localStorageToSubmittableFormFunction);
+		script.appendText(setFormSubmitToHostFunction);
 		script.appendText(submitDataLogic);
 		return script;
 	}
@@ -155,6 +150,15 @@ public class MTurkHTMLQuestionUtils {
 		String onSubmitFormat = "document.querySelector(\"crowd-form\").onsubmit = function() {\n%s\n%s\n%s\n};";
 		return String.format(onSubmitFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();",
 				"localStorageToSubmittableForm();");
+	}
+
+	private static String getSetFormSubmitToHostFunction() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("function setFormSubmitToHost() {\n");
+		builder.append("\tvar mTurkForm = document.getElementById(\"mturk-form\");\n");
+		builder.append("\tmTurkForm.action = localStorage.getItem(\"turkSubmitTo\") + \"/mturk/externalSubmit\";\n");
+		builder.append("}");
+		return builder.toString();
 	}
 
 	private static String getCrowdFormInputToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,

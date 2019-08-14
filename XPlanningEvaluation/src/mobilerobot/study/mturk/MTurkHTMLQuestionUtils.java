@@ -21,6 +21,11 @@ public class MTurkHTMLQuestionUtils {
 	private static final String ELAPSED_TIME = "elapsedTime";
 	private static final String[] AUX_DATA_TYPES = { "ref", ELAPSED_TIME };
 
+	/**
+	 * MTurk parameter "assignmentId"
+	 */
+	private static final String ASSIGNMENT_ID = "assignmentId";
+
 	private static final String W3_CONTAINER = "w3-container";
 	private static final String W3_MARGIN = "w3-margin";
 
@@ -67,7 +72,8 @@ public class MTurkHTMLQuestionUtils {
 		form.attr("name", "mturk_form");
 		form.attr("style", "display:none");
 
-		addHiddenInputToForm("assignmentId", null, form);
+		// Field assignmentId will be processed by MTurk
+		addHiddenInputToForm(ASSIGNMENT_ID, null, form);
 
 		// Hidden inputs in the submittable form:
 		// for each question:
@@ -131,12 +137,11 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static String[] getAllCrowdFormInputDataTypes(String[] fillableDataTypes) {
-		// All input data types in crowd-form include:
+		// All input data types in crowd-form, for each question, include:
 		// - fillable data types: answer, justification, and confidence
 		// - hidden data type: ref
-		String[] allFormDataTypes = Arrays.copyOf(fillableDataTypes, fillableDataTypes.length + 1);
-		allFormDataTypes[allFormDataTypes.length - 1] = "ref";
-		return allFormDataTypes;
+		String[] refDataType = Arrays.copyOfRange(AUX_DATA_TYPES, 0, 1);
+		return Stream.concat(Arrays.stream(fillableDataTypes), Arrays.stream(refDataType)).toArray(String[]::new);
 	}
 
 	private static String[] getAllDataTypes(String[] fillableDataTypes) {
@@ -221,7 +226,7 @@ public class MTurkHTMLQuestionUtils {
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
 
 		for (int i = 0; i < numQuestions; i++) {
-			// Add "ref" to data types to be filled in crowd-form's hidden inputs
+			// Add "ref" and "elapsedTime" to data types to be filled in the submittable form's hidden inputs
 			String[] allHiddenInputDataTypes = getAllDataTypes(fillableDataTypes);
 
 			for (String dataType : allHiddenInputDataTypes) {
@@ -235,6 +240,14 @@ public class MTurkHTMLQuestionUtils {
 			}
 		}
 
+		// Set assignmentId field of the form to be processed by MTurk
+		builder.append("\t\t");
+		builder.append(String.format(hiddenInputValueFormat, ASSIGNMENT_ID));
+		builder.append(" = ");
+		builder.append(String.format(localStorageValueFormat, ASSIGNMENT_ID));
+		builder.append(";\n");
+
+		// Clear localStorage after retrieving all data and filling them in the submittable form
 		builder.append("\t\tlocalStorage.clear();\n");
 		builder.append("\t}\n");
 		builder.append("}");

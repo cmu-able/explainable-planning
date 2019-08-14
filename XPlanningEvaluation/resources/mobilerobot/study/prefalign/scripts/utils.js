@@ -30,16 +30,21 @@ function getQueryStringParameters(url) {
 	return urlParams;
 }
 
-function saveQueryStringParameterToLocalStorage(url, paramName) {
+function getQueryStringParameter(url, paramName) {
 	var query_string_params = getQueryStringParameters(url);
 	var paramValue = query_string_params[paramName];
+	return paramValue;
+}
+
+function saveQueryStringParameterToLocalStorage(url, paramName) {
+	var paramValue = getQueryStringParameter(url, paramName);
 	
 	if (typeof(Storage) !== "undefined") {
 		localStorage.setItem(paramName, paramValue);
 	}
 }
 
-function saveMTurkExternalSubmitParamsToLocalStorage() {
+function saveMTurkParametersToLocalStorage() {
 	var url = window.location.href;
 	saveQueryStringParameterToLocalStorage(url, "assignmentId");
 	saveQueryStringParameterToLocalStorage(url, "turkSubmitTo");

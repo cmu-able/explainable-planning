@@ -18,13 +18,12 @@
 		</div>
 		<script>
 		  // Save assignmentId and turkSubmitTo params from the url to localStorage
-			saveMTurkExternalSubmitParamsToLocalStorage();
+			saveMTurkParametersToLocalStorage();
 			
 			// Direct to the 1st page of linked questions
 			document.getElementById("linkToHeadQuestion").onclick = function() {
 				var url = window.location.href;
-				var query_string_params = getQueryStringParameters(url);
-				var headQuestionRelUrl = query_string_params["headQuestion"];
+				var headQuestionRelUrl = getQueryStringParameter(url, "headQuestion");
 				location.href = headQuestionRelUrl;
 				return false;
 			};

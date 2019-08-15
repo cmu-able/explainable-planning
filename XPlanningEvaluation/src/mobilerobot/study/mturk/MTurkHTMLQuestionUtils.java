@@ -1,12 +1,18 @@
 package mobilerobot.study.mturk;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Element;
 
+import mobilerobot.study.prefalign.PrefAlignQuestionHTMLLinker;
 import mobilerobot.study.utilities.JSTimingUtils;
+import mobilerobot.utilities.FileIOUtils;
 
 public class MTurkHTMLQuestionUtils {
 
@@ -40,6 +46,19 @@ public class MTurkHTMLQuestionUtils {
 		Element crowdHTMLScript = new Element(SCRIPT);
 		crowdHTMLScript.attr("src", "https://assets.crowd.aws/crowd-html-elements.js");
 		return crowdHTMLScript;
+	}
+
+	public static Element getUtilsScript(File storageDir) throws FileNotFoundException, URISyntaxException {
+		File utilsJSFile = FileIOUtils.getFile(PrefAlignQuestionHTMLLinker.class, "scripts", "utils.js");
+
+		// To make both paths have the same root
+		Path storageAbsPath = storageDir.toPath().toAbsolutePath();
+		Path utilsJSAbsPath = utilsJSFile.toPath().toAbsolutePath();
+		Path utilsJSRelativePath = storageAbsPath.relativize(utilsJSAbsPath);
+
+		Element utilsScript = new Element(SCRIPT);
+		utilsScript.attr("src", utilsJSRelativePath.toString());
+		return utilsScript;
 	}
 
 	public static Element createSubmittableCrowdFormContainer(String questionDocName, Element[] inputUIElements,
@@ -293,15 +312,7 @@ public class MTurkHTMLQuestionUtils {
 		builder.append("document.getElementById(\"save-next\").onclick = function() {\n");
 		builder.append("\trecordElapsedTimeToLocalStorage();\n");
 		builder.append("\tcrowdFormInputToLocalStorage();\n");
-		builder.append("\tvar assignmentId = localStorage.getItem(\"assignmentId\");\n");
-		builder.append("\tvar hitId = localStorage.getItem(\"hitId\");\n");
-		builder.append("\tvar turkSubmitTo = localStorage.getItem(\"turkSubmitTo\");\n");
-		builder.append("\tvar workerId = localStorage.getItem(\"workerId\");\n");
-		builder.append("\tvar params = \"?assignmentId=\" + assignmentId;\n");
-		builder.append("\tparams += \"&hitId=\" + hitId;\n");
-		builder.append("\tparams += \"&turkSubmitTo=\" + turkSubmitTo;\n");
-		builder.append("\tparams += \"&workerId=\" + workerId;\n");
-		builder.append("\tthis.href += params;\n");
+		builder.append("\tthis.href += getMTurkParametersAsQueryString();\n");
 		builder.append("}");
 		return builder.toString();
 	}

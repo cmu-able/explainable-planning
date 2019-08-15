@@ -85,8 +85,10 @@ public class PrefAlignQuestionHTMLLinker {
 
 			// MTurk Crowd HTML and javascript
 			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
+			Element utilsScript = MTurkHTMLQuestionUtils.getUtilsScript(storageDir);
 			Element jqueryScript = JSTimingUtils.getJQueryScript();
 			questionDoc.body().appendChild(crowdScript);
+			questionDoc.body().appendChild(utilsScript);
 			questionDoc.body().appendChild(jqueryScript);
 
 			Element[] formElements;

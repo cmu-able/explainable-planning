@@ -51,3 +51,15 @@ function saveMTurkParametersToLocalStorage() {
 	saveQueryStringParameterToLocalStorage(url, "turkSubmitTo");
 	saveQueryStringParameterToLocalStorage(url, "workerId");
 }
+
+function getMTurkParametersAsQueryString() {
+	var assignmentId = localStorage.getItem("assignmentId");
+	var hitId = localStorage.getItem("hitId");
+	var turkSubmitTo = localStorage.getItem("turkSubmitTo");
+	var workerId = localStorage.getItem("workerId");
+	var params = "?assignmentId=" + assignmentId;
+	params += "&hitId=" + hitId;
+	params += "&turkSubmitTo=" + turkSubmitTo;
+	params += "&workerId=" + workerId;
+	return params;
+}

@@ -17,14 +17,31 @@
 			<a class="w3-button w3-block w3-teal" href="#" id="linkToHeadQuestion">Continue to the Task</a>
 		</div>
 		<script>
-		  // Save assignmentId and turkSubmitTo params from the url to localStorage
+		  // Save all MTurk parameters (assignmentId, hitId, turkSubmitTo, and workerId) from the url to localStorage
 			saveMTurkParametersToLocalStorage();
 			
 			// Direct to the 1st page of linked questions
 			document.getElementById("linkToHeadQuestion").onclick = function() {
 				var url = window.location.href;
-				var headQuestionRelUrl = getQueryStringParameter(url, "headQuestion");
-				location.href = headQuestionRelUrl;
+				var params = getQueryStringParameters(url);
+				
+				// Relative path to the 1st question file in HIT
+				var headQuestionRelUrl = params["headQuestion"];
+				
+				// MTurk parameters
+				var assignmentId = params["assignmentId"];
+				var hitId = params["hitId"];
+				var turkSubmitTo = params["turkSubmitTo"];
+				var workerId = params["workerId"];
+				
+				// Pass MTurk parameters to question html file to use functionality of <crowd-form>
+				var headQuestionRelUrlWithParams = headQuestionRelUrl + "?";
+				headQuestionRelUrlWithParams += "assignmentId=" + assignmentId;
+				headQuestionRelUrlWithParams += "hitId=" + hitId;
+				headQuestionRelUrlWithParams += "turkSubmitTo=" + turkSubmitTo;
+				headQuestionRelUrlWithParams += "workerId=" + workerId;
+				
+				location.href = headQuestionRelUrlWithParams;
 				return false;
 			};
 		</script>

@@ -47,5 +47,7 @@ function saveQueryStringParameterToLocalStorage(url, paramName) {
 function saveMTurkParametersToLocalStorage() {
 	var url = window.location.href;
 	saveQueryStringParameterToLocalStorage(url, "assignmentId");
+	saveQueryStringParameterToLocalStorage(url, "hitId");
 	saveQueryStringParameterToLocalStorage(url, "turkSubmitTo");
+	saveQueryStringParameterToLocalStorage(url, "workerId");
 }

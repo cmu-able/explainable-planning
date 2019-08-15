@@ -160,15 +160,6 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	private static String getSetFormSubmitToHostFunction() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("function setFormSubmitToHost() {\n");
-		builder.append("\tvar mTurkForm = document.getElementById(\"mturk-form\");\n");
-		builder.append("\tmTurkForm.action = localStorage.getItem(\"turkSubmitTo\") + \"/mturk/externalSubmit\";\n");
-		builder.append("}");
-		return builder.toString();
-	}
-
 	private static String getCrowdFormInputToLocalStorageFunction(int questionIndex, String[] fillableDataTypes,
 			Map<String, String[]> fillableDataTypeOptions) {
 		String inputValueOptionFormat = "document.getElementById(\"%s\").checked";

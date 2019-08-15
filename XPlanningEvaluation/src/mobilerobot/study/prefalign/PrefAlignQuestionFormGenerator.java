@@ -8,8 +8,6 @@ import mobilerobot.study.mturk.MTurkHTMLQuestionUtils;
 
 public class PrefAlignQuestionFormGenerator {
 
-	private static final String SANDBOX_EXTERNAL_SUBMIT_URL = "https://workersandbox.mturk.com/mturk/externalSubmit";
-
 	private final int mNumQuestions;
 	private final String[] mFillableDataTypes;
 	private final Map<String, String[]> mFillableDataTypeOptions;
@@ -25,22 +23,20 @@ public class PrefAlignQuestionFormGenerator {
 	}
 
 	public Element[] createSubmittableFormElements(String questionDocName, int questionIndex) {
-		// <crowd-form> only acts as input UI; it will NOT submit data to MTurk
+		// <crowd-form> will submit data to MTurk
 		Element crowdFormContainer = MTurkHTMLQuestionUtils.createSubmittableCrowdFormContainer(questionDocName,
-				mInputUIElements);
+				mInputUIElements, mNumQuestions, mFillableDataTypes);
 
-		// <form>'s action will submit data to MTurk
-		Element submittableForm = MTurkHTMLQuestionUtils.createSubmittableForm(SANDBOX_EXTERNAL_SUBMIT_URL,
-				mNumQuestions, mFillableDataTypes);
-
-		// <crowd-form>'s "submit" button-click will copy data from localStorage to <form> and trigger <form>'s submit action
+		// <crowd-form>'s "submit" action will:
+		// - copy data from <crowd-form> UI to localStorage, 
+		// - copy all questions' data from localStorage to <crowd-form> hidden inputs, and
+		// - submit data to MTurk
 		Element crowdFormOnSubmitScript = MTurkHTMLQuestionUtils.getSubmittableCrowdFormOnSubmitScript(questionIndex,
 				mNumQuestions, mFillableDataTypes, mFillableDataTypeOptions);
 
-		Element[] submitElements = new Element[3];
+		Element[] submitElements = new Element[2];
 		submitElements[0] = crowdFormContainer;
-		submitElements[1] = submittableForm;
-		submitElements[2] = crowdFormOnSubmitScript;
+		submitElements[1] = crowdFormOnSubmitScript;
 		return submitElements;
 	}
 
@@ -49,7 +45,7 @@ public class PrefAlignQuestionFormGenerator {
 		Element crowdFormContainer = MTurkHTMLQuestionUtils.createIntermediateCrowdFormContainer(questionDocName,
 				nextUrl, mInputUIElements);
 
-		// <crowd-form>'s "next" action will copy data from <crowd-form> to localStorage
+		// <crowd-form>'s "next" action will copy data from <crowd-form> UI to localStorage
 		Element crowdFormOnNextScript = MTurkHTMLQuestionUtils.getIntermediateCrowdFormNextOnClickScript(questionIndex,
 				mFillableDataTypes, mFillableDataTypeOptions);
 

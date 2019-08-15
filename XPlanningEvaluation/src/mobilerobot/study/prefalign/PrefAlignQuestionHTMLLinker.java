@@ -83,7 +83,7 @@ public class PrefAlignQuestionHTMLLinker {
 			Document questionDoc = mQuestionHTMLGenerator.createPrefAlignQuestionDocument(questionDir, agentIndex,
 					withExplanation, storageDir);
 
-			// MTurk Crowd HTML and javascript code to submit external question to MTurk
+			// MTurk Crowd HTML and javascript
 			Element crowdScript = MTurkHTMLQuestionUtils.getCrowdHTMLScript();
 			Element jqueryScript = JSTimingUtils.getJQueryScript();
 			questionDoc.body().appendChild(crowdScript);

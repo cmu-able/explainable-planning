@@ -298,8 +298,21 @@ public class MTurkHTMLQuestionUtils {
 	}
 
 	private static String getSaveDataLogic() {
-		String onClickFormat = "document.getElementById(\"save-next\").onclick = function() {\n%s\n%s\n};";
-		return String.format(onClickFormat, "recordElapsedTimeToLocalStorage();", "crowdFormInputToLocalStorage();");
+		StringBuilder builder = new StringBuilder();
+		builder.append("document.getElementById(\"save-next\").onclick = function() {\n");
+		builder.append("\trecordElapsedTimeToLocalStorage();\n");
+		builder.append("\tcrowdFormInputToLocalStorage();\n");
+		builder.append("\tvar assignmentId = localStorage.getItem(\"assignmentId\");\n");
+		builder.append("\tvar hitId = localStorage.getItem(\"hitId\");\n");
+		builder.append("\tvar turkSubmitTo = localStorage.getItem(\"turkSubmitTo\");\n");
+		builder.append("\tvar workerId = localStorage.getItem(\"workerId\");\n");
+		builder.append("\tvar params = \"?assignmentId=\" + assignmentId;\n");
+		builder.append("\tparams += \"&hitId=\" + hitId;\n");
+		builder.append("\tparams += \"&turkSubmitTo=\" + turkSubmitTo;\n");
+		builder.append("\tparams += \"&workerId=\" + workerId;\n");
+		builder.append("\tthis.href += params;\n");
+		builder.append("}");
+		return builder.toString();
 	}
 
 	private static Element createCrowdFormContainerWithoutButton(String questionDocName, Element... inputUIElements) {

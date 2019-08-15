@@ -8,7 +8,32 @@
 	</head>
 	<body>
 		<div class="w3-container">
-			<p>TODO: Instruction</p>
+			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figure 1 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building.</p>
+			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, it may take a longer route to avoid driving through private section of the building.</p>
+			<p>Imagine that you are a user of the robot -- you want the robot to deliver a package at some destination. You have in mind how you would weigh the importance of each of the objectives. For instance, if you are in a rush to deliver the package, you may want the robot to get to the destination as soon as possible, even if it has to be more intrusive to the building occupants.</p>
+			<p>Unfortunately, you cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how you would weigh the objectives. However, you are able to see the robot's plan before it is taking off.</p>
+			<p>In this task, suppose that you, as the robot's user, wish to weigh the 3 objectives in dollar values in a particular way. For instance:</p>
+			<div class="w3-responsive">
+      <table class="w3-table" style="max-width:400px">
+       <tr>
+        <th></th>
+        <th class="w3-right-align">Cost ($)</th>
+       </tr>
+       <tr>
+        <td>1 minute of travel time</td>
+        <td class="w3-right-align">$1</td>
+       </tr>
+       <tr>
+        <td>0.1 expected collision</td>
+        <td class="w3-right-align">$9</td>
+       </tr>
+       <tr>
+        <td>1 intrusiveness-penalty</td>
+        <td class="w3-right-align">$5</td>
+       </tr>
+      </table>
+     </div>
+			<p>Your task is to determine whether the robot's plan is the best available option, given the cost profile.</p>
 		</div>
 		<div class="w3-container">
 			<p>TODO: Demo</p>

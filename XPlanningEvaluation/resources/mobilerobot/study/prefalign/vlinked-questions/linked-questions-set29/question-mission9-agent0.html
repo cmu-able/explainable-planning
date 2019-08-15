@@ -103,6 +103,7 @@
    </div>
   </div>
   <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+  <script src="../../../../../../target/classes/mobilerobot/study/prefalign/scripts/utils.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <div class="w3-container w3-margin w3-sand w3-card">
    <crowd-form>
@@ -146,6 +147,6 @@
     </crowd-button>
    </crowd-form>
   </div>
-  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question0-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question0-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question0-answer", "no"); } localStorage.setItem("question0-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question0-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question0-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question0-confidence", "low"); } localStorage.setItem("question0-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); };</script>
+  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question0-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question0-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question0-answer", "no"); } localStorage.setItem("question0-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question0-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question0-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question0-confidence", "low"); } localStorage.setItem("question0-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
  </body>
 </html>

@@ -37,9 +37,9 @@
 				// Pass MTurk parameters to question html file to use functionality of <crowd-form>
 				var headQuestionRelUrlWithParams = headQuestionRelUrl + "?";
 				headQuestionRelUrlWithParams += "assignmentId=" + assignmentId;
-				headQuestionRelUrlWithParams += "hitId=" + hitId;
-				headQuestionRelUrlWithParams += "turkSubmitTo=" + turkSubmitTo;
-				headQuestionRelUrlWithParams += "workerId=" + workerId;
+				headQuestionRelUrlWithParams += "&hitId=" + hitId;
+				headQuestionRelUrlWithParams += "&turkSubmitTo=" + turkSubmitTo;
+				headQuestionRelUrlWithParams += "&workerId=" + workerId;
 				
 				location.href = headQuestionRelUrlWithParams;
 				return false;

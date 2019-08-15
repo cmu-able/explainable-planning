@@ -42,18 +42,32 @@ public class MTurkHTMLQuestionUtils {
 		return crowdHTMLScript;
 	}
 
-	public static Element createSubmittableCrowdFormContainer(String questionDocName, Element... inputUIElements) {
+	public static Element createSubmittableCrowdFormContainer(String questionDocName, Element[] inputUIElements,
+			int numQuestions, String[] fillableDataTypes) {
 		Element container = createCrowdFormContainerWithoutButton(questionDocName, inputUIElements);
 		Element crowdForm = container.selectFirst(CROWD_FORM);
 
-		// Indirect submit button
-		Element indirectSubmitButtonContainer = createIndirectSubmitButtonContainer();
+		// Hidden inputs in the submittable <crowd-form>, for each question:
+		// - question[i]-answer
+		// - question[i]-justification
+		// - question[i]-confidence
+		// - question[i]-ref: additional data type
+		// - question[i]-elapsedTime: additional data type
+		//
+		// All hidden inputs have empty values initially, but will be filled in with values from localStorage once submit.
+		String[] allHiddenInputDataTypes = getAllDataTypes(fillableDataTypes);
 
-		// Disable submit-action of final <crowd-form>
-		Element hiddenSubmitButton = createCrowdSubmitButton(true, false);
+		for (int i = 0; i < numQuestions; i++) {
+			for (String dataType : allHiddenInputDataTypes) {
+				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
+				addHiddenInputToForm(hiddenInputName, null, crowdForm);
+			}
+		}
 
-		crowdForm.appendChild(indirectSubmitButtonContainer);
-		crowdForm.appendChild(hiddenSubmitButton);
+		// Crowd submit button
+		Element crowdSubmitButtonContainer = createCrowdSubmitButtonContainer();
+
+		crowdForm.appendChild(crowdSubmitButtonContainer);
 		return container;
 	}
 
@@ -107,16 +121,14 @@ public class MTurkHTMLQuestionUtils {
 				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
-		String localStorageToSubmittableFormFunction = getLocalStorageToSubmittableFormFunction(numQuestions,
+		String localStorageToSubmittableCrowdFormFunction = getLocalStorageToSubmittableCrowdFormFunction(numQuestions,
 				fillableDataTypes);
-		String setFormSubmitToHostFunction = getSetFormSubmitToHostFunction();
 		String submitDataLogic = getSubmitDataLogic();
 
 		Element script = new Element(SCRIPT);
 		script.appendText(timeMeasurementSnippet);
 		script.appendText(crowdFormInputToLocalStorageFunction);
-		script.appendText(localStorageToSubmittableFormFunction);
-		script.appendText(setFormSubmitToHostFunction);
+		script.appendText(localStorageToSubmittableCrowdFormFunction);
 		script.appendText(submitDataLogic);
 		return script;
 	}
@@ -138,14 +150,12 @@ public class MTurkHTMLQuestionUtils {
 
 	private static String getSubmitDataLogic() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("document.getElementById(\"invoke-submit\").onclick = function() {\n");
+		builder.append("document.querySelector(\"crowd-form\").onsubmit = function() {\n");
 		builder.append("\trecordElapsedTimeToLocalStorage();\n");
 		builder.append("\tcrowdFormInputToLocalStorage();\n");
-		builder.append("\tlocalStorageToSubmittableForm();\n");
-		builder.append("\tsetFormSubmitToHost();\n");
-		// Clear localStorage after retrieving all data and filling them in the submittable form
+		builder.append("\tlocalStorageToSubmittableCrowdForm();\n");
+		// Clear localStorage after retrieving the data and filling them in the submittable <crowd-form>
 		builder.append("\tlocalStorage.clear();\n");
-		builder.append("\tdocument.getElementById(\"mturk-form\").submit();\n");
 		builder.append("}");
 		return builder.toString();
 	}
@@ -219,13 +229,20 @@ public class MTurkHTMLQuestionUtils {
 		return builder.toString();
 	}
 
-	private static String getLocalStorageToSubmittableFormFunction(int numQuestions, String[] fillableDataTypes) {
+	private static String getLocalStorageToSubmittableCrowdFormFunction(int numQuestions, String[] fillableDataTypes) {
 		String hiddenInputValueFormat = "document.getElementById(\"%s\").value";
 		String localStorageValueFormat = "localStorage.getItem(\"%s\")";
 
 		StringBuilder builder = new StringBuilder();
-		builder.append("function localStorageToSubmittableForm() {\n");
+		builder.append("function localStorageToSubmittableCrowdForm() {\n");
 		builder.append("\tif (typeof(Storage) !== \"undefined\") {\n");
+
+		// Copy the following data from localStorage to the submittable <crowd-form>, for each question:
+		// - question[i]-answer
+		// - question[i]-justification
+		// - question[i]-confidence
+		// - question[i]-ref: additional data type
+		// - question[i]-elapsedTime: additional data type
 
 		for (int i = 0; i < numQuestions; i++) {
 			// Add "ref" and "elapsedTime" to data types to be filled in the submittable form's hidden inputs
@@ -242,12 +259,7 @@ public class MTurkHTMLQuestionUtils {
 			}
 		}
 
-		// Set assignmentId field of the form to be processed by MTurk
-		builder.append("\t\t");
-		builder.append(String.format(hiddenInputValueFormat, ASSIGNMENT_ID));
-		builder.append(" = ");
-		builder.append(String.format(localStorageValueFormat, ASSIGNMENT_ID));
-		builder.append(";\n");
+		// localStorage also contains MTurk parameters, but there is no need to copy those to the <crowd-form>
 
 		builder.append("\t}\n");
 		builder.append("}");
@@ -263,7 +275,7 @@ public class MTurkHTMLQuestionUtils {
 		Element nextButtonContainer = createNextButtonContainer(nextUrl);
 
 		// Disable submit-action of intermediate <crowd-form>
-		Element hiddenSubmitButton = createCrowdSubmitButton(true, false);
+		Element hiddenSubmitButton = createCrowdSubmitButton(true);
 
 		crowdForm.appendChild(nextButtonContainer);
 		crowdForm.appendChild(hiddenSubmitButton);
@@ -326,10 +338,10 @@ public class MTurkHTMLQuestionUtils {
 		return container;
 	}
 
-	private static Element createIndirectSubmitButtonContainer() {
+	private static Element createCrowdSubmitButtonContainer() {
 		Element container = createBlankContainerWithMargin();
-		Element indirectSubmitButton = createCrowdSubmitButton(false, true);
-		container.appendChild(indirectSubmitButton);
+		Element crowdSubmitButton = createCrowdSubmitButton(false);
+		container.appendChild(crowdSubmitButton);
 		return container;
 	}
 
@@ -337,18 +349,11 @@ public class MTurkHTMLQuestionUtils {
 	 * 
 	 * @param hidden
 	 *            : If true, then adding this element to <crowd-form> will disable its "submit" form-action
-	 * @param indirect
-	 *            : If true, then this button will invoke the actual submittable form's "submit" action
 	 * @return Crowd "Submit" button
 	 */
-	private static Element createCrowdSubmitButton(boolean hidden, boolean indirect) {
+	private static Element createCrowdSubmitButton(boolean hidden) {
 		Element submitButton = new Element("crowd-button");
-		if (indirect) {
-			submitButton.attr("id", "invoke-submit");
-		} else {
-			submitButton.attr("form-action", "submit");
-		}
-
+		submitButton.attr("form-action", "submit");
 		submitButton.attr("variant", "primary");
 		submitButton.text("Submit");
 

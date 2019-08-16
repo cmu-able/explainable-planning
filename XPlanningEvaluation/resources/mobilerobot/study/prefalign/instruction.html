@@ -8,34 +8,41 @@
 	</head>
 	<body>
 		<div class="w3-container">
+		<h4>Introduction</h4>
 			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figure 1 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building.</p>
 			<p>TODO: Figure 1.</p>
-			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, it may take a longer route to avoid driving through private sections of the building.</p>
+			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
 			<p>TODO: Figure with examples of different ways the robot can make tradeoffs. Illustrate how weights determine a tradeoff.</p>
 			<p>Imagine that you are a user of the robot -- you want the robot to deliver a package at some destination. You have in mind how you would weigh the importance of each of the objectives. For instance, if you are in a rush to deliver the package, you may want the robot to get to the destination as soon as possible, even if it has to be more intrusive to the building occupants.</p>
 			<p>Unfortunately, you cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how you would weigh the objectives. However, you are able to see the robot's plan before it is taking off.</p>
-			<p>In this task, suppose that you, as the robot's user, wish to weigh the 3 objectives in dollar values in a particular way. For instance:</p>
-			<div class="w3-responsive">
-      <table class="w3-table" style="max-width:400px">
-       <tr>
-        <th></th>
-        <th class="w3-right-align">Cost ($)</th>
-       </tr>
-       <tr>
-        <td>1 minute of travel time</td>
-        <td class="w3-right-align">$1</td>
-       </tr>
-       <tr>
-        <td>0.1 expected collision</td>
-        <td class="w3-right-align">$9</td>
-       </tr>
-       <tr>
-        <td>1 intrusiveness-penalty</td>
-        <td class="w3-right-align">$5</td>
-       </tr>
-      </table>
-     </div>
-			<p>Your task is to determine whether the robot's plan is the best available option, given the cost profile.</p>
+			<h4>Task</h4>
+			<p>In this task, you are given a <i>cost profile</i> representing how a hypothetical robot's user weighs the importance of the 3 objectives. An example of a cost profile is:</p>
+				<div class="w3-responsive w3-cell">
+					<table class="w3-table" style="max-width:500px;min-width:350px">
+						<tr>
+							<th></th>
+							<th class="w3-right-align">Cost ($)</th>
+						</tr>
+						<tr>
+							<td>1 minute of travel time</td>
+							<td class="w3-right-align">$1</td>
+						</tr>
+						<tr>
+							<td>0.1 expected collision</td>
+							<td class="w3-right-align">$9</td>
+						</tr>
+						<tr>
+							<td>1 intrusiveness-penalty</td>
+							<td class="w3-right-align">$5</td>
+						</tr>
+					</table>
+				</div>
+				<div class="w3-panel w3-padding-large w3-cell w3-cell-middle" style="max-width:1000px">
+					<p>A <i>total cost</i> of a navigation plan can be computed from the cost profile. For example, if a navigation takes 5 minutes, has 0.4 expected collision, and has intrusiveness-penalty of 3, then its total cost is ($1 * 5) + ($9 * 0.4/0.1) + ($5 * 3) = $56.</p>
+					<p>A best navigation, with respect to a particular cost profile, is one that has the lowest total cost.</p>
+				</div>
+     <p>Then, you will be presented with a navigation plan that the robot came up with. However, the robot <i>may</i> have weighed the objectives differently than your given cost profile. In other words, the robot's plan may or may not prioritize the objectives as the hypothetical user wishes.</p>
+			<p><b>Your task is to determine whether the robot's plan is the best available option for this hypothetical user.</b></p>
 		</div>
 		<div class="w3-container">
 			<p>TODO: Demo</p>

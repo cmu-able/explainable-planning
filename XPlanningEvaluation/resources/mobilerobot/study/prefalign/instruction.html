@@ -8,8 +8,8 @@
 		<script src="scripts/utils.js"></script>
 		<style>
 			.crop {
-				width: 650px;
-				height: 350px; /* 300px for the image height; 50px for the caption */
+				width: 700px;
+				height: 400px; /* 300px for the image height; 100px for the caption */
 				overflow: hidden;
 			}
 			.crop img {
@@ -21,70 +21,79 @@
 	<body>
 		<div class="w3-container">
 		<h4>Introduction</h4>
-			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figure 1 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building.</p>
+			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figures 1 and 2 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building (see Figures 3-7 for details).</p>
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/floor-plan.png">
-					<h5>Figure 1: TODO: caption</h5>
+					<p><b>Figure 1</b>: Robot has to navigate from its location to a given goal.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/topology.png">
-					<h5>Figure 2: TODO: caption</h5>
+					<p><b>Figure 2</b>: The map of the building is represented abstractly by a set of <i>waypoints</i> and <i>connections</i> among them. Each waypoint represents a location in the building, and a connection between 2 waypoints means that Robot can move between the 2 locations.</p>
 				</div>
 			</div>
+			
+			<!-- Collision -->
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/obstacles.png">
-					<h5>Figure 3: TODO: caption</h5>
+					<p><b>Figure 3</b>: There are some obstacles around the building. When Robot moves through a path with obstacles, it <i>may</i> bump into them. Robot is more likely to bump into obstacles when they are <i>dense</i> than when they are <i>sparse</i>.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/obstacles-abstract.png">
-					<h5>Figure 4: TODO: caption</h5>
+					<p><b>Figure 4</b>: In an abstract map, obstacles are represented on a connection between 2 waypoints. This means when Robot moves from one waypoint to the other, it <i>may</i> bump into the obstacles on the way. The "SO" notation on the map denotes sparse obstacles, and the "DO" notation denotes dense obstacles.</p>
 				</div>
 			</div>
 			<div class="w3-container w3-center w3-margin">
 				<img src="imgs/collision-table.png" class="w3-image">
-				<h5>Figure 5: TODO: caption</h5>
+				<p class="w3-left-align">
+				<b>Figure 5</b>: A <i>collision</i> occurs when Robot bumps into obstacles while moving at its full speed (i.e., 0.7 meters/second). However, bumping into obstacles at low speed (i.e., 0.35 meters/second) does NOT result in a collision.
+				</p>
+				<p class="w3-left-align">
+				Every time Robot moves through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), at full speed, it has 20% and 40% probability of colliding, respectively. In other words, the <i>expected collision</i> of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.
+				</p>
 			</div>
+			
+			<!-- Intrusiveness -->
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/zones.png">
-					<h5>Figure 6: TODO caption</h5>
+					<p><b>Figure 6</b>: The building has 3 types of zones: (i) <i>public zones</i>, which are appropriate for Robot to move around without being intrusive to human occupants, (ii) <i>semi-private zones</i> and (iii) <i>private zones</i>, which Robot is discouraged from entering, since it may be somewhat intrusive, and very intrusive, to the human occupants, respectively.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/zones-abstract.png">
-					<h5>Figure 7: TODO caption</h5>
+					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the type of zone in which it belongs. When Robot enters a <i>public</i> waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time Robot enters a <i>semi-private</i> or a <i>private</i> waypoint, it receives a penalty of 1 or 3, respectively.</p>
 				</div>
 			</div>
 			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half w3-center crop">
 					<img src="imgs/problem.png">
-					<h5>Figure 8: TODO caption</h5>
+					<p>Figure 8: TODO caption</p>
 				</div>
 				<div class="w3-container w3-half w3-center">
 					<img src="imgs/problem-abstract.png">
-					<h5>Figure 9: TODO caption</h5>
+					<p>Figure 9: TODO caption</p>
 				</div>
 			</div>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half w3-center crop">
 					<img src="imgs/plan1.png">
-					<h5>Figure 10: TODO caption</h5>
+					<p>Figure 10: TODO caption</p>
 				</div>
 				<div class="w3-container w3-half w3-center">
 					<img src="imgs/plan1-abstract.png">
-					<h5>Figure 11: TODO caption</h5>
+					<p>Figure 11: TODO caption</p>
 				</div>
 			</div>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half w3-center crop">
 					<img src="imgs/plan2.png">
-					<h5>Figure 12: TODO caption</h5>
+					<p>Figure 12: TODO caption</p>
 				</div>
 				<div class="w3-container w3-half w3-center">
 					<img src="imgs/plan2-abstract.png">
-					<h5>Figure 13: TODO caption</h5>
+					<p>Figure 13: TODO caption</p>
 				</div>
 			</div>
 			<p>TODO: Figure with examples of different ways the robot can make tradeoffs. Illustrate how weights determine a tradeoff.</p>

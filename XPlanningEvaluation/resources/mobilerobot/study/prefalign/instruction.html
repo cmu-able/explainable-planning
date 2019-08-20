@@ -2,16 +2,91 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Instruction</title>
 		<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		<script src="scripts/utils.js"></script>
+		<style>
+			.crop {
+				width: 650px;
+				height: 350px; /* 300px for the image height; 50px for the caption */
+				overflow: hidden;
+			}
+			.crop img {
+				width: 900px;
+				height: 300px;
+			}
+		</style>
 	</head>
 	<body>
 		<div class="w3-container">
 		<h4>Introduction</h4>
 			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figure 1 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building.</p>
-			<p>TODO: Figure 1.</p>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/floor-plan.png">
+					<h5>Figure 1: TODO: caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/topology.png">
+					<h5>Figure 2: TODO: caption</h5>
+				</div>
+			</div>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/obstacles.png">
+					<h5>Figure 3: TODO: caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/obstacles-abstract.png">
+					<h5>Figure 4: TODO: caption</h5>
+				</div>
+			</div>
+			<div class="w3-container w3-center w3-margin">
+				<img src="imgs/collision-table.png" class="w3-image">
+				<h5>Figure 5: TODO: caption</h5>
+			</div>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/zones.png">
+					<h5>Figure 6: TODO caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/zones-abstract.png">
+					<h5>Figure 7: TODO caption</h5>
+				</div>
+			</div>
 			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/problem.png">
+					<h5>Figure 8: TODO caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/problem-abstract.png">
+					<h5>Figure 9: TODO caption</h5>
+				</div>
+			</div>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/plan1.png">
+					<h5>Figure 10: TODO caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/plan1-abstract.png">
+					<h5>Figure 11: TODO caption</h5>
+				</div>
+			</div>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half w3-center crop">
+					<img src="imgs/plan2.png">
+					<h5>Figure 12: TODO caption</h5>
+				</div>
+				<div class="w3-container w3-half w3-center">
+					<img src="imgs/plan2-abstract.png">
+					<h5>Figure 13: TODO caption</h5>
+				</div>
+			</div>
 			<p>TODO: Figure with examples of different ways the robot can make tradeoffs. Illustrate how weights determine a tradeoff.</p>
 			<p>Imagine that you are a user of the robot -- you want the robot to deliver a package at some destination. You have in mind how you would weigh the importance of each of the objectives. For instance, if you are in a rush to deliver the package, you may want the robot to get to the destination as soon as possible, even if it has to be more intrusive to the building occupants.</p>
 			<p>Unfortunately, you cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how you would weigh the objectives. However, you are able to see the robot's plan before it is taking off.</p>

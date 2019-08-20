@@ -29,7 +29,7 @@
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/topology.png">
-					<p><b>Figure 2</b>: The map of the building is represented abstractly by a set of <i>waypoints</i> and <i>connections</i> among them. Each waypoint represents a location in the building, and a connection between 2 waypoints means that Robot can move between the 2 locations.</p>
+					<p><b>Figure 2</b>: The map of the building in Figure 1 is represented abstractly by a set of <i>waypoints</i> and <i>connections</i> among them. Each waypoint represents a location in the building, and a connection between 2 waypoints means that Robot can move between the 2 locations.</p>
 				</div>
 			</div>
 			
@@ -62,41 +62,42 @@
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/zones-abstract.png">
-					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the type of zone in which it belongs. When Robot enters a <i>public</i> waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time Robot enters a <i>semi-private</i> or a <i>private</i> waypoint, it receives a penalty of 1 or 3, respectively.</p>
+					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the type of zone in which it belongs. When Robot enters a <i>PUBLIC</i> waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time Robot enters a <i>SEMI-PRIVATE</i> or a <i>PRIVATE</i> waypoint, it receives a penalty of 1 or 3, respectively. Note that Robot will NOT get any penalty for being in its starting waypoint.</p>
 				</div>
 			</div>
 			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/problem.png">
-					<p>Figure 8: TODO caption</p>
+					<p><b>Figure 8</b>: This is an example of a navigation problem.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/problem-abstract.png">
-					<p>Figure 9: TODO caption</p>
+					<p><b>Figure 9</b>: This is the abstract map of Figure 8.</p>
 				</div>
 			</div>
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/plan1.png">
-					<p>Figure 10: TODO caption</p>
+					<p><b>Figure 10</b>: Robot's navigation plan that takes the least amount of time to reach the destination.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/plan1-abstract.png">
-					<p>Figure 11: TODO caption</p>
+					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, Robot plans to drive at full speed through waypoints 1 to 5.</p>
+					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 9, since it enters a PRIVATE waypoint 3 times and enters a PUBLIC waypoint once (recall that there is no penalty for Robot's starting waypoint). This plan also has the expected collision of 0.4, since it moves through DO at full speed.</p>
 				</div>
 			</div>
 			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half w3-center crop">
+				<div class="w3-container w3-half crop">
 					<img src="imgs/plan2.png">
-					<p>Figure 12: TODO caption</p>
+					<p><b>Figure 12</b>: Robot's navigation plan that is the least intrusive and avoids collision.</p>
 				</div>
-				<div class="w3-container w3-half w3-center">
+				<div class="w3-container w3-half">
 					<img src="imgs/plan2-abstract.png">
-					<p>Figure 13: TODO caption</p>
+					<p><b>Figure 13</b>: This is the abstract navigation plan of Figure 12. Here, Robot plans to drive through waypoints 1-2-7-8-9-10-5 at full speed except from waypoints 8-9, where there is SO.</p>
+					<p>This plan has the cumulative intrusiveness-penalty of 3, which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 11.</p>
 				</div>
 			</div>
-			<p>TODO: Figure with examples of different ways the robot can make tradeoffs. Illustrate how weights determine a tradeoff.</p>
 			<p>Imagine that you are a user of the robot -- you want the robot to deliver a package at some destination. You have in mind how you would weigh the importance of each of the objectives. For instance, if you are in a rush to deliver the package, you may want the robot to get to the destination as soon as possible, even if it has to be more intrusive to the building occupants.</p>
 			<p>Unfortunately, you cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how you would weigh the objectives. However, you are able to see the robot's plan before it is taking off.</p>
 			<h4>Task</h4>

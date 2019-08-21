@@ -188,12 +188,12 @@ public class LowerConvexHullPolicyCollection implements Iterable<Entry<PolicyInf
 				.getQFunction(NonStandardMetricQFunction.class, IntrusiveMoveEvent.NAME);
 
 		Map<IQFunction<?, ?>, Double> qaUnitAmounts = new HashMap<>();
-		qaUnitAmounts.put(timeQFunction, 1.0); // 1 unit-time = 1 minute
+		qaUnitAmounts.put(timeQFunction, 1.0); // 1 unit-time = 1 second
 		qaUnitAmounts.put(collideQFunction, 0.1); // 1 unit-collision = 0.1 E[collision]
 		qaUnitAmounts.put(intrusiveQFunction, 1.0); // 1 unit-intrusiveness = 1-penalty of intrusiveness
 
 		Map<IQFunction<?, ?>, String> descriptiveUnits = new HashMap<>();
-		descriptiveUnits.put(timeQFunction, "1 minute of travel time");
+		descriptiveUnits.put(timeQFunction, "1 second of travel time");
 		descriptiveUnits.put(collideQFunction, "0.1 expected collision");
 		descriptiveUnits.put(intrusiveQFunction, "1 intrusiveness-penalty");
 

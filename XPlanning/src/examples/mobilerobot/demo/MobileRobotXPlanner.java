@@ -31,7 +31,8 @@ public class MobileRobotXPlanner {
 
 	private XPlanner mXPlanner;
 
-	public MobileRobotXPlanner(File mapsJsonDir, XPlannerOutDirectories outputDirs, VerbalizerSettings verbalizerSettings) {
+	public MobileRobotXPlanner(File mapsJsonDir, XPlannerOutDirectories outputDirs,
+			VerbalizerSettings verbalizerSettings) {
 		IXMDPLoader xmdpLoader = new MobileRobotXMDPLoader(mapsJsonDir);
 		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
 	}
@@ -71,7 +72,7 @@ public class MobileRobotXPlanner {
 		Vocabulary vocab = new Vocabulary();
 		vocab.putNoun(TravelTimeQFunction.NAME, "travel time");
 		vocab.putVerb(TravelTimeQFunction.NAME, "take");
-		vocab.putUnit(TravelTimeQFunction.NAME, "minute", "minutes");
+		vocab.putUnit(TravelTimeQFunction.NAME, "second", "seconds");
 		vocab.putNoun(CollisionEvent.NAME, "collision");
 		vocab.putVerb(CollisionEvent.NAME, "have");
 		vocab.putUnit(CollisionEvent.NAME, "expected collision", "expected collisions");

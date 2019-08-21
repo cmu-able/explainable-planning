@@ -2,7 +2,7 @@
 	<Overview>
 		<Title>Consent Form for Participation in Research</Title>
 		<Text>Please read this information</Text>
-		<Text>You are invited to participate in a study, entitled "TODO". The study is being conducted by Roykrong Sukkerd in the Institute for Software Research of Carnegie Mellon University.</Text>
+		<Text>You are invited to participate in a study, entitled "Understanding mobile robot navigation planning". The study is being conducted by Roykrong Sukkerd in the Institute for Software Research of Carnegie Mellon University.</Text>
 		<FormattedContent><![CDATA[
 		<pre>
 		Institute for Software Research
@@ -11,7 +11,7 @@
 		(412) 268-4885
 		</pre>
 		]]></FormattedContent>
-		<Text>The purpose of this study is to TODO. Your participation in the study will contribute to a better understanding of TODO. We estimate that it will take about TODO minutes of your time to complete the task. You are free to contact the investigator at the above address and phone number to discuss this study.</Text>
+		<Text>The purpose of this study is to examine how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. Your participation in the study will contribute to a better understanding of human interaction with artificial intelligence. We estimate that it will take about 15 minutes of your time to complete the task. You are free to contact the investigator at the above address and phone number to discuss this study.</Text>
 		<Text>Risks to participants are considered minimal. There will be no costs for participating. You will be paid for each HIT you complete, but will not otherwise benefit from participating. Your MTurk worker ID will only be collected for the purposes of distributing compensation and will not be associated with your study data. A limited number of research team members will have access to the data during data collection. Your MTurk worker ID will be stripped from the final dataset.</Text>
 		<Text>Your participation in this study is voluntary. You may decline to answer any question and you have the right to withdraw from participation at any time without penalty. If you wish to withdraw from the study or have any questions, contact the investigator listed above.</Text>
 		<Text>This study has been reviewed and approved by Carnegie Mellon University Institutional Review Board. If you have questions pertaining to your rights as a research participant; or to report concerns to this study, you should contact the Office of Research integrity and Compliance at Carnegie Mellon University. Email: irb-review@andrew.cmu.edu. Phone: 412-268-1901 or 412-268-5460.</Text>

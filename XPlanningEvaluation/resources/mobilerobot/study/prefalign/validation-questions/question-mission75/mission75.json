@@ -9,13 +9,13 @@
       "objective": "travelTime"
     },
     {
-      "scaling-const": 210.0,
+      "scaling-const": 100.0,
       "min-step-value": 0.0,
       "max-step-value": 1.0,
       "objective": "collision"
     },
     {
-      "scaling-const": 102.0,
+      "scaling-const": 207.0,
       "min-step-value": 0.0,
       "max-step-value": 3.0,
       "objective": "intrusiveness"

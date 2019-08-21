@@ -9,7 +9,7 @@
       "objective": "travelTime"
     },
     {
-      "scaling-const": 210.0,
+      "scaling-const": 30.0,
       "min-step-value": 0.0,
       "max-step-value": 1.0,
       "objective": "collision"

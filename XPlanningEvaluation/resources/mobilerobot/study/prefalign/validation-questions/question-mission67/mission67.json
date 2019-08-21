@@ -15,7 +15,7 @@
       "objective": "collision"
     },
     {
-      "scaling-const": 69.0,
+      "scaling-const": 12.0,
       "min-step-value": 0.0,
       "max-step-value": 3.0,
       "objective": "intrusiveness"

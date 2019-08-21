@@ -26,11 +26,11 @@
        </tr>
        <tr>
         <td>0.1 expected collision</td>
-        <td class="w3-right-align">$1</td>
+        <td class="w3-right-align">$7</td>
        </tr>
        <tr>
         <td>1 intrusiveness-penalty</td>
-        <td class="w3-right-align">$23</td>
+        <td class="w3-right-align">$4</td>
        </tr>
       </table>
      </div>
@@ -51,7 +51,7 @@
          <div>
           (seconds)
          </div></th>
-        <td>108</td>
+        <td>113</td>
        </tr>
        <tr>
         <th>
@@ -61,7 +61,7 @@
          <div>
           (expected #)
          </div></th>
-        <td>0</td>
+        <td>1</td>
        </tr>
        <tr>
         <th>
@@ -71,19 +71,19 @@
          <div>
           (penalty)
          </div></th>
-        <td>0</td>
+        <td>8</td>
        </tr>
        <tr>
         <td># non-intrusive locations</td>
-        <td>13</td>
+        <td>6</td>
        </tr>
        <tr>
         <td># somewhat-intrusive locations</td>
-        <td>0</td>
+        <td>5</td>
        </tr>
        <tr>
         <td># very-intrusive locations</td>
-        <td>0</td>
+        <td>1</td>
        </tr>
       </table>
      </div>
@@ -95,7 +95,7 @@
    <div class="w3-row w3-half">
     <div class="w3-container w3-twothird w3-center" style="height:100vh">
      <h5>Robot's Plan</h5>
-     <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/validation-questions/question-mission70/agentPolicy0.png" alt="Robot's Plan" style="height:90%">
+     <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/questions/question-mission56/agentPolicy1.png" alt="Robot's Plan" style="height:90%">
     </div>
     <div class="w3-container w3-third">
      <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">Show Legend</button>
@@ -107,7 +107,7 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <div class="w3-container w3-margin w3-sand w3-card">
    <crowd-form>
-    <input type="hidden" id="ref" name="ref" value="question-mission70-agent0">
+    <input type="hidden" id="ref" name="ref" value="question-mission56-agent1">
     <div class="w3-container w3-margin">
      <h5>Is the agent's proposed policy the best one, with respect to the given cost profile?</h5>
      <crowd-radio-group>
@@ -138,7 +138,7 @@
      </crowd-radio-group>
     </div>
     <div class="w3-container w3-margin">
-     <crowd-button id="save-next" href="question-mission63-agent1.html" variant="normal">
+     <crowd-button id="save-next" href="question-mission67-agent0.html" variant="normal">
       Next Task
      </crowd-button>
     </div>
@@ -147,6 +147,6 @@
     </crowd-button>
    </crowd-form>
   </div>
-  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question1-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question1-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question1-answer", "no"); } localStorage.setItem("question1-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question1-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question1-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question1-confidence", "low"); } localStorage.setItem("question1-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
+  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question0-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question0-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question0-answer", "no"); } localStorage.setItem("question0-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question0-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question0-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question0-confidence", "low"); } localStorage.setItem("question0-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
  </body>
 </html>

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <title>Untitled</title>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+ </head>
+ <body>
+  <div class="w3-sidebar w3-bar-block" id="legend" style="width:16.0%;display:none;right:0">
+   <button class="w3-bar-item w3-button w3-large" onclick="close_legend()">Close ×</button>
+   <img class="w3-image" src="../../../../../../target/classes/mobilerobot/study/prefalign/imgs/legend.png" alt="Legend" style="height:90vh">
+  </div>
+  <script>function open_legend() { document.getElementById("legend").style.display = "block"; }function close_legend() { document.getElementById("legend").style.display = "none"; }</script>
+  <div class="w3-row" style="height:100vh;overflow:auto">
+   <div class="w3-container w3-half">
+    <div class="w3-container">
+     <p>Suppose you need to find the best navigation from L1 to L32 that minimizes the following costs:</p>
+     <div class="w3-responsive">
+      <table class="w3-table" style="max-width:400px">
+       <tr>
+        <th></th>
+        <th class="w3-right-align">Cost ($)</th>
+       </tr>
+       <tr>
+        <td>1 second of travel time</td>
+        <td class="w3-right-align">$1</td>
+       </tr>
+       <tr>
+        <td>0.1 expected collision</td>
+        <td class="w3-right-align">$3</td>
+       </tr>
+       <tr>
+        <td>1 intrusiveness-penalty</td>
+        <td class="w3-right-align">$11</td>
+       </tr>
+      </table>
+     </div>
+    </div>
+    <div class="w3-container">
+     <p>The robot agent, which may or may not use the same costs as yours, proposes this navigation plan (see "Robot's Plan" figure). The expected travel time, collision, and intrusiveness of this plan are as follows:</p>
+     <div class="w3-responsive">
+      <table class="w3-table w3-border w3-bordered w3-centered" style="max-width:500px">
+       <tr>
+        <th></th>
+        <th>Robot's Plan</th>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          travel time
+         </div>
+         <div>
+          (seconds)
+         </div></th>
+        <td>113</td>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          collision
+         </div>
+         <div>
+          (expected #)
+         </div></th>
+        <td>1.2</td>
+       </tr>
+       <tr>
+        <th>
+         <div>
+          intrusiveness
+         </div>
+         <div>
+          (penalty)
+         </div></th>
+        <td>8</td>
+       </tr>
+       <tr>
+        <td># non-intrusive locations</td>
+        <td>6</td>
+       </tr>
+       <tr>
+        <td># somewhat-intrusive locations</td>
+        <td>5</td>
+       </tr>
+       <tr>
+        <td># very-intrusive locations</td>
+        <td>1</td>
+       </tr>
+      </table>
+     </div>
+    </div>
+    <div class="w3-container w3-margin">
+     <h4><i>Please scroll down to answer the following questions:</i></h4>
+    </div>
+   </div>
+   <div class="w3-row w3-half">
+    <div class="w3-container w3-twothird w3-center" style="height:100vh">
+     <h5>Robot's Plan</h5>
+     <img class="w3-image w3-card" src="agentPolicy7.png" alt="Robot's Plan" style="height:90%">
+    </div>
+    <div class="w3-container w3-third">
+     <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">Show Legend</button>
+    </div>
+   </div>
+  </div>
+ </body>
+</html>

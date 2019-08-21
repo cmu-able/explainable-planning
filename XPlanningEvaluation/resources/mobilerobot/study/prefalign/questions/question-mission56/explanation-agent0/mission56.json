@@ -3,19 +3,19 @@
   "map-file": "GHC7-map3.json",
   "preference-info": [
     {
-      "scaling-const": 41.256984566376204,
+      "scaling-const": 34.38082047198017,
       "min-step-value": 0.0,
-      "max-step-value": 41.256984566376204,
+      "max-step-value": 34.38082047198017,
       "objective": "travelTime"
     },
     {
-      "scaling-const": 40.0,
+      "scaling-const": 70.0,
       "min-step-value": 0.0,
       "max-step-value": 1.0,
       "objective": "collision"
     },
     {
-      "scaling-const": 123.0,
+      "scaling-const": 12.0,
       "min-step-value": 0.0,
       "max-step-value": 3.0,
       "objective": "intrusiveness"

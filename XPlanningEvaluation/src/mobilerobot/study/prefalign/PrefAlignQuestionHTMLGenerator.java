@@ -173,7 +173,7 @@ public class PrefAlignQuestionHTMLGenerator {
 
 		// Agent's policy image
 		Element agentPolicyImgDiv = HTMLGeneratorUtils.createResponsiveImgContainer(
-				agentPolicyImgRelativePath.toString(), "Agent's Policy", HTMLGeneratorUtils.W3_TWOTHIRD);
+				agentPolicyImgRelativePath.toString(), "Robot's Plan", HTMLGeneratorUtils.W3_TWOTHIRD);
 
 		// Legend
 		Element legendDiv = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_THIRD);

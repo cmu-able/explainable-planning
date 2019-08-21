@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
@@ -142,10 +143,13 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private Element createAgentProposalDiv(JSONObject agentPolicyQAValuesJsonObj) {
-		// Agent paragraph
+		// Agent paragraph: use descriptive QA names (nouns)
 		List<String> orderedQANames = mTableSettings.getOrderedQANames();
-		String qaListStr = String.join(", ", orderedQANames.subList(0, orderedQANames.size() - 1));
-		qaListStr += ", and " + orderedQANames.get(orderedQANames.size() - 1);
+		List<String> orderedQANouns = orderedQANames.stream().map(qaName -> mTableSettings.getQANoun(qaName))
+				.collect(Collectors.toList());
+
+		String qaListStr = String.join(", ", orderedQANouns.subList(0, orderedQANouns.size() - 1));
+		qaListStr += ", and " + orderedQANouns.get(orderedQANouns.size() - 1);
 		String agentParagraph = String.format(AGENT_TEXT, qaListStr);
 		Element agentP = new Element("p");
 		agentP.text(agentParagraph);

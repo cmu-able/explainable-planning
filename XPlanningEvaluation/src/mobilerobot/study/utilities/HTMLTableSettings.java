@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import explanation.verbalization.Vocabulary;
+
 public class HTMLTableSettings {
 
 	/*
@@ -16,9 +18,11 @@ public class HTMLTableSettings {
 	private Map<String, List<String>> mOrderedEventNamesMap = new HashMap<>();
 	private Map<String, String> mQADescriptiveUnits = new HashMap<>();
 	private Map<String, String> mEventDescriptiveUnits = new HashMap<>();
+	private Vocabulary mVocabulary;
 	private boolean mVertical;
 
-	public HTMLTableSettings(boolean vertical) {
+	public HTMLTableSettings(Vocabulary vocabulary, boolean vertical) {
+		mVocabulary = vocabulary;
 		mVertical = vertical;
 	}
 
@@ -45,6 +49,10 @@ public class HTMLTableSettings {
 
 	public List<String> getOrderedQANames() {
 		return mOrderedQANames;
+	}
+
+	public String getQANoun(String qaName) {
+		return mVocabulary.getNoun(qaName);
 	}
 
 	public boolean hasEventBasedQA() {
@@ -84,7 +92,8 @@ public class HTMLTableSettings {
 		return settings.mOrderedQANames.equals(mOrderedQANames)
 				&& settings.mOrderedEventNamesMap.equals(mOrderedEventNamesMap)
 				&& settings.mQADescriptiveUnits.equals(mQADescriptiveUnits)
-				&& settings.mEventDescriptiveUnits.equals(mEventDescriptiveUnits) && settings.mVertical == mVertical;
+				&& settings.mEventDescriptiveUnits.equals(mEventDescriptiveUnits)
+				&& settings.mVocabulary.equals(mVocabulary) && settings.mVertical == mVertical;
 	}
 
 	@Override
@@ -96,6 +105,7 @@ public class HTMLTableSettings {
 			result = 31 * result + mOrderedEventNamesMap.hashCode();
 			result = 31 * result + mQADescriptiveUnits.hashCode();
 			result = 31 * result + mEventDescriptiveUnits.hashCode();
+			result = 31 * result + mVocabulary.hashCode();
 			result = 31 * result + Boolean.hashCode(mVertical);
 			hashCode = result;
 		}

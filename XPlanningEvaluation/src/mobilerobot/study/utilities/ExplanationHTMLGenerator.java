@@ -15,9 +15,11 @@ import org.json.simple.parser.ParseException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import examples.mobilerobot.demo.MobileRobotXPlanner;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
+import explanation.verbalization.Vocabulary;
 
 public class ExplanationHTMLGenerator {
 
@@ -112,7 +114,8 @@ public class ExplanationHTMLGenerator {
 				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, refToImg);
 			} else {
 				// Alternative policies start at index 1
-				String refToImg = String.format("(see \"%s\" figure)", String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex));
+				String refToImg = String.format("(see \"%s\" figure)",
+						String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex));
 				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, refToImg);
 			}
 		}
@@ -216,8 +219,9 @@ public class ExplanationHTMLGenerator {
 
 			// QA header text: unit under QA name
 			Element qaHeader = qaTableRow.appendElement("th");
+			String qaNoun = mTableSettings.getQANoun(qaName);
 			String qaDescriptiveUnit = mTableSettings.getQADescriptiveUnit(qaName);
-			qaHeader.appendElement("div").text(qaName);
+			qaHeader.appendElement("div").text(qaNoun);
 			qaHeader.appendElement("div").text("(" + qaDescriptiveUnit + ")");
 
 			List<Element> eventTableRows = new ArrayList<>();
@@ -326,8 +330,9 @@ public class ExplanationHTMLGenerator {
 
 			if (mTableSettings.isEventBasedQA(qaName)) {
 				// This column is for total penalty value of this event-based QA
-				qaHeader.appendElement("div").text(qaName);
-				qaHeader.appendElement("div").text("(" + qaName + "-penalty" + ")");
+				String qaNoun = mTableSettings.getQANoun(qaName);
+				qaHeader.appendElement("div").text(qaNoun);
+				qaHeader.appendElement("div").text("(" + qaNoun + "-penalty" + ")");
 
 				// Additional column for break-down values of this event-based QA
 				// Need sub-header for this event-based QA
@@ -337,8 +342,9 @@ public class ExplanationHTMLGenerator {
 			}
 
 			// QA header text: unit under QA name
+			String qaNoun = mTableSettings.getQANoun(qaName);
 			String qaDescriptiveUnit = mTableSettings.getQADescriptiveUnit(qaName);
-			qaHeader.appendElement("div").text(qaName);
+			qaHeader.appendElement("div").text(qaNoun);
 			qaHeader.appendElement("div").text("(" + qaDescriptiveUnit + ")");
 		}
 		table.appendChild(tableHeader);
@@ -417,7 +423,8 @@ public class ExplanationHTMLGenerator {
 	}
 
 	public static HTMLTableSettings getMobileRobotHTMLTableSettings() {
-		HTMLTableSettings tableSettings = new HTMLTableSettings(true);
+		Vocabulary vocabulary = MobileRobotXPlanner.getVocabulary();
+		HTMLTableSettings tableSettings = new HTMLTableSettings(vocabulary, true);
 		tableSettings.appendQAName(TravelTimeQFunction.NAME);
 		tableSettings.appendQAName(CollisionEvent.NAME);
 		tableSettings.appendQAName(IntrusiveMoveEvent.NAME);

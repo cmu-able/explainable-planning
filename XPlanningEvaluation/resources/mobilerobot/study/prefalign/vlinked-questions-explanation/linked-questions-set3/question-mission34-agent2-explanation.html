@@ -26,11 +26,11 @@
        </tr>
        <tr>
         <td>0.1 expected collision</td>
-        <td class="w3-right-align">$10</td>
+        <td class="w3-right-align">$3</td>
        </tr>
        <tr>
         <td>1 intrusiveness-penalty</td>
-        <td class="w3-right-align">$69</td>
+        <td class="w3-right-align">$6</td>
        </tr>
       </table>
      </div>
@@ -51,7 +51,7 @@
          <div>
           (seconds)
          </div></th>
-        <td>108</td>
+        <td>178</td>
        </tr>
        <tr>
         <th>
@@ -71,15 +71,15 @@
          <div>
           (penalty)
          </div></th>
-        <td>0</td>
+        <td>4</td>
        </tr>
        <tr>
         <td># non-intrusive locations</td>
-        <td>13</td>
+        <td>11</td>
        </tr>
        <tr>
         <td># somewhat-intrusive locations</td>
-        <td>0</td>
+        <td>4</td>
        </tr>
        <tr>
         <td># very-intrusive locations</td>
@@ -95,7 +95,7 @@
    <div class="w3-row w3-half">
     <div class="w3-container w3-twothird w3-center" style="height:100vh">
      <h5>Robot's Plan</h5>
-     <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/validation-questions/question-mission75/agentPolicy0.png" alt="Robot's Plan" style="height:90%">
+     <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/questions/question-mission34/agentPolicy2.png" alt="Robot's Plan" style="height:90%">
     </div>
     <div class="w3-container w3-third">
      <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">Show Legend</button>
@@ -105,10 +105,10 @@
   <div class="w3-row w3-pale-yellow" style="height:100vh;overflow:auto">
    <div class="w3-container w3-third w3-center" style="height:100vh">
     <h5>Robot's Plan</h5>
-    <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/validation-questions/question-mission75/explanation-agent0/solnPolicy.png" alt="Robot's Plan" style="height:90%">
+    <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/questions/question-mission34/explanation-agent2/solnPolicy.png" alt="Robot's Plan" style="height:90%">
    </div>
    <div class="w3-container w3-third">
-    <p>I'm planning to follow this policy (see "Robot's Plan" figure). It is expected to take 108 seconds; have 0 expected collision; and have intrusiveness-penalty of 0: it will be non-intrusive at 13 locations (0-penalty), somewhat-intrusive at 0 location (0-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision, intrusiveness, and travel time.</p>
+    <p>I'm planning to follow this policy (see "Robot's Plan" figure). It is expected to take 178 seconds; have 0 expected collision; and have intrusiveness-penalty of 4: it will be non-intrusive at 11 locations (0-penalty), somewhat-intrusive at 4 locations (4-penalty), and very-intrusive at 0 location (0-penalty). It has the lowest expected collision, and intrusiveness.</p>
     <div class="w3-responsive">
      <table class="w3-table w3-border w3-bordered w3-centered">
       <tr>
@@ -123,7 +123,7 @@
         <div>
          (seconds)
         </div></th>
-       <td>108</td>
+       <td>178</td>
       </tr>
       <tr>
        <th>
@@ -143,15 +143,15 @@
         <div>
          (penalty)
         </div></th>
-       <td>0</td>
+       <td>4</td>
       </tr>
       <tr>
        <td># non-intrusive locations</td>
-       <td>13</td>
+       <td>11</td>
       </tr>
       <tr>
        <td># somewhat-intrusive locations</td>
-       <td>0</td>
+       <td>4</td>
       </tr>
       <tr>
        <td># very-intrusive locations</td>
@@ -164,12 +164,83 @@
     <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">☰</button>
    </div>
   </div>
+  <div class="w3-row w3-light-grey" style="height:100vh;overflow:auto">
+   <div class="w3-container w3-third w3-center" style="height:100vh">
+    <h5>Robot's Plan</h5>
+    <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/questions/question-mission34/explanation-agent2/solnPolicy.png" alt="Robot's Plan" style="height:90%">
+   </div>
+   <div class="w3-container w3-third">
+    <p>Alternatively, following this policy (see "Alternative Plan 1" figure) would reduce the expected travel time by 13 seconds. However, I didn't choose that policy because it would increase the expected intrusiveness by 1: it would be non-intrusive at 10 locations (0-penalty), somewhat-intrusive at 5 locations (5-penalty), and very-intrusive at 0 location (0-penalty). The decrease in expected travel time is not worth the increase in expected intrusiveness.</p>
+    <div class="w3-responsive">
+     <table class="w3-table w3-border w3-bordered w3-centered">
+      <tr>
+       <th></th>
+       <th>Robot's Plan</th>
+       <th>Alternative Plan 1</th>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         travel time
+        </div>
+        <div>
+         (seconds)
+        </div></th>
+       <td>178</td>
+       <td>166</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         collision
+        </div>
+        <div>
+         (expected #)
+        </div></th>
+       <td>0</td>
+       <td>0</td>
+      </tr>
+      <tr>
+       <th>
+        <div>
+         intrusiveness
+        </div>
+        <div>
+         (penalty)
+        </div></th>
+       <td>4</td>
+       <td>5</td>
+      </tr>
+      <tr>
+       <td># non-intrusive locations</td>
+       <td>11</td>
+       <td>10</td>
+      </tr>
+      <tr>
+       <td># somewhat-intrusive locations</td>
+       <td>4</td>
+       <td>5</td>
+      </tr>
+      <tr>
+       <td># very-intrusive locations</td>
+       <td>0</td>
+       <td>0</td>
+      </tr>
+     </table>
+    </div>
+   </div>
+   <div class="w3-container w3-third w3-center" style="height:100vh">
+    <h5 style="display:inline-block">Alternative Plan 1</h5>
+    <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">☰</button>
+    <img class="w3-image w3-card" src="../../../../../../target/classes/mobilerobot/study/prefalign/questions/question-mission34/explanation-agent2/altPolicy1.png" alt="Alternative Plan 1" style="height:90%">
+   </div>
+  </div>
   <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
   <script src="../../../../../../target/classes/mobilerobot/study/prefalign/scripts/utils.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <div class="w3-container w3-margin w3-sand w3-card">
    <crowd-form>
-    <input type="hidden" id="ref" name="ref" value="question-mission75-agent0-explanation">
+    <input type="hidden" id="ref" name="ref" value="question-mission34-agent2-explanation">
     <div class="w3-container w3-margin">
      <h5>Is the agent's proposed policy the best one, with respect to the given cost profile?</h5>
      <crowd-radio-group>
@@ -200,7 +271,7 @@
      </crowd-radio-group>
     </div>
     <div class="w3-container w3-margin">
-     <crowd-button id="save-next" href="question-mission32-agent0-explanation.html" variant="normal">
+     <crowd-button id="save-next" href="question-mission68-agent0-explanation.html" variant="normal">
       Next Task
      </crowd-button>
     </div>
@@ -209,6 +280,6 @@
     </crowd-button>
    </crowd-form>
   </div>
-  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question1-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question1-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question1-answer", "no"); } localStorage.setItem("question1-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question1-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question1-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question1-confidence", "low"); } localStorage.setItem("question1-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
+  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question0-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question0-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question0-answer", "no"); } localStorage.setItem("question0-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question0-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question0-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question0-confidence", "low"); } localStorage.setItem("question0-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
  </body>
 </html>

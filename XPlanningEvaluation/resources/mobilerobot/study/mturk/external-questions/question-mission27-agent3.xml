@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<ExternalQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2006-07-14/ExternalQuestion.xsd">
-<ExternalURL>https://xplanning-bucket.s3.us-east-2.amazonaws.com/resources/mobilerobot/study/prefalign/instruction.html?headQuestion=vlinked-questions/linked-questions-set1/question-mission27-agent3.html</ExternalURL>
-<FrameHeight>0</FrameHeight>
-</ExternalQuestion>

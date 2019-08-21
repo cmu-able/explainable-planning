@@ -132,7 +132,7 @@ public class PolicyJSONToGraphViz {
 		double rSpeed = PolicyJSONParserUtils.parseDoubleVar(R_SPEED, decisionJsonObj);
 		if (rSpeed == 0.35) {
 			moveToLink.add(HALF_SPEED_COLOR);
-		} else if (rSpeed == 0.68) {
+		} else if (rSpeed == 0.7) {
 			moveToLink.add(FULL_SPEED_COLOR);
 		} else {
 			throw new IllegalArgumentException("Unknown rSpeed value: " + rSpeed);

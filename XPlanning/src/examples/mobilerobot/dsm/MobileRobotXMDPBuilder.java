@@ -60,7 +60,7 @@ public class MobileRobotXMDPBuilder {
 
 	// --- Speed setting --- //
 	public static final double HALF_SPEED = 0.35;
-	public static final double FULL_SPEED = 0.68;
+	public static final double FULL_SPEED = 0.7;
 
 	// Speed settings (known, fixed)
 	private RobotSpeed halfSpeed = new RobotSpeed(HALF_SPEED);

@@ -21,8 +21,8 @@ import examples.mobilerobot.metrics.TravelTimeQFunction;
 
 public class ExplanationHTMLGenerator {
 
-	private static final String AGENT_POLICY_CAPTION = "Agent's Policy";
-	private static final String ALT_POLICY_CAPTION = "Alternative Policy %d";
+	private static final String AGENT_POLICY_CAPTION = "Robot's Plan";
+	private static final String ALT_POLICY_CAPTION_FORMAT = "Alternative Plan %d";
 
 	private HTMLTableSettings mTableSettings;
 	private Pattern mJsonFileRefPattern = Pattern.compile("(\\[(([^\\[]+)\\.json)\\])");
@@ -108,11 +108,12 @@ public class ExplanationHTMLGenerator {
 
 			if (imgIndex == 0) {
 				// Agent's policy is always at index 0
-				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, "(see \"Agent's Policy\" figure)");
+				String refToImg = String.format("(see \"%s\" figure)", AGENT_POLICY_CAPTION);
+				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, refToImg);
 			} else {
 				// Alternative policies start at index 1
-				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef,
-						"(see \"Alternative Policy " + imgIndex + "\" figure)");
+				String refToImg = String.format("(see \"%s\" figure)", String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex));
+				policyExplanationWithImgRef = policyExplanation.replace(jsonFileRef, refToImg);
 			}
 		}
 
@@ -150,7 +151,7 @@ public class ExplanationHTMLGenerator {
 			policyImgCaption = AGENT_POLICY_CAPTION;
 		} else {
 			// Alternative policies start at index 1
-			policyImgCaption = String.format(ALT_POLICY_CAPTION, imgIndex);
+			policyImgCaption = String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex);
 		}
 		return HTMLGeneratorUtils.createResponsiveImgContainer(policyImgRelativePath.toString(), policyImgCaption,
 				HTMLGeneratorUtils.W3_THIRD);
@@ -203,7 +204,7 @@ public class ExplanationHTMLGenerator {
 		policyHeader.text(AGENT_POLICY_CAPTION);
 		if (imgIndex > 0) {
 			Element altPolicyHeader = tableHeaderRow.appendElement("th"); // Alternative Policy header
-			altPolicyHeader.text(String.format(ALT_POLICY_CAPTION, imgIndex));
+			altPolicyHeader.text(String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex));
 		}
 
 		// Table rows:
@@ -367,7 +368,7 @@ public class ExplanationHTMLGenerator {
 			qaValuesRow.addClass("w3-pale-red");
 			qaValuesRow.appendElement("td").text(AGENT_POLICY_CAPTION);
 		} else {
-			qaValuesRow.appendElement("td").text(String.format(ALT_POLICY_CAPTION, imgIndex));
+			qaValuesRow.appendElement("td").text(String.format(ALT_POLICY_CAPTION_FORMAT, imgIndex));
 		}
 
 		for (String qaName : mTableSettings.getOrderedQANames()) {

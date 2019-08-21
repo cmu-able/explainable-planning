@@ -19,8 +19,8 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLGenerator {
 
-	private static final String MISSION_TEXT = "Suppose you need to find the best policy from %s to %s that minimizes the following costs:";
-	private static final String AGENT_TEXT = "An agent, which may or may not use the same costs as yours, proposes to follow this policy (see \"Agent's Policy\" figure). The expected %s of this policy are as follows:";
+	private static final String MISSION_TEXT = "Suppose you need to find the best navigation from %s to %s that minimizes the following costs:";
+	private static final String AGENT_TEXT = "The robot agent, which may or may not use the same costs as yours, proposes this navigation plan (see \"Robot's Plan\" figure). The expected %s of this plan are as follows:";
 	private static final String JSON_EXTENSION = ".json";
 
 	private static final String LEGEND_IMG_FILENAME = "legend.png";
@@ -58,7 +58,7 @@ public class PrefAlignQuestionHTMLGenerator {
 				".png")[0];
 
 		String instruction = withExplanation
-				? "Please scroll down to read the agent's explanation, and answer the following questions:"
+				? "Please scroll down to read the robot's explanation, and answer the following questions:"
 				: "Please scroll down to answer the following questions:";
 
 		Element prefAlignQuestionDiv = createPrefAlignQuestionDiv(missionJsonObj, costStructJsonObj,

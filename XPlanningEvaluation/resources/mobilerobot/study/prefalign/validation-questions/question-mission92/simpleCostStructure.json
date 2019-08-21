@@ -4,11 +4,11 @@
     "cost": "2"
   },
   "travelTime": {
-    "unit": "1 minute of travel time",
+    "unit": "1 second of travel time",
     "cost": "1"
   },
   "intrusiveness": {
     "unit": "1 intrusiveness-penalty",
-    "cost": "31"
+    "cost": "2"
   }
 }

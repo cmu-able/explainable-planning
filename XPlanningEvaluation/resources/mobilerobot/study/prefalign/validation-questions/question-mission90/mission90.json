@@ -3,9 +3,9 @@
   "map-file": "GHC7-map-validation.json",
   "preference-info": [
     {
-      "scaling-const": 96.26629732154447,
+      "scaling-const": 68.76164094396034,
       "min-step-value": 0.0,
-      "max-step-value": 48.133148660772235,
+      "max-step-value": 34.38082047198017,
       "objective": "travelTime"
     },
     {

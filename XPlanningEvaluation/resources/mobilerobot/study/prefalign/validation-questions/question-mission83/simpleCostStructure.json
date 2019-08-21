@@ -4,7 +4,7 @@
     "cost": "21"
   },
   "travelTime": {
-    "unit": "1 minute of travel time",
+    "unit": "1 second of travel time",
     "cost": "1"
   },
   "intrusiveness": {

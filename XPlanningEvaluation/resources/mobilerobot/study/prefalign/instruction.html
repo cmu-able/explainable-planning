@@ -9,7 +9,7 @@
 		<style>
 			.crop {
 				width: 700px;
-				height: 400px; /* 300px for the image height; 100px for the caption */
+				height: 450px; /* 300px for the image height; 150px for the caption */
 				overflow: hidden;
 			}
 			.crop img {
@@ -49,18 +49,18 @@
 			<div class="w3-container w3-center w3-margin">
 				<img src="imgs/collision-table.png" class="w3-image">
 				<p class="w3-left-align"><b>Figure 5</b>: The robot may drive at its full speed: 0.7 meters/second, or at half speed: 0.35 meters/second. The robot can avoid collision with obstacles when it moves at half speed. That is, the expected collision of moving at half speed is always 0.0.</p>
-				<p class="w3-left-align">Every time Robot moves at full speed through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.</p>
+				<p class="w3-left-align">Every time the robot moves at full speed through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.</p>
 			</div>
 			
 			<!-- Intrusiveness -->
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/fullmap.png">
-					<p><b>Figure 6</b>: The building has 3 types of zones: (i) <i>public zones</i>, which are appropriate for Robot to move around without being intrusive to human occupants, (ii) <i>semi-private zones</i> and (iii) <i>private zones</i>, which Robot is discouraged from entering, since it may be somewhat intrusive, and very intrusive, to the human occupants, respectively.</p>
+					<p><b>Figure 6</b>: The building has private offices (in red) and semi-private conference rooms (in yellow). If the robot drives through a corridor of private offices, it would be considered very intrusive to the human occupants. Similarly, if the robot drives through a corridor of semi-private conference rooms, it would be considered somewhat intrusive. The rest of the building is public space, which the robot can drive around without being considered intrusive.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/fullmap-abstract.png">
-					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the type of zone in which it belongs. When Robot enters a <i>PUBLIC</i> waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time Robot enters a <i>SEMI-PRIVATE</i> or a <i>PRIVATE</i> waypoint, it receives a penalty of 1 or 3, respectively. Note that Robot will NOT get any penalty for being in its starting waypoint.</p>
+					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the <i>intrusiveness</i> of the robot if it drives to that location. When the robot drives to a PUBLIC waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time the robot drives to a SEMI-PRIVATE or a PRIVATE waypoint, it receives a penalty of 1 or 3, respectively.</p>
 				</div>
 			</div>
 			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>

@@ -19,8 +19,9 @@
 		</style>
 	</head>
 	<body>
-		<!-- Introduction -->
+		<!-- Begin Instruction -->
 		<div class="w3-container">
+		<!-- Introduction -->
 			<h3>Introduction</h3>
 			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figures 1 and 2 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building (see Figures 3-7 for details).</p>
 			<div class="w3-row w3-margin">
@@ -63,37 +64,12 @@
 					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the <i>intrusiveness</i> of the robot if it drives to that location. When the robot drives to a PUBLIC waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time the robot drives to a SEMI-PRIVATE or a PRIVATE waypoint, it receives a penalty of 1 or 3, respectively.</p>
 				</div>
 			</div>
-			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
-			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half crop">
-					<img src="imgs/plan1.png">
-					<p><b>Figure 10</b>: Robot's navigation plan that takes the least amount of time to reach the destination: 80 seconds.</p>
-				</div>
-				<div class="w3-container w3-half">
-					<img src="imgs/plan1-abstract.png">
-					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, Robot plans to drive at full speed through waypoints 1 to 6.</p>
-					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 9, since it enters a PRIVATE waypoint 3 times and enters a PUBLIC waypoint once (recall that there is no penalty for Robot's starting waypoint). This plan also has the expected collision of 0.4, since it moves through DO at full speed.</p>
-				</div>
-			</div>
-			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half crop">
-					<img src="imgs/plan2.png">
-					<p><b>Figure 12</b>: Robot's navigation plan that is the least intrusive and avoids collision. But it takes 128 seconds.</p>
-				</div>
-				<div class="w3-container w3-half">
-					<img src="imgs/plan2-abstract.png">
-					<p><b>Figure 13</b>: This is the abstract navigation plan of Figure 12. Here, Robot plans to drive through waypoints 1-2-7-8-9-10-5 at full speed except from waypoints 8-9, where there is SO.</p>
-					<p>This plan has the cumulative intrusiveness-penalty of 3, which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 11.</p>
-				</div>
-			</div>
-			<p>Imagine that you are a user of the robot -- you want the robot to deliver a package at some destination. You have in mind how you would weigh the importance of each of the objectives. For instance, if you are in a rush to deliver the package, you may want the robot to get to the destination as soon as possible, even if it has to be more intrusive to the building occupants.</p>
-			<p>Unfortunately, you cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how you would weigh the objectives. However, you are able to see the robot's plan before it is taking off.</p>
-		</div>
 			
-		<!-- Task -->
-		<div class="w3-container">
-		<h3>Task</h3>
-		<p>In this task, you are given a <i>cost profile</i> representing how a hypothetical robot's user weighs the importance of the 3 objectives. An example of a cost profile is:</p>
+			<!-- Tradeoffs and Cost Profile -->
+			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, the robot may need to take a detour to the destination to minimize its intrusiveness. Or it may take the shortest route to the destination, but at the expense of being more intrusive. Which option is subjectively better depends on how one weighs the importance of each of the objectives.</p>
+			<p>Suppose a user of the robot wants the robot to deliver a package at some destination. The user has in mind how they would weigh the importance of each objective. For instance, the user may mainly care about the robot minimizing its expected collisions because the package is fragile, and not care much about the package being delivered very quickly. The user's concerns can be represented by a <i>cost profile</i>, for instance:</p>
+			
+			<!-- Cost Profile Table -->
 			<div class="w3-responsive w3-cell">
 				<table class="w3-table" style="max-width:500px;min-width:350px">
 					<tr>
@@ -101,7 +77,7 @@
 						<th class="w3-right-align">Cost ($)</th>
 					</tr>
 					<tr>
-						<td>1 minute of travel time</td>
+						<td>1 second of travel time</td>
 						<td class="w3-right-align">$1</td>
 					</tr>
 					<tr>
@@ -115,20 +91,48 @@
 				</table>
 			</div>
 			<div class="w3-container w3-cell w3-cell-middle" style="max-width:800px;padding-left:80px">
-				<p>A <i>total cost</i> of a navigation plan can be computed from the cost profile. For example, consider the navigation plan in Figure 13: it takes 112 seconds, has 0 expected collision, and has intrusiveness penalty of 3. Thus, its total cost is ($1 * 112) + ($9 * 0/0.1) + ($5 * 3) = $127.</p>
+				<p>A <i>total cost</i> of a navigation plan can be computed from the cost profile. For example, a navigation plan that takes 120 seconds, has 0.2 expected collision, and has intrusiveness penalty of 7 would have a total cost of: ($1 * 120) + ($9 * 0.2/0.1) + ($5 * 7) = $173.</p>
 				<p><b>A best navigation, with respect to a particular cost profile, is one that has the lowest total cost.</b></p>
 			</div>
-	 <p>Then, <b>you will be presented with a series of 3 navigation problems and the corresponding navigation plans that the robot came up with</b>. However, the robot <i>may</i> have weighed the objectives differently than your given cost profile. In other words, each of the robot's plans may or may not prioritize the objectives as the hypothetical user wishes.</p>
-		<p><b>Your task is to determine whether the robot's plan is the best available option for this hypothetical user.</b></p>
-	</div>
-		
-		<!-- Example -->
-		<div class="w3-container">
+			
+			<p>Unfortunately, the user cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how the user would weigh the objectives. However, the robot will present its navigation plan to the user before it is taking off.</p>
+			
+			<!-- Task -->
+			<h3>Task</h3>
+			<p>Imagine that you are the user of the robot. <b>You will be given a cost profile</b>, similar to the one shown above. You will be presented with a series of 3 navigation problems (each with a different map) and the corresponding navigation plans that the robot came up with. <b>You task is to determine whether the robot's plan is the best available option for you.</b></p>
+			
+			<!-- Example -->
 			<h4>Example</h4>
-			<p>Using the example cost profile above, suppose that the robot presents you with the navigation plan in Figure 11. The robot informs you that this navigation takes 78 seconds, has 0.4 expected collision, and has intrusiveness-penalty of 9.</p>
-			<p>We can see that the proposed navigation plan is NOT the best option for the hypothetical user. The total cost of this plan is ($1 * 78) + ($9 * 0.4/0.1) + ($5 * 9) = $159. But there is another possible plan that has a lower total cost, namely, the plan in Figure 13, which has $127 in total cost as shown above.</p>
+			<p>Suppose that you are given the cost profile above. Suppose that the robot presents the following plan and informs you than the navigation will take 80 seconds:</p>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half crop">
+					<img src="imgs/plan1.png">
+					<p><b>Figure 8</b>: The robot's navigation plan. This navigation will take 80 seconds</p>
+				</div>
+				<div class="w3-container w3-half">
+					<img src="imgs/plan1-abstract.png">
+					<p><b>Figure 9</b>: This is the abstract navigation plan of Figure 8. Here, the robot plans to drive at full speed through waypoints 1 to 6.</p>
+					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 10, since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 3 times. This plan also has the expected collision of 0.4, since it moves through DO at full speed.</p>
+				</div>
+			</div>
+			
+			<p>You can calculate the total cost of the robot's presented navigation plan in Figure 9: ($1 * 80) + ($9 * 0.4/0.1) + ($5 * 10) = $166. However, this plan is not the best available option according to the cost profile. The following navigation would be a better option:</p>
+			<div class="w3-row w3-margin">
+				<div class="w3-container w3-half crop">
+					<img src="imgs/plan2.png">
+					<p><b>Figure 10</b>: A different navigation plan, which is the least intrusive and avoids collision. But it takes 128 seconds.</p>
+				</div>
+				<div class="w3-container w3-half">
+					<img src="imgs/plan2-abstract.png">
+					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, the robot plans to drive through waypoints 1-2-3-8-9-10-11-6 at full speed except from waypoints 9-10, where there are sparse obstacles (SO).</p>
+					<p>This plan incurs intrusiveness-penalty of 4 (since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 1 time), which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 9.</p>
+				</div>
+			</div>
+			You can calculate the total cost of the navigation plan in Figure 11: ($1 * 128) + ($9 * 0.0/0.1) + ($5 * 4) = $148. This plan costs less than the one that the robot presented.
 		</div>
-		<div class="w3-container">
+		<!-- End Instruction -->
+		
+		<div class="w3-container w3-margin">
 			<a class="w3-button w3-block w3-teal" href="#" id="linkToHeadQuestion">Continue to the Task</a>
 		</div>
 		<script>

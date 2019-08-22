@@ -26,12 +26,12 @@
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/floor-plan.png">
-					<p><b>Figure 1</b>: Robot has to navigate from its location to a given goal.</p>
+					<p><b>Figure 1</b>: The robot has to navigate from its current location to a given goal.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/topology.png">
 					<p><b>Figure 2</b>: The map of the building in Figure 1 is represented abstractly by a set of <i>waypoints</i> and <i>connections</i> among them. Each waypoint represents a location in the building, and a connection between 2 waypoints means that Robot can move between the 2 locations.</p>
-					<p>The distances between waypoints are to scale, and waypoints 1 and 2 are 15 meters apart.</p>
+					<p>The distances between waypoints are to scale, and waypoints 1 and 2 are 10 meters apart.</p>
 				</div>
 			</div>
 			
@@ -39,60 +39,46 @@
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/obstacles.png">
-					<p><b>Figure 3</b>: There are some obstacles around the building. When Robot moves through a path with obstacles, it <i>may</i> bump into them. Robot is more likely to bump into obstacles when they are <i>dense</i> than when they are <i>sparse</i>.</p>
+					<p><b>Figure 3</b>: There are some obstacles around the building. When the robot moves at a high speed through a path with obstacles, it <i>may</i> collide with them -- with higher chance of collision when the obstacles are <i>dense</i> than when they are <i>sparse</i>. But when the robot moves at a low speed, it can avoid the collision.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/obstacles-abstract.png">
-					<p><b>Figure 4</b>: In an abstract map, obstacles are represented on a connection between 2 waypoints. This means when Robot moves from one waypoint to the other, it <i>may</i> bump into the obstacles on the way. The "SO" notation on the map denotes sparse obstacles, and the "DO" notation denotes dense obstacles.</p>
+					<p><b>Figure 4</b>: In an abstract map, obstacles are represented on a connection between 2 waypoints. The "SO" notation on the map denotes sparse obstacles, and the "DO" notation denotes dense obstacles. The <i>expected collision</i> when the robot moves from one waypoint to the next depends on the speed of the robot and the obstacle density, as shown in Figure 5.</p>
 				</div>
 			</div>
 			<div class="w3-container w3-center w3-margin">
 				<img src="imgs/collision-table.png" class="w3-image">
-				<p class="w3-left-align">
-				<b>Figure 5</b>: A <i>collision</i> occurs when Robot bumps into obstacles while moving at its full speed (i.e., 0.7 meters/second). However, bumping into obstacles at low speed (i.e., 0.35 meters/second) does NOT result in a collision.
-				</p>
-				<p class="w3-left-align">
-				Every time Robot moves through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), at full speed, it has 20% and 40% probability of colliding, respectively. In other words, the <i>expected collision</i> of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.
-				</p>
+				<p class="w3-left-align"><b>Figure 5</b>: The robot may drive at its full speed: 0.7 meters/second, or at half speed: 0.35 meters/second. The robot can avoid collision with obstacles when it moves at half speed. That is, the expected collision of moving at half speed is always 0.0.</p>
+				<p class="w3-left-align">Every time Robot moves at full speed through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.</p>
 			</div>
 			
 			<!-- Intrusiveness -->
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
-					<img src="imgs/zones.png">
+					<img src="imgs/fullmap.png">
 					<p><b>Figure 6</b>: The building has 3 types of zones: (i) <i>public zones</i>, which are appropriate for Robot to move around without being intrusive to human occupants, (ii) <i>semi-private zones</i> and (iii) <i>private zones</i>, which Robot is discouraged from entering, since it may be somewhat intrusive, and very intrusive, to the human occupants, respectively.</p>
 				</div>
 				<div class="w3-container w3-half">
-					<img src="imgs/zones-abstract.png">
+					<img src="imgs/fullmap-abstract.png">
 					<p><b>Figure 7</b>: In an abstract map, each waypoint is color-coded to represent the type of zone in which it belongs. When Robot enters a <i>PUBLIC</i> waypoint, it does not receive any <i>intrusiveness penalty</i>. However, each time Robot enters a <i>SEMI-PRIVATE</i> or a <i>PRIVATE</i> waypoint, it receives a penalty of 1 or 3, respectively. Note that Robot will NOT get any penalty for being in its starting waypoint.</p>
 				</div>
 			</div>
 			<p>However, it is not always possible to find a way to the destination that takes the shortest amount of time, has the lowest expected collisions, and is the least intrusive to human occupants. The robot may need to make a tradeoff among these objectives. For instance, to avoid driving through private zones of the building (i.e., being intrusive), it would need to take a detour to the destination.</p>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
-					<img src="imgs/problem.png">
-					<p><b>Figure 8</b>: This is an example of a navigation problem.</p>
-				</div>
-				<div class="w3-container w3-half">
-					<img src="imgs/problem-abstract.png">
-					<p><b>Figure 9</b>: This is the abstract map of Figure 8.</p>
-				</div>
-			</div>
-			<div class="w3-row w3-margin">
-				<div class="w3-container w3-half crop">
 					<img src="imgs/plan1.png">
-					<p><b>Figure 10</b>: Robot's navigation plan that takes the least amount of time to reach the destination: 78 seconds.</p>
+					<p><b>Figure 10</b>: Robot's navigation plan that takes the least amount of time to reach the destination: 80 seconds.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/plan1-abstract.png">
-					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, Robot plans to drive at full speed through waypoints 1 to 5.</p>
+					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, Robot plans to drive at full speed through waypoints 1 to 6.</p>
 					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 9, since it enters a PRIVATE waypoint 3 times and enters a PUBLIC waypoint once (recall that there is no penalty for Robot's starting waypoint). This plan also has the expected collision of 0.4, since it moves through DO at full speed.</p>
 				</div>
 			</div>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/plan2.png">
-					<p><b>Figure 12</b>: Robot's navigation plan that is the least intrusive and avoids collision. But it takes 112 seconds.</p>
+					<p><b>Figure 12</b>: Robot's navigation plan that is the least intrusive and avoids collision. But it takes 128 seconds.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/plan2-abstract.png">

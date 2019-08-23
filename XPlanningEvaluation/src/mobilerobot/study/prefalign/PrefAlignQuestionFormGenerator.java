@@ -57,7 +57,7 @@ public class PrefAlignQuestionFormGenerator {
 
 	private static Element createPrefAlignCrowdQuestionContainer() {
 		Element questionContainer = MTurkHTMLQuestionUtils.createCrowdQuestionContainer(
-				"Is the agent's proposed policy the best one, with respect to the given cost profile?");
+				"Is the robot's proposed plan the best one, with respect to the given cost profile?");
 		String[] optionNames = { "answer-yes", "answer-no" };
 		String[] optionLabels = { "Yes", "No" };
 		Element answerOptions = MTurkHTMLQuestionUtils.createCrowdRadioGroup(optionNames, optionLabels);

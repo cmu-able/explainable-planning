@@ -78,7 +78,10 @@ public class ExplanationHTMLGenerator {
 				solnPolicyQAValuesJsonObj = policyQAValuesJsonObj;
 			}
 
-			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
+			// Replace the word "policy" with "plan"
+			String replacedPolicyExplanation = policyExplanation.replace("policy", "plan");
+
+			Element policySectionDiv = createPolicySectionDiv(replacedPolicyExplanation, solnPolicyQAValuesJsonObj,
 					policyQAValuesJsonObj, imgIndex, explanationDir, outDir);
 
 			policySectionDivs.add(policySectionDiv);

@@ -164,13 +164,27 @@ public class ExplanationHTMLGenerator {
 	}
 
 	private void addShowLegendButton(Element policyImgDiv) {
-		// Make image header inline-block to make room for legend button
+		// Get the existing policy-image header (text only)
 		Element policyImgCaption = policyImgDiv.selectFirst("h5");
-		policyImgCaption.attr(HTMLGeneratorUtils.CSS_STYLE, "display:inline-block");
 
-		// Add legend button after image header
+		// Clone the image header
+		Element policyImgCaptionClone = policyImgCaption.clone();
+		// Make image header inline-block to make room for legend button
+		policyImgCaptionClone.attr(HTMLGeneratorUtils.CSS_STYLE, "display:inline-block");
+
+		// Create legend button
 		Element showLegendButton = HTMLGeneratorUtils.createShowRightSidebarButton("legend", "☰");
-		policyImgCaption.after(showLegendButton);
+
+		// Create a container for image header and legend button, so that they are displayed in 1 block
+		Element headerContainer = new Element("div");
+		headerContainer.appendChild(policyImgCaptionClone);
+		headerContainer.appendChild(showLegendButton);
+
+		// Insert header container as the 1st child of policy-image container
+		policyImgDiv.prependChild(headerContainer);
+
+		// Remove the original policy-image header
+		policyImgCaption.remove();
 	}
 
 	private Element createPolicyExplanationDiv(String policyExplanationWithImgRef, JSONObject solnPolicyQAValuesJsonObj,

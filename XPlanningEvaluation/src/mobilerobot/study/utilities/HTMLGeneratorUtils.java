@@ -29,9 +29,22 @@ public class HTMLGeneratorUtils {
 	public static Document createHTMLBlankDocument() {
 		Document doc = Jsoup.parse("<!DOCTYPE html><html lang=\"en\"></html>");
 		doc.head().appendElement("title").text("Untitled");
+
+		// <meta charset="UTF-8">
+		Element metaUTF8 = new Element("meta");
+		metaUTF8.attr("charset", "\"UTF-8\"");
+
+		// <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		Element metaViewport = new Element("meta");
+		metaViewport.attr("name", "viewport");
+		metaViewport.attr("content", "width=device-width, initial-scale=1.0");
+
 		// <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 		Element link = new Element("link");
 		link.attr("rel", "stylesheet").attr("href", "https://www.w3schools.com/w3css/4/w3.css");
+
+		doc.head().appendChild(metaUTF8);
+		doc.head().appendChild(metaViewport);
 		doc.head().appendChild(link);
 		return doc;
 	}

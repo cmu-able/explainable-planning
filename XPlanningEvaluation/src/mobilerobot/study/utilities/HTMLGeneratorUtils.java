@@ -32,7 +32,7 @@ public class HTMLGeneratorUtils {
 
 		// <meta charset="UTF-8">
 		Element metaUTF8 = new Element("meta");
-		metaUTF8.attr("charset", "\"UTF-8\"");
+		metaUTF8.attr("charset", "UTF-8");
 
 		// <meta name="viewport" content="width=device-width, initial-scale=1.0">
 		Element metaViewport = new Element("meta");

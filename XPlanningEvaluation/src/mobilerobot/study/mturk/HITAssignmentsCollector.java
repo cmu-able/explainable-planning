@@ -13,6 +13,7 @@ import org.xml.sax.SAXException;
 
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
+import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.GetHitRequest;
@@ -26,6 +27,7 @@ public class HITAssignmentsCollector {
 
 	private static final long MIN_ELAPSED_TIME_MS = 30 * 1000L; // minimum of 30 seconds/question
 	private static final String REJECT_FEEDBACK = "Sorry, we could not approve your submission as you took too little time answering at least one of the questions.";
+	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 
 	private final MTurkClient mClient;
 
@@ -39,6 +41,15 @@ public class HITAssignmentsCollector {
 		return getHITResponse.hit().hitStatus();
 	}
 
+	public List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
+		// Get the maximum # of completed assignments for this HIT
+		ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hitInfo.getHITId())
+				.assignmentStatuses(status).maxResults(HITPublisher.MAX_ASSIGNMENTS).build();
+
+		ListAssignmentsForHitResponse listHITResponse = mClient.listAssignmentsForHIT(listHITRequest);
+		return listHITResponse.assignments();
+	}
+
 	public List<Assignment> collectPendingReviewHITAssignments(HITInfo hitInfo)
 			throws ParserConfigurationException, SAXException, IOException {
 		// Collect the assignments that have been submitted for this HIT
@@ -49,15 +60,6 @@ public class HITAssignmentsCollector {
 		// Collect the remaining assignments that have not been auto-rejected
 		// These assignments will be reviewed manually to be approved or rejected
 		return collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
-	}
-
-	private List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
-		// Get the maximum # of completed assignments for this HIT
-		ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hitInfo.getHITId())
-				.assignmentStatuses(status).maxResults(HITPublisher.MAX_ASSIGNMENTS).build();
-
-		ListAssignmentsForHitResponse listHITResponse = mClient.listAssignmentsForHIT(listHITRequest);
-		return listHITResponse.assignments();
 	}
 
 	private void autoRejectSubmittedHITAssignments(List<Assignment> assignments)
@@ -104,5 +106,14 @@ public class HITAssignmentsCollector {
 	public List<Assignment> collectApprovedHITAssignments(HITInfo hitInfo) {
 		// Collect the assignments that have been manually approved for this HIT
 		return collectHITAssignments(hitInfo, AssignmentStatus.APPROVED);
+	}
+
+	public void approveAssignments(List<Assignment> assignments) {
+		for (Assignment assignment : assignments) {
+			ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
+					.assignmentId(assignment.assignmentId()).requesterFeedback(APPROVE_FEEDBACK).build();
+
+			mClient.approveAssignment(approveRequest);
+		}
 	}
 }

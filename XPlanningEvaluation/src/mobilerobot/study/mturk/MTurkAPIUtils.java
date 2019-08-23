@@ -19,6 +19,8 @@ import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
+import software.amazon.awssdk.services.mturk.model.Assignment;
+import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.Comparator;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeResponse;
@@ -27,6 +29,7 @@ import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
 import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.HITAccessActions;
+import software.amazon.awssdk.services.mturk.model.HITStatus;
 import software.amazon.awssdk.services.mturk.model.ListHiTsRequest;
 import software.amazon.awssdk.services.mturk.model.ListHiTsResponse;
 import software.amazon.awssdk.services.mturk.model.ListQualificationTypesRequest;
@@ -209,6 +212,22 @@ public class MTurkAPIUtils {
 			for (HIT hit : selectedHITs) {
 				DeleteHitRequest deleteHITRequest = DeleteHitRequest.builder().hitId(hit.hitId()).build();
 				client.deleteHIT(deleteHITRequest);
+			}
+		}
+	}
+
+	public static void approveAssignmentsOfReviewableHITs(MTurkClient client, String hitTypeId) {
+		HITAssignmentsCollector assignmentCollector = new HITAssignmentsCollector(client);
+		List<HIT> selectedHITs;
+		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
+			// Reviewable HITs must be approved or denied before getting deleted
+			List<HIT> reviewableHITs = selectedHITs.stream().filter(hit -> hit.hitStatus() == HITStatus.REVIEWABLE)
+					.collect(Collectors.toList());
+			for (HIT hit : reviewableHITs) {
+				HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
+				List<Assignment> assignments = assignmentCollector.collectHITAssignments(hitInfo,
+						AssignmentStatus.SUBMITTED);
+				assignmentCollector.approveAssignments(assignments);
 			}
 		}
 	}

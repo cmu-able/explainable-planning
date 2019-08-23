@@ -176,6 +176,9 @@ public class PrefAlignHITPublisher {
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[1];
 			MTurkAPIUtils.deleteHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);
+		} else if (option.equals("approveAssignmentsOfReviewableHITs")) {
+			String hitTypeId = args[1];
+			MTurkAPIUtils.approveAssignmentsOfReviewableHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);
 		}
 	}
 

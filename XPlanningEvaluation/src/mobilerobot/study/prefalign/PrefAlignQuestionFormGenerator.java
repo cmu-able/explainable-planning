@@ -75,6 +75,9 @@ public class PrefAlignQuestionFormGenerator {
 		crowdTextArea.attr("rows", "5");
 		crowdTextArea.attr("max-rows", "5");
 		questionContainer.appendChild(crowdTextArea);
+
+		// For now, hide "Justification" question
+		questionContainer.attr("style", "display:none");
 		return questionContainer;
 	}
 

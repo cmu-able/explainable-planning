@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.simple.parser.ParseException;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -108,8 +109,14 @@ public class PrefAlignQuestionHTMLLinker {
 				questionDoc.body().appendChild(formElement);
 			}
 
+			// FIXME
+			String questionDocStr = questionDoc.toString();
+			String replacedQuestionDocStr = questionDocStr.replace("policy", "plan");
+			Document replacedQuestionDoc = Jsoup.parse(replacedQuestionDocStr);
+
 			// Write question HTML document to file
-			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(questionDoc, questionDocName, subOutDir);
+			File questionFile = HTMLGeneratorUtils.writeHTMLDocumentToFile(replacedQuestionDoc, questionDocName,
+					subOutDir);
 
 			linkedQuestionFiles[j] = questionFile;
 		}

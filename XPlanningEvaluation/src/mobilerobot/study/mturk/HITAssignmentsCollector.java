@@ -55,14 +55,14 @@ public class HITAssignmentsCollector {
 		// Collect the assignments that have been submitted for this HIT
 		// These assignments have not failed the Assignment Review Policy
 		List<Assignment> submittedAssignments = collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
-		autoRejectSubmittedHITAssignments(submittedAssignments);
+		autoRejectFailingAssignments(submittedAssignments);
 
 		// Collect the remaining assignments that have not been auto-rejected
 		// These assignments will be reviewed manually to be approved or rejected
 		return collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
 	}
 
-	private void autoRejectSubmittedHITAssignments(List<Assignment> assignments)
+	private void autoRejectFailingAssignments(List<Assignment> assignments)
 			throws ParserConfigurationException, SAXException, IOException {
 		for (Assignment assignment : assignments) {
 			boolean autoReject = autoRejectAssignmentInsufficientTime(assignment);

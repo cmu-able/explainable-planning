@@ -29,10 +29,11 @@ import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class HITPublisher {
 
-	private static final String TITLE = "Title";
-	private static final String DESCRIPTION_CG = "Description (control group)";
-	private static final String DESCRIPTION_EG = "Description (experimental group)";
-	private static final String KEYWORDS = "Keywords";
+	private static final String TITLE = "Understanding mobile robot navigation planning";
+	private static final String DESCRIPTION_FORMAT = "This is a study to examine how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. (GROUP %d)";
+	private static final String DESCRIPTION_CG = String.format(DESCRIPTION_FORMAT, 1);
+	private static final String DESCRIPTION_EG = String.format(DESCRIPTION_FORMAT, 2);
+	private static final String KEYWORDS = "Research study, experiment, human-robot interaction, human-AI interaction, mobile robot indoor navigation";
 	private static final String REWARD = "0.20";
 	private static final long ASSIGNMENT_DURATION = 30 * 60L; // 30 minutes
 	private static final long LIFE_TIME = 1 * 7 * 24 * 60 * 60L; // 1 week

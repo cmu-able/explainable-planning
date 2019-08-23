@@ -48,9 +48,9 @@ public class MTurkAPIUtils {
 	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
 
-	private static final String CONSENT_QUAL_NAME = "Consent Form for Participation in Research";
-	private static final String CONSENT_QUAL_DESCRIPTION = "Description";
-	private static final String CONSENT_QUAL_KEYWORDS = "Keywords";
+	private static final String CONSENT_QUAL_NAME = "Consent Form for Participation in Research: Understanding mobile robot navigation planning";
+	private static final String CONSENT_QUAL_DESCRIPTION = "This is a consent form for participation in research for our study, entitled \"Understanding mobile robot navigation planning\".";
+	private static final String CONSENT_QUAL_KEYWORDS = "Consent form, consent form for participation in research";
 	private static final long CONSENT_QUAL_DURATION = 5 * 60L; // 5 minutes
 
 	private static final String AUTO_REJECT_REASON = "Sorry, we could not approve your submission as you did not correctly answer one or more validation question(s).";

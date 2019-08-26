@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -26,11 +27,12 @@ public class PrefAlignHITAssignmentsCollector {
 		mHITCollector = new HITAssignmentsCollector(client);
 	}
 
-	public Map<HITInfo, List<Assignment>> collectAllPendingReviewHITAssignments(File hitInfoCSVFile)
-			throws IOException, ParserConfigurationException, SAXException {
+	public Map<HITInfo, List<Assignment>> collectAllPendingReviewHITAssignments(File hitInfoCSVFile,
+			Set<String> validationQuestionDocNames) throws IOException, ParserConfigurationException, SAXException {
 		Map<HITInfo, List<Assignment>> allPendingReviewAssignments = new HashMap<>();
 		for (HITInfo hitInfo : readAllHITInfos(hitInfoCSVFile)) {
-			List<Assignment> pendingReviewAssignments = mHITCollector.collectPendingReviewHITAssignments(hitInfo);
+			List<Assignment> pendingReviewAssignments = mHITCollector.collectPendingReviewHITAssignments(hitInfo,
+					validationQuestionDocNames);
 			allPendingReviewAssignments.put(hitInfo, pendingReviewAssignments);
 		}
 		return allPendingReviewAssignments;

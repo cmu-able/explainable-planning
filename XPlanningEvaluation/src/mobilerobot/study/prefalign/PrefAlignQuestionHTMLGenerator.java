@@ -21,7 +21,12 @@ import mobilerobot.utilities.FileIOUtils;
 public class PrefAlignQuestionHTMLGenerator {
 
 	private static final String MISSION_TEXT = "Suppose you need to find the best navigation from %s to %s that minimizes the following costs:";
-	private static final String AGENT_TEXT = "The robot agent, which may or may not use the same costs as yours, proposes this navigation plan (see \"Robot's Plan\" figure). The expected %s of this plan are as follows:";
+	private static final String AGENT_PARAGRAPH_NO_EXPL_FORMAT = "The robot agent, which may or may not use the same costs as yours, presents its navigation plan to you (see \"Robot's Plan\" figure). The expected %s of this plan are as follows:";
+	private static final String AGENT_PARAGRAPH_EXPL = "The robot agent, which may or may not use the same costs as yours, presents its navigation plan to you. Furthermore, the robot explains why it chose this particular navigation.";
+
+	private static final String INSTRUCTION_NO_EXPL = "Is the robot's plan the best option for you? Please scroll down to provide your answer.";
+	private static final String INSTRUCTION_EXPL = "Is the robot's plan the best option for you? Please read the robot's explanation, and scroll down to provide your answer.";
+
 	private static final String JSON_EXTENSION = ".json";
 
 	private static final String LEGEND_IMG_FILENAME = "legend.png";
@@ -46,24 +51,10 @@ public class PrefAlignQuestionHTMLGenerator {
 
 	public Document createPrefAlignQuestionDocument(File questionDir, int agentIndex, boolean withExplanation,
 			File outDir) throws IOException, ParseException, URISyntaxException {
-		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
-		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
-		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
-
-		// Only 1 agentPolicyValues[agentIndex].json and 1 agentPolicy[agentIndex].png per question dir
-		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir,
-				"agentPolicyValues" + agentIndex, JSON_EXTENSION)[0];
-		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
-
 		File agentPolicyImgFile = FileIOUtils.listFilesWithContainFilter(questionDir, "agentPolicy" + agentIndex,
 				".png")[0];
 
-		String instruction = withExplanation
-				? "Please scroll down to read the robot's explanation, and answer the following questions:"
-				: "Please scroll down to answer the following questions:";
-
-		Element prefAlignQuestionDiv = createPrefAlignQuestionDiv(missionJsonObj, costStructJsonObj,
-				agentPolicyQAValuesJsonObj, instruction);
+		Element prefAlignQuestionDiv = createPrefAlignQuestionDiv(questionDir, agentIndex, withExplanation);
 		Element agentPolicyImageDiv = createAgentPolicyImageDiv(agentPolicyImgFile, outDir);
 
 		// Full-screen wrapper container for the task
@@ -85,7 +76,10 @@ public class PrefAlignQuestionHTMLGenerator {
 			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
 			List<Element> explanationElements = mExplanationHTMLGenerator.createExplanationElements(agentExplanationDir,
 					outDir);
-			for (Element explanationElement : explanationElements) {
+
+			// Exclude the 1st paragraph of explanation, because it is already included in prefAlignQuestionDiv
+			List<Element> contrastiveExplanationElements = explanationElements.subList(1, explanationElements.size());
+			for (Element explanationElement : contrastiveExplanationElements) {
 				doc.body().appendChild(explanationElement);
 			}
 		}
@@ -111,16 +105,21 @@ public class PrefAlignQuestionHTMLGenerator {
 		doc.body().appendChild(sidebarScript);
 	}
 
-	private Element createPrefAlignQuestionDiv(JSONObject missionJsonObj, JSONObject costStructJsonObj,
-			JSONObject agentPolicyQAValuesJsonObj, String instruction) {
+	private Element createPrefAlignQuestionDiv(File questionDir, int agentIndex, boolean withExplanation)
+			throws IOException, ParseException {
+		// There is only 1 mission[i].json and 1 simpleCostStructure.json per question dir
+		JSONObject missionJsonObj = QuestionUtils.getMissionJSONObject(questionDir);
+		JSONObject costStructJsonObj = QuestionUtils.getSimpleCostStructureJSONObject(questionDir);
+
+		// Mission
 		Element missionDiv = createMissionDiv(missionJsonObj, costStructJsonObj);
-		Element agentProposalDiv = createAgentProposalDiv(agentPolicyQAValuesJsonObj);
-		Element instructionDiv = HTMLGeneratorUtils.createInstructionContainer(instruction);
+
+		// Agent's proposed policy + instruction
+		Element agentProposalDiv = createAgentProposalDiv(questionDir, agentIndex, withExplanation);
 
 		Element container = HTMLGeneratorUtils.createBlankContainer(HTMLGeneratorUtils.W3_HALF);
 		container.appendChild(missionDiv);
 		container.appendChild(agentProposalDiv);
-		container.appendChild(instructionDiv);
 		return container;
 	}
 
@@ -142,27 +141,83 @@ public class PrefAlignQuestionHTMLGenerator {
 		return container;
 	}
 
-	private Element createAgentProposalDiv(JSONObject agentPolicyQAValuesJsonObj) {
-		// Agent paragraph: use descriptive QA names (nouns)
-		List<String> orderedQANames = mTableSettings.getOrderedQANames();
-		List<String> orderedQANouns = orderedQANames.stream().map(qaName -> mTableSettings.getQANoun(qaName))
-				.collect(Collectors.toList());
+	private Element createAgentProposalDiv(File questionDir, int agentIndex, boolean withExplanation)
+			throws IOException, ParseException {
+		// Only 1 agentPolicyValues[agentIndex].json and 1 agentPolicy[agentIndex].png per question dir
+		File agentPolicyValuesJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir,
+				"agentPolicyValues" + agentIndex, JSON_EXTENSION)[0];
+		JSONObject agentPolicyQAValuesJsonObj = FileIOUtils.readJSONObjectFromFile(agentPolicyValuesJsonFile);
 
-		String qaListStr = String.join(", ", orderedQANouns.subList(0, orderedQANouns.size() - 1));
-		qaListStr += ", and " + orderedQANouns.get(orderedQANouns.size() - 1);
-		String agentParagraph = String.format(AGENT_TEXT, qaListStr);
-		Element agentP = new Element("p");
-		agentP.text(agentParagraph);
+		Element container = HTMLGeneratorUtils.createBlankContainer();
 
+		if (withExplanation) {
+			// Agent paragraph: explanation case
+			Element agentP = new Element("p");
+			agentP.text(AGENT_PARAGRAPH_EXPL);
+
+			// Instruction: explanation case
+			Element instructionDiv = HTMLGeneratorUtils.createInstructionContainer(INSTRUCTION_EXPL);
+
+			// The 1st paragraph of explanation describes the solution policy, its QA values,
+			// and whether some QAs already have the best values
+			File agentExplanationDir = new File(questionDir, "explanation-agent" + agentIndex);
+			String explanationFirstParagraph = getExplanationFirstParagraph(agentExplanationDir);
+
+			// 1st Explanation paragraph
+			Element explanationP = new Element("p");
+			explanationP.text(explanationFirstParagraph);
+
+			// QA values table of the agent's policy
+			Element qaValuesTableContainer = createAgentPolicyQAValuesTable(agentPolicyQAValuesJsonObj);
+
+			container.appendChild(agentP);
+			container.appendChild(instructionDiv);
+			container.appendChild(explanationP);
+			container.appendChild(qaValuesTableContainer);
+		} else {
+			// Use descriptive QA names (nouns)
+			List<String> orderedQANames = mTableSettings.getOrderedQANames();
+			List<String> orderedQANouns = orderedQANames.stream().map(qaName -> mTableSettings.getQANoun(qaName))
+					.collect(Collectors.toList());
+
+			String qaListStr = String.join(", ", orderedQANouns.subList(0, orderedQANouns.size() - 1));
+			qaListStr += ", and " + orderedQANouns.get(orderedQANouns.size() - 1);
+			String agentParagraph = String.format(AGENT_PARAGRAPH_NO_EXPL_FORMAT, qaListStr);
+
+			// Agent paragraph: no-explanation case
+			Element agentP = new Element("p");
+			agentP.text(agentParagraph);
+
+			// QA values table of the agent's policy
+			Element qaValuesTableContainer = createAgentPolicyQAValuesTable(agentPolicyQAValuesJsonObj);
+
+			// Instruction: no-explanation case
+			Element instructionDiv = HTMLGeneratorUtils.createInstructionContainer(INSTRUCTION_NO_EXPL);
+
+			container.appendChild(agentP);
+			container.appendChild(qaValuesTableContainer);
+			container.appendChild(instructionDiv);
+		}
+
+		return container;
+	}
+
+	private String getExplanationFirstParagraph(File explanationDir) throws IOException, ParseException {
+		JSONObject explanationJsonObj = QuestionUtils.getExplanationJSONObject(explanationDir);
+		String explanationText = (String) explanationJsonObj.get("Explanation");
+
+		// Each paragraph in the explanation text corresponds to a policy
+		String[] parts = explanationText.split("\n\n");
+
+		return parts[0];
+	}
+
+	private Element createAgentPolicyQAValuesTable(JSONObject agentPolicyQAValuesJsonObj) {
 		// QA values table
 		Element qaValuesTableContainer = mExplanationHTMLGenerator
 				.createQAValuesTableContainerVertical(agentPolicyQAValuesJsonObj);
 		qaValuesTableContainer.selectFirst("table").attr(HTMLGeneratorUtils.CSS_STYLE, "max-width:500px");
-
-		Element container = HTMLGeneratorUtils.createBlankContainer();
-		container.appendChild(agentP);
-		container.appendChild(qaValuesTableContainer);
-		return container;
+		return qaValuesTableContainer;
 	}
 
 	private Element createAgentPolicyImageDiv(File agentPolicyImgFile, File outDir) {

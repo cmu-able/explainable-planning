@@ -38,7 +38,11 @@
      </div>
     </div>
     <div class="w3-container">
-     <p>The robot agent, which may or may not use the same costs as yours, proposes this navigation plan (see "Robot's Plan" figure). The expected travel time, collision, and intrusiveness of this plan are as follows:</p>
+     <p>The robot agent, which may or may not use the same costs as yours, presents its navigation plan to you. Furthermore, the robot explains why it chose this particular navigation.</p>
+     <div class="w3-container w3-margin">
+      <h4><i>Is the robot's plan the best option for you? Please read the robot's explanation, and scroll down to provide your answer.</i></h4>
+     </div>
+     <p>I've come up with this plan (see "Robot's Plan" figure). It is expected to take 115 seconds; have 1.2 expected collisions; and have intrusiveness-penalty of 10: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 3 locations (9-penalty). It has the lowest expected intrusiveness.</p>
      <div class="w3-responsive">
       <table class="w3-table w3-border w3-bordered w3-centered" style="max-width:500px">
        <tr>
@@ -90,9 +94,6 @@
       </table>
      </div>
     </div>
-    <div class="w3-container w3-margin">
-     <h4><i>Please scroll down to read the robot's explanation, and answer the following questions:</i></h4>
-    </div>
    </div>
    <div class="w3-row w3-half">
     <div class="w3-container w3-twothird w3-center" style="height:100vh">
@@ -102,68 +103,6 @@
     <div class="w3-container w3-third">
      <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">Show Legend</button>
     </div>
-   </div>
-  </div>
-  <div class="w3-row w3-pale-yellow" style="height:100vh;overflow:auto">
-   <div class="w3-container w3-third w3-center" style="height:100vh">
-    <h5>Robot's Plan</h5>
-    <img class="w3-image w3-card" src="explanation-agent2/solnPolicy.png" alt="Robot's Plan" style="height:90%">
-   </div>
-   <div class="w3-container w3-third">
-    <p>I'm planning to follow this plan (see "Robot's Plan" figure). It is expected to take 115 seconds; have 1.2 expected collisions; and have intrusiveness-penalty of 10: it will be non-intrusive at 8 locations (0-penalty), somewhat-intrusive at 1 location (1-penalty), and very-intrusive at 3 locations (9-penalty). It has the lowest expected intrusiveness.</p>
-    <div class="w3-responsive">
-     <table class="w3-table w3-border w3-bordered w3-centered">
-      <tr>
-       <th></th>
-       <th>Robot's Plan</th>
-      </tr>
-      <tr>
-       <th>
-        <div>
-         travel time
-        </div>
-        <div>
-         (seconds)
-        </div></th>
-       <td>115</td>
-      </tr>
-      <tr>
-       <th>
-        <div>
-         collision
-        </div>
-        <div>
-         (expected #)
-        </div></th>
-       <td>1.2</td>
-      </tr>
-      <tr>
-       <th>
-        <div>
-         intrusiveness
-        </div>
-        <div>
-         (penalty)
-        </div></th>
-       <td>10</td>
-      </tr>
-      <tr>
-       <td># non-intrusive locations</td>
-       <td>8</td>
-      </tr>
-      <tr>
-       <td># somewhat-intrusive locations</td>
-       <td>1</td>
-      </tr>
-      <tr>
-       <td># very-intrusive locations</td>
-       <td>3</td>
-      </tr>
-     </table>
-    </div>
-   </div>
-   <div class="w3-container w3-third">
-    <button class="w3-button w3-large w3-teal w3-right" onclick="open_legend()">☰</button>
    </div>
   </div>
   <div class="w3-row w3-light-grey" style="height:100vh;overflow:auto">

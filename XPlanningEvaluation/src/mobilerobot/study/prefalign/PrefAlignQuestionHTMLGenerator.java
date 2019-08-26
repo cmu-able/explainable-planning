@@ -209,7 +209,11 @@ public class PrefAlignQuestionHTMLGenerator {
 		// Each paragraph in the explanation text corresponds to a policy
 		String[] parts = explanationText.split("\n\n");
 
-		return parts[0];
+		String rawExplanationFirstParagraph = parts[0];
+		String partialParagraph = rawExplanationFirstParagraph.substring(
+				rawExplanationFirstParagraph.indexOf("It is expected to"), rawExplanationFirstParagraph.length());
+
+		return "I've come up with this plan (see \"Robot's Plan\" figure). " + partialParagraph;
 	}
 
 	private Element createAgentPolicyQAValuesTable(JSONObject agentPolicyQAValuesJsonObj) {

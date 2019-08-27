@@ -18,6 +18,7 @@ import examples.common.XPlannerOutDirectories;
 import explanation.analysis.PolicyInfo;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
+import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
 import mobilerobot.study.prefalign.PrefAlignValidationQuestionGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
@@ -131,7 +132,7 @@ public class QuestionUtils {
 		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", JSON_EXTENSION)[0];
 	}
 
-	public static double getScore(File questionDir, int agentIndex) throws IOException, ParseException {
+	public static double getAgentScore(File questionDir, int agentIndex) throws IOException, ParseException {
 		// There is only 1 scoreCard.json per question dir
 		File scoreCardJsonFile = FileIOUtils.listFilesWithContainFilter(questionDir, "scoreCard", JSON_EXTENSION)[0];
 		JSONObject scoreCardJsonObj = FileIOUtils.readJSONObjectFromFile(scoreCardJsonFile);
@@ -163,5 +164,19 @@ public class QuestionUtils {
 			}
 		}
 		return validationQuestionDocNames;
+	}
+
+	public static Histogram getAgentScoreDistribution(LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions,
+			int numBins) throws IOException, ParseException {
+		Histogram histogram = new Histogram(numBins, 0.0, 1.0);
+		for (LinkedPrefAlignQuestions linkedQuestions : allLinkedPrefAlignQuestions) {
+			for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
+				File questionDir = linkedQuestions.getQuestionDir(i);
+				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
+				double agentScore = getAgentScore(questionDir, agentIndex);
+				histogram.addData(agentScore);
+			}
+		}
+		return histogram;
 	}
 }

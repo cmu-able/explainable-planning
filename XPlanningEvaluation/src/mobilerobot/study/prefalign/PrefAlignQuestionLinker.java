@@ -18,6 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import mobilerobot.study.utilities.Histogram;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
@@ -263,6 +264,18 @@ public class PrefAlignQuestionLinker {
 			// The output .ser files will be moved to /study/prefalign/serialized-vlinked-questions/ 
 			// or /study/prefalign/serialized-vlinked-questions-explanation/
 			insertValidationQuestions(allLinkedPrefAlignQuestions, controlGroup);
+		} else if (option.equals("agentScoreDistribution")) {
+			int numBins = Integer.parseInt(args[1]);
+
+			// Only get agent-score distribution from non-validation questions
+			// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
+			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+					"serialized-linked-questions");
+			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions(
+					serLinkedQuestionsDir);
+
+			Histogram distribution = QuestionUtils.getAgentScoreDistribution(allLinkedPrefAlignQuestions, numBins);
+			distribution.printHistogram();
 		}
 	}
 }

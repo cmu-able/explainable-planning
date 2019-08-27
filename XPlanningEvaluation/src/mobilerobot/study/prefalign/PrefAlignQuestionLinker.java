@@ -276,6 +276,10 @@ public class PrefAlignQuestionLinker {
 
 			Histogram distribution = QuestionUtils.getAgentScoreDistribution(allLinkedPrefAlignQuestions, numBins);
 			distribution.printHistogram();
+
+			File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionLinker.class);
+			Histogram fullDistribution = QuestionUtils.getAllAgentScoreDistribution(questionsRootDir, numBins);
+			fullDistribution.printHistogram();
 		}
 	}
 }

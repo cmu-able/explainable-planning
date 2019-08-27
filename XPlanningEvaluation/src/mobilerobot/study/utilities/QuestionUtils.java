@@ -179,4 +179,19 @@ public class QuestionUtils {
 		}
 		return histogram;
 	}
+
+	public static Histogram getAllAgentScoreDistribution(File rootDir, int numBins) throws IOException, ParseException {
+		Histogram histogram = new Histogram(numBins, 0.0, 1.0);
+		File[] questionDirs = listQuestionDirs(rootDir);
+		FilenameFilter agentPolicyFilenameFilter = (dir, name) -> name.matches("agentPolicy[0-9]+.json");
+
+		for (File questionDir : questionDirs) {
+			int numAgents = questionDir.listFiles(agentPolicyFilenameFilter).length;
+			for (int i = 0; i < numAgents; i++) {
+				double agentScore = getAgentScore(questionDir, i);
+				histogram.addData(agentScore);
+			}
+		}
+		return histogram;
+	}
 }

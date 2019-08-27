@@ -138,12 +138,13 @@ public class MTurkAPIUtils {
 	}
 
 	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
-			Set<String> validationQuestionDocNames) throws IOException, ParseException {
+			Set<String> validationQuestionDocNames, boolean withExplanation) throws IOException, ParseException {
 		if (validationQuestionDocNames.isEmpty()) {
 			return null;
 		}
 
-		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, validationQuestionDocNames);
+		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, validationQuestionDocNames,
+				withExplanation);
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
 				.values("1").build();
@@ -163,12 +164,12 @@ public class MTurkAPIUtils {
 	}
 
 	private static PolicyParameter getAnswerKeyPolicyParameter(LinkedPrefAlignQuestions linkedQuestions,
-			Set<String> easyQuestionDocNames) throws IOException, ParseException {
+			Set<String> validationQuestionDocNames, boolean withExplanation) throws IOException, ParseException {
 		List<ParameterMapEntry> mapEntries = new ArrayList<>();
 		for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
-			String questionDocName = linkedQuestions.getQuestionDocumentName(i, false);
+			String questionDocName = linkedQuestions.getQuestionDocumentName(i, withExplanation);
 
-			if (easyQuestionDocNames.contains(questionDocName)) {
+			if (validationQuestionDocNames.contains(questionDocName)) {
 				File questionDir = linkedQuestions.getQuestionDir(i);
 				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
 

@@ -62,7 +62,7 @@ public class PrefAlignHITPublisher {
 
 			// Assignment review policy for auto-reject
 			ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils.getAssignmentReviewPolicy(linkedPrefAlignQuestions,
-					validationQuestionDocNames);
+					validationQuestionDocNames, withExplanation);
 
 			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
 
@@ -170,7 +170,7 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
 			boolean withExplanation = args.length > 1 && args[1].equals("-e");
-			Set<String> validationQuestionDocNames = QuestionUtils.getValidationQuestionDocNames();
+			Set<String> validationQuestionDocNames = QuestionUtils.getValidationQuestionDocNames(withExplanation);
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
 			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);
 		} else if (option.equals("deleteHITs")) {

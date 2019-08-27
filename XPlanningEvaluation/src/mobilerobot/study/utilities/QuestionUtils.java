@@ -147,7 +147,7 @@ public class QuestionUtils {
 		return (String) answerKeyJsonObj.get(agentKey);
 	}
 
-	public static Set<String> getValidationQuestionDocNames() throws URISyntaxException {
+	public static Set<String> getValidationQuestionDocNames(boolean withExplanation) throws URISyntaxException {
 		Set<String> validationQuestionDocNames = new HashSet<>();
 		File validationQuestionsRootDir = FileIOUtils.getResourceDir(PrefAlignValidationQuestionGenerator.class,
 				"validation-questions");
@@ -155,9 +155,9 @@ public class QuestionUtils {
 			FilenameFilter agentPolicyFilenameFilter = (dir, name) -> name.matches("agentPolicy[0-9]+.json");
 			int numAgents = questionDir.listFiles(agentPolicyFilenameFilter).length;
 			for (int i = 0; i < numAgents; i++) {
-				// validationQuestionDocName is always in the format: question-mission[i]-agent[j],
-				// without "-explanation" at the end
-				String validationQuestionDocName = String.format(QUESTION_DOC_NAME_NO_EXPL_FORMAT,
+				// validationQuestionDocName is the name of the question html file (without .html extension)
+				String validationQuestionDocName = String.format(
+						withExplanation ? QUESTION_DOC_NAME_EXPL_FORMAT : QUESTION_DOC_NAME_NO_EXPL_FORMAT,
 						questionDir.getName(), i);
 				validationQuestionDocNames.add(validationQuestionDocName);
 			}

@@ -7,7 +7,6 @@ import java.net.URISyntaxException;
 import org.json.simple.parser.ParseException;
 
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
-import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.engine.Engine;
 import guru.nidi.graphviz.engine.Format;
 import guru.nidi.graphviz.engine.Graphviz;
@@ -38,19 +37,39 @@ public class GraphVizRenderer {
 		node.add("pos", nodePos);
 	}
 
+	/**
+	 * Set node style for a non-start, non-goal node. The style does not include shape, but includes: fixedsize=true,
+	 * width=NODE_WIDTH.
+	 * 
+	 * @param node
+	 *            : Non-start, non-goal node
+	 */
 	public void setNodeStyle(MutableNode node) {
-		node.add(Shape.CIRCLE);
 		setCommonNodeStyle(node);
 	}
 
+	/**
+	 * Set node style for a start node. The style does not include shape, but includes: peripheries=2, and the common
+	 * node style.
+	 * 
+	 * @param startNode
+	 *            : Start node
+	 */
 	public void setStartNodeStyle(MutableNode startNode) {
-		startNode.add(Shape.DOUBLE_CIRCLE);
+		startNode.add("peripheries", 2);
 		setCommonNodeStyle(startNode);
 		GraphVizUtils.addUniqueNodeXLabel(startNode, "Start");
 	}
 
+	/**
+	 * Set node style for a goal node. The style does not include shape, but includes: peripheries=2, and the common
+	 * node style.
+	 * 
+	 * @param goalNode
+	 *            : Goal node
+	 */
 	public void setGoalNodeStyle(MutableNode goalNode) {
-		goalNode.add(Shape.DOUBLE_CIRCLE);
+		goalNode.add("peripheries", 2);
 		setCommonNodeStyle(goalNode);
 		GraphVizUtils.addUniqueNodeXLabel(goalNode, "Goal");
 	}

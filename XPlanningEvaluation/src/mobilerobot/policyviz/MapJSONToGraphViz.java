@@ -23,6 +23,7 @@ import examples.mobilerobot.models.Occlusion;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Font;
 import guru.nidi.graphviz.attribute.Label;
+import guru.nidi.graphviz.attribute.Shape;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
@@ -93,10 +94,13 @@ public class MapJSONToGraphViz {
 		Area area = locNode.getNodeAttribute(Area.class, "area");
 		if (area == Area.PUBLIC) {
 			node.add(PUBLIC_AREA_COLOR, Style.FILLED);
+			node.add(Shape.CIRCLE);
 		} else if (area == Area.SEMI_PRIVATE) {
 			node.add(SEMI_PRIVATE_AREA_COLOR, Style.FILLED);
+			node.add("shape", "square");
 		} else if (area == Area.PRIVATE) {
 			node.add(PRIVATE_AREA_COLOR, Style.FILLED);
+			node.add(Shape.HEXAGON);
 		}
 
 		parseLinks(node, locNode, visitedLocNodes);

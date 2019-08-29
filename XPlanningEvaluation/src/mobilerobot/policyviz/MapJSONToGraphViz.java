@@ -20,7 +20,6 @@ import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Occlusion;
-import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Font;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.Shape;
@@ -34,9 +33,10 @@ import uiconnector.JSONSimpleParserUtils;
 public class MapJSONToGraphViz {
 
 	// Area types
-	private static final Color PUBLIC_AREA_COLOR = Color.GREEN;
-	private static final Color SEMI_PRIVATE_AREA_COLOR = Color.YELLOW;
-	private static final Color PRIVATE_AREA_COLOR = Color.RED;
+	private static final String FILLCOLOR_KEY = "fillcolor"; // Use "fillcolor" attribute to have outline around each node
+	private static final String PUBLIC_AREA_COLOR = "green";
+	private static final String SEMI_PRIVATE_AREA_COLOR = "yellow";
+	private static final String PRIVATE_AREA_COLOR = "red";
 
 	// Obstacle density
 	private static final String SPARSE_OBSTACLE_LABEL = "SO";
@@ -92,15 +92,17 @@ public class MapJSONToGraphViz {
 		}
 
 		Area area = locNode.getNodeAttribute(Area.class, "area");
+		node.add(Style.FILLED);
+
 		if (area == Area.PUBLIC) {
-			node.add(PUBLIC_AREA_COLOR, Style.FILLED);
+			node.add(FILLCOLOR_KEY, PUBLIC_AREA_COLOR);
 			node.add(Shape.CIRCLE);
 		} else if (area == Area.SEMI_PRIVATE) {
-			node.add(SEMI_PRIVATE_AREA_COLOR, Style.FILLED);
+			node.add(FILLCOLOR_KEY, SEMI_PRIVATE_AREA_COLOR);
 			node.add("shape", "square");
 		} else if (area == Area.PRIVATE) {
-			node.add(PRIVATE_AREA_COLOR, Style.FILLED);
-			node.add(Shape.HEXAGON);
+			node.add(FILLCOLOR_KEY, PRIVATE_AREA_COLOR);
+			node.add(Shape.PENTAGON);
 		}
 
 		parseLinks(node, locNode, visitedLocNodes);

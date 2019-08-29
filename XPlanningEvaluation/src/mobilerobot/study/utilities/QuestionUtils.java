@@ -110,9 +110,13 @@ public class QuestionUtils {
 	}
 
 	public static JSONObject getMissionJSONObject(File questionDir) throws IOException, ParseException {
-		// There is only 1 mission[i].json per question dir
-		File missionJsonFile = FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", JSON_EXTENSION)[0];
+		File missionJsonFile = getMissionJSONFile(questionDir);
 		return FileIOUtils.readJSONObjectFromFile(missionJsonFile);
+	}
+
+	public static File getMissionJSONFile(File questionDir) {
+		// There is only 1 mission[i].json per question dir
+		return FileIOUtils.listFilesWithRegexFilter(questionDir, "mission[0-9]+", JSON_EXTENSION)[0];
 	}
 
 	public static JSONObject getScoreCardJSONObject(File questionDir) throws IOException, ParseException {
@@ -122,7 +126,6 @@ public class QuestionUtils {
 	}
 
 	public static JSONObject getExplanationJSONObject(File explanationDir) throws IOException, ParseException {
-		// There is only 1 [explanation name].json per explanation dir
 		File explanationJsonFile = getExplanationJSONFile(explanationDir);
 		return FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
 	}

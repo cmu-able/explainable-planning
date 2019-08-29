@@ -69,7 +69,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			QuantitativePolicy solnQuantPolicy = solnPolicyInfo.getQuantitativePolicy();
 
 			// Agent-0 is the aligned agent
-			createAgentData(questionDir, solnQuantPolicy, missionFile, 0);
+			createAgentData(questionDir, solnPolicyInfo, solnQuantPolicy, missionFile, 0);
 			indexedAgentQuantPolicies.add(0, solnQuantPolicy);
 
 			// The rest of the agents in this question dir are unique and different from agent-0,
@@ -94,7 +94,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 				File agentMissionFile = lowerConvexHull.getMissionFile(agentQuantPolicy);
 
 				// Create agentPolicy[i].json, agentPolicyValues[i].json, and explanation-agent[i]
-				createAgentData(questionDir, agentQuantPolicy, agentMissionFile, agentIndex);
+				createAgentData(questionDir, solnPolicyInfo, agentQuantPolicy, agentMissionFile, agentIndex);
 
 				indexedAgentQuantPolicies.add(agentIndex, agentQuantPolicy);
 				agentIndex++;
@@ -110,11 +110,16 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return lowerConvexHull.getNextMissionIndex();
 	}
 
-	private void createAgentData(File questionDir, QuantitativePolicy agentQuantPolicy, File agentMissionFile,
-			int agentIndex)
-			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
+	private void createAgentData(File questionDir, PolicyInfo solnPolicyInfo, QuantitativePolicy agentQuantPolicy,
+			File agentMissionFile, int agentIndex) throws IOException, PrismException, XMDPException,
+			PrismConnectorException, GRBException, DSMException, ParseException {
 		mAgentGenerator.writeAgentPolicyAndValues(questionDir, agentQuantPolicy, agentIndex);
-		mAgentGenerator.createAgentExplanationDir(questionDir, agentMissionFile, agentIndex);
+		File agentExplanationDir = mAgentGenerator.createAgentExplanationDir(questionDir, agentMissionFile, agentIndex);
+		File missionFile = QuestionUtils.getMissionJSONFile(questionDir);
+		JSONObject scoreCardJsonObj = mAgentGenerator.computeAlignmentScores(missionFile, solnPolicyInfo,
+				agentExplanationDir);
+		// Write scoreCard.json for the agent's solution and alternative policies to the agent's explanation dir (NOT question dir)
+		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, agentExplanationDir);
 	}
 
 	private void createSimpleCostStructureFile(File questionDir, SimpleCostStructure simpleCostStruct)
@@ -144,8 +149,8 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		File answerKeyFile = FileIOUtils.createOutFile(questionDir, "answerKey.json");
 		FileIOUtils.prettyPrintJSONObjectToFile(answerKeyJsonObj, answerKeyFile);
 
-		// Compute optimality scores of all agent policies
-		JSONObject scoreCardJsonObj = computeOptimalityScores(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
+		// Compute alignment scores of all agent policies
+		JSONObject scoreCardJsonObj = computeAlignmentScores(missionFile, indexedAgentQuantPolicies, solnPolicyInfo);
 		QuestionUtils.writeScoreCardToQuestionDir(scoreCardJsonObj, questionDir);
 	}
 
@@ -190,7 +195,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 		return answerKeyJsonObj;
 	}
 
-	private static JSONObject computeOptimalityScores(File missionFile,
+	private static JSONObject computeAlignmentScores(File missionFile,
 			List<QuantitativePolicy> indexedAgentQuantPolicies, PolicyInfo solnPolicyInfo)
 			throws IOException, PrismException, ResultParsingException, XMDPException {
 		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, solnPolicyInfo.getXMDP());
@@ -203,9 +208,9 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 			// Compute cost of the agent policy, using the cost function of the solution policy
 			double agentPolicyCost = prismConnector.computeObjectiveCost(agentPolicy);
 			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
-			double optimalityScore = solnPolicyCost / agentPolicyCost;
+			double alignmentScore = solnPolicyCost / agentPolicyCost;
 			String agentPolicyName = "agentPolicy" + i;
-			scoreCardJsonObj.put(agentPolicyName, optimalityScore);
+			scoreCardJsonObj.put(agentPolicyName, alignmentScore);
 		}
 
 		// Close down PRISM

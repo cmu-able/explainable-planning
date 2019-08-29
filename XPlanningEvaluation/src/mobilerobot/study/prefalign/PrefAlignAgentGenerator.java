@@ -1,6 +1,7 @@
 package mobilerobot.study.prefalign;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +87,7 @@ public class PrefAlignAgentGenerator {
 		FileIOUtils.prettyPrintJSONObjectToFile(agentJsonObj, agentFile);
 	}
 
-	public void createAgentExplanationDir(File questionDir, File agentMissionFile, int agentIndex)
+	public File createAgentExplanationDir(File questionDir, File agentMissionFile, int agentIndex)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		// Create explanation sub-directory for each agent: /question-mission[X]/explanation-agent[i]/
 		String explanationDirname = "explanation-agent" + agentIndex;
@@ -119,5 +120,32 @@ public class PrefAlignAgentGenerator {
 
 		// Copy mission[Y]_explanation.json from /[XPlannerOutDir]/explanations/ to the explanation sub-dir
 		Files.copy(agentExplanationPath, explanationDir.toPath().resolve(agentExplanationFilename));
+
+		return explanationDir;
+	}
+
+	public JSONObject computeAlignmentScores(File missionFile, PolicyInfo solnPolicyInfo, File agentExplanationDir)
+			throws DSMException, XMDPException, IOException, ParseException, PrismException, ResultParsingException {
+		XMDP xmdp = solnPolicyInfo.getXMDP();
+		PolicyReader policyReader = new PolicyReader(xmdp);
+		PrismConnector prismConnector = QuestionUtils.createPrismConnector(missionFile, xmdp);
+
+		FilenameFilter filter = (dir, name) -> name.matches("solnPolicy.json") || name.matches("altPolicy[0-9]+.json");
+		JSONObject scoreCardJsonObj = new JSONObject();
+		for (File policyJsonFile : agentExplanationDir.listFiles(filter)) {
+			Policy policy = policyReader.readPolicy(policyJsonFile);
+
+			// Compute cost of the agent (solution or alternative) policy, using the cost function of the mission
+			double agentPolicyCost = prismConnector.computeObjectiveCost(policy);
+			double solnPolicyCost = solnPolicyInfo.getObjectiveCost();
+			double alignmentScore = solnPolicyCost / agentPolicyCost;
+			String agentPolicyName = FilenameUtils.removeExtension(policyJsonFile.getName());
+			scoreCardJsonObj.put(agentPolicyName, alignmentScore);
+		}
+
+		// Close down PRISM
+		prismConnector.terminate();
+
+		return scoreCardJsonObj;
 	}
 }

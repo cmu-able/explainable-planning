@@ -1,7 +1,7 @@
 {
   "collision": {
     "unit": "0.1 expected collision",
-    "cost": "1"
+    "cost": "7"
   },
   "travelTime": {
     "unit": "1 second of travel time",

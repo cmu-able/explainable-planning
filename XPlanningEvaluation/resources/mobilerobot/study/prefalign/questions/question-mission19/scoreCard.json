@@ -1,8 +1,9 @@
 {
-  "agentPolicy3": 0.9881049681663272,
-  "agentPolicy4": 0.9655097584726459,
-  "agentPolicy5": 0.8899622902671864,
+  "agentPolicy3": 0.8596482117240654,
+  "agentPolicy4": 0.9605393527544793,
+  "agentPolicy5": 0.9908538037144545,
+  "agentPolicy6": 0.9246592763731516,
   "agentPolicy0": 1.0,
-  "agentPolicy1": 0.9178441816633768,
-  "agentPolicy2": 0.9066171701329285
+  "agentPolicy1": 0.9749461205050954,
+  "agentPolicy2": 0.9756938950172952
 }

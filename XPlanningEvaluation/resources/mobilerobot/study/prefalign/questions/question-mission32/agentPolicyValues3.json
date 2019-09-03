@@ -1,6 +1,6 @@
 {
-  "collision": "0.2",
-  "travelTime": "128",
+  "collision": "1",
+  "travelTime": "113",
   "intrusiveness": {
     "Value": "7",
     "Event-based Values": {

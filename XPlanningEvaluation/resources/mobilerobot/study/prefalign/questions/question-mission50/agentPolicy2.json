@@ -4,11 +4,35 @@
       "action": {
         "type": "moveTo",
         "params": [
+          "L2"
+        ]
+      },
+      "state": {
+        "rLoc": "L1",
+        "rSpeed": 0.7
+      }
+    },
+    {
+      "action": {
+        "type": "moveTo",
+        "params": [
+          "L17"
+        ]
+      },
+      "state": {
+        "rLoc": "L13",
+        "rSpeed": 0.7
+      }
+    },
+    {
+      "action": {
+        "type": "moveTo",
+        "params": [
           "L26"
         ]
       },
       "state": {
-        "rLoc": "L25",
+        "rLoc": "L22",
         "rSpeed": 0.7
       }
     },
@@ -16,11 +40,11 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L25"
+          "L13"
         ]
       },
       "state": {
-        "rLoc": "L27",
+        "rLoc": "L11",
         "rSpeed": 0.7
       }
     },
@@ -28,11 +52,11 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "LX1"
+          "L7"
         ]
       },
       "state": {
-        "rLoc": "L6",
+        "rLoc": "L2",
         "rSpeed": 0.7
       }
     },
@@ -44,44 +68,8 @@
         ]
       },
       "state": {
-        "rLoc": "L2",
+        "rLoc": "L1",
         "rSpeed": 0.35
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L20"
-        ]
-      },
-      "state": {
-        "rLoc": "L15",
-        "rSpeed": 0.7
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L15"
-        ]
-      },
-      "state": {
-        "rLoc": "L14",
-        "rSpeed": 0.7
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L24"
-        ]
-      },
-      "state": {
-        "rLoc": "L23",
-        "rSpeed": 0.7
       }
     },
     {
@@ -100,11 +88,11 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L7"
+          "L11"
         ]
       },
       "state": {
-        "rLoc": "L2",
+        "rLoc": "L8",
         "rSpeed": 0.7
       }
     },
@@ -112,11 +100,11 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L14"
+          "L32"
         ]
       },
       "state": {
-        "rLoc": "LX1",
+        "rLoc": "L31",
         "rSpeed": 0.7
       }
     },
@@ -124,12 +112,12 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L6"
+          "L22"
         ]
       },
       "state": {
-        "rLoc": "L7",
-        "rSpeed": 0.35
+        "rLoc": "L18",
+        "rSpeed": 0.7
       }
     },
     {
@@ -148,55 +136,7 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L32"
-        ]
-      },
-      "state": {
-        "rLoc": "L31",
-        "rSpeed": 0.7
-      }
-    },
-    {
-      "action": {
-        "type": "setSpeed",
-        "params": [
-          0.7
-        ]
-      },
-      "state": {
-        "rLoc": "L6",
-        "rSpeed": 0.35
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L2"
-        ]
-      },
-      "state": {
-        "rLoc": "L1",
-        "rSpeed": 0.35
-      }
-    },
-    {
-      "action": {
-        "type": "moveTo",
-        "params": [
-          "L27"
-        ]
-      },
-      "state": {
-        "rLoc": "L24",
-        "rSpeed": 0.7
-      }
-    },
-    {
-      "action": {
-        "type": "setSpeed",
-        "params": [
-          0.35
+          "L8"
         ]
       },
       "state": {
@@ -208,11 +148,11 @@
       "action": {
         "type": "moveTo",
         "params": [
-          "L23"
+          "L18"
         ]
       },
       "state": {
-        "rLoc": "L20",
+        "rLoc": "L17",
         "rSpeed": 0.7
       }
     }

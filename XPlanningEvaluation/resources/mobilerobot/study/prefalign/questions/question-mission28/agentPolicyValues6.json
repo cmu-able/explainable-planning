@@ -1,12 +1,12 @@
 {
-  "collision": "0.2",
-  "travelTime": "172",
+  "collision": "0.6",
+  "travelTime": "113",
   "intrusiveness": {
-    "Value": "4",
+    "Value": "8",
     "Event-based Values": {
-      "non-intrusive": "11",
-      "very-intrusive": "0",
-      "somewhat-intrusive": "4"
+      "non-intrusive": "6",
+      "very-intrusive": "1",
+      "somewhat-intrusive": "5"
     }
   }
 }

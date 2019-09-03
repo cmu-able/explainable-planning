@@ -7,20 +7,15 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.json.simple.parser.ParseException;
-
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITPublisher;
 import mobilerobot.study.mturk.MTurkAPIUtils;
-import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
-import software.amazon.awssdk.services.mturk.model.ReviewPolicy;
 
 public class PrefAlignHITPublisher {
 
@@ -44,8 +39,7 @@ public class PrefAlignHITPublisher {
 		mHITInfoCSVFile = createHITInfoCSVFile();
 	}
 
-	public void publishAllHITs(boolean controlGroup, Set<String> validationQuestionDocNames)
-			throws URISyntaxException, IOException, ClassNotFoundException, ParseException {
+	public void publishAllHITs(boolean controlGroup) throws URISyntaxException, IOException, ClassNotFoundException {
 		boolean withExplanation = !controlGroup;
 
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
@@ -60,11 +54,10 @@ public class PrefAlignHITPublisher {
 			String headQuestionDocName = linkedQuestionDocNames[0];
 			File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(headQuestionDocName + ".xml");
 
-			// Assignment review policy for auto-reject
-			ReviewPolicy assignmentReviewPolicy = MTurkAPIUtils.getAssignmentReviewPolicy(linkedPrefAlignQuestions,
-					validationQuestionDocNames, withExplanation);
+			// Cannot use Assignment Review Policy for auto-reject
+			// because, due to the use of <crowd-form>, all answers are in a single <FreeText>
 
-			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, assignmentReviewPolicy);
+			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, null);
 
 			writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
 		}
@@ -162,7 +155,7 @@ public class PrefAlignHITPublisher {
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
-			ParserConfigurationException, TransformerException, ParseException {
+			ParserConfigurationException, TransformerException {
 		String option = args[0];
 
 		if (option.equals("createExternalQuestions")) {
@@ -170,9 +163,8 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
 			boolean withExplanation = args.length > 1 && args[1].equals("-e");
-			Set<String> validationQuestionDocNames = QuestionUtils.getValidationQuestionDocNames(withExplanation);
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
-			publisher.publishAllHITs(!withExplanation, validationQuestionDocNames);
+			publisher.publishAllHITs(!withExplanation);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[1];
 			MTurkAPIUtils.deleteHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);

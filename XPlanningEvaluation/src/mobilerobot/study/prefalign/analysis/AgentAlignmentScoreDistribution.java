@@ -21,7 +21,7 @@ public class AgentAlignmentScoreDistribution {
 			for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
 				File questionDir = linkedQuestions.getQuestionDir(i);
 				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
-				double agentScore = QuestionUtils.getAgentScore(questionDir, agentIndex);
+				double agentScore = PrefAlignQuestionUtils.getAgentAlignmentScore(questionDir, agentIndex);
 				histogram.addData(agentScore);
 			}
 		}
@@ -36,7 +36,7 @@ public class AgentAlignmentScoreDistribution {
 		for (File questionDir : questionDirs) {
 			int numAgents = questionDir.listFiles(agentPolicyFilenameFilter).length;
 			for (int i = 0; i < numAgents; i++) {
-				double agentScore = QuestionUtils.getAgentScore(questionDir, i);
+				double agentScore = PrefAlignQuestionUtils.getAgentAlignmentScore(questionDir, i);
 				histogram.addData(agentScore);
 			}
 		}

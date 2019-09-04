@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import org.json.simple.parser.ParseException;
 
 import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
-import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.study.prefalign.analysis.PrefAlignQuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -174,7 +174,7 @@ public class MTurkAPIUtils {
 				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
 
 				// "yes" or "no" answer
-				String answer = QuestionUtils.getAnswer(questionDir, agentIndex);
+				String answer = PrefAlignQuestionUtils.getAgentAlignmentAnswer(questionDir, agentIndex);
 
 				// "question[i]-answer"
 				String questionID = String.format(MTurkHTMLQuestionUtils.QUESTION_ID_FORMAT, i, "answer");

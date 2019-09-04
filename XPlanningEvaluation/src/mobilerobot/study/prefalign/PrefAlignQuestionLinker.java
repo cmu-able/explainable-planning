@@ -18,7 +18,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
-import mobilerobot.study.utilities.Histogram;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 
@@ -107,7 +106,8 @@ public class PrefAlignQuestionLinker {
 			for (int j = 0; j < numQuestions; j++) {
 				File questionDir = linkedQuestionDirs[j];
 
-				// questionDir can be null if, for a particular cost structure, there are fewer associated questions than numQuestions
+				// questionDir can be null if, for a particular cost structure, there are fewer associated questions
+				// than numQuestions
 				if (questionDir != null) {
 					// For each question dir, randomly select an agent
 					long seed = seeds[i][j];
@@ -136,7 +136,8 @@ public class PrefAlignQuestionLinker {
 
 	public static void serializeLinkedPrefAlignQuestions(LinkedPrefAlignQuestions linkedPrefAlignQuestions)
 			throws IOException {
-		// Use document name of the first question in the link as name of the serialized LinkedPrefAlignQuestions .ser file
+		// Use document name of the first question in the link as name of the serialized LinkedPrefAlignQuestions .ser
+		// file
 		String headQuestionDocName = linkedPrefAlignQuestions.getQuestionDocumentName(0, false);
 		File objFile = FileIOUtils.createOutputFile(headQuestionDocName + ".ser");
 
@@ -202,7 +203,8 @@ public class PrefAlignQuestionLinker {
 
 				// Validation question must have the same cost structure as the linked questions
 				if (costStructJsonObj.equals(validationCostStructJsonObj)) {
-					// Insert each validation question into the middle of the link, which includes validation question(s) so far
+					// Insert each validation question into the middle of the link, which includes validation
+					// question(s) so far
 					int middleIndex = currLinkedQuestionDirs.length / 2;
 					currLinkedQuestionDirs = ArrayUtils.insert(middleIndex, currLinkedQuestionDirs,
 							validationQuestionDir);
@@ -261,25 +263,9 @@ public class PrefAlignQuestionLinker {
 					serLinkedQuestionsDir);
 
 			// Insert validation question(s) into each link and serialize the new LinkedPrefAlignQuestions
-			// The output .ser files will be moved to /study/prefalign/serialized-vlinked-questions/ 
+			// The output .ser files will be moved to /study/prefalign/serialized-vlinked-questions/
 			// or /study/prefalign/serialized-vlinked-questions-explanation/
 			insertValidationQuestions(allLinkedPrefAlignQuestions, controlGroup);
-		} else if (option.equals("agentScoreDistribution")) {
-			int numBins = Integer.parseInt(args[1]);
-
-			// Only get agent-score distribution from non-validation questions
-			// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
-			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
-					"serialized-linked-questions");
-			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions(
-					serLinkedQuestionsDir);
-
-			Histogram distribution = QuestionUtils.getAgentScoreDistribution(allLinkedPrefAlignQuestions, numBins);
-			distribution.printHistogram();
-
-			File questionsRootDir = FileIOUtils.getQuestionsResourceDir(PrefAlignQuestionLinker.class);
-			Histogram fullDistribution = QuestionUtils.getAllAgentScoreDistribution(questionsRootDir, numBins);
-			fullDistribution.printHistogram();
 		}
 	}
 }

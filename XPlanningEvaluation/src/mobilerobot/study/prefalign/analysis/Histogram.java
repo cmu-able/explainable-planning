@@ -1,4 +1,4 @@
-package mobilerobot.study.utilities;
+package mobilerobot.study.prefalign.analysis;
 
 import java.util.Arrays;
 
@@ -30,8 +30,10 @@ public class Histogram {
 		}
 	}
 
-	public void printHistogram() {
-		System.out.println("Bin\tCount");
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Bin\tCount\n");
 		for (int i = 0; i < mHistogram.length; i++) {
 			double lowerBound = i * mBinSize + mMinValue;
 			double upperBound = lowerBound + mBinSize;
@@ -39,10 +41,13 @@ public class Histogram {
 
 			String from = String.format("%.3f", lowerBound);
 			String to = String.format("%.3f", upperBound);
-			System.out.print(from + " to " + to);
-			System.out.print("\t");
-			System.out.println(count);
+
+			builder.append(from + " to " + to);
+			builder.append("\t");
+			builder.append(count);
+			builder.append("\n");
 		}
+		return builder.toString();
 	}
 
 	@Override

@@ -121,16 +121,6 @@ public class QuestionUtils {
 		return FileIOUtils.readJSONObjectFromFile(scoreCardJsonFile);
 	}
 
-	public static JSONObject getExplanationJSONObject(File explanationDir) throws IOException, ParseException {
-		File explanationJsonFile = getExplanationJSONFile(explanationDir);
-		return FileIOUtils.readJSONObjectFromFile(explanationJsonFile);
-	}
-
-	public static File getExplanationJSONFile(File explanationDir) {
-		// There is only 1 [explanation name].json per explanation dir
-		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", JSON_EXTENSION)[0];
-	}
-
 	public static Set<String> getValidationQuestionDocNames(boolean withExplanation) throws URISyntaxException {
 		Set<String> validationQuestionDocNames = new HashSet<>();
 		File validationQuestionsRootDir = FileIOUtils.getResourceDir(PrefAlignValidationQuestionGenerator.class,

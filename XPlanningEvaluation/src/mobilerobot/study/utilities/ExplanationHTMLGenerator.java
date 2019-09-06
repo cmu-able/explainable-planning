@@ -41,26 +41,23 @@ public class ExplanationHTMLGenerator {
 			explanationDoc.body().appendChild(policySectionDiv);
 		}
 
-		File explanationJsonFile = QuestionUtils.getExplanationJSONFile(explanationDir);
+		File explanationJsonFile = ExplanationUtils.getExplanationJSONFile(explanationDir);
 		String explanationDocName = FilenameUtils.removeExtension(explanationJsonFile.getName());
 		HTMLGeneratorUtils.writeHTMLDocumentToFile(explanationDoc, explanationDocName, outDir);
 	}
 
 	public List<Element> createExplanationElements(File explanationDir, File outDir)
 			throws IOException, ParseException {
-		JSONObject explanationJsonObj = QuestionUtils.getExplanationJSONObject(explanationDir);
-		String explanationText = (String) explanationJsonObj.get("Explanation");
-
 		// Each paragraph in the explanation text corresponds to a policy
-		String[] parts = explanationText.split("\n\n");
+		String[] paragraphs = ExplanationUtils.getExplanationParagraphs(explanationDir);
 
 		// Solution policy's QA values are to be contrasted with those of each alternative policy
 		JSONObject solnPolicyQAValuesJsonObj = null;
 
 		List<Element> policySectionDivs = new ArrayList<>();
 
-		for (int i = 0; i < parts.length; i++) {
-			String policyExplanation = parts[i];
+		for (int i = 0; i < paragraphs.length; i++) {
+			String policyExplanation = paragraphs[i];
 			int imgIndex = i;
 
 			Matcher matcher = mJsonFileRefPattern.matcher(policyExplanation);
@@ -71,17 +68,21 @@ public class ExplanationHTMLGenerator {
 			}
 
 			// QA values of this policy as json object
-			JSONObject policyQAValuesJsonObj = (JSONObject) explanationJsonObj.get(policyJsonFilename);
+			JSONObject policyQAValuesJsonObj = ExplanationUtils.getPolicyQAValuesJSONObject(explanationDir,
+					policyJsonFilename);
 
 			// First policy is always the solution policy
 			if (imgIndex == 0) {
 				solnPolicyQAValuesJsonObj = policyQAValuesJsonObj;
 			}
 
-			// Replace the word "policy" with "plan"
-			String replacedPolicyExplanation = policyExplanation.replace("policy", "plan");
+			// Remove any 0-value component from the breakdown of event-based QA value
+			policyExplanation = ExplanationUtils.removeZeroValueComponents(policyExplanation);
 
-			Element policySectionDiv = createPolicySectionDiv(replacedPolicyExplanation, solnPolicyQAValuesJsonObj,
+			// Replace the word "policy" with "plan"
+			policyExplanation = policyExplanation.replace("policy", "plan");
+
+			Element policySectionDiv = createPolicySectionDiv(policyExplanation, solnPolicyQAValuesJsonObj,
 					policyQAValuesJsonObj, imgIndex, explanationDir, outDir);
 
 			policySectionDivs.add(policySectionDiv);

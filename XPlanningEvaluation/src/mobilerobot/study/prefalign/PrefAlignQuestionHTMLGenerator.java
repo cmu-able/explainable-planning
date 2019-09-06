@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import mobilerobot.study.utilities.ExplanationHTMLGenerator;
+import mobilerobot.study.utilities.ExplanationUtils;
 import mobilerobot.study.utilities.HTMLGeneratorUtils;
 import mobilerobot.study.utilities.HTMLTableSettings;
 import mobilerobot.study.utilities.QuestionUtils;
@@ -167,13 +168,11 @@ public class PrefAlignQuestionHTMLGenerator {
 			Element explanationP = new Element("p");
 			explanationP.text(explanationFirstParagraph);
 
-			// QA values table of the agent's policy
-			Element qaValuesTableContainer = createAgentPolicyQAValuesTable(agentPolicyQAValuesJsonObj);
+			// NOT include QA values table of the agent's policy to not overflow the viewport
 
 			container.appendChild(agentP);
 			container.appendChild(instructionDiv);
 			container.appendChild(explanationP);
-			container.appendChild(qaValuesTableContainer);
 		} else {
 			// Use descriptive QA names (nouns)
 			List<String> orderedQANames = mTableSettings.getOrderedQANames();
@@ -203,13 +202,13 @@ public class PrefAlignQuestionHTMLGenerator {
 	}
 
 	private String getExplanationFirstParagraph(File explanationDir) throws IOException, ParseException {
-		JSONObject explanationJsonObj = QuestionUtils.getExplanationJSONObject(explanationDir);
-		String explanationText = (String) explanationJsonObj.get("Explanation");
-
 		// Each paragraph in the explanation text corresponds to a policy
-		String[] parts = explanationText.split("\n\n");
+		String[] paragraphs = ExplanationUtils.getExplanationParagraphs(explanationDir);
 
-		String rawExplanationFirstParagraph = parts[0];
+		String rawExplanationFirstParagraph = paragraphs[0];
+		// Remove any 0-value component from the breakdown of event-based QA value
+		rawExplanationFirstParagraph = ExplanationUtils.removeZeroValueComponents(rawExplanationFirstParagraph);
+
 		String partialParagraph = rawExplanationFirstParagraph.substring(
 				rawExplanationFirstParagraph.indexOf("It is expected to"), rawExplanationFirstParagraph.length());
 

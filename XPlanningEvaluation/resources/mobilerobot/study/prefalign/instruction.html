@@ -21,7 +21,13 @@
 	<body>
 		<!-- Begin Instruction -->
 		<div class="w3-container">
-		<!-- Introduction -->
+		
+			<!-- Full-Screen Instruction -->
+			<div class="w3-padding-large">
+				<p><font size="5">For your convenience in performing this HIT, please use full-screen mode throughout the task.</font></p>
+			</div>
+			
+			<!-- Introduction -->
 			<h3>Introduction</h3>
 			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figures 1 and 2 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building (see Figures 3-7 for details).</p>
 			<div class="w3-row w3-margin">
@@ -98,8 +104,10 @@
 			<p>Unfortunately, the user cannot control how the robot weighs its objectives. The robot will make its own decision on how to navigate to the destination, and its decision may or may not be in agreement with how the user would weigh the objectives. However, the robot will present its navigation plan to the user before it is taking off.</p>
 			
 			<!-- Task -->
-			<h3>Task</h3>
-			<p>Imagine that you are the user of the robot. <b>You will be given a cost profile</b>, similar to the one shown above. You will be presented with a series of 3 navigation problems (each with a different map) and the corresponding navigation plans that the robot came up with. <b>You task is to determine whether the robot's plan is the best available option for you.</b></p>
+			<div class="w3-pale-red w3-padding-large">
+				<h3>Task</h3>
+				<p>Imagine that you are the user of the robot. <b>You will be given a cost profile</b>, similar to the one shown above. You will be presented with a series of 4 navigation problems (each with a different map) and the corresponding navigation plans that the robot came up with. <b>You task is to determine whether the robot's plan is the best available option for you.</b></p>
+			</div>
 			
 			<!-- Example -->
 			<h4>Example</h4>
@@ -128,7 +136,12 @@
 					<p>This plan incurs intrusiveness-penalty of 4 (since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 1 time), which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 9.</p>
 				</div>
 			</div>
-			You can calculate the total cost of the alternative navigation plan in Figure 11: ($1 * 128) + ($9 * 0.0/0.1) + ($5 * 4) = $148. This plan costs less than the one that the robot presented.
+			<p>You can calculate the total cost of the alternative navigation plan in Figure 11: ($1 * 128) + ($9 * 0.0/0.1) + ($5 * 4) = $148. This plan costs less than the one that the robot presented.</p>
+			
+			<!-- Final Instruction -->
+			<div class="w3-padding-large">
+				<p><font size="5">Once you have read and understand the instruction, click the button below to continue to the task.</font> The information presented above regarding how to interpret symbols in a map and a navigation plan (e.g., obstacles, intrusiveness, robot's speed, probability of collision, etc.) will be provided in a legend box next to each navigation problem.</p>
+			</div>
 		</div>
 		<!-- End Instruction -->
 		

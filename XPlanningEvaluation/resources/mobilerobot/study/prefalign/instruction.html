@@ -29,7 +29,7 @@
 			
 			<!-- Introduction -->
 			<h3>Introduction</h3>
-			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figures 1 and 2 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its driving time, its expected collisions with obstacles, and its intrusiveness to human occupants in the building (see Figures 3-7 for details).</p>
+			<p>Our research aims to understand how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. In this study, consider a mobile robot navigating inside a building. Its task is to move from its current location to a given destination (see Figures 1 and 2 for illustration). The robot must navigate to the destination while optimizing for 3 objectives, namely, minimizing its (1) driving time, (2) expected collisions with obstacles, and (3) intrusiveness to human occupants in the building (see Figures 3-7 for details).</p>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/floor-plan.png">
@@ -46,7 +46,7 @@
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/obstacles.png">
-					<p><b>Figure 3</b>: There are some obstacles around the building. When the robot moves at a high speed through a path with obstacles, it <i>may</i> collide with them -- with higher chance of collision when the obstacles are <i>dense</i> than when they are <i>sparse</i>. But when the robot moves at a low speed, it can avoid the collision.</p>
+					<p><b>Figure 3</b>: There are some obstacles around the building. When the robot moves at its full speed through a path with obstacles, it <i>may</i> collide with them -- with higher chance of collision when the obstacles are <i>dense</i> than when they are <i>sparse</i>. But when the robot moves at half speed, it can avoid the collision.</p>
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/obstacles-abstract.png">
@@ -55,7 +55,7 @@
 			</div>
 			<div class="w3-container w3-center w3-margin">
 				<img src="imgs/collision-table.png" class="w3-image">
-				<p class="w3-left-align"><b>Figure 5</b>: The robot may drive at its full speed: 0.7 meters/second, or at half speed: 0.35 meters/second. The robot can avoid collision with obstacles when it moves at half speed. That is, the expected collision of moving at half speed is always 0.0.</p>
+				<p class="w3-left-align"><b>Figure 5</b>: The robot may drive at its full speed: 0.7 meters/second (indicated by dark-blue line), or at half speed: 0.35 meters/second (indicated by light-blue line). The robot can avoid collision with obstacles when it moves at half speed. That is, the expected collision of moving at half speed is always 0.0.</p>
 				<p class="w3-left-align">Every time the robot moves at full speed through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.</p>
 			</div>
 			

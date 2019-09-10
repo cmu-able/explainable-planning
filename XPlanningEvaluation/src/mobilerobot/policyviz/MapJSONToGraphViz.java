@@ -45,6 +45,7 @@ public class MapJSONToGraphViz {
 			+ "</tr></table>";
 
 	private static final int NODE_FONT_SIZE = 28;
+	private static final int CONNECTION_LINE_WIDTH = 2;
 
 	private MapTopology mMapTopology;
 	private double mMeterUnitRatio;
@@ -136,6 +137,8 @@ public class MapJSONToGraphViz {
 			} else {
 				throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 			}
+
+			neighborLink = neighborLink.with(Style.lineWidth(CONNECTION_LINE_WIDTH));
 			graphNode.addLink(neighborLink);
 		}
 	}

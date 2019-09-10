@@ -21,6 +21,7 @@ public class GraphVizRenderer {
 	static final double SCALING_FACTOR = 4;
 
 	private static final double NODE_WIDTH = 0.6;
+	private static final int NODE_BORDER_PENWIDTH = 2;
 
 	private double mMeterPerInch;
 	private double mScalingFactor;
@@ -77,6 +78,7 @@ public class GraphVizRenderer {
 	private void setCommonNodeStyle(MutableNode node) {
 		node.add("fixedsize", "true");
 		node.add("width", NODE_WIDTH);
+		node.add("penwidth", NODE_BORDER_PENWIDTH);
 	}
 
 	public static void drawGraph(MutableGraph graph, File outDir, String outSubDirname, String outputName)

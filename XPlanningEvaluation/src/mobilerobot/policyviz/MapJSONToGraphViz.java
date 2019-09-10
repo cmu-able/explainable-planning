@@ -39,10 +39,11 @@ public class MapJSONToGraphViz {
 	private static final String PRIVATE_AREA_COLOR = "red";
 
 	// Obstacle density
-	private static final String SPARSE_OBSTACLE_LABEL = "SO";
-	private static final String DENSE_OBSTACLE_LABEL = "DO";
+	private static final String OBSTACLE_BLOCKS = "<td bgcolor='darkgoldenrod3' width='15' height='30'> </td><td bgcolor='darkgoldenrod4' width='15' height='30'> </td>";
+	private static final String SPARSE_OBSTACLE_LABEL = "<table border='0'><tr>" + OBSTACLE_BLOCKS + "</tr></table>";
+	private static final String DENSE_OBSTACLE_LABEL = "<table border='0'><tr>" + OBSTACLE_BLOCKS + OBSTACLE_BLOCKS
+			+ "</tr></table>";
 
-	private static final int OCCLUSION_FONT_SIZE = 30;
 	private static final int NODE_FONT_SIZE = 28;
 
 	private MapTopology mMapTopology;
@@ -129,11 +130,9 @@ public class MapJSONToGraphViz {
 			if (occlusion == Occlusion.CLEAR) {
 				neighborLink = to(neighborNode);
 			} else if (occlusion == Occlusion.PARTIALLY_OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of(SPARSE_OBSTACLE_LABEL))
-						.with(Font.size(OCCLUSION_FONT_SIZE));
+				neighborLink = to(neighborNode).with(Label.html(SPARSE_OBSTACLE_LABEL));
 			} else if (occlusion == Occlusion.OCCLUDED) {
-				neighborLink = to(neighborNode).with(Label.of(DENSE_OBSTACLE_LABEL))
-						.with(Font.size(OCCLUSION_FONT_SIZE));
+				neighborLink = to(neighborNode).with(Label.html(DENSE_OBSTACLE_LABEL));
 			} else {
 				throw new IllegalArgumentException("Unknown occlusion value: " + occlusion);
 			}

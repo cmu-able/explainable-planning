@@ -20,19 +20,19 @@ import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitResponse;
 import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
 
-public class HITAssignmentsCollector {
+public class AssignmentsCollector {
 
 	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 
 	private final MTurkClient mClient;
 	private final List<HITInfo> mHITInfos = new ArrayList<>();
 
-	public HITAssignmentsCollector(MTurkClient client, File hitInfoCSVFile) throws IOException {
+	public AssignmentsCollector(MTurkClient client, File hitInfoCSVFile) throws IOException {
 		mClient = client;
 		readAllHITInfos(hitInfoCSVFile);
 	}
 
-	public HITAssignmentsCollector(MTurkClient client, String hitTypeId) {
+	public AssignmentsCollector(MTurkClient client, String hitTypeId) {
 		mClient = client;
 		List<HIT> hits = MTurkAPIUtils.getHITs(client, hitTypeId);
 		for (HIT hit : hits) {

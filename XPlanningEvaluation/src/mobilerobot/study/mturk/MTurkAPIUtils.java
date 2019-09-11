@@ -218,7 +218,7 @@ public class MTurkAPIUtils {
 	}
 
 	public static void approveAssignmentsOfReviewableHITs(MTurkClient client, String hitTypeId) {
-		HITAssignmentsCollector assignmentCollector = new HITAssignmentsCollector(client, hitTypeId);
+		AssignmentsCollector assignmentsCollector = new AssignmentsCollector(client, hitTypeId);
 		List<HIT> selectedHITs;
 		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
 			// Reviewable HITs must be approved or denied before getting deleted
@@ -226,9 +226,9 @@ public class MTurkAPIUtils {
 					.collect(Collectors.toList());
 			for (HIT hit : reviewableHITs) {
 				HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
-				List<Assignment> assignments = assignmentCollector.collectHITAssignments(hitInfo,
+				List<Assignment> assignments = assignmentsCollector.collectHITAssignments(hitInfo,
 						AssignmentStatus.SUBMITTED);
-				assignmentCollector.approveAssignments(assignments);
+				assignmentsCollector.approveAssignments(assignments);
 			}
 		}
 	}

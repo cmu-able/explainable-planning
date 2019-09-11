@@ -23,6 +23,10 @@ public class HITProgress {
 		mCurrentAssignments.addAll(assignments);
 	}
 
+	public HITInfo getHITInfo() {
+		return mHITInfo;
+	}
+
 	public List<Assignment> getCurrentAssignments() {
 		return mCurrentAssignments;
 	}

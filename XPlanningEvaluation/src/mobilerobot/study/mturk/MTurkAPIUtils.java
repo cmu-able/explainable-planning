@@ -218,7 +218,7 @@ public class MTurkAPIUtils {
 	}
 
 	public static void approveAssignmentsOfReviewableHITs(MTurkClient client, String hitTypeId) {
-		HITAssignmentsCollector assignmentCollector = new HITAssignmentsCollector(client);
+		HITAssignmentsCollector assignmentCollector = new HITAssignmentsCollector(client, hitTypeId);
 		List<HIT> selectedHITs;
 		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
 			// Reviewable HITs must be approved or denied before getting deleted

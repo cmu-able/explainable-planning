@@ -9,8 +9,17 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
@@ -118,5 +127,34 @@ public class AssignmentsCollector {
 
 			mClient.approveAssignment(approveRequest);
 		}
+	}
+
+	public static String getAssignmentAnswerFromFreeText(Assignment assignment, String questionKey)
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
+		String answerXMLStr = assignment.answer();
+		Document answerXML = FileIOUtils.parseXMLString(answerXMLStr);
+		NodeList answerNodeList = answerXML.getElementsByTagName("Answer");
+
+		for (int i = 0; i < answerNodeList.getLength(); i++) {
+			Node answerNode = answerNodeList.item(i);
+
+			if (answerNode.getNodeType() == Node.ELEMENT_NODE) {
+				Element answerElement = (Element) answerNode;
+				String mturkQuestionID = answerElement.getElementsByTagName("QuestionIdentifier").item(0)
+						.getTextContent();
+
+				// Answer data are under "taskAnswers"
+				if (mturkQuestionID.equals("taskAnswers")) {
+					// String inside <FreeText> is in JSON format of an array with 1 element
+					String answerDataStr = answerElement.getElementsByTagName("FreeText").item(0).getTextContent();
+					JSONParser jsonParser = new JSONParser();
+					JSONArray answerDataJsonArr = (JSONArray) jsonParser.parse(answerDataStr);
+					JSONObject answerDataJsonObj = (JSONObject) answerDataJsonArr.get(0);
+					return (String) answerDataJsonObj.get(questionKey);
+				}
+			}
+		}
+
+		return null;
 	}
 }

@@ -24,6 +24,7 @@ import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
+import software.amazon.awssdk.services.mturk.model.CreateAdditionalAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitResponse;
@@ -88,6 +89,12 @@ public class AssignmentsCollector {
 								.assignmentId(submittedAssignment.assignmentId()).requesterFeedback(rejectFeedback)
 								.build();
 						mClient.rejectAssignment(rejectRequest);
+
+						// Extend the maximum number of assignments of this HIT by 1
+						CreateAdditionalAssignmentsForHitRequest extendRequest = CreateAdditionalAssignmentsForHitRequest
+								.builder().hitId(submittedAssignment.hitId()).numberOfAdditionalAssignments(1).build();
+						mClient.createAdditionalAssignmentsForHIT(extendRequest);
+
 						break;
 					}
 				}

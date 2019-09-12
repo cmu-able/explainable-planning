@@ -8,13 +8,10 @@ import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.xml.sax.SAXException;
 
-import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 
 public class InsufficientTimeAssignmentFilter implements IAssignmentFilter {
@@ -32,59 +29,48 @@ public class InsufficientTimeAssignmentFilter implements IAssignmentFilter {
 	}
 
 	@Override
-	public boolean accept(Assignment assignment) throws ParserConfigurationException, SAXException, IOException {
-		String answerXMLStr = assignment.answer();
-		Document answerXML = FileIOUtils.parseXMLString(answerXMLStr);
-		NodeList answerNodeList = answerXML.getElementsByTagName("Answer");
+	public boolean accept(Assignment assignment)
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
+		JSONObject answerJsonObj = AssignmentsCollector.getAssignmentAnswerJSONObjectFromFreeText(assignment);
 
 		// Get prefix(es) of validation question(s): question[i]-
-		Set<String> validationQuestionPrefixes = getValidationQuestionPrefixes(answerNodeList);
+		Set<String> validationQuestionPrefixes = getValidationQuestionPrefixes(assignment);
 
-		for (int i = 0; i < answerNodeList.getLength(); i++) {
-			Node answerNode = answerNodeList.item(i);
+		for (String validationQuestionPrefix : validationQuestionPrefixes) {
+			// question[i]-elapsedTime
+			String elapsedTimeKey = validationQuestionPrefix + "elapsedTime";
 
-			if (answerNode.getNodeType() == Node.ELEMENT_NODE) {
-				Element answerElement = (Element) answerNode;
-				String questionID = answerElement.getElementsByTagName("QuestionIdentifier").item(0).getTextContent();
-				String questionIDPrefix = getQuestionIDPrefix(questionID);
+			String elapsedTimeStr = (String) answerJsonObj.get(elapsedTimeKey);
+			long elapsedTimeinMS = Long.parseLong(elapsedTimeStr);
 
-				// Only consider elapsed time of non-validation questions
-				if (questionID.matches("question[0-9]+-elapsedTime")
-						&& !validationQuestionPrefixes.contains(questionIDPrefix)) {
-					String elapsedTimeStr = answerElement.getElementsByTagName("FreeText").item(0).getTextContent();
-					long elapsedTimeinMS = Long.parseLong(elapsedTimeStr);
-
-					if (elapsedTimeinMS < MIN_ELAPSED_TIME_MS) {
-						return false;
-					}
-				}
+			if (elapsedTimeinMS < MIN_ELAPSED_TIME_MS) {
+				return false;
 			}
 		}
+
 		return true;
 	}
 
-	private Set<String> getValidationQuestionPrefixes(NodeList answerNodeList) {
+	private Set<String> getValidationQuestionPrefixes(Assignment assignment)
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
+		JSONObject answerJsonObj = AssignmentsCollector.getAssignmentAnswerJSONObjectFromFreeText(assignment);
 		Set<String> validationQuestionPrefixes = new HashSet<>();
 
-		for (int i = 0; i < answerNodeList.getLength(); i++) {
-			Node answerNode = answerNodeList.item(i);
+		for (Object key : answerJsonObj.keySet()) {
+			String questionKey = (String) key;
 
-			if (answerNode.getNodeType() == Node.ELEMENT_NODE) {
-				Element answerElement = (Element) answerNode;
-				String questionID = answerElement.getElementsByTagName("QuestionIdentifier").item(0).getTextContent();
+			if (questionKey.matches("question[0-9]+-ref")) {
+				// question[i]-ref maps to the document name of that question, e.g., question-mission[n]-agent[m]-explanation
+				String questionRef = (String) answerJsonObj.get(questionKey);
 
-				if (questionID.matches("question[0-9]+-ref")) {
-					// question[i]-ref maps to the document name of that question, e.g., question-mission[n]-agent[m]-explanation
-					String questionRef = answerElement.getElementsByTagName("FreeText").item(0).getTextContent();
-
-					// If this question is a validation question, get its prefix: question[i]-
-					if (mValidationQuestionDocNames.contains(questionRef)) {
-						String questionIDPrefix = getQuestionIDPrefix(questionID);
-						validationQuestionPrefixes.add(questionIDPrefix);
-					}
+				// If this question is a validation question, get its prefix: question[i]-
+				if (mValidationQuestionDocNames.contains(questionRef)) {
+					String questionIDPrefix = getQuestionIDPrefix(questionKey);
+					validationQuestionPrefixes.add(questionIDPrefix);
 				}
 			}
 		}
+
 		return validationQuestionPrefixes;
 	}
 

@@ -67,7 +67,7 @@ public class AssignmentsCollector {
 	}
 
 	public List<HITProgress> collectAllHITsProgress(IAssignmentFilter... assignmentFilters)
-			throws ParserConfigurationException, SAXException, IOException {
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
 		List<HITProgress> hitsProgress = new ArrayList<>();
 		for (HITInfo hitInfo : mHITInfos) {
 			// Collect all submitted assignments for this HIT
@@ -129,7 +129,7 @@ public class AssignmentsCollector {
 		}
 	}
 
-	public static String getAssignmentAnswerFromFreeText(Assignment assignment, String questionKey)
+	public static JSONObject getAssignmentAnswerJSONObjectFromFreeText(Assignment assignment)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
 		String answerXMLStr = assignment.answer();
 		Document answerXML = FileIOUtils.parseXMLString(answerXMLStr);
@@ -149,12 +149,17 @@ public class AssignmentsCollector {
 					String answerDataStr = answerElement.getElementsByTagName("FreeText").item(0).getTextContent();
 					JSONParser jsonParser = new JSONParser();
 					JSONArray answerDataJsonArr = (JSONArray) jsonParser.parse(answerDataStr);
-					JSONObject answerDataJsonObj = (JSONObject) answerDataJsonArr.get(0);
-					return (String) answerDataJsonObj.get(questionKey);
+					return (JSONObject) answerDataJsonArr.get(0);
 				}
 			}
 		}
 
-		return null;
+		throw new IllegalArgumentException("Invalid assignment's answer: " + answerXMLStr);
+	}
+
+	public static String getAssignmentAnswerFromFreeText(Assignment assignment, String questionKey)
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
+		JSONObject answerDataJsonObj = getAssignmentAnswerJSONObjectFromFreeText(assignment);
+		return (String) answerDataJsonObj.get(questionKey);
 	}
 }

@@ -18,13 +18,12 @@ import org.xml.sax.SAXException;
 import mobilerobot.study.mturk.AssignmentsCollector;
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITProgress;
+import mobilerobot.study.mturk.MTurkHTMLQuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 
 public class PrefAlignAssignmentsCollector {
-
-	private static final String QUESTION_KEY_FORMAT = "question%d-%s";
 
 	private final AssignmentsCollector mAssignmentsCollector;
 	private final File mAssignmentsCSVFile;
@@ -59,7 +58,7 @@ public class PrefAlignAssignmentsCollector {
 
 			for (int i = 0; i < numQuestions; i++) {
 				for (String dataType : dataTypes) {
-					String columnName = String.format(QUESTION_KEY_FORMAT, i, dataType);
+					String columnName = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
 					writer.write(",");
 					writer.write(columnName);
 				}
@@ -105,7 +104,7 @@ public class PrefAlignAssignmentsCollector {
 		// Answer of each data type of each question
 		for (int i = 0; i < mNumQuestions; i++) {
 			for (String dataType : mDataTypes) {
-				String questionKey = String.format(QUESTION_KEY_FORMAT, i, dataType);
+				String questionKey = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
 				String answer = AssignmentsCollector.getAssignmentAnswerFromFreeText(assignment, questionKey);
 				assignmentData.add(answer);
 			}

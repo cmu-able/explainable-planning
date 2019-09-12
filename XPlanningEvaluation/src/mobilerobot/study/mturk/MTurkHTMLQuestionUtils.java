@@ -17,9 +17,9 @@ import mobilerobot.utilities.FileIOUtils;
 public class MTurkHTMLQuestionUtils {
 
 	/**
-	 * This is the format of QuestionIdentifier in QuestionFormAnswers MTurk data structure
+	 * This is the format of question key in QuestionFormAnswers MTurk data structure
 	 */
-	public static final String QUESTION_ID_FORMAT = "question%d-%s";
+	public static final String QUESTION_KEY_FORMAT = "question%d-%s";
 
 	/**
 	 * Additional data type collected for each question
@@ -78,7 +78,7 @@ public class MTurkHTMLQuestionUtils {
 
 		for (int i = 0; i < numQuestions; i++) {
 			for (String dataType : allHiddenInputDataTypes) {
-				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
+				String hiddenInputName = String.format(QUESTION_KEY_FORMAT, i, dataType);
 				addHiddenInputToForm(hiddenInputName, null, crowdForm);
 			}
 		}
@@ -115,7 +115,7 @@ public class MTurkHTMLQuestionUtils {
 
 		for (int i = 0; i < numQuestions; i++) {
 			for (String dataType : allHiddenInputDataTypes) {
-				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
+				String hiddenInputName = String.format(QUESTION_KEY_FORMAT, i, dataType);
 				addHiddenInputToForm(hiddenInputName, null, form);
 			}
 		}
@@ -137,7 +137,7 @@ public class MTurkHTMLQuestionUtils {
 	public static Element getSubmittableCrowdFormOnSubmitScript(int questionIndex, int numQuestions,
 			String[] fillableDataTypes, Map<String, String[]> fillableDataTypeOptions) {
 		String timeMeasurementSnippet = JSTimingUtils
-				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
+				.getTimeMeasurementSnippet(String.format(QUESTION_KEY_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
 		String localStorageToSubmittableCrowdFormFunction = getLocalStorageToSubmittableCrowdFormFunction(numQuestions,
@@ -196,7 +196,7 @@ public class MTurkHTMLQuestionUtils {
 		String[] allCrowdFormInputDataTypes = getAllCrowdFormInputDataTypes(fillableDataTypes);
 
 		for (String dataType : allCrowdFormInputDataTypes) {
-			String localStorageKey = String.format(QUESTION_ID_FORMAT, questionIndex, dataType);
+			String localStorageKey = String.format(QUESTION_KEY_FORMAT, questionIndex, dataType);
 
 			if (fillableDataTypeOptions.containsKey(dataType)) {
 				// Multiple-choice input
@@ -259,7 +259,7 @@ public class MTurkHTMLQuestionUtils {
 			String[] allHiddenInputDataTypes = getAllDataTypes(fillableDataTypes);
 
 			for (String dataType : allHiddenInputDataTypes) {
-				String hiddenInputName = String.format(QUESTION_ID_FORMAT, i, dataType);
+				String hiddenInputName = String.format(QUESTION_KEY_FORMAT, i, dataType);
 
 				builder.append("\t\t");
 				builder.append(String.format(hiddenInputValueFormat, hiddenInputName));
@@ -295,7 +295,7 @@ public class MTurkHTMLQuestionUtils {
 	public static Element getIntermediateCrowdFormNextOnClickScript(int questionIndex, String[] fillableDataTypes,
 			Map<String, String[]> fillableDataTypeOptions) {
 		String timeMeasurementSnippet = JSTimingUtils
-				.getTimeMeasurementSnippet(String.format(QUESTION_ID_FORMAT, questionIndex, ELAPSED_TIME));
+				.getTimeMeasurementSnippet(String.format(QUESTION_KEY_FORMAT, questionIndex, ELAPSED_TIME));
 		String crowdFormInputToLocalStorageFunction = getCrowdFormInputToLocalStorageFunction(questionIndex,
 				fillableDataTypes, fillableDataTypeOptions);
 

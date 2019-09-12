@@ -3,6 +3,7 @@ package mobilerobot.study.prefalign;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
@@ -18,6 +19,7 @@ import org.xml.sax.SAXException;
 import mobilerobot.study.mturk.AssignmentsCollector;
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITProgress;
+import mobilerobot.study.mturk.MTurkAPIUtils;
 import mobilerobot.study.mturk.MTurkHTMLQuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -114,9 +116,17 @@ public class PrefAlignAssignmentsCollector {
 		return assignmentData;
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void main(String[] args)
+			throws URISyntaxException, IOException, ParserConfigurationException, SAXException, ParseException {
+		String hitInfoCSVFilename = args[0];
+		File hitInfoCSVFile = FileIOUtils.getFile(AssignmentsCollector.class, "hit-info", hitInfoCSVFilename);
 
+		MTurkClient client = MTurkAPIUtils.getSandboxClient();
+		String[] dataTypes = { "ref", "answer", "confidence", "elapsedTime" };
+		int numQuestions = 4;
+		PrefAlignAssignmentsCollector assignmentsCollector = new PrefAlignAssignmentsCollector(client, hitInfoCSVFile,
+				dataTypes, numQuestions);
+		assignmentsCollector.writeAssignmentsToCSVFile();
 	}
 
 }

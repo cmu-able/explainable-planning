@@ -8,13 +8,8 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.json.simple.parser.ParseException;
-
-import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
-import mobilerobot.study.prefalign.analysis.PrefAlignQuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
@@ -137,14 +132,8 @@ public class MTurkAPIUtils {
 		return response.qualificationType();
 	}
 
-	public static ReviewPolicy getAssignmentReviewPolicy(LinkedPrefAlignQuestions linkedQuestions,
-			Set<String> validationQuestionDocNames, boolean withExplanation) throws IOException, ParseException {
-		if (validationQuestionDocNames.isEmpty()) {
-			return null;
-		}
-
-		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter(linkedQuestions, validationQuestionDocNames,
-				withExplanation);
+	public static ReviewPolicy getAssignmentReviewPolicy() {
+		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter();
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
 				.values("1").build();
@@ -163,28 +152,9 @@ public class MTurkAPIUtils {
 		return builder.build();
 	}
 
-	private static PolicyParameter getAnswerKeyPolicyParameter(LinkedPrefAlignQuestions linkedQuestions,
-			Set<String> validationQuestionDocNames, boolean withExplanation) throws IOException, ParseException {
+	private static PolicyParameter getAnswerKeyPolicyParameter() {
 		List<ParameterMapEntry> mapEntries = new ArrayList<>();
-		for (int i = 0; i < linkedQuestions.getNumQuestions(); i++) {
-			String questionDocName = linkedQuestions.getQuestionDocumentName(i, withExplanation);
-
-			if (validationQuestionDocNames.contains(questionDocName)) {
-				File questionDir = linkedQuestions.getQuestionDir(i);
-				int agentIndex = linkedQuestions.getQuestionAgentIndex(i);
-
-				// "yes" or "no" answer
-				String answer = PrefAlignQuestionUtils.getAgentAlignmentAnswer(questionDir, agentIndex);
-
-				// "question[i]-answer"
-				String questionID = String.format(MTurkHTMLQuestionUtils.QUESTION_ID_FORMAT, i, "answer");
-				ParameterMapEntry.Builder mapEntryBuilder = ParameterMapEntry.builder();
-				mapEntryBuilder.key(questionID);
-				mapEntryBuilder.values(answer);
-
-				mapEntries.add(mapEntryBuilder.build());
-			}
-		}
+		// Placeholder
 
 		PolicyParameter.Builder answerKeyBuilder = PolicyParameter.builder();
 		answerKeyBuilder.key("AnswerKey");

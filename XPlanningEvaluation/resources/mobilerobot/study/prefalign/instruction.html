@@ -50,13 +50,13 @@
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/obstacles-abstract.png">
-					<p><b>Figure 4</b>: In an abstract map, obstacles are represented on a connection between 2 waypoints. The "SO" notation on the map denotes sparse obstacles, and the "DO" notation denotes dense obstacles. The <i>expected collision</i> when the robot moves from one waypoint to the next depends on the speed of the robot and the obstacle density, as shown in Figure 5.</p>
+					<p><b>Figure 4</b>: In an abstract map, obstacles are represented on a connection between 2 waypoints. The <i>expected collision</i> when the robot moves from one waypoint to the next depends on the speed of the robot and the obstacle density, as shown in Figure 5.</p>
 				</div>
 			</div>
 			<div class="w3-container w3-center w3-margin">
 				<img src="imgs/collision-table.png" class="w3-image">
 				<p class="w3-left-align"><b>Figure 5</b>: The robot may drive at its full speed: 0.7 meters/second (indicated by dark-blue line), or at half speed: 0.35 meters/second (indicated by light-blue line). The robot can avoid collision with obstacles when it moves at half speed. That is, the expected collision of moving at half speed is always 0.0.</p>
-				<p class="w3-left-align">Every time the robot moves at full speed through <i>sparse</i> obstacles (SO), and through <i>dense</i> obstacles (DO), it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each SO and DO is 0.2 and 0.4, respectively.</p>
+				<p class="w3-left-align">Every time the robot moves at full speed through <i>sparse</i> obstacles, and through <i>dense</i> obstacles, it has 20% and 40% probability of colliding, respectively. In other words, the expected collision of moving at full speed through each waypoint-connection with sparse obstacles and dense obstacles is 0.2 and 0.4, respectively.</p>
 			</div>
 			
 			<!-- Intrusiveness -->
@@ -120,7 +120,7 @@
 				<div class="w3-container w3-half">
 					<img src="imgs/plan1-abstract.png">
 					<p><b>Figure 9</b>: This is the abstract navigation plan of Figure 8. Here, the robot plans to drive at full speed through waypoints 1 to 6.</p>
-					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 10, since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 3 times. This plan also has the expected collision of 0.4, since it moves through DO at full speed.</p>
+					<p>This plan takes the least amount of time. But it incurs intrusiveness-penalty of 10, since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 3 times. This plan also has the expected collision of 0.4, since it moves through dense obstacles at full speed.</p>
 				</div>
 			</div>
 			
@@ -132,7 +132,7 @@
 				</div>
 				<div class="w3-container w3-half">
 					<img src="imgs/plan2-abstract.png">
-					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, the robot plans to drive through waypoints 1-2-3-8-9-10-11-6 at full speed except from waypoints 9-10, where there are sparse obstacles (SO).</p>
+					<p><b>Figure 11</b>: This is the abstract navigation plan of Figure 10. Here, the robot plans to drive through waypoints 1-2-3-8-9-10-11-6 at full speed except from waypoints 9-10, where there are sparse obstacles.</p>
 					<p>This plan incurs intrusiveness-penalty of 4 (since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 1 time), which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 9.</p>
 				</div>
 			</div>

@@ -23,7 +23,7 @@
 		<div class="w3-container">
 		
 			<!-- Full-Screen Instruction -->
-			<div class="w3-padding-large">
+			<div class="w3-padding-large w3-yellow">
 				<p><font size="5">For your convenience in performing this HIT, please set your browser to full-screen mode throughout the task.</font></p>
 			</div>
 			
@@ -129,7 +129,7 @@
 				</div>
 			</div>
 			
-			<p>You can calculate the total cost of the robot's presented navigation plan in Figure 9: ($1 * 80) + ($9 * 0.4/0.1) + ($5 * 10) = $166. However, this plan is NOT the best available option according to the cost profile, because the following alternative navigation would be a better option:</p>
+			<p>You can calculate the total cost of the robot's presented navigation plan in Figure 9: ($1 * 80 <font color="red">seconds</font>) + ($9 * 0.4 <font color="red">exp. collision</font> / 0.1) + ($5 * 10 <font color="red">intrusive penalty</font>) = $166. However, this plan is NOT the best available option according to the cost profile, because the following alternative navigation would be a better option:</p>
 			<div class="w3-row w3-margin">
 				<div class="w3-container w3-half crop">
 					<img src="imgs/plan2.png">
@@ -141,7 +141,7 @@
 					<p>This plan incurs intrusiveness-penalty of 4 (since it drives through a SEMI-PRIVATE waypoint 1 time and a PRIVATE waypoint 1 time), which is the lowest among all possible plans. It also has the lowest expected collision (no collision). However, this plan takes more time to reach the destination than the plan in Figure 9.</p>
 				</div>
 			</div>
-			<p>You can calculate the total cost of the alternative navigation plan in Figure 11: ($1 * 128) + ($9 * 0.0/0.1) + ($5 * 4) = $148. This plan costs less than the one that the robot presented.</p>
+			<p>You can calculate the total cost of the alternative navigation plan in Figure 11: ($1 * 128 <font color="red">seconds</font>) + ($9 * 0.0 <font color="red">exp. collision</font> / 0.1) + ($5 * 4 <font color="red">intrusive penalty</font>) = $148. This plan costs less than the one that the robot presented.</p>
 			
 			<!-- Final Instruction -->
 			<div class="w3-padding-large">

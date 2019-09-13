@@ -97,7 +97,12 @@
 				</table>
 			</div>
 			<div class="w3-container w3-cell w3-cell-middle" style="max-width:800px;padding-left:80px">
-				<p>A <i>total cost</i> of a navigation plan can be computed from the cost profile. For example, a navigation plan that takes 120 seconds, has 0.2 expected collision, and has intrusiveness penalty of 7 would have a total cost of: ($1 * 120) + ($9 * 0.2/0.1) + ($5 * 7) = $173.</p>
+				<p>A <i>total cost</i> of a navigation plan can be computed from the cost profile. For example, a navigation plan that takes 120 seconds, has 0.2 expected collision, and has intrusiveness penalty of 7 would have a total cost of $173:</p>
+				<pre>
+  Total cost = ($1 <font color="red">per 1 second</font> * 120 <font color="red">seconds</font>)
+             + ($9 <font color="red">per 0.1 exp. collision</font> * 0.2 <font color="red">exp. collision</font> / 0.1)
+             + ($5 <font color="red">per 1 intrusive penalty</font> * 7 <font color="red">intrusive penalty</font>)
+             = $173.</pre>
 				<p><b>A best navigation, with respect to a particular cost profile, is one that has the lowest total cost.</b></p>
 			</div>
 			

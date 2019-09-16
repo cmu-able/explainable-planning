@@ -157,22 +157,28 @@ public class PrefAlignHITPublisher {
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
 			ParserConfigurationException, TransformerException {
 		String option = args[0];
-		// args[1] is for explanation flag or HITType ID
-		MTurkClient client = args.length > 2 && args[2].equals("-prod") ? MTurkAPIUtils.getProductionClient()
-				: MTurkAPIUtils.getSandboxClient();
+		String clientType = args[1];
+		MTurkClient client;
+		if (clientType.equals("-prod")) {
+			client = MTurkAPIUtils.getProductionClient();
+		} else if (clientType.equals("-sandbox")) {
+			client = MTurkAPIUtils.getSandboxClient();
+		} else {
+			throw new IllegalArgumentException("Need MTurk client type argument");
+		}
 
 		if (option.equals("createExternalQuestions")) {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
-			boolean withExplanation = args.length > 1 && args[1].equals("-e");
+			boolean withExplanation = args.length > 2 && args[2].equals("-e");
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
 			publisher.publishAllHITs(!withExplanation);
 		} else if (option.equals("deleteHITs")) {
-			String hitTypeId = args[1];
+			String hitTypeId = args[2];
 			MTurkAPIUtils.deleteHITs(client, hitTypeId);
 		} else if (option.equals("approveAssignmentsOfReviewableHITs")) {
-			String hitTypeId = args[1];
+			String hitTypeId = args[2];
 			MTurkAPIUtils.approveAssignmentsOfReviewableHITs(client, hitTypeId);
 		}
 	}

@@ -19,7 +19,8 @@ import mobilerobot.utilities.FileIOUtils;
 
 public class PrefAlignQuestionHTMLLinker {
 
-	private static final String[] FILLABLE_DATA_TYPES = new String[] { "answer", "justification", "confidence" };
+	private static final String[] FILLABLE_DATA_TYPES = new String[] { "total-cost", "answer", "justification",
+			"confidence" };
 	private static final Map<String, String[]> FILLABLE_DATA_TYPE_OPTIONS = new HashMap<>();
 	static {
 		FILLABLE_DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });

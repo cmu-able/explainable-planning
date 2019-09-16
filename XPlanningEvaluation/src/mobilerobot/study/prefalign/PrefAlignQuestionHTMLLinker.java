@@ -24,7 +24,8 @@ public class PrefAlignQuestionHTMLLinker {
 	private static final Map<String, String[]> FILLABLE_DATA_TYPE_OPTIONS = new HashMap<>();
 	static {
 		FILLABLE_DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });
-		FILLABLE_DATA_TYPE_OPTIONS.put("confidence", new String[] { "high", "medium", "low" });
+		FILLABLE_DATA_TYPE_OPTIONS.put("confidence",
+				new String[] { "completely", "faily", "somewhat", "slightly", "none" });
 	}
 
 	private PrefAlignQuestionHTMLGenerator mQuestionHTMLGenerator;

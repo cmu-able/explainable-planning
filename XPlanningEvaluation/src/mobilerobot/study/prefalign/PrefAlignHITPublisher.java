@@ -157,7 +157,8 @@ public class PrefAlignHITPublisher {
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
 			ParserConfigurationException, TransformerException {
 		String option = args[0];
-		MTurkClient client = args.length > 1 && args[1].equals("-prod") ? MTurkAPIUtils.getProductionClient()
+		// args[1] is for explanation flag or HITType ID
+		MTurkClient client = args.length > 2 && args[2].equals("-prod") ? MTurkAPIUtils.getProductionClient()
 				: MTurkAPIUtils.getSandboxClient();
 
 		if (option.equals("createExternalQuestions")) {

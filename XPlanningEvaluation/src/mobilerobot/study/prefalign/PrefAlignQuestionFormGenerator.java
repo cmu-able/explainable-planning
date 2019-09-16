@@ -93,10 +93,10 @@ public class PrefAlignQuestionFormGenerator {
 	private static Element createConfidenceCrowdQuestionContainer() {
 		Element questionContainer = MTurkHTMLQuestionUtils
 				.createCrowdQuestionContainer("How confident are you in your answer?");
-		String[] optionNames = { "confidence-completely", "confidence-faily", "confidence-somewhat",
+		String[] optionNames = { "confidence-completely", "confidence-fairly", "confidence-somewhat",
 				"confidence-slightly", "confidence-none" };
-		String[] optionLabels = { "Completely confident", "Faily confident", "Somewhat confident", "Slightly confident",
-				"Not confident at all" };
+		String[] optionLabels = { "Completely confident", "Fairly confident", "Somewhat confident",
+				"Slightly confident", "Not confident at all" };
 		Element options = MTurkHTMLQuestionUtils.createCrowdRadioGroup(optionNames, optionLabels);
 		questionContainer.appendChild(options);
 		return questionContainer;

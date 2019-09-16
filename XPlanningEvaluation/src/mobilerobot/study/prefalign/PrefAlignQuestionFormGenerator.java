@@ -18,8 +18,9 @@ public class PrefAlignQuestionFormGenerator {
 		mNumQuestions = numQuestions;
 		mFillableDataTypes = fillableDataTypes;
 		mFillableDataTypeOptions = fillableDataTypeOptions;
-		mInputUIElements = new Element[] { createPrefAlignCrowdQuestionContainer(),
-				createJustificationCrowdQuestionContainer(), createConfidenceCrowdQuestionContainer() };
+		mInputUIElements = new Element[] { createTotalCostCrowdQuestionContainer(),
+				createPrefAlignCrowdQuestionContainer(), createJustificationCrowdQuestionContainer(),
+				createConfidenceCrowdQuestionContainer() };
 	}
 
 	public Element[] createSubmittableFormElements(String questionDocName, int questionIndex) {
@@ -53,6 +54,14 @@ public class PrefAlignQuestionFormGenerator {
 		intermediateFormElements[0] = crowdFormContainer;
 		intermediateFormElements[1] = crowdFormOnNextScript;
 		return intermediateFormElements;
+	}
+
+	private static Element createTotalCostCrowdQuestionContainer() {
+		Element questionContainer = MTurkHTMLQuestionUtils
+				.createCrowdQuestionContainer("What is the total cost of the robot's proposed plan?");
+		Element crowdInput = MTurkHTMLQuestionUtils.createCrowdInput("total-cost", "Enter the total cost in $");
+		questionContainer.appendChild(crowdInput);
+		return questionContainer;
 	}
 
 	private static Element createPrefAlignCrowdQuestionContainer() {

@@ -409,4 +409,11 @@ public class MTurkHTMLQuestionUtils {
 		}
 		return crowdRadioGroup;
 	}
+
+	public static Element createCrowdInput(String name, String label) {
+		Element crowdInput = new Element("crowd-input");
+		crowdInput.attr("name", name);
+		crowdInput.attr("label", label);
+		return crowdInput;
+	}
 }

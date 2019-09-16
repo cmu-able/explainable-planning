@@ -62,6 +62,10 @@
    <crowd-form>
     <input type="hidden" id="ref" name="ref" value="question-mission87-agent0-explanation">
     <div class="w3-container w3-margin">
+     <h5>What is the total cost of the robot's proposed plan?</h5>
+     <crowd-input name="total-cost" label="Enter the total cost in $"></crowd-input>
+    </div>
+    <div class="w3-container w3-margin">
      <h5>Is the robot's proposed plan the best one, with respect to the given cost profile?</h5>
      <crowd-radio-group>
       <crowd-radio-button id="answer-yes" name="answer-yes">
@@ -100,6 +104,6 @@
     </crowd-button>
    </crowd-form>
   </div>
-  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question1-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { if (document.getElementById("answer-yes").checked) { localStorage.setItem("question1-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question1-answer", "no"); } localStorage.setItem("question1-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question1-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question1-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question1-confidence", "low"); } localStorage.setItem("question1-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
+  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question1-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { localStorage.setItem("question1-total-cost", document.getElementById("total-cost").value); if (document.getElementById("answer-yes").checked) { localStorage.setItem("question1-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question1-answer", "no"); } localStorage.setItem("question1-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question1-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question1-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question1-confidence", "low"); } localStorage.setItem("question1-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
  </body>
 </html>

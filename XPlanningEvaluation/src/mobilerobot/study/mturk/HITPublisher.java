@@ -37,7 +37,7 @@ public class HITPublisher {
 	private static final String REWARD = "6.25"; // assume 20 minutes/HIT; pay rate $15/hour
 	private static final long ASSIGNMENT_DURATION = 40 * 60L; // 40 minutes
 	private static final long LIFE_TIME = 1 * 7 * 24 * 60 * 60L; // 1 week
-	static final int MAX_ASSIGNMENTS = 10;
+	static final int MAX_ASSIGNMENTS = 1; // maximum of 1 Workers can complete each HIT
 
 	private final MTurkClient mClient;
 	private final Map<Boolean, String> mHITTypeIds = new HashMap<>();

@@ -302,14 +302,20 @@
     <div class="w3-container w3-margin">
      <h5>How confident are you in your answer?</h5>
      <crowd-radio-group>
-      <crowd-radio-button id="confidence-high" name="confidence-high">
-       Highly Confident
+      <crowd-radio-button id="confidence-completely" name="confidence-completely">
+       Completely confident
       </crowd-radio-button>
-      <crowd-radio-button id="confidence-medium" name="confidence-medium">
-       Somewhat Confident
+      <crowd-radio-button id="confidence-fairly" name="confidence-fairly">
+       Fairly confident
       </crowd-radio-button>
-      <crowd-radio-button id="confidence-low" name="confidence-low">
-       Not Confident
+      <crowd-radio-button id="confidence-somewhat" name="confidence-somewhat">
+       Somewhat confident
+      </crowd-radio-button>
+      <crowd-radio-button id="confidence-slightly" name="confidence-slightly">
+       Slightly confident
+      </crowd-radio-button>
+      <crowd-radio-button id="confidence-none" name="confidence-none">
+       Not confident at all
       </crowd-radio-button>
      </crowd-radio-group>
     </div>
@@ -323,6 +329,6 @@
     </crowd-button>
    </crowd-form>
   </div>
-  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question2-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { localStorage.setItem("question2-total-cost", document.getElementById("total-cost").value); if (document.getElementById("answer-yes").checked) { localStorage.setItem("question2-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question2-answer", "no"); } localStorage.setItem("question2-justification", document.getElementById("justification").value); if (document.getElementById("confidence-high").checked) { localStorage.setItem("question2-confidence", "high"); } else if (document.getElementById("confidence-medium").checked) { localStorage.setItem("question2-confidence", "medium"); } else if (document.getElementById("confidence-low").checked) { localStorage.setItem("question2-confidence", "low"); } localStorage.setItem("question2-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
+  <script>var start; var end; var elapsed; $(document).ready(function() { start = Date.now(); }); function recordElapsedTimeToLocalStorage() { end = Date.now(); elapsed = end - start; if (typeof(Storage) !== "undefined") { localStorage.setItem("question2-elapsedTime", elapsed); } }function crowdFormInputToLocalStorage() { if (typeof(Storage) !== "undefined") { localStorage.setItem("question2-total-cost", document.getElementById("total-cost").value); if (document.getElementById("answer-yes").checked) { localStorage.setItem("question2-answer", "yes"); } else if (document.getElementById("answer-no").checked) { localStorage.setItem("question2-answer", "no"); } localStorage.setItem("question2-justification", document.getElementById("justification").value); if (document.getElementById("confidence-completely").checked) { localStorage.setItem("question2-confidence", "completely"); } else if (document.getElementById("confidence-fairly").checked) { localStorage.setItem("question2-confidence", "fairly"); } else if (document.getElementById("confidence-somewhat").checked) { localStorage.setItem("question2-confidence", "somewhat"); } else if (document.getElementById("confidence-slightly").checked) { localStorage.setItem("question2-confidence", "slightly"); } else if (document.getElementById("confidence-none").checked) { localStorage.setItem("question2-confidence", "none"); } localStorage.setItem("question2-ref", document.getElementById("ref").value); } }document.getElementById("save-next").onclick = function() { recordElapsedTimeToLocalStorage(); crowdFormInputToLocalStorage(); this.href += getMTurkParametersAsQueryString(); }</script>
  </body>
 </html>

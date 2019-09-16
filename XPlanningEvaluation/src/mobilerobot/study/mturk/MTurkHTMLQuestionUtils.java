@@ -412,6 +412,7 @@ public class MTurkHTMLQuestionUtils {
 
 	public static Element createCrowdInput(String name, String label) {
 		Element crowdInput = new Element("crowd-input");
+		crowdInput.attr("id", name);
 		crowdInput.attr("name", name);
 		crowdInput.attr("label", label);
 		return crowdInput;

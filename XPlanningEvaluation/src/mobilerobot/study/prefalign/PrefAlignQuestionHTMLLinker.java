@@ -25,7 +25,7 @@ public class PrefAlignQuestionHTMLLinker {
 	static {
 		FILLABLE_DATA_TYPE_OPTIONS.put("answer", new String[] { "yes", "no" });
 		FILLABLE_DATA_TYPE_OPTIONS.put("confidence",
-				new String[] { "completely", "faily", "somewhat", "slightly", "none" });
+				new String[] { "completely", "fairly", "somewhat", "slightly", "none" });
 	}
 
 	private PrefAlignQuestionHTMLGenerator mQuestionHTMLGenerator;

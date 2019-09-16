@@ -157,20 +157,22 @@ public class PrefAlignHITPublisher {
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
 			ParserConfigurationException, TransformerException {
 		String option = args[0];
+		MTurkClient client = args.length > 1 && args[1].equals("-prod") ? MTurkAPIUtils.getProductionClient()
+				: MTurkAPIUtils.getSandboxClient();
 
 		if (option.equals("createExternalQuestions")) {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
 			boolean withExplanation = args.length > 1 && args[1].equals("-e");
-			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(MTurkAPIUtils.getSandboxClient());
+			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
 			publisher.publishAllHITs(!withExplanation);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[1];
-			MTurkAPIUtils.deleteHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);
+			MTurkAPIUtils.deleteHITs(client, hitTypeId);
 		} else if (option.equals("approveAssignmentsOfReviewableHITs")) {
 			String hitTypeId = args[1];
-			MTurkAPIUtils.approveAssignmentsOfReviewableHITs(MTurkAPIUtils.getSandboxClient(), hitTypeId);
+			MTurkAPIUtils.approveAssignmentsOfReviewableHITs(client, hitTypeId);
 		}
 	}
 

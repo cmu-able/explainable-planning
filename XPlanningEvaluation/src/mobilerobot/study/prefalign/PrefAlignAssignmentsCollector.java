@@ -121,8 +121,17 @@ public class PrefAlignAssignmentsCollector {
 		String hitInfoCSVFilename = args[0];
 		File hitInfoCSVFile = FileIOUtils.getFile(AssignmentsCollector.class, "hit-info", hitInfoCSVFilename);
 
-		MTurkClient client = MTurkAPIUtils.getSandboxClient();
-		String[] dataTypes = { "ref", "answer", "confidence", "elapsedTime" };
+		String clientType = args[1];
+		MTurkClient client;
+		if (clientType.equals("-prod")) {
+			client = MTurkAPIUtils.getProductionClient();
+		} else if (clientType.equals("-sandbox")) {
+			client = MTurkAPIUtils.getSandboxClient();
+		} else {
+			throw new IllegalArgumentException("Need MTurk client type argument");
+		}
+
+		String[] dataTypes = { "ref", "total-cost", "answer", "confidence", "elapsedTime" };
 		int numQuestions = 4;
 		PrefAlignAssignmentsCollector assignmentsCollector = new PrefAlignAssignmentsCollector(client, hitInfoCSVFile,
 				dataTypes, numQuestions);

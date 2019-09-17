@@ -75,4 +75,14 @@ public class AnswerKeyGenerator {
 		}
 		return answerKeyCSVFile;
 	}
+
+	public static void main(String[] args)
+			throws ClassNotFoundException, URISyntaxException, IOException, ParseException {
+		String serLinkedQuestionsDirname = args[0]; // e.g., "serialized-linked-questions", "serialized-vlinked-questions"
+		boolean withExplanation = args.length > 1 && args[1].equals("-e");
+
+		String[] dataTypes = { "ref", "total-cost", "answer" };
+		AnswerKeyGenerator generator = new AnswerKeyGenerator(serLinkedQuestionsDirname, dataTypes);
+		generator.generateAnswerKeyCSVFile(withExplanation);
+	}
 }

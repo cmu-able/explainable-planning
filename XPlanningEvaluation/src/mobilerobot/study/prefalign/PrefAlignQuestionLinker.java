@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -148,9 +150,24 @@ public class PrefAlignQuestionLinker {
 		}
 	}
 
+	/**
+	 * LinkedPrefAlignQuestions objects in the returned array will be sorted by the filenames of their corresponding
+	 * .ser files.
+	 * 
+	 * @param serLinkedQuestionsDir
+	 * @return LinkedPrefAlignQuestions objects sorted by the filenames of their corresponding .ser files
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestions(File serLinkedQuestionsDir)
 			throws IOException, ClassNotFoundException {
 		File[] serLinkedQuestionsFiles = serLinkedQuestionsDir.listFiles();
+
+		// Sort .ser files by filenames to get consistent ordering of allLinkedPrefAlignQuestions
+		// This is important for publishing 1 HIT at a time
+		Comparator<File> filenameComparator = (fileA, fileB) -> fileA.getName().compareToIgnoreCase(fileB.getName());
+		Arrays.sort(serLinkedQuestionsFiles, filenameComparator);
+
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = new LinkedPrefAlignQuestions[serLinkedQuestionsFiles.length];
 
 		for (int i = 0; i < serLinkedQuestionsFiles.length; i++) {

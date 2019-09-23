@@ -113,6 +113,16 @@ public class PrefAlignHITPublisher {
 		return allQuestionXMLFiles;
 	}
 
+	/**
+	 * LinkedPrefAlignQuestions objects in the returned array will be sorted by the filenames of their corresponding
+	 * .ser files.
+	 * 
+	 * @param withExplanation
+	 * @return LinkedPrefAlignQuestions objects sorted by the filenames of their corresponding .ser files
+	 * @throws URISyntaxException
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
 	private static LinkedPrefAlignQuestions[] readAllLinkedPrefAlignQuestionsWithValidation(boolean withExplanation)
 			throws URISyntaxException, ClassNotFoundException, IOException {
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions

@@ -7,6 +7,7 @@ import java.nio.file.Files;
 
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
+import software.amazon.awssdk.services.mturk.model.AssociateQualificationWithWorkerRequest;
 import software.amazon.awssdk.services.mturk.model.Comparator;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeResponse;
@@ -23,15 +24,29 @@ public class QualificationUtils {
 	private static final String TEST_QUAL_KEYWORDS = "Arithmetic test, consent form for participation in research";
 	private static final Long TEST_QUAL_DURATION = 5 * 60L; // 5 minutes
 
+	private static final String STAMP_QUAL_NAME = "already_participated";
+	private static final String STAMP_QUAL_DESCRIPTION = "Already participated in our study, entitled \"Understanding mobile robot navigation planning\".";
+
+	private static final String MASTERS_QUAL_TYPE_ID_SANDBOX = "2ARFPLSP75KLA8M8DH1HTEQVJT3SY6";
+	private static final String MASTERS_QUAL_TYPE_ID_PROD = "2F1QJWKUDD8XADTFD2Q0G6UTO95ALH";
+
 	private QualificationUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static QualificationRequirement getTestQualificationRequirement(MTurkClient client)
+	/**
+	 * Qualification requirement: arithmetic test and consent form.
+	 * 
+	 * @param client
+	 * @return Qualification requirement: arithmetic test and consent form
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public static QualificationRequirement createTestQualificationRequirement(MTurkClient client)
 			throws IOException, URISyntaxException {
 		File qualTestFormFile = FileIOUtils.getFile(MTurkAPIUtils.class, "qualification", "test-consent-form.xml");
 		File answerKeyFile = FileIOUtils.getFile(MTurkAPIUtils.class, "qualification", "answer-key.xml");
-		QualificationType consentQualType = createTestQualificationType(client, qualTestFormFile, answerKeyFile);
+		QualificationType consentQualType = getTestQualificationType(client, qualTestFormFile, answerKeyFile);
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
 		builder.qualificationTypeId(consentQualType.qualificationTypeId());
 		builder.comparator(Comparator.EQUAL_TO);
@@ -39,14 +54,20 @@ public class QualificationUtils {
 		return builder.build();
 	}
 
-	private static QualificationType createTestQualificationType(MTurkClient client, File qualTestFormFile,
+	/**
+	 * Get or create qualification test: arithmetic test and consent form.
+	 * 
+	 * @param client
+	 * @param qualTestFormFile
+	 * @param answerKeyFile
+	 * @return Qualification test: arithmetic test and consent form
+	 * @throws IOException
+	 */
+	private static QualificationType getTestQualificationType(MTurkClient client, File qualTestFormFile,
 			File answerKeyFile) throws IOException {
-		// Check if this Qualification Type has already been created
-		ListQualificationTypesRequest listQualTypesRequest = ListQualificationTypesRequest.builder()
-				.query(TEST_QUAL_NAME).mustBeRequestable(Boolean.FALSE).mustBeOwnedByCaller(Boolean.TRUE).build();
-		ListQualificationTypesResponse listQualTypesResponse = client.listQualificationTypes(listQualTypesRequest);
-		if (listQualTypesResponse.numResults() > 0) {
-			return listQualTypesResponse.qualificationTypes().get(0);
+		QualificationType testQualType = getExistingQualificationType(client, TEST_QUAL_NAME);
+		if (testQualType != null) {
+			return testQualType;
 		}
 
 		// This Qualification Type has not been created yet
@@ -66,5 +87,70 @@ public class QualificationUtils {
 		CreateQualificationTypeRequest request = builder.build();
 		CreateQualificationTypeResponse response = client.createQualificationType(request);
 		return response.qualificationType();
+	}
+
+	/**
+	 * Qualification requirement: first-time participant.
+	 * 
+	 * @param client
+	 * @return Qualification requirement: first-time participant
+	 */
+	public static QualificationRequirement createFirstParticipationRequirement(MTurkClient client) {
+		QualificationType participationStamp = getParticipationStamp(client);
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId(participationStamp.qualificationTypeId());
+		builder.comparator(Comparator.DOES_NOT_EXIST);
+		return builder.build();
+	}
+
+	/**
+	 * Get or create Participation Stamp to indicate that a Worker has already participated in the study.
+	 * 
+	 * @param client
+	 * @return Participation Stamp to indicate that a Worker has already participated in the study
+	 */
+	private static QualificationType getParticipationStamp(MTurkClient client) {
+		QualificationType participationStamp = getExistingQualificationType(client, STAMP_QUAL_NAME);
+		if (participationStamp != null) {
+			return participationStamp;
+		}
+
+		// This Qualification Type has not been created yet
+		CreateQualificationTypeRequest.Builder builder = CreateQualificationTypeRequest.builder();
+		builder.name(STAMP_QUAL_NAME);
+		builder.description(STAMP_QUAL_DESCRIPTION);
+		builder.qualificationTypeStatus(QualificationTypeStatus.ACTIVE);
+		builder.autoGranted(false);
+
+		CreateQualificationTypeRequest request = builder.build();
+		CreateQualificationTypeResponse response = client.createQualificationType(request);
+		return response.qualificationType();
+	}
+
+	private static QualificationType getExistingQualificationType(MTurkClient client, String query) {
+		// Check if Qualification Type has already been created
+		ListQualificationTypesRequest listQualTypesRequest = ListQualificationTypesRequest.builder().query(query)
+				.mustBeRequestable(Boolean.FALSE).mustBeOwnedByCaller(Boolean.TRUE).build();
+		ListQualificationTypesResponse listQualTypesResponse = client.listQualificationTypes(listQualTypesRequest);
+		if (listQualTypesResponse.numResults() > 0) {
+			return listQualTypesResponse.qualificationTypes().get(0);
+		}
+		return null;
+	}
+
+	public static QualificationRequirement createMastersQualificationRequirement(boolean isSandbox) {
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId(isSandbox ? MASTERS_QUAL_TYPE_ID_SANDBOX : MASTERS_QUAL_TYPE_ID_PROD);
+		builder.comparator(Comparator.EXISTS);
+		return builder.build();
+	}
+
+	public static void grantQualificationStampAfterParticipation(MTurkClient client, String workerID) {
+		QualificationType participationStamp = getParticipationStamp(client);
+		AssociateQualificationWithWorkerRequest.Builder builder = AssociateQualificationWithWorkerRequest.builder();
+		builder.qualificationTypeId(participationStamp.qualificationTypeId());
+		builder.workerId(workerID);
+		builder.integerValue(1);
+		builder.sendNotification(false);
 	}
 }

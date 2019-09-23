@@ -11,8 +11,10 @@ import software.amazon.awssdk.services.mturk.model.AssociateQualificationWithWor
 import software.amazon.awssdk.services.mturk.model.Comparator;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeRequest;
 import software.amazon.awssdk.services.mturk.model.CreateQualificationTypeResponse;
+import software.amazon.awssdk.services.mturk.model.HITAccessActions;
 import software.amazon.awssdk.services.mturk.model.ListQualificationTypesRequest;
 import software.amazon.awssdk.services.mturk.model.ListQualificationTypesResponse;
+import software.amazon.awssdk.services.mturk.model.Locale;
 import software.amazon.awssdk.services.mturk.model.QualificationRequirement;
 import software.amazon.awssdk.services.mturk.model.QualificationType;
 import software.amazon.awssdk.services.mturk.model.QualificationTypeStatus;
@@ -32,6 +34,35 @@ public class QualificationUtils {
 
 	private QualificationUtils() {
 		throw new IllegalStateException("Utility class");
+	}
+
+	/**
+	 * Qualification requirement: Locale IN (US, CA).
+	 * 
+	 * @return Qualification requirement: Locale IN (US, CA)
+	 */
+	public static QualificationRequirement createLocaleRequirement() {
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId("00000000000000000071");
+		builder.comparator(Comparator.IN);
+		Locale usLocale = Locale.builder().country("US").build();
+		Locale caLocale = Locale.builder().country("CA").build();
+		builder.localeValues(usLocale, caLocale);
+		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
+		return builder.build();
+	}
+
+	/**
+	 * Masters Qualification requirement.
+	 * 
+	 * @param isSandbox
+	 * @return Masters Qualification requirement
+	 */
+	public static QualificationRequirement createMastersQualificationRequirement(boolean isSandbox) {
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId(isSandbox ? MASTERS_QUAL_TYPE_ID_SANDBOX : MASTERS_QUAL_TYPE_ID_PROD);
+		builder.comparator(Comparator.EXISTS);
+		return builder.build();
 	}
 
 	/**
@@ -136,13 +167,6 @@ public class QualificationUtils {
 			return listQualTypesResponse.qualificationTypes().get(0);
 		}
 		return null;
-	}
-
-	public static QualificationRequirement createMastersQualificationRequirement(boolean isSandbox) {
-		QualificationRequirement.Builder builder = QualificationRequirement.builder();
-		builder.qualificationTypeId(isSandbox ? MASTERS_QUAL_TYPE_ID_SANDBOX : MASTERS_QUAL_TYPE_ID_PROD);
-		builder.comparator(Comparator.EXISTS);
-		return builder.build();
 	}
 
 	public static void grantQualificationStampAfterParticipation(MTurkClient client, String workerID) {

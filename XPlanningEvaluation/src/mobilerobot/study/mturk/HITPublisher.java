@@ -76,9 +76,15 @@ public class HITPublisher {
 		builder.reward(REWARD);
 		builder.assignmentDurationInSeconds(ASSIGNMENT_DURATION);
 
-		QualificationRequirement localeRequirement = MTurkAPIUtils.getLocaleRequirement();
-		QualificationRequirement consentRequirement = MTurkAPIUtils.createConsentRequirement(mClient);
-		builder.qualificationRequirements(localeRequirement, consentRequirement);
+		QualificationRequirement localeRequirement = QualificationUtils.createLocaleRequirement();
+		boolean isSandbox = mClient.serviceName().contains("sandbox");
+		QualificationRequirement mastersRequirement = QualificationUtils
+				.createMastersQualificationRequirement(isSandbox);
+		QualificationRequirement testRequirement = QualificationUtils.createTestQualificationRequirement(mClient);
+		QualificationRequirement firstParticipationRequirement = QualificationUtils
+				.createFirstParticipationRequirement(mClient);
+		builder.qualificationRequirements(localeRequirement, mastersRequirement, testRequirement,
+				firstParticipationRequirement);
 
 		CreateHitTypeRequest createHITTypeRequest = builder.build();
 		CreateHitTypeResponse response = mClient.createHITType(createHITTypeRequest);

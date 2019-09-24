@@ -11,6 +11,7 @@ import java.nio.file.StandardOpenOption;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import mobilerobot.study.mturk.HITGroupInfo;
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITPublisher;
 import mobilerobot.study.mturk.MTurkAPIUtils;
@@ -30,6 +31,19 @@ public class PrefAlignHITPublisher {
 	 * First page of the PrefAlign study, with a parameter pointing to the first PrefAlign question in a HIT
 	 */
 	private static final String FIRST_QUESTION_REL_URL_FORMAT = "/resources/mobilerobot/study/prefalign/instruction.html?headQuestion=%s";
+
+	/**
+	 * HIT Group information
+	 */
+	private static final String TITLE = "Understanding mobile robot navigation planning";
+	private static final String DESCRIPTION_FORMAT = "This is a study to examine how people interpret and understand the objectives of an autonomous agent (e.g., a robot) by observing its behavior. (GROUP %d)";
+	private static final String DESCRIPTION_CG = String.format(DESCRIPTION_FORMAT, 1);
+	private static final String DESCRIPTION_EG = String.format(DESCRIPTION_FORMAT, 2);
+	private static final String KEYWORDS = "Research study, experiment, human-robot interaction, human-AI interaction, mobile robot indoor navigation";
+	private static final String REWARD = "5.50"; // assume 22 minutes/HIT; pay rate $15/hour
+	private static final long ASSIGNMENT_DURATION = 40 * 60L; // 40 minutes
+	private static final long LIFE_TIME = 1 * 7 * 24 * 60 * 60L; // 1 week
+	static final int MAX_ASSIGNMENTS = 1; // maximum of 1 Workers can complete each HIT
 
 	private final HITPublisher mHITPublisher;
 	private final File mHITInfoCSVFile;
@@ -57,10 +71,22 @@ public class PrefAlignHITPublisher {
 			// Cannot use Assignment Review Policy for auto-reject
 			// because, due to the use of <crowd-form>, all answers are in a single <FreeText>
 
-			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, controlGroup, null);
+			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, createHITGroupInfo(controlGroup), null);
 
 			writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
 		}
+	}
+
+	private HITGroupInfo createHITGroupInfo(boolean controlGroup) {
+		HITGroupInfo hitGroupInfo = new HITGroupInfo();
+		hitGroupInfo.setTitle(TITLE);
+		hitGroupInfo.setDescription(controlGroup ? DESCRIPTION_CG : DESCRIPTION_EG);
+		hitGroupInfo.setKeywords(KEYWORDS);
+		hitGroupInfo.setReward(REWARD);
+		hitGroupInfo.setAssignmentDuration(ASSIGNMENT_DURATION);
+		hitGroupInfo.setLifetimeInSeconds(LIFE_TIME);
+		hitGroupInfo.setMaxAssignments(MAX_ASSIGNMENTS);
+		return hitGroupInfo;
 	}
 
 	private File createHITInfoCSVFile() throws IOException {

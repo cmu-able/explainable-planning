@@ -213,11 +213,12 @@ public class PrefAlignHITPublisher {
 		if (option.equals("createExternalQuestions")) {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
-		} else if (option.equals("publishHITs")) {
+		} else if (option.equals("publishHIT")) {
 			int hitIndex = Integer.parseInt(args[2]);
 			boolean withExplanation = args.length > 3 && args[3].equals("-e");
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
-			publisher.publishHIT(!withExplanation, hitIndex);
+			HITInfo hitInfo = publisher.publishHIT(!withExplanation, hitIndex);
+			publisher.writeHITInfoToCSVFile(hitInfo, null);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[2];
 			MTurkAPIUtils.deleteHITs(client, hitTypeId);

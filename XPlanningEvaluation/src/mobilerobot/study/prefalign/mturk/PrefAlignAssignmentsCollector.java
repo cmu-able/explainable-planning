@@ -1,4 +1,4 @@
-package mobilerobot.study.prefalign;
+package mobilerobot.study.prefalign.mturk;
 
 import java.io.BufferedWriter;
 import java.io.File;

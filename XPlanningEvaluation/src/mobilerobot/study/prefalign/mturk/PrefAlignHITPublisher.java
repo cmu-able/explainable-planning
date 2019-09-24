@@ -1,4 +1,4 @@
-package mobilerobot.study.prefalign;
+package mobilerobot.study.prefalign.mturk;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,6 +15,8 @@ import mobilerobot.study.mturk.HITGroupInfo;
 import mobilerobot.study.mturk.HITInfo;
 import mobilerobot.study.mturk.HITPublisher;
 import mobilerobot.study.mturk.MTurkAPIUtils;
+import mobilerobot.study.prefalign.LinkedPrefAlignQuestions;
+import mobilerobot.study.prefalign.PrefAlignQuestionLinker;
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 
@@ -159,7 +161,7 @@ public class PrefAlignHITPublisher {
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
 		String servLinkedQuestionsDirname = withExplanation ? "serialized-vlinked-questions-explanation"
 				: "serialized-vlinked-questions";
-		File servLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+		File servLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class,
 				servLinkedQuestionsDirname);
 		return PrefAlignQuestionLinker.readAllLinkedPrefAlignQuestions(servLinkedQuestionsDir);
 	}
@@ -169,12 +171,12 @@ public class PrefAlignHITPublisher {
 		String questionDocHTMLFilename = questionDocName + ".html";
 		// Use linked PrefAlign questions that contain validation questions
 		File linkedQuestionsRootDir = withExplanation
-				? FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions-explanation")
-				: FileIOUtils.getResourceDir(PrefAlignHITPublisher.class, "vlinked-questions");
+				? FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class, "vlinked-questions-explanation")
+				: FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class, "vlinked-questions");
 		File questionDocHTMLFile = FileIOUtils.searchFileRecursively(linkedQuestionsRootDir, questionDocHTMLFilename);
 
 		// Directory where instruction.html is located
-		File baseDir = new File(PrefAlignHITPublisher.class.getResource(".").toURI());
+		File baseDir = new File(PrefAlignQuestionLinker.class.getResource(".").toURI());
 
 		// To make both paths have the same root
 		Path baseAbsPath = baseDir.toPath().toAbsolutePath();

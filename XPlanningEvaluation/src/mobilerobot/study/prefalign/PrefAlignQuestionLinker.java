@@ -274,7 +274,7 @@ public class PrefAlignQuestionLinker {
 			boolean controlGroup = !(args.length > 1 && args[1].equals("-e"));
 
 			// Read serialized LinkedPrefAlignQuestions objects that do not contain validation questions
-			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignHITPublisher.class,
+			File serLinkedQuestionsDir = FileIOUtils.getResourceDir(PrefAlignQuestionLinker.class,
 					"serialized-linked-questions");
 			LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestions(
 					serLinkedQuestionsDir);

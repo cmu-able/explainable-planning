@@ -46,34 +46,54 @@ public class PrefAlignHITPublisher {
 	static final int MAX_ASSIGNMENTS = 1; // maximum of 1 Workers can complete each HIT
 
 	private final HITPublisher mHITPublisher;
-	private final File mHITInfoCSVFile;
 
-	public PrefAlignHITPublisher(MTurkClient client) throws IOException {
+	public PrefAlignHITPublisher(MTurkClient client) {
 		mHITPublisher = new HITPublisher(client);
-		mHITInfoCSVFile = createHITInfoCSVFile();
 	}
 
-	public void publishAllHITs(boolean controlGroup) throws URISyntaxException, IOException, ClassNotFoundException {
+	public HITInfo publishHIT(boolean controlGroup, int hitIndex)
+			throws ClassNotFoundException, URISyntaxException, IOException {
 		boolean withExplanation = !controlGroup;
 
 		// Read serialized LinkedPrefAlignQuestions objects that contain validation questions
 		LinkedPrefAlignQuestions[] allLinkedPrefAlignQuestions = readAllLinkedPrefAlignQuestionsWithValidation(
 				withExplanation);
 
-		for (LinkedPrefAlignQuestions linkedPrefAlignQuestions : allLinkedPrefAlignQuestions) {
-			// All PrefAlign question document names in this HIT will be written to hitInfo.csv
-			String[] linkedQuestionDocNames = linkedPrefAlignQuestions.getLinkedQuestionDocumentNames(withExplanation);
+		// Publish only 1 HIT at a time
+		LinkedPrefAlignQuestions linkedPrefAlignQuestions = allLinkedPrefAlignQuestions[hitIndex];
 
-			// ExternalQuestion xml filename is the same as 1st PrefAlign question document name
-			String headQuestionDocName = linkedQuestionDocNames[0];
-			File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(headQuestionDocName + ".xml");
+		// All PrefAlign question document names in this HIT will be written to hitInfo.csv
+		String[] linkedQuestionDocNames = linkedPrefAlignQuestions.getLinkedQuestionDocumentNames(withExplanation);
 
-			// Cannot use Assignment Review Policy for auto-reject
-			// because, due to the use of <crowd-form>, all answers are in a single <FreeText>
+		// ExternalQuestion xml filename is the same as 1st PrefAlign question document name
+		String headQuestionDocName = linkedQuestionDocNames[0];
+		File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(headQuestionDocName + ".xml");
 
-			HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, createHITGroupInfo(controlGroup), null);
+		// Cannot use Assignment Review Policy for auto-reject
+		// because, due to the use of <crowd-form>, all answers are in a single <FreeText>
 
-			writeHITInfoToCSVFile(hitInfo, linkedQuestionDocNames);
+		HITInfo hitInfo = mHITPublisher.publishHIT(questionXMLFile, createHITGroupInfo(controlGroup), null);
+
+		// Add document names of the linked questions in this HIT to HITInfo
+		hitInfo.addQuestionDocumentNames(linkedQuestionDocNames);
+
+		return hitInfo;
+	}
+
+	public void writeHITInfoToCSVFile(HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
+		File hitInfoCSVFile = outputHITInfoCSVFile == null ? createHITInfoCSVFile() : outputHITInfoCSVFile;
+
+		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
+			writer.write(hitInfo.getHITId());
+			writer.write(",");
+			writer.write(hitInfo.getHITTypeId());
+			for (String questionDocName : hitInfo.getQuestionDocumentNames()) {
+				if (questionDocName != null) {
+					writer.write(",");
+					writer.write(questionDocName);
+				}
+			}
+			writer.write("\n");
 		}
 	}
 
@@ -95,21 +115,6 @@ public class PrefAlignHITPublisher {
 			writer.write("HIT ID,HITType ID,Document Names\n");
 		}
 		return hitInfoCSVFile;
-	}
-
-	private void writeHITInfoToCSVFile(HITInfo hitInfo, String[] linkedQuestionDocNames) throws IOException {
-		try (BufferedWriter writer = Files.newBufferedWriter(mHITInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
-			writer.write(hitInfo.getHITId());
-			writer.write(",");
-			writer.write(hitInfo.getHITTypeId());
-			for (String questionDocName : linkedQuestionDocNames) {
-				if (questionDocName != null) {
-					writer.write(",");
-					writer.write(questionDocName);
-				}
-			}
-			writer.write("\n");
-		}
 	}
 
 	public static File[] createAllExternalQuestionXMLFiles(boolean withExplanation) throws ClassNotFoundException,
@@ -207,9 +212,10 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHITs")) {
-			boolean withExplanation = args.length > 2 && args[2].equals("-e");
+			int hitIndex = Integer.parseInt(args[2]);
+			boolean withExplanation = args.length > 3 && args[3].equals("-e");
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
-			publisher.publishAllHITs(!withExplanation);
+			publisher.publishHIT(!withExplanation, hitIndex);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[2];
 			MTurkAPIUtils.deleteHITs(client, hitTypeId);

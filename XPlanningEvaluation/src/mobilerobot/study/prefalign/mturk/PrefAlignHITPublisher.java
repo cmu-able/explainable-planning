@@ -82,10 +82,13 @@ public class PrefAlignHITPublisher {
 		return hitInfo;
 	}
 
-	public void writeHITInfoToCSVFile(HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
+	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
 		File hitInfoCSVFile = outputHITInfoCSVFile == null ? createHITInfoCSVFile() : outputHITInfoCSVFile;
 
+		// HIT Index,HIT ID,HITType ID,Document Names
 		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
+			writer.write(Integer.toString(hitIndex));
+			writer.write(",");
 			writer.write(hitInfo.getHITId());
 			writer.write(",");
 			writer.write(hitInfo.getHITTypeId());
@@ -114,7 +117,7 @@ public class PrefAlignHITPublisher {
 	private File createHITInfoCSVFile() throws IOException {
 		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
 		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
-			writer.write("HIT ID,HITType ID,Document Names\n");
+			writer.write("HIT Index, HIT ID,HITType ID,Document Names\n");
 		}
 		return hitInfoCSVFile;
 	}
@@ -214,11 +217,21 @@ public class PrefAlignHITPublisher {
 			createAllExternalQuestionXMLFiles(false);
 			createAllExternalQuestionXMLFiles(true);
 		} else if (option.equals("publishHIT")) {
-			int hitIndex = Integer.parseInt(args[2]);
-			boolean withExplanation = args.length > 3 && args[3].equals("-e");
+			int hitIndex = Integer.parseInt(args[2]); // args[2]: HIT index
+			boolean withExplanation = args.length > 3 && args[3].equals("-e"); // args[3]: explanation flag
+			String outputHITInfoCSVFilename = null; // args[4] or args[3]: output hitInfo.csv filename
+			if (withExplanation && args.length > 4) {
+				outputHITInfoCSVFilename = args[4];
+			} else if (args.length > 3) {
+				outputHITInfoCSVFilename = args[3];
+			}
+			File outputHITInfoCSVFile = outputHITInfoCSVFilename != null
+					? FileIOUtils.getFile(PrefAlignHITPublisher.class, "hit-info", outputHITInfoCSVFilename)
+					: null;
+
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
 			HITInfo hitInfo = publisher.publishHIT(!withExplanation, hitIndex);
-			publisher.writeHITInfoToCSVFile(hitInfo, null);
+			publisher.writeHITInfoToCSVFile(hitIndex, hitInfo, outputHITInfoCSVFile);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[2];
 			MTurkAPIUtils.deleteHITs(client, hitTypeId);

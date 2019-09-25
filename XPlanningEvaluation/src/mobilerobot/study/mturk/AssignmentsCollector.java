@@ -112,9 +112,9 @@ public class AssignmentsCollector {
 	}
 
 	List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
-		// Get the maximum # of completed assignments for this HIT
+		// Get the completed assignments for this HIT so far
 		ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hitInfo.getHITId())
-				.assignmentStatuses(status).maxResults(HITPublisher.MAX_ASSIGNMENTS).build();
+				.assignmentStatuses(status).build();
 
 		ListAssignmentsForHitResponse listHITResponse = mClient.listAssignmentsForHIT(listHITRequest);
 		return listHITResponse.assignments();

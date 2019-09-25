@@ -60,7 +60,7 @@ public class MTurkAPIUtils {
 		return getBalanceResponse.availableBalance();
 	}
 
-	public static ReviewPolicy getAssignmentReviewPolicy() {
+	public static ReviewPolicy getAssignmentReviewPolicy(int maxAssignments) {
 		PolicyParameter answerKeyParam = getAnswerKeyPolicyParameter();
 
 		PolicyParameter rejectScoreParam = PolicyParameter.builder().key("RejectIfKnownAnswerScoreIsLessThan")
@@ -71,7 +71,7 @@ public class MTurkAPIUtils {
 		PolicyParameter extendScoreParam = PolicyParameter.builder().key("ExtendIfKnownAnswerScoreIsLessThan")
 				.values("1").build();
 		PolicyParameter extendMaxAssignmentsParam = PolicyParameter.builder().key("ExtendMaximumAssignments")
-				.values(Integer.toString(2 * HITPublisher.MAX_ASSIGNMENTS)).build();
+				.values(Integer.toString(2 * maxAssignments)).build();
 
 		ReviewPolicy.Builder builder = ReviewPolicy.builder();
 		builder.policyName("ScoreMyKnownAnswers/2011-09-01");

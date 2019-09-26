@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -31,10 +32,12 @@ import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.CreateAdditionalAssignmentsForHitRequest;
+import software.amazon.awssdk.services.mturk.model.DeleteHitRequest;
 import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitResponse;
 import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
+import software.amazon.awssdk.services.mturk.model.UpdateExpirationForHitRequest;
 
 public class AssignmentsCollector {
 
@@ -87,6 +90,8 @@ public class AssignmentsCollector {
 	/**
 	 * Collect all submitted assignments of a HIT so far. Grant "Participation Stamp" qualification to every Worker who
 	 * submitted work.
+	 * 
+	 * This method should be invoked after the maximum number of submitted assignments for the HIT is reached.
 	 * 
 	 * @param hitIndex
 	 * @param assignmentFilters
@@ -167,6 +172,33 @@ public class AssignmentsCollector {
 				writer.write("\n");
 			}
 		}
+	}
+
+	/**
+	 * Dispose HIT after approve or reject all of its submitted assignments.
+	 * 
+	 * @param hitProgress
+	 */
+	public void disposeHIT(HITProgress hitProgress) {
+		// Check that all assignments of this HIT have already been approved or rejected
+		List<Assignment> assignments = hitProgress.getCurrentAssignments();
+		List<Assignment> pendingReviewAssignments = assignments.stream()
+				.filter(assignment -> assignment.assignmentStatus() == AssignmentStatus.SUBMITTED)
+				.collect(Collectors.toList());
+		if (!pendingReviewAssignments.isEmpty()) {
+			throw new IllegalStateException(
+					"All assignments of HIT must be either approved or rejected before the HIT can be disposed.");
+		}
+
+		// Set HIT to expire now
+		String hitID = hitProgress.getHITInfo().getHITId();
+		UpdateExpirationForHitRequest updateHITRequest = UpdateExpirationForHitRequest.builder().hitId(hitID)
+				.expireAt(Instant.now()).build();
+		mClient.updateExpirationForHIT(updateHITRequest);
+
+		// Delete HIT
+		DeleteHitRequest deleteHITRequest = DeleteHitRequest.builder().hitId(hitID).build();
+		mClient.deleteHIT(deleteHITRequest);
 	}
 
 	/**

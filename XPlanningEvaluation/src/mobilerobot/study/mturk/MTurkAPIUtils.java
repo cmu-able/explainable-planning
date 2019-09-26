@@ -120,26 +120,25 @@ public class MTurkAPIUtils {
 	}
 
 	public static void approveAssignmentsOfReviewableHITs(MTurkClient client, String hitTypeId) {
-		List<HIT> selectedHITs;
-		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
-			// Reviewable HITs must be approved or denied before getting deleted
-			List<HIT> reviewableHITs = selectedHITs.stream().filter(hit -> hit.hitStatus() == HITStatus.REVIEWABLE)
-					.collect(Collectors.toList());
-			for (HIT hit : reviewableHITs) {
-				// Get the completed assignments for this HIT so far
-				ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hit.hitId())
-						.assignmentStatuses(AssignmentStatus.SUBMITTED).build();
+		List<HIT> selectedHITs = getHITs(client, hitTypeId);
+		
+		// Reviewable HITs must be approved or denied before getting deleted
+		List<HIT> reviewableHITs = selectedHITs.stream().filter(hit -> hit.hitStatus() == HITStatus.REVIEWABLE)
+				.collect(Collectors.toList());
+		for (HIT hit : reviewableHITs) {
+			// Get the completed assignments for this HIT so far
+			ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hit.hitId())
+					.assignmentStatuses(AssignmentStatus.SUBMITTED).build();
 
-				ListAssignmentsForHitResponse listHITResponse = client.listAssignmentsForHIT(listHITRequest);
-				List<Assignment> assignments = listHITResponse.assignments();
+			ListAssignmentsForHitResponse listHITResponse = client.listAssignmentsForHIT(listHITRequest);
+			List<Assignment> assignments = listHITResponse.assignments();
 
-				// Approve all submitted assignments
-				for (Assignment assignment : assignments) {
-					ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
-							.assignmentId(assignment.assignmentId()).requesterFeedback(APPROVE_FEEDBACK).build();
+			// Approve all submitted assignments
+			for (Assignment assignment : assignments) {
+				ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
+						.assignmentId(assignment.assignmentId()).requesterFeedback(APPROVE_FEEDBACK).build();
 
-					client.approveAssignment(approveRequest);
-				}
+				client.approveAssignment(approveRequest);
 			}
 		}
 	}

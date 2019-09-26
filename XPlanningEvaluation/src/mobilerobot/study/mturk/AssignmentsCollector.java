@@ -1,10 +1,16 @@
 package mobilerobot.study.mturk;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,10 +42,15 @@ public class AssignmentsCollector {
 
 	private final MTurkClient mClient;
 	private final List<HITInfo> mHITInfos = new ArrayList<>();
+	private final String[] mDataTypes;
+	private final int mNumQuestions;
 
-	public AssignmentsCollector(MTurkClient client, File hitInfoCSVFile) throws IOException {
+	public AssignmentsCollector(MTurkClient client, File hitInfoCSVFile, String[] dataTypes, int numQuestions)
+			throws IOException {
 		mClient = client;
 		readAllHITInfos(hitInfoCSVFile);
+		mDataTypes = dataTypes;
+		mNumQuestions = numQuestions;
 	}
 
 	public AssignmentsCollector(MTurkClient client, String hitTypeId) {
@@ -50,6 +61,9 @@ public class AssignmentsCollector {
 
 			mHITInfos.add(hitInfo);
 		}
+		// FIXME
+		mDataTypes = null;
+		mNumQuestions = 0;
 	}
 
 	private void readAllHITInfos(File hitInfoCSVFile) throws IOException {
@@ -60,55 +74,134 @@ public class AssignmentsCollector {
 				String[] values = line.split(",");
 				String hitId = values[0];
 				String hitTypeId = values[1];
+				String[] questionDocNames = Arrays.copyOfRange(values, 2, values.length);
+
 				HITInfo hitInfo = new HITInfo(hitId, hitTypeId);
+				hitInfo.addQuestionDocumentNames(questionDocNames);
 
 				mHITInfos.add(hitInfo);
 			}
 		}
 	}
 
-	public List<HITProgress> collectAllHITsProgress(IAssignmentFilter... assignmentFilters)
+	public HITProgress collectHITProgress(int hitIndex, IAssignmentFilter... assignmentFilters)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
-		List<HITProgress> hitsProgress = new ArrayList<>();
-		for (HITInfo hitInfo : mHITInfos) {
-			// Collect all submitted assignments for this HIT
-			List<Assignment> submittedAssignments = collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
-			List<Assignment> passingAssignments = new ArrayList<>();
+		HITInfo hitInfo = mHITInfos.get(hitIndex);
 
-			for (Assignment submittedAssignment : submittedAssignments) {
-				boolean accept = true;
+		// Collect all submitted assignments for this HIT
+		List<Assignment> submittedAssignments = collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
+		List<Assignment> passingAssignments = new ArrayList<>();
 
-				// Check each submitted assignment against all filters
-				for (IAssignmentFilter filter : assignmentFilters) {
-					accept &= filter.accept(submittedAssignment);
+		for (Assignment submittedAssignment : submittedAssignments) {
+			boolean accept = true;
 
-					if (!accept) {
-						// If the assignment fails any filter, auto-reject it
-						String rejectFeedback = filter.getRejectFeedback();
-						RejectAssignmentRequest rejectRequest = RejectAssignmentRequest.builder()
-								.assignmentId(submittedAssignment.assignmentId()).requesterFeedback(rejectFeedback)
-								.build();
-						mClient.rejectAssignment(rejectRequest);
+			// Check each submitted assignment against all filters
+			for (IAssignmentFilter filter : assignmentFilters) {
+				accept &= filter.accept(submittedAssignment);
 
-						// Extend the maximum number of assignments of this HIT by 1
-						CreateAdditionalAssignmentsForHitRequest extendRequest = CreateAdditionalAssignmentsForHitRequest
-								.builder().hitId(submittedAssignment.hitId()).numberOfAdditionalAssignments(1).build();
-						mClient.createAdditionalAssignmentsForHIT(extendRequest);
+				if (!accept) {
+					// If the assignment fails any filter, auto-reject it
+					String rejectFeedback = filter.getRejectFeedback();
+					RejectAssignmentRequest rejectRequest = RejectAssignmentRequest.builder()
+							.assignmentId(submittedAssignment.assignmentId()).requesterFeedback(rejectFeedback).build();
+					mClient.rejectAssignment(rejectRequest);
 
-						break;
-					}
+					// Extend the maximum number of assignments of this HIT by 1
+					CreateAdditionalAssignmentsForHitRequest extendRequest = CreateAdditionalAssignmentsForHitRequest
+							.builder().hitId(submittedAssignment.hitId()).numberOfAdditionalAssignments(1).build();
+					mClient.createAdditionalAssignmentsForHIT(extendRequest);
+
+					break;
 				}
-
-				// Each assignment that passes all filters will be added to the HITProgress
-				passingAssignments.add(submittedAssignment);
 			}
 
-			HITProgress hitProgress = new HITProgress(hitInfo);
-			hitProgress.addAssignments(passingAssignments);
-
-			hitsProgress.add(hitProgress);
+			// Each assignment that passes all filters will be added to the HITProgress
+			passingAssignments.add(submittedAssignment);
 		}
-		return hitsProgress;
+
+		HITProgress hitProgress = new HITProgress(hitInfo);
+		hitProgress.addAssignments(passingAssignments);
+
+		return hitProgress;
+	}
+
+	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File outputAssignmentsCSVFile)
+			throws IOException, ParserConfigurationException, SAXException, ParseException {
+		HITInfo hitInfo = hitProgress.getHITInfo();
+		List<Assignment> assignments = hitProgress.getCurrentAssignments();
+
+		// Header:
+		// HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time (seconds),question0-{dataType0}, ...
+		File assignmentsCSVFile = outputAssignmentsCSVFile == null ? createAssignmentsCSVFile()
+				: outputAssignmentsCSVFile;
+
+		try (BufferedWriter writer = Files.newBufferedWriter(assignmentsCSVFile.toPath(), StandardOpenOption.APPEND)) {
+			for (Assignment assignment : assignments) {
+				// HIT Index, HIT ID, and HITType ID in every row
+				writer.write(Integer.toString(hitIndex));
+				writer.write(",");
+				writer.write(hitInfo.getHITId());
+				writer.write(",");
+				writer.write(hitInfo.getHITTypeId());
+				writer.write(",");
+
+				// Followed by: Assignment ID,Worker ID,Total Time (seconds),question0-{dataType0}, ... in each row
+				List<String> assignmentData = getAssignmentData(assignment);
+				String assignemntDataRow = String.join(",", assignmentData);
+				writer.write(assignemntDataRow);
+				writer.write("\n");
+			}
+		}
+	}
+
+	/**
+	 * Create assignments.csv file with header: HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time
+	 * (seconds),question0-{dataType0}, ...
+	 * 
+	 * @return assignments.csv file
+	 * @throws IOException
+	 */
+	private File createAssignmentsCSVFile() throws IOException {
+		File assignmentsCSVFile = FileIOUtils.createOutputFile("assignments.csv");
+		try (BufferedWriter writer = Files.newBufferedWriter(assignmentsCSVFile.toPath())) {
+			writer.write("HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time (seconds)");
+
+			for (int i = 0; i < mNumQuestions; i++) {
+				for (String dataType : mDataTypes) {
+					String columnName = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
+					writer.write(",");
+					writer.write(columnName);
+				}
+			}
+			writer.write("\n");
+		}
+		return assignmentsCSVFile;
+	}
+
+	private List<String> getAssignmentData(Assignment assignment)
+			throws ParserConfigurationException, SAXException, IOException, ParseException {
+		List<String> assignmentData = new ArrayList<>();
+
+		// Assignment ID,Worker ID,Total Time (seconds),...
+		assignmentData.add(assignment.assignmentId());
+		assignmentData.add(assignment.workerId());
+		Instant acceptTime = assignment.acceptTime();
+		Instant submitTime = assignment.submitTime();
+		Duration totalDuration = Duration.between(acceptTime, submitTime);
+		long totalDurationSeconds = totalDuration.getSeconds();
+		assignmentData.add(Long.toString(totalDurationSeconds));
+
+		// Answer of each data type of each question
+		for (int i = 0; i < mNumQuestions; i++) {
+			for (String dataType : mDataTypes) {
+				String questionKey = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
+				String answer = AssignmentsCollector.getAssignmentAnswerFromFreeText(assignment, questionKey);
+				assignmentData.add(answer);
+			}
+		}
+
+		// Assignment ID,Worker ID,Total Time (seconds),question0-{dataType}, ...
+		return assignmentData;
 	}
 
 	List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
@@ -118,13 +211,6 @@ public class AssignmentsCollector {
 
 		ListAssignmentsForHitResponse listHITResponse = mClient.listAssignmentsForHIT(listHITRequest);
 		return listHITResponse.assignments();
-	}
-
-	public void approveAllAssignments(List<HITProgress> hitsProgress) {
-		for (HITProgress hitProgress : hitsProgress) {
-			List<Assignment> assignments = hitProgress.getCurrentAssignments();
-			approveAssignments(assignments);
-		}
 	}
 
 	void approveAssignments(List<Assignment> assignments) {

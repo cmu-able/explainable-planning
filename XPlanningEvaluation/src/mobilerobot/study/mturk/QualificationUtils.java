@@ -176,5 +176,8 @@ public class QualificationUtils {
 		builder.workerId(workerID);
 		builder.integerValue(1);
 		builder.sendNotification(false);
+
+		AssociateQualificationWithWorkerRequest request = builder.build();
+		client.associateQualificationWithWorker(request);
 	}
 }

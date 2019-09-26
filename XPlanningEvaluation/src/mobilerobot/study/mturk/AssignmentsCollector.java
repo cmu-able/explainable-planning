@@ -84,6 +84,18 @@ public class AssignmentsCollector {
 		}
 	}
 
+	/**
+	 * Collect all submitted assignments of a HIT so far. Grant "Participation Stamp" qualification to every Worker who
+	 * submitted work.
+	 * 
+	 * @param hitIndex
+	 * @param assignmentFilters
+	 * @return HITProgress
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public HITProgress collectHITProgress(int hitIndex, IAssignmentFilter... assignmentFilters)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
 		HITInfo hitInfo = mHITInfos.get(hitIndex);
@@ -93,9 +105,12 @@ public class AssignmentsCollector {
 		List<Assignment> passingAssignments = new ArrayList<>();
 
 		for (Assignment submittedAssignment : submittedAssignments) {
-			boolean accept = true;
+			// Grant "Participation Stamp" to every Worker who submitted work, to prevent them from accepting new HIT
+			String workerID = submittedAssignment.workerId();
+			QualificationUtils.grantParticipationStampQualification(mClient, workerID);
 
 			// Check each submitted assignment against all filters
+			boolean accept = true;
 			for (IAssignmentFilter filter : assignmentFilters) {
 				accept &= filter.accept(submittedAssignment);
 

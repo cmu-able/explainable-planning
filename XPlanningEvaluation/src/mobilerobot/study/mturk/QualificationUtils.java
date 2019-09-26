@@ -169,7 +169,7 @@ public class QualificationUtils {
 		return null;
 	}
 
-	public static void grantQualificationStampAfterParticipation(MTurkClient client, String workerID) {
+	public static void grantParticipationStampQualification(MTurkClient client, String workerID) {
 		QualificationType participationStamp = getParticipationStamp(client);
 		AssociateQualificationWithWorkerRequest.Builder builder = AssociateQualificationWithWorkerRequest.builder();
 		builder.qualificationTypeId(participationStamp.qualificationTypeId());

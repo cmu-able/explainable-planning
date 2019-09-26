@@ -91,13 +91,13 @@ public class HITPublisher {
 		builder.assignmentDurationInSeconds(hitGroupInfo.getAssignmentDuration());
 
 		QualificationRequirement localeRequirement = QualificationUtils.createLocaleRequirement();
-		boolean isSandbox = mClient.serviceName().contains("sandbox");
-		QualificationRequirement mastersRequirement = QualificationUtils
-				.createMastersQualificationRequirement(isSandbox);
+		// Add Masters qualification requirement only for -prod run
+		// QualificationRequirement mastersRequirement = QualificationUtils
+		//		.createMastersQualificationRequirement(true);
 		QualificationRequirement testRequirement = QualificationUtils.createTestQualificationRequirement(mClient);
 		QualificationRequirement firstParticipationRequirement = QualificationUtils
 				.createFirstParticipationRequirement(mClient);
-		builder.qualificationRequirements(localeRequirement, mastersRequirement, testRequirement,
+		builder.qualificationRequirements(localeRequirement, /* mastersRequirement, */ testRequirement,
 				firstParticipationRequirement);
 
 		CreateHitTypeRequest createHITTypeRequest = builder.build();

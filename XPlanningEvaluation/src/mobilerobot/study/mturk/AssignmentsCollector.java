@@ -58,9 +58,10 @@ public class AssignmentsCollector {
 
 			while ((line = reader.readLine()) != null) {
 				String[] values = line.split(",");
-				String hitId = values[0];
-				String hitTypeId = values[1];
-				String[] questionDocNames = Arrays.copyOfRange(values, 2, values.length);
+				// values[0] is HIT Index
+				String hitId = values[1];
+				String hitTypeId = values[2];
+				String[] questionDocNames = Arrays.copyOfRange(values, 3, values.length);
 
 				HITInfo hitInfo = new HITInfo(hitId, hitTypeId);
 				hitInfo.addQuestionDocumentNames(questionDocNames);

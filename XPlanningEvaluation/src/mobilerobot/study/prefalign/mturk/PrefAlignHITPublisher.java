@@ -1,12 +1,9 @@
 package mobilerobot.study.prefalign.mturk;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -83,23 +80,7 @@ public class PrefAlignHITPublisher {
 	}
 
 	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
-		File hitInfoCSVFile = outputHITInfoCSVFile == null ? createHITInfoCSVFile() : outputHITInfoCSVFile;
-
-		// HIT Index,HIT ID,HITType ID,Document Names
-		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
-			writer.write(Integer.toString(hitIndex));
-			writer.write(",");
-			writer.write(hitInfo.getHITId());
-			writer.write(",");
-			writer.write(hitInfo.getHITTypeId());
-			for (String questionDocName : hitInfo.getQuestionDocumentNames()) {
-				if (questionDocName != null) {
-					writer.write(",");
-					writer.write(questionDocName);
-				}
-			}
-			writer.write("\n");
-		}
+		mHITPublisher.writeHITInfoToCSVFile(hitIndex, hitInfo, outputHITInfoCSVFile);
 	}
 
 	private HITGroupInfo createHITGroupInfo(boolean controlGroup) {
@@ -112,14 +93,6 @@ public class PrefAlignHITPublisher {
 		hitGroupInfo.setLifetimeInSeconds(LIFE_TIME);
 		hitGroupInfo.setMaxAssignments(MAX_ASSIGNMENTS);
 		return hitGroupInfo;
-	}
-
-	private File createHITInfoCSVFile() throws IOException {
-		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
-		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
-			writer.write("HIT Index, HIT ID,HITType ID,Document Names\n");
-		}
-		return hitInfoCSVFile;
 	}
 
 	public static File[] createAllExternalQuestionXMLFiles(boolean withExplanation) throws ClassNotFoundException,
@@ -219,14 +192,14 @@ public class PrefAlignHITPublisher {
 		} else if (option.equals("publishHIT")) {
 			int hitIndex = Integer.parseInt(args[2]); // args[2]: HIT index
 			boolean withExplanation = args.length > 3 && args[3].equals("-e"); // args[3]: explanation flag
-			String outputHITInfoCSVFilename = null; // args[4] or args[3]: output hitInfo.csv filename
+			String hitInfoCSVFilename = null; // args[4] or args[3]: hitInfo.csv output filename
 			if (withExplanation && args.length > 4) {
-				outputHITInfoCSVFilename = args[4];
+				hitInfoCSVFilename = args[4];
 			} else if (args.length > 3) {
-				outputHITInfoCSVFilename = args[3];
+				hitInfoCSVFilename = args[3];
 			}
-			File outputHITInfoCSVFile = outputHITInfoCSVFilename != null
-					? FileIOUtils.getFile(PrefAlignHITPublisher.class, "hit-info", outputHITInfoCSVFilename)
+			File outputHITInfoCSVFile = hitInfoCSVFilename != null
+					? FileIOUtils.getFile(PrefAlignHITPublisher.class, "hit-info", hitInfoCSVFilename)
 					: null;
 
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);

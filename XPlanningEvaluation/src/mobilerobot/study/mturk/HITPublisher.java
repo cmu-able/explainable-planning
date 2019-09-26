@@ -1,10 +1,12 @@
 package mobilerobot.study.mturk;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -50,6 +52,34 @@ public class HITPublisher {
 		HIT hit = createHITWithHITType(hitTypeId, question, hitGroupInfo, assignmentReviewPolicy);
 
 		return new HITInfo(hit.hitId(), hitTypeId);
+	}
+
+	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
+		File hitInfoCSVFile = outputHITInfoCSVFile == null ? createHITInfoCSVFile() : outputHITInfoCSVFile;
+
+		// HIT Index,HIT ID,HITType ID,Document Names
+		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
+			writer.write(Integer.toString(hitIndex));
+			writer.write(",");
+			writer.write(hitInfo.getHITId());
+			writer.write(",");
+			writer.write(hitInfo.getHITTypeId());
+			for (String questionDocName : hitInfo.getQuestionDocumentNames()) {
+				if (questionDocName != null) {
+					writer.write(",");
+					writer.write(questionDocName);
+				}
+			}
+			writer.write("\n");
+		}
+	}
+
+	private File createHITInfoCSVFile() throws IOException {
+		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
+		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
+			writer.write("HIT Index,HIT ID,HITType ID,Document Names\n");
+		}
+		return hitInfoCSVFile;
 	}
 
 	private String createHITType(HITGroupInfo hitGroupInfo) throws IOException, URISyntaxException {

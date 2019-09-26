@@ -148,9 +148,9 @@ public class HITPublisher {
 		return questionXMLFile;
 	}
 
-	public static File getExternalQuestionXMLFile(String questionXMLFilename)
+	public static File getExternalQuestionXMLFile(Class<?> callerClass, String questionXMLFilename)
 			throws FileNotFoundException, URISyntaxException {
-		return FileIOUtils.getFile(HITPublisher.class, "external-questions", questionXMLFilename);
+		return FileIOUtils.getFile(callerClass, "external-questions", questionXMLFilename);
 	}
 
 }

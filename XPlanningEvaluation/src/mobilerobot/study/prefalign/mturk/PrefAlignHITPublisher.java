@@ -66,7 +66,7 @@ public class PrefAlignHITPublisher {
 
 		// ExternalQuestion xml filename is the same as 1st PrefAlign question document name
 		String headQuestionDocName = linkedQuestionDocNames[0];
-		File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(headQuestionDocName + ".xml");
+		File questionXMLFile = HITPublisher.getExternalQuestionXMLFile(getClass(), headQuestionDocName + ".xml");
 
 		// Cannot use Assignment Review Policy for auto-reject
 		// because, due to the use of <crowd-form>, all answers are in a single <FreeText>

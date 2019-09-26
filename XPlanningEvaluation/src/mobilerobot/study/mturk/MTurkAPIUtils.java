@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.mturk.MTurkClient;
 import software.amazon.awssdk.services.mturk.MTurkClientBuilder;
+import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.DeleteHitRequest;
@@ -17,6 +18,8 @@ import software.amazon.awssdk.services.mturk.model.GetAccountBalanceRequest;
 import software.amazon.awssdk.services.mturk.model.GetAccountBalanceResponse;
 import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.HITStatus;
+import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitRequest;
+import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitResponse;
 import software.amazon.awssdk.services.mturk.model.ListHiTsRequest;
 import software.amazon.awssdk.services.mturk.model.ListHiTsResponse;
 import software.amazon.awssdk.services.mturk.model.ParameterMapEntry;
@@ -29,6 +32,7 @@ public class MTurkAPIUtils {
 	private static final String SANDBOX_ENDPOINT = "https://mturk-requester-sandbox.us-east-1.amazonaws.com";
 	private static final String PROD_ENDPOINT = "https://mturk-requester.us-east-1.amazonaws.com";
 
+	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 	private static final String AUTO_REJECT_REASON = "Sorry, we could not approve your submission as you did not correctly answer one or more validation question(s).";
 
 	private MTurkAPIUtils() {
@@ -116,17 +120,26 @@ public class MTurkAPIUtils {
 	}
 
 	public static void approveAssignmentsOfReviewableHITs(MTurkClient client, String hitTypeId) {
-		AssignmentsCollector assignmentsCollector = new AssignmentsCollector(client, hitTypeId);
 		List<HIT> selectedHITs;
 		while (!(selectedHITs = getHITs(client, hitTypeId)).isEmpty()) {
 			// Reviewable HITs must be approved or denied before getting deleted
 			List<HIT> reviewableHITs = selectedHITs.stream().filter(hit -> hit.hitStatus() == HITStatus.REVIEWABLE)
 					.collect(Collectors.toList());
 			for (HIT hit : reviewableHITs) {
-				HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
-				List<Assignment> assignments = assignmentsCollector.collectHITAssignments(hitInfo,
-						AssignmentStatus.SUBMITTED);
-				assignmentsCollector.approveAssignments(assignments);
+				// Get the completed assignments for this HIT so far
+				ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hit.hitId())
+						.assignmentStatuses(AssignmentStatus.SUBMITTED).build();
+
+				ListAssignmentsForHitResponse listHITResponse = client.listAssignmentsForHIT(listHITRequest);
+				List<Assignment> assignments = listHITResponse.assignments();
+
+				// Approve all submitted assignments
+				for (Assignment assignment : assignments) {
+					ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
+							.assignmentId(assignment.assignmentId()).requesterFeedback(APPROVE_FEEDBACK).build();
+
+					client.approveAssignment(approveRequest);
+				}
 			}
 		}
 	}

@@ -28,20 +28,16 @@ import org.xml.sax.SAXException;
 
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
-import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.CreateAdditionalAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.DeleteHitRequest;
-import software.amazon.awssdk.services.mturk.model.HIT;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitRequest;
 import software.amazon.awssdk.services.mturk.model.ListAssignmentsForHitResponse;
 import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.UpdateExpirationForHitRequest;
 
 public class AssignmentsCollector {
-
-	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 
 	private final MTurkClient mClient;
 	private final List<HITInfo> mHITInfos = new ArrayList<>();
@@ -54,19 +50,6 @@ public class AssignmentsCollector {
 		readAllHITInfos(hitInfoCSVFile);
 		mDataTypes = dataTypes;
 		mNumQuestions = numQuestions;
-	}
-
-	public AssignmentsCollector(MTurkClient client, String hitTypeId) {
-		mClient = client;
-		List<HIT> hits = MTurkAPIUtils.getHITs(client, hitTypeId);
-		for (HIT hit : hits) {
-			HITInfo hitInfo = new HITInfo(hit.hitId(), hitTypeId);
-
-			mHITInfos.add(hitInfo);
-		}
-		// FIXME
-		mDataTypes = null;
-		mNumQuestions = 0;
 	}
 
 	private void readAllHITInfos(File hitInfoCSVFile) throws IOException {
@@ -251,22 +234,13 @@ public class AssignmentsCollector {
 		return assignmentData;
 	}
 
-	List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
+	private List<Assignment> collectHITAssignments(HITInfo hitInfo, AssignmentStatus status) {
 		// Get the completed assignments for this HIT so far
 		ListAssignmentsForHitRequest listHITRequest = ListAssignmentsForHitRequest.builder().hitId(hitInfo.getHITId())
 				.assignmentStatuses(status).build();
 
 		ListAssignmentsForHitResponse listHITResponse = mClient.listAssignmentsForHIT(listHITRequest);
 		return listHITResponse.assignments();
-	}
-
-	void approveAssignments(List<Assignment> assignments) {
-		for (Assignment assignment : assignments) {
-			ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
-					.assignmentId(assignment.assignmentId()).requesterFeedback(APPROVE_FEEDBACK).build();
-
-			mClient.approveAssignment(approveRequest);
-		}
 	}
 
 	public static JSONObject getAssignmentAnswerJSONObjectFromFreeText(Assignment assignment)

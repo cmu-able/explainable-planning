@@ -91,7 +91,7 @@
 	</Question>
 	<QualificationValueMapping>
 		<PercentageMapping>
-			<MaximumSummedScore>3</MaximumSummedScore>
+			<MaximumSummedScore>6</MaximumSummedScore>
 		</PercentageMapping>
 	</QualificationValueMapping>
 </AnswerKey>

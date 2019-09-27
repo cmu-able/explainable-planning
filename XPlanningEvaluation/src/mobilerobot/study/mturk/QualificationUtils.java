@@ -55,12 +55,12 @@ public class QualificationUtils {
 	/**
 	 * Masters Qualification requirement.
 	 * 
-	 * @param isSandbox
+	 * @param isProd
 	 * @return Masters Qualification requirement
 	 */
-	public static QualificationRequirement createMastersQualificationRequirement(boolean isSandbox) {
+	public static QualificationRequirement createMastersQualificationRequirement(boolean isProd) {
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
-		builder.qualificationTypeId(isSandbox ? MASTERS_QUAL_TYPE_ID_SANDBOX : MASTERS_QUAL_TYPE_ID_PROD);
+		builder.qualificationTypeId(isProd ? MASTERS_QUAL_TYPE_ID_PROD : MASTERS_QUAL_TYPE_ID_SANDBOX);
 		builder.comparator(Comparator.EXISTS);
 		return builder.build();
 	}

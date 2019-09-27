@@ -1,5 +1,53 @@
 <QuestionForm xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2017-11-06/QuestionForm.xsd">
 	<Overview>
+		<Title>Basic Arithmetic Test</Title>
+		<Text>Please answer the following questions. Your answers will determine your eligibility to participate in this study. You are allowed to use a calculator.</Text>
+		<Text>Suppose you task a mobile robot to deliver a package at some destination. Suppose the robot then informs you that it has computed a navigation route that will take 6 minutes, but the route has 2 segments where the robot has 20% chance of colliding with obstacles (i.e., the expected value of collision is 0.4).</Text>
+		<Text>Suppose that you wish to quantify how "costly" the route is, by assigning $1 to each minute of the route, and $2 to each 0.1 expected collision of the route.</Text>
+	</Overview>
+	<Question>
+		<QuestionIdentifier>math_Q1</QuestionIdentifier>
+		<IsRequired>true</IsRequired>
+		<QuestionContent>
+			<Text>What is the cost of the route in $, considering time of the route alone?</Text>
+		</QuestionContent>
+	</Question>
+	<AnswerSpecification>
+		<FreeTextAnswer>
+			<Constraints>
+				<IsNumeric minValue="0"/>
+			</Constraints>
+		</FreeTextAnswer>
+	</AnswerSpecification>
+	<Question>
+		<QuestionIdentifier>math_Q2</QuestionIdentifier>
+		<IsRequired>true</IsRequired>
+		<QuestionContent>
+			<Text>What is the cost of the route in $, considering expected collision of the route alone?</Text>
+		</QuestionContent>
+	</Question>
+	<AnswerSpecification>
+		<FreeTextAnswer>
+			<Constraints>
+				<IsNumeric minValue="0"/>
+			</Constraints>
+		</FreeTextAnswer>
+	</AnswerSpecification>
+	<Question>
+		<QuestionIdentifier>math_Q3</QuestionIdentifier>
+		<IsRequired>true</IsRequired>
+		<QuestionContent>
+			<Text>What is the cost of the route in $, considering both time and expected collision of the route?</Text>
+		</QuestionContent>
+	</Question>
+	<AnswerSpecification>
+		<FreeTextAnswer>
+			<Constraints>
+				<IsNumeric minValue="0"/>
+			</Constraints>
+		</FreeTextAnswer>
+	</AnswerSpecification>
+	<Overview>
 		<Title>Consent Form for Participation in Research</Title>
 		<Text>Please read this information</Text>
 		<Text>You are invited to participate in a study, entitled "Understanding mobile robot navigation planning". The study is being conducted by Roykrong Sukkerd in the Institute for Software Research of Carnegie Mellon University.</Text>

@@ -9,43 +9,91 @@
 		<QuestionIdentifier>math_Q1</QuestionIdentifier>
 		<IsRequired>true</IsRequired>
 		<QuestionContent>
-			<Text>What is the cost of the route in $, considering time of the route alone?</Text>
+			<Text>What is the cost of the route, considering time of the route alone?</Text>
 		</QuestionContent>
 	</Question>
 	<AnswerSpecification>
-		<FreeTextAnswer>
-			<Constraints>
-				<IsNumeric minValue="0"/>
-			</Constraints>
-		</FreeTextAnswer>
+		<SelectionAnswer>
+			<StyleSuggestion>radiobutton</StyleSuggestion>
+			<Selections>
+				<Selection>
+					<SelectionIdentifier>answer_Q1_0_4</SelectionIdentifier>
+					<Text>$0.4</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q1_1</SelectionIdentifier>
+					<Text>$1</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q1_6</SelectionIdentifier>
+					<Text>$6</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q1_12</SelectionIdentifier>
+					<Text>$12</Text>
+				</Selection>
+			</Selections>
+		</SelectionAnswer>
 	</AnswerSpecification>
 	<Question>
 		<QuestionIdentifier>math_Q2</QuestionIdentifier>
 		<IsRequired>true</IsRequired>
 		<QuestionContent>
-			<Text>What is the cost of the route in $, considering expected collision of the route alone?</Text>
+			<Text>What is the cost of the route, considering expected collision of the route alone?</Text>
 		</QuestionContent>
 	</Question>
 	<AnswerSpecification>
-		<FreeTextAnswer>
-			<Constraints>
-				<IsNumeric minValue="0"/>
-			</Constraints>
-		</FreeTextAnswer>
+		<SelectionAnswer>
+			<StyleSuggestion>radiobutton</StyleSuggestion>
+			<Selections>
+				<Selection>
+					<SelectionIdentifier>answer_Q2_0_2</SelectionIdentifier>
+					<Text>$0.2</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q2_0_4</SelectionIdentifier>
+					<Text>$0.4</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q2_6</SelectionIdentifier>
+					<Text>$6</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q2_8</SelectionIdentifier>
+					<Text>$8</Text>
+				</Selection>
+			</Selections>
+		</SelectionAnswer>
 	</AnswerSpecification>
 	<Question>
 		<QuestionIdentifier>math_Q3</QuestionIdentifier>
 		<IsRequired>true</IsRequired>
 		<QuestionContent>
-			<Text>What is the cost of the route in $, considering both time and expected collision of the route?</Text>
+			<Text>What is the cost of the route, considering both time and expected collision of the route?</Text>
 		</QuestionContent>
 	</Question>
 	<AnswerSpecification>
-		<FreeTextAnswer>
-			<Constraints>
-				<IsNumeric minValue="0"/>
-			</Constraints>
-		</FreeTextAnswer>
+		<SelectionAnswer>
+			<StyleSuggestion>radiobutton</StyleSuggestion>
+			<Selections>
+				<Selection>
+					<SelectionIdentifier>answer_Q3_0_6</SelectionIdentifier>
+					<Text>$0.6</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q3_6_4</SelectionIdentifier>
+					<Text>$6.4</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q3_12</SelectionIdentifier>
+					<Text>$12</Text>
+				</Selection>
+				<Selection>
+					<SelectionIdentifier>answer_Q3_14</SelectionIdentifier>
+					<Text>$14</Text>
+				</Selection>
+			</Selections>
+		</SelectionAnswer>
 	</AnswerSpecification>
 	<Overview>
 		<Title>Consent Form for Participation in Research</Title>

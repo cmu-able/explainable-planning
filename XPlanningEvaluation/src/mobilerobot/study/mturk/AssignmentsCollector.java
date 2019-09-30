@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
@@ -129,15 +130,15 @@ public class AssignmentsCollector {
 		return hitProgress;
 	}
 
-	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File outputAssignmentsCSVFile)
+	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File currentAssignmentsCSVFile)
 			throws IOException, ParserConfigurationException, SAXException, ParseException {
 		HITInfo hitInfo = hitProgress.getHITInfo();
 		List<Assignment> assignments = hitProgress.getCurrentAssignments();
 
 		// Header:
 		// HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time (seconds),question0-{dataType0}, ...
-		File assignmentsCSVFile = outputAssignmentsCSVFile == null ? createAssignmentsCSVFile()
-				: outputAssignmentsCSVFile;
+		File assignmentsCSVFile = currentAssignmentsCSVFile == null ? createAssignmentsCSVFile()
+				: createAssignmentsCSVFile(currentAssignmentsCSVFile);
 
 		try (BufferedWriter writer = Files.newBufferedWriter(assignmentsCSVFile.toPath(), StandardOpenOption.APPEND)) {
 			for (Assignment assignment : assignments) {
@@ -207,6 +208,13 @@ public class AssignmentsCollector {
 			writer.write("\n");
 		}
 		return assignmentsCSVFile;
+	}
+
+	private File createAssignmentsCSVFile(File currentAssignmentsCSVFile) throws IOException {
+		// Copy the content from the current assignments.csv file to a new output assignments.csv file with the same name
+		Path outputAssignmentsCSVPath = Files.copy(currentAssignmentsCSVFile.toPath(),
+				FileIOUtils.getOutputDir().toPath().resolve(currentAssignmentsCSVFile.getName()));
+		return outputAssignmentsCSVPath.toFile();
 	}
 
 	private List<String> getAssignmentData(Assignment assignment)

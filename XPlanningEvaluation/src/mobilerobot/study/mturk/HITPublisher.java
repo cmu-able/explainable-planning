@@ -1,13 +1,12 @@
 package mobilerobot.study.mturk;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -87,21 +86,10 @@ public class HITPublisher {
 	}
 
 	private File createHITInfoCSVFile(File currentHITInfoCSVFile) throws IOException {
-		// Create a new output file with the same name as the existing hitInfo.csv file
-		File outputHITInfoCSVFile = FileIOUtils.createOutputFile(currentHITInfoCSVFile.getName());
-
-		// Copy all lines, including header, from the existing hitInfo.csv to the new output file
-		// Write to new output file
-		try (BufferedWriter writer = Files.newBufferedWriter(outputHITInfoCSVFile.toPath())) {
-			// Read from existing hitInfo.csv file
-			try (BufferedReader reader = new BufferedReader(new FileReader(currentHITInfoCSVFile))) {
-				String line;
-				while ((line = reader.readLine()) != null) {
-					writer.write(line);
-				}
-			}
-		}
-		return outputHITInfoCSVFile;
+		// Copy the content from the current hitInfo.csv file to a new output hitInfo.csv file with the same name
+		Path outputHITInfoCSVPath = Files.copy(currentHITInfoCSVFile.toPath(),
+				FileIOUtils.getOutputDir().toPath().resolve(currentHITInfoCSVFile.getName()));
+		return outputHITInfoCSVPath.toFile();
 	}
 
 	private String createHITType(HITGroupInfo hitGroupInfo) throws IOException, URISyntaxException {

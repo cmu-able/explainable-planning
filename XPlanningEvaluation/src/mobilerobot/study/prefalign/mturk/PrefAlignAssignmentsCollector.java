@@ -32,9 +32,9 @@ public class PrefAlignAssignmentsCollector {
 		return mAssignmentsCollector.collectHITProgress(hitIndex, assignmentFilters);
 	}
 
-	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File outputAssignmentsCSVFile)
+	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File currentAssignmentsCSVFile)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
-		mAssignmentsCollector.writeAssignmentsToCSVFile(hitIndex, hitProgress, outputAssignmentsCSVFile);
+		mAssignmentsCollector.writeAssignmentsToCSVFile(hitIndex, hitProgress, currentAssignmentsCSVFile);
 	}
 
 	public static void main(String[] args)
@@ -42,11 +42,11 @@ public class PrefAlignAssignmentsCollector {
 		String hitInfoCSVFilename = args[0]; // hitInfo.csv filename
 		int hitIndex = Integer.parseInt(args[1]); // HIT index to collect assignments
 		String clientType = args[2]; // -prod or -sandbox
-		String assignmentsCSVFilename = args.length > 3 ? args[3] : null; // assignments.csv output filename
+		String currentAssignmentsCSVFilename = args.length > 3 ? args[3] : null; // assignments.csv output filename
 
 		File hitInfoCSVFile = FileIOUtils.getFile(PrefAlignAssignmentsCollector.class, "hit-info", hitInfoCSVFilename);
-		File outputAssignmentsCSVFile = assignmentsCSVFilename != null
-				? FileIOUtils.getFile(PrefAlignAssignmentsCollector.class, "assignments", assignmentsCSVFilename)
+		File currentAssignmentsCSVFile = currentAssignmentsCSVFilename != null
+				? FileIOUtils.getFile(PrefAlignAssignmentsCollector.class, "assignments", currentAssignmentsCSVFilename)
 				: null;
 
 		MTurkClient client;
@@ -63,7 +63,7 @@ public class PrefAlignAssignmentsCollector {
 		PrefAlignAssignmentsCollector assignmentsCollector = new PrefAlignAssignmentsCollector(client, hitInfoCSVFile,
 				dataTypes, numQuestions);
 		HITProgress hitProgress = assignmentsCollector.collectHITProgress(hitIndex);
-		assignmentsCollector.writeAssignmentsToCSVFile(hitIndex, hitProgress, outputAssignmentsCSVFile);
+		assignmentsCollector.writeAssignmentsToCSVFile(hitIndex, hitProgress, currentAssignmentsCSVFile);
 	}
 
 }

@@ -1,8 +1,10 @@
 package mobilerobot.study.mturk;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -54,8 +56,9 @@ public class HITPublisher {
 		return new HITInfo(hit.hitId(), hitTypeId);
 	}
 
-	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
-		File hitInfoCSVFile = outputHITInfoCSVFile == null ? createHITInfoCSVFile() : outputHITInfoCSVFile;
+	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File currentHITInfoCSVFile) throws IOException {
+		File hitInfoCSVFile = currentHITInfoCSVFile == null ? createHITInfoCSVFile()
+				: createHITInfoCSVFile(currentHITInfoCSVFile);
 
 		// HIT Index,HIT ID,HITType ID,Document Names
 		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath(), StandardOpenOption.APPEND)) {
@@ -75,11 +78,30 @@ public class HITPublisher {
 	}
 
 	private File createHITInfoCSVFile() throws IOException {
+		// Create a new hitInfo.csv file with header
 		File hitInfoCSVFile = FileIOUtils.createOutputFile("hitInfo.csv");
 		try (BufferedWriter writer = Files.newBufferedWriter(hitInfoCSVFile.toPath())) {
 			writer.write("HIT Index,HIT ID,HITType ID,Document Names\n");
 		}
 		return hitInfoCSVFile;
+	}
+
+	private File createHITInfoCSVFile(File currentHITInfoCSVFile) throws IOException {
+		// Create a new output file with the same name as the existing hitInfo.csv file
+		File outputHITInfoCSVFile = FileIOUtils.createOutputFile(currentHITInfoCSVFile.getName());
+
+		// Copy all lines, including header, from the existing hitInfo.csv to the new output file
+		// Write to new output file
+		try (BufferedWriter writer = Files.newBufferedWriter(outputHITInfoCSVFile.toPath())) {
+			// Read from existing hitInfo.csv file
+			try (BufferedReader reader = new BufferedReader(new FileReader(currentHITInfoCSVFile))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					writer.write(line);
+				}
+			}
+		}
+		return outputHITInfoCSVFile;
 	}
 
 	private String createHITType(HITGroupInfo hitGroupInfo) throws IOException, URISyntaxException {

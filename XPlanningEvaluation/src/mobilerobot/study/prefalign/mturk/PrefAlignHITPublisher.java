@@ -79,8 +79,8 @@ public class PrefAlignHITPublisher {
 		return hitInfo;
 	}
 
-	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File outputHITInfoCSVFile) throws IOException {
-		mHITPublisher.writeHITInfoToCSVFile(hitIndex, hitInfo, outputHITInfoCSVFile);
+	public void writeHITInfoToCSVFile(int hitIndex, HITInfo hitInfo, File currentHITInfoCSVFile) throws IOException {
+		mHITPublisher.writeHITInfoToCSVFile(hitIndex, hitInfo, currentHITInfoCSVFile);
 	}
 
 	private HITGroupInfo createHITGroupInfo(boolean controlGroup) {
@@ -198,13 +198,13 @@ public class PrefAlignHITPublisher {
 			} else if (args.length > 3) {
 				hitInfoCSVFilename = args[3];
 			}
-			File outputHITInfoCSVFile = hitInfoCSVFilename != null
+			File currentHITInfoCSVFile = hitInfoCSVFilename != null
 					? FileIOUtils.getFile(PrefAlignHITPublisher.class, "hit-info", hitInfoCSVFilename)
 					: null;
 
 			PrefAlignHITPublisher publisher = new PrefAlignHITPublisher(client);
 			HITInfo hitInfo = publisher.publishHIT(!withExplanation, hitIndex);
-			publisher.writeHITInfoToCSVFile(hitIndex, hitInfo, outputHITInfoCSVFile);
+			publisher.writeHITInfoToCSVFile(hitIndex, hitInfo, currentHITInfoCSVFile);
 		} else if (option.equals("deleteHITs")) {
 			String hitTypeId = args[2];
 			MTurkAPIUtils.deleteHITs(client, hitTypeId);

@@ -42,7 +42,7 @@ public class PrefAlignAssignmentsCollector {
 		String hitInfoCSVFilename = args[0]; // hitInfo.csv filename
 		int hitIndex = Integer.parseInt(args[1]); // HIT index to collect assignments
 		String clientType = args[2]; // -prod or -sandbox
-		String currentAssignmentsCSVFilename = args.length > 3 ? args[3] : null; // assignments.csv output filename
+		String currentAssignmentsCSVFilename = args.length > 3 ? args[3] : null; // current assignments.csv filename if exists
 
 		File hitInfoCSVFile = FileIOUtils.getFile(PrefAlignAssignmentsCollector.class, "hit-info", hitInfoCSVFilename);
 		File currentAssignmentsCSVFile = currentAssignmentsCSVFilename != null

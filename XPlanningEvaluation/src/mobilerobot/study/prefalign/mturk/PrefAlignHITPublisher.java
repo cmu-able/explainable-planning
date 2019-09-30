@@ -176,7 +176,7 @@ public class PrefAlignHITPublisher {
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
 			ParserConfigurationException, TransformerException {
 		String option = args[0];
-		String clientType = args[1];
+		String clientType = args[1]; // args[1]: -prod or -sandbox
 		MTurkClient client;
 		if (clientType.equals("-prod")) {
 			client = MTurkAPIUtils.getProductionClient();
@@ -192,7 +192,7 @@ public class PrefAlignHITPublisher {
 		} else if (option.equals("publishHIT")) {
 			int hitIndex = Integer.parseInt(args[2]); // args[2]: HIT index
 			boolean withExplanation = args.length > 3 && args[3].equals("-e"); // args[3]: explanation flag
-			String hitInfoCSVFilename = null; // args[4] or args[3]: hitInfo.csv output filename
+			String hitInfoCSVFilename = null; // args[4] or args[3]: current hitInfo.csv filename if exists
 			if (withExplanation && args.length > 4) {
 				hitInfoCSVFilename = args[4];
 			} else if (args.length > 3) {

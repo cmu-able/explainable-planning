@@ -62,6 +62,7 @@ public class QualificationUtils {
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
 		builder.qualificationTypeId(isProd ? MASTERS_QUAL_TYPE_ID_PROD : MASTERS_QUAL_TYPE_ID_SANDBOX);
 		builder.comparator(Comparator.EXISTS);
+		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
 		return builder.build();
 	}
 
@@ -131,6 +132,7 @@ public class QualificationUtils {
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
 		builder.qualificationTypeId(participationStamp.qualificationTypeId());
 		builder.comparator(Comparator.DOES_NOT_EXIST);
+		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
 		return builder.build();
 	}
 

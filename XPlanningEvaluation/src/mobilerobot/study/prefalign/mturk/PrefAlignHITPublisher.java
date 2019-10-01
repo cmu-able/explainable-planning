@@ -192,11 +192,11 @@ public class PrefAlignHITPublisher {
 		} else if (option.equals("publishHIT")) {
 			int hitIndex = Integer.parseInt(args[2]); // args[2]: HIT index
 			boolean withExplanation = args.length > 3 && args[3].equals("-e"); // args[3]: explanation flag
-			String hitInfoCSVFilename = null; // args[4] or args[3]: current hitInfo.csv filename if exists
-			if (withExplanation && args.length > 4) {
-				hitInfoCSVFilename = args[4];
-			} else if (args.length > 3) {
-				hitInfoCSVFilename = args[3];
+			String hitInfoCSVFilename = null; // args[4] or args[3] if no -e flag: current hitInfo.csv filename if exists
+			if (args.length > 4) {
+				hitInfoCSVFilename = args[4]; // args[4]: current hitInfo.csv filename
+			} else if (!withExplanation && args.length > 3) {
+				hitInfoCSVFilename = args[3]; // args[3] and no -e flag: current hitInfo.csv filename
 			}
 			File currentHITInfoCSVFile = hitInfoCSVFilename != null
 					? FileIOUtils.getFile(PrefAlignHITPublisher.class, "hit-info", hitInfoCSVFilename)

@@ -53,6 +53,34 @@ public class QualificationUtils {
 	}
 
 	/**
+	 * Worker_​NumberHITsApproved >= 10,000 HITs requirement.
+	 * 
+	 * @return Worker_​NumberHITsApproved >= 10,000 HITs requirement
+	 */
+	public static QualificationRequirement createHighNumberHITsApprovedRequirement() {
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId("00000000000000000040"); // Worker_​NumberHITsApproved
+		builder.comparator(Comparator.GREATER_THAN_OR_EQUAL_TO);
+		builder.integerValues(10000);
+		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
+		return builder.build();
+	}
+
+	/**
+	 * Worker_​PercentAssignmentsApproved > 97% requirement.
+	 * 
+	 * @return Worker_​PercentAssignmentsApproved > 97% requirement
+	 */
+	public static QualificationRequirement createHighPercentAssignmentsApprovedRequirement() {
+		QualificationRequirement.Builder builder = QualificationRequirement.builder();
+		builder.qualificationTypeId("000000000000000000L0"); // Worker_​PercentAssignmentsApproved
+		builder.comparator(Comparator.GREATER_THAN);
+		builder.integerValues(97);
+		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
+		return builder.build();
+	}
+
+	/**
 	 * Masters Qualification requirement.
 	 * 
 	 * @param isProd

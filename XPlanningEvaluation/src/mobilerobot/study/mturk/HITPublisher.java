@@ -100,14 +100,27 @@ public class HITPublisher {
 		builder.reward(hitGroupInfo.getReward());
 		builder.assignmentDurationInSeconds(hitGroupInfo.getAssignmentDuration());
 
+		// Local requirement: US or Canada only
 		QualificationRequirement localeRequirement = QualificationUtils.createLocaleRequirement();
+
+		// High-quality worker requirements: >= 10,000 approved HITs and >97% HIT approval rate
+		// Use these requirements in lieu of Masters qualification requirement
+		QualificationRequirement approvedHITsRequirement = QualificationUtils.createHighNumberHITsApprovedRequirement();
+		QualificationRequirement approvalRateRequirement = QualificationUtils
+				.createHighPercentAssignmentsApprovedRequirement();
+
 		// Add Masters qualification requirement only for -prod run
-		QualificationRequirement mastersRequirement = QualificationUtils.createMastersQualificationRequirement(true);
+		// QualificationRequirement mastersRequirement = QualificationUtils.createMastersQualificationRequirement(true);
+
+		// Arithmetic test and consent form requirement
 		QualificationRequirement testRequirement = QualificationUtils.createTestQualificationRequirement(mClient);
+
+		// First-participation requirement
 		QualificationRequirement firstParticipationRequirement = QualificationUtils
 				.createFirstParticipationRequirement(mClient);
-		builder.qualificationRequirements(localeRequirement, mastersRequirement, testRequirement,
-				firstParticipationRequirement);
+
+		builder.qualificationRequirements(localeRequirement, approvedHITsRequirement, approvalRateRequirement,
+				/* mastersRequirement, */ testRequirement, firstParticipationRequirement);
 
 		CreateHitTypeRequest createHITTypeRequest = builder.build();
 		CreateHitTypeResponse response = mClient.createHITType(createHITTypeRequest);

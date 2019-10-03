@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -29,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import mobilerobot.utilities.FileIOUtils;
 import software.amazon.awssdk.services.mturk.MTurkClient;
+import software.amazon.awssdk.services.mturk.model.ApproveAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.Assignment;
 import software.amazon.awssdk.services.mturk.model.AssignmentStatus;
 import software.amazon.awssdk.services.mturk.model.CreateAdditionalAssignmentsForHitRequest;
@@ -39,6 +41,8 @@ import software.amazon.awssdk.services.mturk.model.RejectAssignmentRequest;
 import software.amazon.awssdk.services.mturk.model.UpdateExpirationForHitRequest;
 
 public class AssignmentsCollector {
+
+	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 
 	private final MTurkClient mClient;
 	private final List<HITInfo> mHITInfos = new ArrayList<>();
@@ -160,6 +164,36 @@ public class AssignmentsCollector {
 	}
 
 	/**
+	 * Approve all assignments in the given assignments.csv file that correspond to the given HIT index.
+	 * 
+	 * @param hitIndex
+	 * @param assignmentsCSVFile
+	 * @throws IOException
+	 */
+	public void approveAssignments(int hitIndex, File assignmentsCSVFile) throws IOException {
+		try (BufferedReader reader = new BufferedReader(new FileReader(assignmentsCSVFile))) {
+			String headerLine = reader.readLine(); // Header line
+			String[] columnNames = headerLine.split(",");
+			int assignmentIDIndex = ArrayUtils.indexOf(columnNames, "Assignment ID");
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String[] values = line.split(",");
+				int hitIndexValue = Integer.parseInt(values[0]); // values[0] is HIT Index
+
+				// Approve all assignments in assignments.csv file that correspond to the given HIT index
+				if (hitIndexValue == hitIndex) {
+					String assignmentIDValue = values[assignmentIDIndex];
+
+					ApproveAssignmentRequest approveRequest = ApproveAssignmentRequest.builder()
+							.assignmentId(assignmentIDValue).requesterFeedback(APPROVE_FEEDBACK).build();
+					mClient.approveAssignment(approveRequest);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Dispose HIT after approve or reject all of its submitted assignments.
 	 * 
 	 * @param hitProgress
@@ -211,7 +245,8 @@ public class AssignmentsCollector {
 	}
 
 	private File createAssignmentsCSVFile(File currentAssignmentsCSVFile) throws IOException {
-		// Copy the content from the current assignments.csv file to a new output assignments.csv file with the same name
+		// Copy the content from the current assignments.csv file to a new output assignments.csv file with the same
+		// name
 		Path outputAssignmentsCSVPath = Files.copy(currentAssignmentsCSVFile.toPath(),
 				FileIOUtils.getOutputDir().toPath().resolve(currentAssignmentsCSVFile.getName()));
 		return outputAssignmentsCSVPath.toFile();

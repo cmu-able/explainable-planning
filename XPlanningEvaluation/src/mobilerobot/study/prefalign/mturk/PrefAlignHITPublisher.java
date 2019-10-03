@@ -175,8 +175,9 @@ public class PrefAlignHITPublisher {
 
 	public static void main(String[] args) throws ClassNotFoundException, URISyntaxException, IOException,
 			ParserConfigurationException, TransformerException {
-		String option = args[0];
+		String option = args[0]; // args[0]: option
 		String clientType = args[1]; // args[1]: -prod or -sandbox
+
 		MTurkClient client;
 		if (clientType.equals("-prod")) {
 			client = MTurkAPIUtils.getProductionClient();

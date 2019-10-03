@@ -45,35 +45,9 @@ public class AssignmentsCollector {
 	private static final String APPROVE_FEEDBACK = "Thank you for your participation.";
 
 	private final MTurkClient mClient;
-	private final List<HITInfo> mHITInfos = new ArrayList<>();
-	private final String[] mDataTypes;
-	private final int mNumQuestions;
 
-	public AssignmentsCollector(MTurkClient client, File hitInfoCSVFile, String[] dataTypes, int numQuestions)
-			throws IOException {
+	public AssignmentsCollector(MTurkClient client) {
 		mClient = client;
-		readAllHITInfos(hitInfoCSVFile);
-		mDataTypes = dataTypes;
-		mNumQuestions = numQuestions;
-	}
-
-	private void readAllHITInfos(File hitInfoCSVFile) throws IOException {
-		try (BufferedReader reader = new BufferedReader(new FileReader(hitInfoCSVFile))) {
-			String line = reader.readLine(); // Skip header line
-
-			while ((line = reader.readLine()) != null) {
-				String[] values = line.split(",");
-				// values[0] is HIT Index
-				String hitId = values[1];
-				String hitTypeId = values[2];
-				String[] questionDocNames = Arrays.copyOfRange(values, 3, values.length);
-
-				HITInfo hitInfo = new HITInfo(hitId, hitTypeId);
-				hitInfo.addQuestionDocumentNames(questionDocNames);
-
-				mHITInfos.add(hitInfo);
-			}
-		}
 	}
 
 	/**
@@ -83,6 +57,7 @@ public class AssignmentsCollector {
 	 * This method should be invoked after the maximum number of submitted assignments for the HIT is reached.
 	 * 
 	 * @param hitIndex
+	 * @param hitInfoCSVFile
 	 * @param assignmentFilters
 	 * @return HITProgress
 	 * @throws ParserConfigurationException
@@ -90,9 +65,10 @@ public class AssignmentsCollector {
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public HITProgress collectHITProgress(int hitIndex, IAssignmentFilter... assignmentFilters)
+	public HITProgress collectHITProgress(int hitIndex, File hitInfoCSVFile, IAssignmentFilter... assignmentFilters)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
-		HITInfo hitInfo = mHITInfos.get(hitIndex);
+		List<HITInfo> hitInfos = readAllHITInfos(hitInfoCSVFile);
+		HITInfo hitInfo = hitInfos.get(hitIndex);
 
 		// Collect all submitted assignments for this HIT
 		List<Assignment> submittedAssignments = collectHITAssignments(hitInfo, AssignmentStatus.SUBMITTED);
@@ -134,14 +110,36 @@ public class AssignmentsCollector {
 		return hitProgress;
 	}
 
-	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File currentAssignmentsCSVFile)
+	private List<HITInfo> readAllHITInfos(File hitInfoCSVFile) throws IOException {
+		List<HITInfo> hitInfos = new ArrayList<>();
+		try (BufferedReader reader = new BufferedReader(new FileReader(hitInfoCSVFile))) {
+			String line = reader.readLine(); // Skip header line
+
+			while ((line = reader.readLine()) != null) {
+				String[] values = line.split(",");
+				// values[0] is HIT Index
+				String hitId = values[1];
+				String hitTypeId = values[2];
+				String[] questionDocNames = Arrays.copyOfRange(values, 3, values.length);
+
+				HITInfo hitInfo = new HITInfo(hitId, hitTypeId);
+				hitInfo.addQuestionDocumentNames(questionDocNames);
+
+				hitInfos.add(hitInfo);
+			}
+		}
+		return hitInfos;
+	}
+
+	public void writeAssignmentsToCSVFile(int hitIndex, HITProgress hitProgress, File currentAssignmentsCSVFile,
+			String[] dataTypes, int numQuestions)
 			throws IOException, ParserConfigurationException, SAXException, ParseException {
 		HITInfo hitInfo = hitProgress.getHITInfo();
 		List<Assignment> assignments = hitProgress.getCurrentAssignments();
 
 		// Header:
 		// HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time (seconds),question0-{dataType0}, ...
-		File assignmentsCSVFile = currentAssignmentsCSVFile == null ? createAssignmentsCSVFile()
+		File assignmentsCSVFile = currentAssignmentsCSVFile == null ? createAssignmentsCSVFile(dataTypes, numQuestions)
 				: createAssignmentsCSVFile(currentAssignmentsCSVFile);
 
 		try (BufferedWriter writer = Files.newBufferedWriter(assignmentsCSVFile.toPath(), StandardOpenOption.APPEND)) {
@@ -155,7 +153,7 @@ public class AssignmentsCollector {
 				writer.write(",");
 
 				// Followed by: Assignment ID,Worker ID,Total Time (seconds),question0-{dataType0}, ... in each row
-				List<String> assignmentData = getAssignmentData(assignment);
+				List<String> assignmentData = getAssignmentData(assignment, dataTypes, numQuestions);
 				String assignemntDataRow = String.join(",", assignmentData);
 				writer.write(assignemntDataRow);
 				writer.write("\n");
@@ -227,13 +225,13 @@ public class AssignmentsCollector {
 	 * @return assignments.csv file
 	 * @throws IOException
 	 */
-	private File createAssignmentsCSVFile() throws IOException {
+	private File createAssignmentsCSVFile(String[] dataTypes, int numQuestions) throws IOException {
 		File assignmentsCSVFile = FileIOUtils.createOutputFile("assignments.csv");
 		try (BufferedWriter writer = Files.newBufferedWriter(assignmentsCSVFile.toPath())) {
 			writer.write("HIT Index,HIT ID,HITType ID,Assignment ID,Worker ID,Total Time (seconds)");
 
-			for (int i = 0; i < mNumQuestions; i++) {
-				for (String dataType : mDataTypes) {
+			for (int i = 0; i < numQuestions; i++) {
+				for (String dataType : dataTypes) {
 					String columnName = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
 					writer.write(",");
 					writer.write(columnName);
@@ -252,7 +250,7 @@ public class AssignmentsCollector {
 		return outputAssignmentsCSVPath.toFile();
 	}
 
-	private List<String> getAssignmentData(Assignment assignment)
+	private List<String> getAssignmentData(Assignment assignment, String[] dataTypes, int numQuestions)
 			throws ParserConfigurationException, SAXException, IOException, ParseException {
 		List<String> assignmentData = new ArrayList<>();
 
@@ -266,8 +264,8 @@ public class AssignmentsCollector {
 		assignmentData.add(Long.toString(totalDurationSeconds));
 
 		// Answer of each data type of each question
-		for (int i = 0; i < mNumQuestions; i++) {
-			for (String dataType : mDataTypes) {
+		for (int i = 0; i < numQuestions; i++) {
+			for (String dataType : dataTypes) {
 				String questionKey = String.format(MTurkHTMLQuestionUtils.QUESTION_KEY_FORMAT, i, dataType);
 				String answer = AssignmentsCollector.getAssignmentAnswerFromFreeText(assignment, questionKey);
 				assignmentData.add(answer);

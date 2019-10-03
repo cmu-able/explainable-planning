@@ -109,9 +109,6 @@ public class HITPublisher {
 		QualificationRequirement approvalRateRequirement = QualificationUtils
 				.createHighPercentAssignmentsApprovedRequirement();
 
-		// Add Masters qualification requirement only for -prod run
-		// QualificationRequirement mastersRequirement = QualificationUtils.createMastersQualificationRequirement(true);
-
 		// Arithmetic test and consent form requirement
 		QualificationRequirement testRequirement = QualificationUtils.createTestQualificationRequirement(mClient);
 
@@ -120,7 +117,7 @@ public class HITPublisher {
 				.createFirstParticipationRequirement(mClient);
 
 		builder.qualificationRequirements(localeRequirement, approvedHITsRequirement, approvalRateRequirement,
-				/* mastersRequirement, */ testRequirement, firstParticipationRequirement);
+				testRequirement, firstParticipationRequirement);
 
 		CreateHitTypeRequest createHITTypeRequest = builder.build();
 		CreateHitTypeResponse response = mClient.createHITType(createHITTypeRequest);

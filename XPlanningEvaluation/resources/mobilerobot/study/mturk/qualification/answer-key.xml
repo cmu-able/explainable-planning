@@ -57,6 +57,17 @@
 		</AnswerOption>
 	</Question>
 	<Question>
+		<QuestionIdentifier>math_Q4</QuestionIdentifier>
+		<AnswerOption>
+			<SelectionIdentifier>answer_Q4_agent_route</SelectionIdentifier>
+			<AnswerScore>0</AnswerScore>
+		</AnswerOption>
+		<AnswerOption>
+			<SelectionIdentifier>answer_Q4_alternative_route</SelectionIdentifier>
+			<AnswerScore>1</AnswerScore>
+		</AnswerOption>
+	</Question>
+	<Question>
 		<QuestionIdentifier>age_confirmation</QuestionIdentifier>
 		<AnswerOption>
 			<SelectionIdentifier>age_confirmed</SelectionIdentifier>
@@ -91,7 +102,7 @@
 	</Question>
 	<QualificationValueMapping>
 		<PercentageMapping>
-			<MaximumSummedScore>6</MaximumSummedScore>
+			<MaximumSummedScore>7</MaximumSummedScore>
 		</PercentageMapping>
 	</QualificationValueMapping>
 </AnswerKey>

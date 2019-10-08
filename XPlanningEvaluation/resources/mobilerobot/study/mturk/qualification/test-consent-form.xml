@@ -2,7 +2,7 @@
 	<Overview>
 		<Title>Basic Arithmetic Test</Title>
 		<Text>Please answer the following questions. Your answers will determine your eligibility to participate in this study. You are allowed to use a calculator.</Text>
-		<Text>Suppose you task a mobile robot to deliver a package at some destination. Suppose the robot then informs you that it has computed a navigation route that will take 6 minutes, but the route has 2 segments where the robot has 20% chance of colliding with obstacles (i.e., the expected value of collision is 0.4).</Text>
+		<Text>Suppose you task a mobile robot to deliver a package at some destination. Suppose the robot then informs you that it has computed a navigation route ("route A") that will take 6 minutes, but the route has 2 segments where the robot has 20% chance of colliding with obstacles (i.e., the expected value of collision is 0.4).</Text>
 		<Text>Suppose that you wish to quantify how "costly" the route is, by assigning $1 to each minute of the route, and $2 to each 0.1 expected collision of the route.</Text>
 	</Overview>
 	<Question>
@@ -90,6 +90,28 @@
 					<Selection>
 						<SelectionIdentifier>answer_Q3_14</SelectionIdentifier>
 						<Text>$14</Text>
+					</Selection>
+				</Selections>
+			</SelectionAnswer>
+		</AnswerSpecification>
+	</Question>
+	<Question>
+		<QuestionIdentifier>math_Q4</QuestionIdentifier>
+		<IsRequired>true</IsRequired>
+		<QuestionContent>
+			<Text>Suppose that there is an alternative navigation route ("route B") that will take 8 minutes, but the route has 1 segment where the robot has 20% chance of colliding with obstacles (i.e., the expected value of collision is 0.2). Which route is better (i.e., less "costly")?</Text>
+		</QuestionContent>
+		<AnswerSpecification>
+			<SelectionAnswer>
+				<StyleSuggestion>radiobutton</StyleSuggestion>
+				<Selections>
+					<Selection>
+						<SelectionIdentifier>answer_Q4_agent_route</SelectionIdentifier>
+						<Text>The robot's computed route ("route A")</Text>
+					</Selection>
+					<Selection>
+						<SelectionIdentifier>answer_Q4_alternative_route</SelectionIdentifier>
+						<Text>The alternative route ("route B")</Text>
 					</Selection>
 				</Selections>
 			</SelectionAnswer>

@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.mturk.model.QualificationTypeStatus;
 
 public class QualificationUtils {
 
-	private static final String TEST_QUAL_NAME = "passed_qualification_tests";
+	private static final String TEST_QUAL_NAME = "passed_qualification_tests_consented_to_research";
 	private static final String TEST_QUAL_DESCRIPTION = "This is a basic arithemtic test and consent form for participation in research for our study, entitled \"Understanding mobile robot navigation planning\".";
 	private static final String TEST_QUAL_KEYWORDS = "Arithmetic test, consent form for participation in research";
 	private static final Long TEST_QUAL_DURATION = 5 * 60L; // 5 minutes

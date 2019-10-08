@@ -40,7 +40,7 @@ public class PrefAlignHITPublisher {
 	private static final String DESCRIPTION_EG = String.format(DESCRIPTION_FORMAT, 2);
 	private static final String KEYWORDS = "Research study, experiment, human-robot interaction, human-AI interaction, mobile robot indoor navigation";
 	private static final String REWARD = "3.50"; // assume 17.5 minutes/HIT; pay rate $12/hour
-	private static final long ASSIGNMENT_DURATION = 30 * 60L; // 30 minutes
+	private static final long ASSIGNMENT_DURATION = 60 * 60L; // 60 minutes
 	private static final long LIFE_TIME = 1 * 7 * 24 * 60 * 60L; // 1 week
 	static final int MAX_ASSIGNMENTS = 3; // maximum of 3 Worker(s) can complete each HIT
 

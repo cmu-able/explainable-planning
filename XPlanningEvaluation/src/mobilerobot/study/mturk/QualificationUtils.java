@@ -53,15 +53,15 @@ public class QualificationUtils {
 	}
 
 	/**
-	 * Worker_​NumberHITsApproved >= 10,000 HITs requirement.
+	 * Worker_​NumberHITsApproved > 5,000 HITs requirement.
 	 * 
-	 * @return Worker_​NumberHITsApproved >= 10,000 HITs requirement
+	 * @return Worker_​NumberHITsApproved > 5,000 HITs requirement
 	 */
 	public static QualificationRequirement createHighNumberHITsApprovedRequirement() {
 		QualificationRequirement.Builder builder = QualificationRequirement.builder();
 		builder.qualificationTypeId("00000000000000000040"); // Worker_​NumberHITsApproved
-		builder.comparator(Comparator.GREATER_THAN_OR_EQUAL_TO);
-		builder.integerValues(10000);
+		builder.comparator(Comparator.GREATER_THAN);
+		builder.integerValues(5000);
 		builder.actionsGuarded(HITAccessActions.DISCOVER_PREVIEW_AND_ACCEPT);
 		return builder.build();
 	}

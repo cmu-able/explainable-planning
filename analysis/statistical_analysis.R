@@ -1,0 +1,7 @@
+data <- read.csv("~/Projects/explainable-planning/analysis/data.csv")
+library(lme4)
+data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data)
+print(summary(data.model))
+data.null <- lmer(accuracy ~ 1 + (1|participant) + (1|question.ref), data = data, REML = FALSE)
+data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data, REML = FALSE)
+anova(data.null, data.model)

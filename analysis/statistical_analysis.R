@@ -1,6 +1,6 @@
 data <- read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
 library(lme4)
-data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data)
+data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data, REML = FALSE)
 print(summary(data.model))
 data.null <- lmer(accuracy ~ 1 + (1|participant) + (1|question.ref), data = data, REML = FALSE)
 data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data, REML = FALSE)

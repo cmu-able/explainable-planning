@@ -1,0 +1,42 @@
+> data <- read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
+> library(lme4)
+> data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data, REML = FALSE)
+> print(summary(data.model))
+Linear mixed model fit by maximum likelihood  ['lmerMod']
+Formula: accuracy ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   371.9    390.3   -180.9    361.9      292 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.9099 -1.0818  0.3893  0.7062  1.4179 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.01224  0.1106  
+ question.ref (Intercept) 0.01869  0.1367  
+ Residual                 0.17146  0.4141  
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error t value
+(Intercept)        0.55650    0.04251  13.092
+groupexperimental  0.24316    0.05297   4.591
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.629
+> data.null <- lmer(accuracy ~ 1 + (1|participant) + (1|question.ref), data = data, REML = FALSE)
+> data.model <- lmer(accuracy ~ group + (1|participant) + (1|question.ref), data = data, REML = FALSE)
+> anova(data.null, data.model)
+Data: data
+Models:
+data.null: accuracy ~ 1 + (1 | participant) + (1 | question.ref)
+data.model: accuracy ~ group + (1 | participant) + (1 | question.ref)
+           Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)    
+data.null   4 388.60 403.38 -190.30   380.60                             
+data.model  5 371.87 390.34 -180.93   361.87 18.732      1  1.505e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

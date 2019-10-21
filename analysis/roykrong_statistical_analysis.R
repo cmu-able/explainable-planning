@@ -28,7 +28,13 @@ m1 = glmer(accuracy ~
           , data = data)
 
 summary(m1) # experimental group are exp(1.3352) = 3.8 times more likely to answer correctly!
+
+# R2m: describes the proportion of variance explained by the fixed factor(s) alone
+# R2c: describes the proportion of variance explained by both the fixed and random factors
 r.squaredGLMM(m1) # goodness of fit of model, without (left) and with (right) random effects
+
+# Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+# Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
 anova(m1) 
 
 table(data$score)
@@ -41,5 +47,8 @@ m2 = lmer(score ~
 
 summary(m2)
 r.squaredGLMM(m2)
+
+# Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+# Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
 anova(m2)
 

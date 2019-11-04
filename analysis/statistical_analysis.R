@@ -35,7 +35,13 @@ r.squaredGLMM(m1) # goodness of fit of model, without (left) and with (right) ra
 
 # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
 # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
-anova(m1) 
+anova(m1)
+
+# Standard error
+se <- sqrt(diag(vcov(m1)))
+# Table of estimates with 95% CI
+tab <- cbind(Est = fixef(m1), LL = fixef(m1) - 1.96 * se, UL = fixef(m1) + 1.96 * se)
+exp(tab)
 
 table(data$score)
 

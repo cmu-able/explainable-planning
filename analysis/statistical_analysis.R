@@ -5,6 +5,8 @@ library(MuMIn) # R squared
 
 # setwd("~/Downloads")
 data = read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
+#data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_aligned.csv")
+#data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_unaligned.csv")
 names(data)
 
 str(data)

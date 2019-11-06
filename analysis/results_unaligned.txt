@@ -1,0 +1,153 @@
+> library(lme4)
+> library(lmerTest)
+> # library(r2glmm) # R squared
+> library(MuMIn) # R squared
+> 
+> # setwd("~/Downloads")
+> #data = read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
+> #data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_aligned.csv")
+> data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_unaligned.csv")
+> names(data)
+[1] "question.ref" "group"        "participant"  "accuracy"     "score"       
+> 
+> str(data)
+'data.frame':	139 obs. of  5 variables:
+ $ question.ref: Factor w/ 23 levels "question-mission20-agent3",..: 21 21 21 2 13 2 13 2 13 5 ...
+ $ group       : Factor w/ 2 levels "control","experimental": 1 1 1 1 1 1 1 1 1 1 ...
+ $ participant : Factor w/ 79 levels "A1160COTUR26JZ",..: 64 21 7 73 73 17 17 32 32 62 ...
+ $ accuracy    : num  0 0 0 0 0 0 0 0 0 1 ...
+ $ score       : num  -2 -3 -3 -3 -3 -3 -3 -3 -3 3 ...
+> data$accuracy = as.factor(data$accuracy)
+> table(data$accuracy)
+
+ 0  1 
+58 81 
+> 
+> ## WOW, look at this!
+> unique(data$group)
+[1] control      experimental
+Levels: control experimental
+> boxplot(list(control = data[data$group=="control",]$score, 
++              treatment = data[data$group=="experimental",]$score))
+> 
+> boxplot(list(control = as.numeric(data[data$group=="control",]$accuracy), 
++              treatment = as.numeric(data[data$group=="experimental",]$accuracy)))
+> 
+> 
+> m1 = glmer(accuracy ~ 
++             group 
++             + (1|participant) 
++             + (1|question.ref)
++           , family = "binomial"
++           , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m1) # experimental group are exp(1.3352) = 3.8 times more likely to answer correctly!
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: accuracy ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   174.1    185.8    -83.0    166.1      135 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.0683 -0.7327  0.4222  0.5529  1.3648 
+
+Random effects:
+ Groups       Name        Variance  Std.Dev. 
+ participant  (Intercept) 1.193e-10 1.092e-05
+ question.ref (Intercept) 3.963e-01 6.296e-01
+Number of obs: 139, groups:  participant, 79; question.ref, 23
+
+Fixed effects:
+                  Estimate Std. Error z value Pr(>|z|)    
+(Intercept)        -0.4849     0.2926  -1.657   0.0974 .  
+groupexperimental   1.8072     0.4177   4.326 1.52e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.596
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> 
+> # R2m: describes the proportion of variance explained by the fixed factor(s) alone
+> # R2c: describes the proportion of variance explained by both the fixed and random factors
+> r.squaredGLMM(m1) # goodness of fit of model, without (left) and with (right) random effects
+                  R2m       R2c
+theoretical 0.1824056 0.2703145
+delta       0.1542918 0.2286514
+Warning message:
+The null model is correct only if all variables used by the original model remain unchanged. 
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> anova(m1)
+Analysis of Variance Table
+      Df Sum Sq Mean Sq F value
+group  1 21.799  21.799  21.799
+> 
+> # Standard error
+> se <- sqrt(diag(vcov(m1)))
+> # Table of estimates with 95% CI
+> tab <- cbind(Est = fixef(m1), LL = fixef(m1) - 1.96 * se, UL = fixef(m1) + 1.96 * se)
+> exp(tab)
+                        Est        LL        UL
+(Intercept)       0.6157332 0.3470013  1.092582
+groupexperimental 6.0935553 2.6872386 13.817684
+> 
+> table(data$score)
+
+-4 -3 -2 -1  0  1  2  3  4 
+14 30 11  3  3  5  8 22 43 
+> 
+> m2 = lmer(score ~ 
++              group 
++            + (1|participant) 
++            + (1|question.ref)
++            , data = data)
+> 
+> summary(m2)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 686.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.0924 -0.7519  0.3133  0.6541  1.7405 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.7812   0.8839  
+ question.ref (Intercept) 0.4517   0.6721  
+ Residual                 7.1218   2.6687  
+Number of obs: 139, groups:  participant, 79; question.ref, 23
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)        -0.7440     0.3804 55.2655  -1.956   0.0556 .  
+groupexperimental   2.7179     0.4982 42.2635   5.455 2.36e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.660
+> r.squaredGLMM(m2)
+          R2m       R2c
+[1,] 0.182088 0.3027936
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> anova(m2)
+Type III Analysis of Variance Table with Satterthwaite's method
+      Sum Sq Mean Sq NumDF  DenDF F value    Pr(>F)    
+group 211.92  211.92     1 42.263  29.757 2.363e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1

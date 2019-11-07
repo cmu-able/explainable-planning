@@ -82,16 +82,13 @@ The null model is correct only if all variables used by the original model remai
 > 
 > # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
 > # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
-> anova(m1)
-Analysis of Variance Table
-      Df Sum Sq Mean Sq F value
-group  1 3.1804  3.1804  3.1804
+> # anova(m1)
 > 
 > # Standard error
-> se <- sqrt(diag(vcov(m1)))
+> se_m1 <- sqrt(diag(vcov(m1)))
 > # Table of estimates with 95% CI
-> tab <- cbind(Est = fixef(m1), LL = fixef(m1) - 1.96 * se, UL = fixef(m1) + 1.96 * se)
-> exp(tab)
+> tab_ci_m1 <- cbind(Est = fixef(m1), LL = fixef(m1) - 1.96 * se_m1, UL = fixef(m1) + 1.96 * se_m1)
+> exp(tab_ci_m1)
                        Est        LL       UL
 (Intercept)       3.461065 1.3229974 9.054417
 groupexperimental 2.651528 0.8088651 8.691931
@@ -141,9 +138,13 @@ gropxprmntl -0.646
 > 
 > # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
 > # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
-> anova(m2)
-Type III Analysis of Variance Table with Satterthwaite's method
-      Sum Sq Mean Sq NumDF  DenDF F value  Pr(>F)  
-group 11.976  11.976     1 71.984  3.6438 0.06027 .
----
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> # anova(m2)
+> 
+> # Standard error
+> se_m2 <- sqrt(diag(vcov(m2)))
+> # Table of estimates with 95% CI
+> tab_ci_m2 <- cbind(Est = fixef(m2), LL = fixef(m2) - 1.96 * se_m2, UL = fixef(m2) + 1.96 * se_m2)
+> tab_ci_m2
+                        Est          LL       UL
+(Intercept)       1.2423215  0.50593791 1.978705
+groupexperimental 0.9162007 -0.02454348 1.856945

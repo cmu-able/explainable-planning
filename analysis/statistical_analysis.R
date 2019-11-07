@@ -22,6 +22,7 @@ boxplot(list(control = as.numeric(data[data$group=="control",]$accuracy),
              treatment = as.numeric(data[data$group=="experimental",]$accuracy)))
 
 
+### ACCURACY ###
 m1 = glmer(accuracy ~ 
             group 
             + (1|participant) 
@@ -45,6 +46,18 @@ se_m1 <- sqrt(diag(vcov(m1)))
 tab_ci_m1 <- cbind(Est = fixef(m1), LL = fixef(m1) - 1.96 * se_m1, UL = fixef(m1) + 1.96 * se_m1)
 exp(tab_ci_m1)
 
+m1_slope = glmer(accuracy ~ 
+             group 
+           + (1+group|participant) 
+           + (1+group|question.ref)
+           , family = "binomial"
+           , data = data)
+
+summary(m1_slope)
+r.squaredGLMM(m1_slope)
+
+
+### CONFIDENCE-WEIGHTED SCORE ###
 table(data$score)
 
 m2 = lmer(score ~ 
@@ -65,3 +78,12 @@ se_m2 <- sqrt(diag(vcov(m2)))
 # Table of estimates with 95% CI
 tab_ci_m2 <- cbind(Est = fixef(m2), LL = fixef(m2) - 1.96 * se_m2, UL = fixef(m2) + 1.96 * se_m2)
 tab_ci_m2
+
+m2_slope = lmer(score ~ 
+            group 
+          + (1+group|participant) 
+          + (1+group|question.ref)
+          , data = data)
+
+summary(m2_slope)
+r.squaredGLMM(m2_slope)

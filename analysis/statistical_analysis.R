@@ -121,11 +121,10 @@ r.squaredGLMM(m2_pq)
 anova(m2, m2_pq, refit=FALSE)
 
 # Random slope for each participant, but not for each question
-m2_p = glmer(accuracy ~ 
+m2_p = lmer(score ~ 
                group 
              + (1+group|participant) 
              + (1|question.ref)
-             , family = "binomial"
              , data = data)
 
 summary(m2_p)
@@ -133,11 +132,10 @@ r.squaredGLMM(m2_p)
 anova(m2, m2_p, refit=FALSE)
 
 # Random slope for each question, but not for each participant
-m2_q = glmer(accuracy ~ 
+m2_q = lmer(score ~ 
                group 
              + (1|participant) 
              + (1+group|question.ref)
-             , family = "binomial"
              , data = data)
 
 summary(m2_q)

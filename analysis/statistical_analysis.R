@@ -56,6 +56,9 @@ m1_slope = glmer(accuracy ~
 summary(m1_slope)
 r.squaredGLMM(m1_slope)
 
+# Check if adding random slopes for each participant and each question improves the model fit
+anova(m1, m1_slope, refit=FALSE)
+
 
 ### CONFIDENCE-WEIGHTED SCORE ###
 table(data$score)
@@ -87,3 +90,6 @@ m2_slope = lmer(score ~
 
 summary(m2_slope)
 r.squaredGLMM(m2_slope)
+
+# Check if adding random slopes for each participant and each question improves the model fit
+anova(m2, m2_slope, refit=FALSE)

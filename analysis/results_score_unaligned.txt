@@ -1,0 +1,223 @@
+> ### CONFIDENCE-WEIGHTED SCORE ###
+> table(data$score)
+
+-4 -3 -2 -1  0  1  2  3  4 
+14 30 11  3  3  5  8 22 43 
+> 
+> # Random intercepts for each participant and each question
+> m_score = lmer(score ~ 
++                  group 
++                + (1|participant) 
++                + (1|question.ref)
++                , data = data)
+> 
+> summary(m_score)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 686.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.0924 -0.7519  0.3133  0.6541  1.7405 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.7812   0.8839  
+ question.ref (Intercept) 0.4517   0.6721  
+ Residual                 7.1218   2.6687  
+Number of obs: 139, groups:  participant, 79; question.ref, 23
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)        -0.7440     0.3804 55.2655  -1.956   0.0556 .  
+groupexperimental   2.7179     0.4982 42.2635   5.455 2.36e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.660
+> r.squaredGLMM(m_score)
+          R2m       R2c
+[1,] 0.182088 0.3027936
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> # anova(m_score)
+> 
+> # Standard error
+> se_m_score <- sqrt(diag(vcov(m_score)))
+> 
+> # Table of estimates with 95% CI
+> tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_score, UL = fixef(m_score) + 1.96 * se_m_score)
+> # 95% CI [1.74, 3.69]
+> tab_ci_m_score
+                         Est        LL         UL
+(Intercept)       -0.7439955 -1.489656 0.00166487
+groupexperimental  2.7178703  1.741330 3.69441093
+> 
+> # Random slopes for each participant and each question
+> m_score_pq = lmer(score ~ 
++                     group 
++                   + (1+group|participant) 
++                   + (1+group|question.ref)
++                   , data = data)
+Error: number of observations (=139) <= number of random effects (=158) for term (1 + group | participant); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+> 
+> summary(m_score_pq)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 + group | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 1436.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4545 -0.6732  0.3625  0.5890  1.7112 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       1.716    1.310         
+              groupexperimental 1.516    1.231    -1.00
+ question.ref (Intercept)       1.494    1.222         
+              groupexperimental 3.642    1.908    -0.63
+ Residual                       5.300    2.302         
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3352     0.3199 51.0902   1.048 0.299614    
+groupexperimental   1.7416     0.4278 50.5171   4.071 0.000165 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.743
+> r.squaredGLMM(m_score_pq)
+            R2m      R2c
+[1,] 0.08668193 0.396117
+> 
+> # Check if adding random slopes for each participant and each question improves the model fit
+> # Not conclusive
+> anova(m_score, m_score_pq, refit=FALSE)
+Error in anova.merMod(m_score, m_score_pq, refit = FALSE) : 
+  models were not all fitted to the same size of dataset
+> 
+> # Random slope for each participant, but not for each question
+> m_score_p = lmer(score ~ 
++                    group 
++                  + (1+group|participant) 
++                  + (1|question.ref)
++                  , data = data)
+Error: number of observations (=139) <= number of random effects (=158) for term (1 + group | participant); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+> 
+> # Model failed to converge
+> summary(m_score_p)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 + group | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 1447.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4194 -0.7620  0.3511  0.7025  1.8449 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       1.6465   1.2831        
+              groupexperimental 2.2043   1.4847   -0.95
+ question.ref (Intercept)       0.8344   0.9135        
+ Residual                       6.2533   2.5007        
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3419     0.3059 53.3123   1.118    0.269    
+groupexperimental   1.7275     0.3497 73.4684   4.939 4.77e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.712
+convergence code: 0
+Model failed to converge with max|grad| = 0.00293156 (tol = 0.002, component 1)
+
+> r.squaredGLMM(m_score_p)
+            R2m      R2c
+[1,] 0.08541751 0.286396
+> 
+> # Check if adding random slope for each particiant (but not each question) improves the model fit
+> # Not conclusive
+> anova(m_score, m_score_p, refit=FALSE)
+Error in anova.merMod(m_score, m_score_p, refit = FALSE) : 
+  models were not all fitted to the same size of dataset
+> 
+> # Random slope for each question, but not for each participant
+> m_score_q = lmer(score ~ 
++                    group 
++                  + (1|participant) 
++                  + (1+group|question.ref)
++                  , data = data)
+> 
+> summary(m_score_q)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 676.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3025 -0.5073  0.2563  0.5474  1.8027 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       0.3235   0.5688        
+ question.ref (Intercept)       2.4466   1.5642        
+              groupexperimental 6.4585   2.5414   -0.81
+ Residual                       5.6113   2.3688        
+Number of obs: 139, groups:  participant, 79; question.ref, 23
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)        -0.7531     0.4437 21.9340  -1.697 0.103752    
+groupexperimental   2.7300     0.6787 22.0716   4.022 0.000568 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.763
+> r.squaredGLMM(m_score_q)
+          R2m       R2c
+[1,] 0.182468 0.4544162
+> 
+> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Significant: p=0.0067
+> anova(m_score, m_score_q, refit=FALSE)
+Data: data
+Models:
+m_score: score ~ group + (1 | participant) + (1 | question.ref)
+m_score_q: score ~ group + (1 | participant) + (1 + group | question.ref)
+          Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)   
+m_score    5 696.27 710.94 -343.13   686.27                            
+m_score_q  7 690.26 710.80 -338.13   676.26 10.012      2   0.006698 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> # Comparing models based on BIC
+> # The best model according to BIC is m_score
+> BIC(m_score, m_score_pq, m_score_p, m_score_q)
+           df       BIC
+m_score     5  710.9398
+m_score_pq  9 1487.9189
+m_score_p   7 1487.0179
+m_score_q   7  710.7968
+Warning message:
+In BIC.default(m_score, m_score_pq, m_score_p, m_score_q) :
+  models are not all fitted to the same number of observations

@@ -40,14 +40,14 @@ r.squaredGLMM(m_accuracy) # goodness of fit of model, without (left) and with (r
 
 # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
 # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
-# anova(m1)
+# anova(m_accuracy)
 
 # Standard error
 se_m_accuracy <- sqrt(diag(vcov(m_accuracy)))
 
 # Table of estimates with 95% CI
-# 95% CI [2.04, 7.07]
 tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.96 * se_m_accuracy, UL = fixef(m_accuracy) + 1.96 * se_m_accuracy)
+# 95% CI [2.04, 7.07]
 exp(tab_ci_m_accuracy)
 
 # Random intercepts and slopes for each participant and each question
@@ -95,60 +95,76 @@ r.squaredGLMM(m_accuracy_q)
 # Somewhat significant: p=0.019
 anova(m_accuracy, m_accuracy_q, refit=FALSE)
 
+# Comparing models based on BIC
+# The best model according to BIC is m_accuracy
+BIC(m_accuracy, m_accuracy_pq, m_accuracy_p, m_accuracy_q)
+
 
 ### CONFIDENCE-WEIGHTED SCORE ###
 table(data$score)
 
-m2 = lmer(score ~ 
-             group 
-           + (1|participant) 
-           + (1|question.ref)
-           , data = data)
+# Random intercepts for each participant and each question
+m_score = lmer(score ~ 
+                 group 
+               + (1|participant) 
+               + (1|question.ref)
+               , data = data)
 
-summary(m2)
-r.squaredGLMM(m2)
+summary(m_score)
+r.squaredGLMM(m_score)
 
 # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
 # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
-# anova(m2)
+# anova(m_score)
 
 # Standard error
-se_m2 <- sqrt(diag(vcov(m2)))
+se_m_score <- sqrt(diag(vcov(m_score)))
+
 # Table of estimates with 95% CI
-tab_ci_m2 <- cbind(Est = fixef(m2), LL = fixef(m2) - 1.96 * se_m2, UL = fixef(m2) + 1.96 * se_m2)
-tab_ci_m2
+tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_score, UL = fixef(m_score) + 1.96 * se_m_score)
+# 95% CI [1.04, 2.42]
+tab_ci_m_score
 
 # Random slopes for each participant and each question
-m2_pq = lmer(score ~ 
-            group 
-          + (1+group|participant) 
-          + (1+group|question.ref)
-          , data = data)
+m_score_pq = lmer(score ~ 
+                    group 
+                  + (1+group|participant) 
+                  + (1+group|question.ref)
+                  , data = data)
 
-summary(m2_pq)
-r.squaredGLMM(m2_pq)
+summary(m_score_pq)
+r.squaredGLMM(m_score_pq)
 
 # Check if adding random slopes for each participant and each question improves the model fit
-anova(m2, m2_pq, refit=FALSE)
+# Somewhat significant: p=0.013
+anova(m_score, m_score_pq, refit=FALSE)
 
 # Random slope for each participant, but not for each question
-m2_p = lmer(score ~ 
-               group 
-             + (1+group|participant) 
-             + (1|question.ref)
-             , data = data)
+m_score_p = lmer(score ~ 
+                   group 
+                 + (1+group|participant) 
+                 + (1|question.ref)
+                 , data = data)
 
-summary(m2_p)
-r.squaredGLMM(m2_p)
-anova(m2, m2_p, refit=FALSE)
+# Model failed to converge
+summary(m_score_p)
+r.squaredGLMM(m_score_p)
+anova(m_score, m_score_p, refit=FALSE)
 
 # Random slope for each question, but not for each participant
-m2_q = lmer(score ~ 
-               group 
-             + (1|participant) 
-             + (1+group|question.ref)
-             , data = data)
+m_score_q = lmer(score ~ 
+                   group 
+                 + (1|participant) 
+                 + (1+group|question.ref)
+                 , data = data)
 
-summary(m2_q)
-r.squaredGLMM(m2_q)
-anova(m2, m2_q, refit=FALSE)
+summary(m_score_q)
+r.squaredGLMM(m_score_q)
+
+# Check if adding random slope for each question (but not each paricipant) improves the model fit
+# Somewhat significant: p=0.010
+anova(m_score, m_score_q, refit=FALSE)
+
+# Comparing models based on BIC
+# The best model according to BIC is m_score
+BIC(m_score, m_score_pq, m_score_p, m_score_q)

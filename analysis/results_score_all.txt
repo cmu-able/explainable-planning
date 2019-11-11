@@ -1,0 +1,226 @@
+### CONFIDENCE-WEIGHTED SCORE ###
+>
+> # Random intercepts for each participant and each question
+> m_score = lmer(score ~ 
++                  group 
++                + (1|participant) 
++                + (1|question.ref)
++                , data = data)
+> 
+> summary(m_score)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 1449.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3169 -0.7789  0.3275  0.6548  1.7601 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.9652   0.9824  
+ question.ref (Intercept) 0.7534   0.8680  
+ Residual                 6.2678   2.5036  
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3408     0.2794 96.9906   1.220    0.226    
+groupexperimental   1.7271     0.3514 76.4749   4.915 4.94e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.635
+> r.squaredGLMM(m_score)
+            R2m       R2c
+[1,] 0.08565657 0.2824203
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> # anova(m_score)
+> 
+> # Standard error
+> se_m_score <- sqrt(diag(vcov(m_score)))
+> 
+> # Table of estimates with 95% CI
+> tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_score, UL = fixef(m_score) + 1.96 * se_m_score)
+> # 95% CI [1.04, 2.42]
+> tab_ci_m_score
+                        Est         LL        UL
+(Intercept)       0.3408336 -0.2068884 0.8885556
+groupexperimental 1.7271154  1.0383620 2.4158688
+> 
+> # Random slopes for each participant and each question
+> m_score_pq = lmer(score ~ 
++                     group 
++                   + (1+group|participant) 
++                   + (1+group|question.ref)
++                   , data = data)
+> 
+> summary(m_score_pq)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 + group | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 1436.7
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4545 -0.6732  0.3625  0.5890  1.7112 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       1.716    1.310         
+              groupexperimental 1.516    1.231    -1.00
+ question.ref (Intercept)       1.494    1.222         
+              groupexperimental 3.642    1.908    -0.63
+ Residual                       5.300    2.302         
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3352     0.3199 51.0902   1.048 0.299614    
+groupexperimental   1.7416     0.4278 50.5171   4.071 0.000165 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.743
+> r.squaredGLMM(m_score_pq)
+            R2m      R2c
+[1,] 0.08668193 0.396117
+> 
+> # Check if adding random slopes for each participant and each question improves the model fit
+> # Somewhat significant: p=0.013
+> anova(m_score, m_score_pq, refit=FALSE)
+Data: data
+Models:
+m_score: score ~ group + (1 | participant) + (1 | question.ref)
+m_score_pq: score ~ group + (1 + group | participant) + (1 + group | question.ref)
+           Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)  
+m_score     5 1459.4 1477.9 -724.70   1449.4                           
+m_score_pq  9 1454.7 1487.9 -718.34   1436.7 12.724      4    0.01271 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> # Random slope for each participant, but not for each question
+> m_score_p = lmer(score ~ 
++                    group 
++                  + (1+group|participant) 
++                  + (1|question.ref)
++                  , data = data)
+Warning message:
+In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
+  Model failed to converge with max|grad| = 0.00293156 (tol = 0.002, component 1)
+> 
+> # Model failed to converge
+> summary(m_score_p)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 + group | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 1447.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4194 -0.7620  0.3511  0.7025  1.8449 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       1.6465   1.2831        
+              groupexperimental 2.2043   1.4847   -0.95
+ question.ref (Intercept)       0.8344   0.9135        
+ Residual                       6.2533   2.5007        
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3419     0.3059 53.3123   1.118    0.269    
+groupexperimental   1.7275     0.3497 73.4684   4.939 4.77e-06 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.712
+convergence code: 0
+Model failed to converge with max|grad| = 0.00293156 (tol = 0.002, component 1)
+
+> r.squaredGLMM(m_score_p)
+            R2m      R2c
+[1,] 0.08541751 0.286396
+> anova(m_score, m_score_p, refit=FALSE)
+Data: data
+Models:
+m_score: score ~ group + (1 | participant) + (1 | question.ref)
+m_score_p: score ~ group + (1 + group | participant) + (1 | question.ref)
+          Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
+m_score    5 1459.4 1477.9 -724.70   1449.4                         
+m_score_p  7 1461.2 1487.0 -723.58   1447.2 2.2373      2     0.3267
+> 
+> # Random slope for each question, but not for each participant
+> m_score_q = lmer(score ~ 
++                    group 
++                  + (1|participant) 
++                  + (1+group|question.ref)
++                  , data = data)
+> 
+> summary(m_score_q)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: score ~ group + (1 | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 1440.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3919 -0.6639  0.3105  0.5954  1.6112 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       0.8981   0.9477        
+ question.ref (Intercept)       1.7644   1.3283        
+              groupexperimental 3.5087   1.8731   -0.70
+ Residual                       5.2995   2.3021        
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         0.3318     0.3021 54.5944   1.098 0.276911    
+groupexperimental   1.7426     0.4256 52.3046   4.095 0.000147 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.706
+> r.squaredGLMM(m_score_q)
+           R2m       R2c
+[1,] 0.0871528 0.3935775
+> 
+> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Somewhat significant: p=0.010
+> anova(m_score, m_score_q, refit=FALSE)
+Data: data
+Models:
+m_score: score ~ group + (1 | participant) + (1 | question.ref)
+m_score_q: score ~ group + (1 | participant) + (1 + group | question.ref)
+          Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)  
+m_score    5 1459.4 1477.9 -724.70   1449.4                           
+m_score_q  7 1454.2 1480.1 -720.11   1440.2 9.1877      2    0.01011 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> # Comparing models based on BIC
+> # The best model according to BIC is m_score
+> BIC(m_score, m_score_pq, m_score_p, m_score_q)
+           df      BIC
+m_score     5 1477.868
+m_score_pq  9 1487.919
+m_score_p   7 1487.018
+m_score_q   7 1480.067

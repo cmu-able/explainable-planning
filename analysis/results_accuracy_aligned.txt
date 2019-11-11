@@ -1,0 +1,245 @@
+> ### ACCURACY ###
+> 
+> # Random intercepts for each participant and each question
+> m_accuracy = glmer(accuracy ~ 
++                      group 
++                    + (1|participant) 
++                    + (1|question.ref)
++                    , family = "binomial"
++                    , data = data)
+> 
+> summary(m_accuracy) # experimental group are exp(1.3352) = 3.8 times more likely to answer correctly!
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: accuracy ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   172.4    184.7    -82.2    164.4      154 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.8858  0.2496  0.3070  0.4153  1.0196 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 1.9323   1.3901  
+ question.ref (Intercept) 0.3165   0.5626  
+Number of obs: 158, groups:  participant, 93; question.ref, 25
+
+Fixed effects:
+                  Estimate Std. Error z value Pr(>|z|)  
+(Intercept)         1.2416     0.4907    2.53   0.0114 *
+groupexperimental   0.9751     0.6057    1.61   0.1074  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.234
+> 
+> # R2m: describes the proportion of variance explained by the fixed factor(s) alone
+> # R2c: describes the proportion of variance explained by both the fixed and random factors
+> r.squaredGLMM(m_accuracy) # goodness of fit of model, without (left) and with (right) random effects
+                   R2m       R2c
+theoretical 0.04139846 0.4306170
+delta       0.02934924 0.3052839
+Warning message:
+The null model is correct only if all variables used by the original model remain unchanged. 
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> # anova(m_accuracy)
+> 
+> # Standard error
+> se_m_accuracy <- sqrt(diag(vcov(m_accuracy)))
+> 
+> # Table of estimates with 95% CI
+> tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.96 * se_m_accuracy, UL = fixef(m_accuracy) + 1.96 * se_m_accuracy)
+> # 95% CI [2.04, 7.07]
+> exp(tab_ci_m_accuracy)
+                       Est        LL       UL
+(Intercept)       3.461065 1.3229974 9.054417
+groupexperimental 2.651528 0.8088651 8.691931
+> 
+> # Random intercepts and slopes for each participant and each question
+> m_accuracy_pq = glmer(accuracy ~ 
++                         group 
++                       + (1+group|participant) 
++                       + (1+group|question.ref)
++                       , family = "binomial"
++                       , data = data)
+Error: number of observations (=158) < number of random effects (=186) for term (1 + group | participant); the random-effects parameters are probably unidentifiable
+> 
+> summary(m_accuracy_pq)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: accuracy ~ group + (1 + group | participant) + (1 + group | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   353.3    382.9   -168.7    337.3      289 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.0441 -0.6954  0.2657  0.5477  1.0999 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       0.5073   0.7123        
+              groupexperimental 0.5073   0.7123   -1.00
+ question.ref (Intercept)       0.8981   0.9477        
+              groupexperimental 3.8546   1.9633   -0.51
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error z value Pr(>|z|)   
+(Intercept)         0.2989     0.2612   1.144  0.25245   
+groupexperimental   1.7965     0.5717   3.143  0.00168 **
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.463
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_accuracy_pq)
+Error: number of observations (=158) < number of random effects (=186) for term (1 + group | participant); the random-effects parameters are probably unidentifiable
+In addition: Warning message:
+The null model is correct only if all variables used by the original model remain unchanged. 
+> 
+> # Check if adding random slopes for each participant and each question improves the model fit
+> # Not conclusive
+> anova(m_accuracy, m_accuracy_pq, refit=FALSE)
+Error in anova.merMod(m_accuracy, m_accuracy_pq, refit = FALSE) : 
+  models were not all fitted to the same size of dataset
+> 
+> # Random slope for each participant, but not for each question
+> m_accuracy_p = glmer(accuracy ~ 
++                        group 
++                      + (1+group|participant) 
++                      + (1|question.ref)
++                      , family = "binomial"
++                      , data = data)
+Error: number of observations (=158) < number of random effects (=186) for term (1 + group | participant); the random-effects parameters are probably unidentifiable
+> 
+> summary(m_accuracy_p)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: accuracy ~ group + (1 + group | participant) + (1 | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   357.2    379.4   -172.6    345.2      291 
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.3776 -0.8450  0.4135  0.5631  1.2317 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       0.4974   0.7052        
+              groupexperimental 0.4973   0.7052   -1.00
+ question.ref (Intercept)       0.5492   0.7411        
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error z value Pr(>|z|)    
+(Intercept)         0.2799     0.2381   1.175     0.24    
+groupexperimental   1.2628     0.3094   4.082 4.47e-05 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.600
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_accuracy_p)
+Error: number of observations (=158) < number of random effects (=186) for term (1 + group | participant); the random-effects parameters are probably unidentifiable
+In addition: Warning message:
+The null model is correct only if all variables used by the original model remain unchanged. 
+> 
+> # Check if adding random slope for each participant (but not each question) improves the model fit
+> # Not conclusive
+> anova(m_accuracy, m_accuracy_p, refit=FALSE)
+Error in anova.merMod(m_accuracy, m_accuracy_p, refit = FALSE) : 
+  models were not all fitted to the same size of dataset
+> 
+> # Random slope for each question, but not for each participant
+> m_accuracy_q = glmer(accuracy ~ 
++                        group 
++                      + (1|participant) 
++                      + (1+group|question.ref)
++                      , family = "binomial"
++                      , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_accuracy_q)
+Generalized linear mixed model fit by maximum likelihood (Laplace Approximation) ['glmerMod']
+ Family: binomial  ( logit )
+Formula: accuracy ~ group + (1 | participant) + (1 + group | question.ref)
+   Data: data
+
+     AIC      BIC   logLik deviance df.resid 
+   159.3    177.6    -73.6    147.3      152 
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-1.44725  0.00026  0.00034  0.01581  1.37665 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr
+ participant  (Intercept)       243.4    15.6         
+ question.ref (Intercept)         0.0     0.0         
+              groupexperimental 204.4    14.3      NaN
+Number of obs: 158, groups:  participant, 93; question.ref, 25
+
+Fixed effects:
+                  Estimate Std. Error z value Pr(>|z|)    
+(Intercept)          8.173      1.685   4.851 1.23e-06 ***
+groupexperimental    7.795      5.634   1.384    0.166    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl 0.306 
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_accuracy_q)
+boundary (singular) fit: see ?isSingular
+                     R2m          R2c
+theoretical 4.182373e-02 9.909976e-01
+delta       3.393786e-15 8.041450e-14
+Warning message:
+The null model is correct only if all variables used by the original model remain unchanged. 
+> 
+> # Check if adding random slope for each question (but not each participant) improves the model fit
+> # Significant: p=0.00019
+> anova(m_accuracy, m_accuracy_q, refit=FALSE)
+Data: data
+Models:
+m_accuracy: accuracy ~ group + (1 | participant) + (1 | question.ref)
+m_accuracy_q: accuracy ~ group + (1 | participant) + (1 + group | question.ref)
+             Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)    
+m_accuracy    4 172.42 184.67 -82.210   164.42                             
+m_accuracy_q  6 159.27 177.64 -73.634   147.27 17.151      2  0.0001887 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> # Comparing models based on BIC
+> # The best model according to BIC is m_accuracy
+> BIC(m_accuracy, m_accuracy_pq, m_accuracy_p, m_accuracy_q)
+              df      BIC
+m_accuracy     4 184.6695
+m_accuracy_pq  8 382.8747
+m_accuracy_p   6 379.3922
+m_accuracy_q   6 177.6442
+Warning message:
+In BIC.default(m_accuracy, m_accuracy_pq, m_accuracy_p, m_accuracy_q) :
+  models are not all fitted to the same number of observations

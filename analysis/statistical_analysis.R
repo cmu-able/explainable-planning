@@ -149,6 +149,9 @@ m_score_p = lmer(score ~
 # Model failed to converge
 summary(m_score_p)
 r.squaredGLMM(m_score_p)
+
+# Check if adding random slope for each particiant (but not each question) improves the model fit
+# Not significant: p=0.33
 anova(m_score, m_score_p, refit=FALSE)
 
 # Random slope for each question, but not for each participant

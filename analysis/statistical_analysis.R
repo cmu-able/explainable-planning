@@ -2,6 +2,7 @@ library(lme4)
 library(lmerTest)
 # library(r2glmm) # R squared
 library(MuMIn) # R squared
+library(stargazer)
 
 # setwd("~/Downloads")
 data = read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
@@ -49,6 +50,11 @@ se_m_accuracy <- sqrt(diag(vcov(m_accuracy)))
 tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.96 * se_m_accuracy, UL = fixef(m_accuracy) + 1.96 * se_m_accuracy)
 # 95% CI [2.04, 7.07]
 exp(tab_ci_m_accuracy)
+
+stargazer(m_accuracy, type = "latex", title = "Results",
+          digits = 3,
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          digit.separator = "")
 
 # Random intercepts and slopes for each participant and each question
 m_accuracy_pq = glmer(accuracy ~ 
@@ -124,6 +130,11 @@ se_m_score <- sqrt(diag(vcov(m_score)))
 tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_score, UL = fixef(m_score) + 1.96 * se_m_score)
 # 95% CI [1.04, 2.42]
 tab_ci_m_score
+
+stargazer(m_score, type = "latex", title = "Results",
+          digits = 3,
+          star.cutoffs = c(0.05, 0.01, 0.001),
+          digit.separator = "")
 
 # Random slopes for each participant and each question
 m_score_pq = lmer(score ~ 

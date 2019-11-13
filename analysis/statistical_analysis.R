@@ -8,6 +8,8 @@ library(stargazer)
 data = read.csv("~/Projects/explainable-planning/analysis/data_3qs.csv")
 #data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_aligned.csv")
 #data = read.csv("~/Projects/explainable-planning/analysis/data_3qs_unaligned.csv")
+data_aligned = read.csv("~/Projects/explainable-planning/analysis/data_3qs_aligned.csv")
+data_unaligned = read.csv("~/Projects/explainable-planning/analysis/data_3qs_unaligned.csv")
 names(data)
 
 str(data)
@@ -33,6 +35,20 @@ m_accuracy = glmer(accuracy ~
                    , family = "binomial"
                    , data = data)
 
+m_accuracy_aligned = glmer(accuracy ~ 
+                             group
+                           + (1|participant)
+                           + (1|question.ref)
+                           , family = "binomial"
+                           , data = data_aligned)
+
+m_accuracy_unaligned = glmer(accuracy ~ 
+                               group
+                             + (1|participant)
+                             + (1|question.ref)
+                             , family = "binomial"
+                             , data = data_unaligned)
+
 summary(m_accuracy) # experimental group are exp(1.3352) = 3.8 times more likely to answer correctly!
 
 # R2m: describes the proportion of variance explained by the fixed factor(s) alone
@@ -51,7 +67,8 @@ tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.9
 # 95% CI [2.04, 7.07]
 exp(tab_ci_m_accuracy)
 
-stargazer(m_accuracy, type = "latex", title = "Results",
+stargazer(m_accuracy, m_accuracy_aligned, m_accuracy_unaligned, type = "latex", title = "Results",
+          column.labels = c("all","aligned","misaligned"),
           digits = 3,
           star.cutoffs = c(0.05, 0.01, 0.001),
           digit.separator = "")
@@ -116,6 +133,18 @@ m_score = lmer(score ~
                + (1|question.ref)
                , data = data)
 
+m_score_aligned = lmer(score ~
+                         group
+                       + (1|participant)
+                       + (1|question.ref)
+                       , data = data_aligned)
+
+m_score_unaligned = lmer(score ~
+                           group
+                         + (1|participant)
+                         + (1|question.ref)
+                         , data = data_unaligned)
+
 summary(m_score)
 r.squaredGLMM(m_score)
 
@@ -131,7 +160,8 @@ tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_
 # 95% CI [1.04, 2.42]
 tab_ci_m_score
 
-stargazer(m_score, type = "latex", title = "Results",
+stargazer(m_score, m_score_aligned, m_score_unaligned, type = "latex", title = "Results",
+          column.labels = c("all","aligned","misaligned"),
           digits = 3,
           star.cutoffs = c(0.05, 0.01, 0.001),
           digit.separator = "")

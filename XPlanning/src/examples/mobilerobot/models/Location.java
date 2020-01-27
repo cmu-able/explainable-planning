@@ -19,16 +19,14 @@ public class Location implements IStateVarValue {
 	private volatile int hashCode;
 
 	private StateVarValue mValue;
-	private String mId;
 
 	public Location(String id, Area area) {
-		mId = id;
-		mValue = new StateVarValue();
+		mValue = new StateVarValue(id);
 		mValue.putAttributeValue("area", area);
 	}
 
 	public String getId() {
-		return mId;
+		return mValue.getIdentifier();
 	}
 
 	public Area getArea() throws AttributeNameNotFoundException {
@@ -49,7 +47,7 @@ public class Location implements IStateVarValue {
 			return false;
 		}
 		Location location = (Location) obj;
-		return location.mId.equals(mId) && location.mValue.equals(mValue);
+		return location.mValue.equals(mValue);
 	}
 
 	@Override
@@ -58,7 +56,6 @@ public class Location implements IStateVarValue {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mValue.hashCode();
-			result = 31 * result + mId.hashCode();
 			hashCode = result;
 		}
 		return hashCode;
@@ -66,6 +63,6 @@ public class Location implements IStateVarValue {
 
 	@Override
 	public String toString() {
-		return mId;
+		return mValue.getIdentifier();
 	}
 }

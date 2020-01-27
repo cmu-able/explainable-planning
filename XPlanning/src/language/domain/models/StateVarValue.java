@@ -19,14 +19,20 @@ public class StateVarValue implements IStateVarValue {
 	 */
 	private volatile int hashCode;
 
+	private String mIdentifier;
 	private Map<String, IStateVarAttribute> mAttributes = new HashMap<>();
 
-	public StateVarValue() {
+	public StateVarValue(String identifier) {
+		mIdentifier = identifier;
 		// mAttributes initially empty
 	}
 
 	public void putAttributeValue(String name, IStateVarAttribute value) {
 		mAttributes.put(name, value);
+	}
+
+	public String getIdentifier() {
+		return mIdentifier;
 	}
 
 	@Override
@@ -46,7 +52,7 @@ public class StateVarValue implements IStateVarValue {
 			return false;
 		}
 		StateVarValue value = (StateVarValue) obj;
-		return value.mAttributes.equals(mAttributes);
+		return value.mIdentifier.equals(mIdentifier) && value.mAttributes.equals(mAttributes);
 	}
 
 	@Override
@@ -54,6 +60,7 @@ public class StateVarValue implements IStateVarValue {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mIdentifier.hashCode();
 			result = 31 * result + mAttributes.hashCode();
 			hashCode = result;
 		}

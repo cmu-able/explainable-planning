@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import language.domain.models.Action;
-import language.domain.models.IAction;
 import language.domain.models.IActionAttribute;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVar;
@@ -16,7 +15,7 @@ import language.exceptions.AttributeNameNotFoundException;
  * @author rsukkerd
  *
  */
-public class FlyAction implements IAction {
+public class FlyAction implements IDurativeAction {
 
 	/*
 	 * Cached hashCode -- Effective Java

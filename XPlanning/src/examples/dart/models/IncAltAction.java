@@ -4,20 +4,19 @@ import java.util.List;
 import java.util.Set;
 
 import language.domain.models.Action;
-import language.domain.models.IAction;
 import language.domain.models.IActionAttribute;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVar;
 import language.exceptions.AttributeNameNotFoundException;
 
 /**
- * {@link IncAltAction} is the type of Increase-Altitude action by a specified altitude-change level -- but does not
- * change the horizontal position.
+ * {@link IncAltAction} is the type of Increase-Altitude action by a specified altitude-change level. This action also
+ * flies forward by 1 segment.
  * 
  * @author rsukkerd
  *
  */
-public class IncAltAction implements IAction {
+public class IncAltAction implements IDurativeAction {
 
 	/*
 	 * Cached hashCode -- Effective Java

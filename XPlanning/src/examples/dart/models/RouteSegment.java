@@ -2,6 +2,7 @@ package examples.dart.models;
 
 import language.domain.models.IStateVarAttribute;
 import language.domain.models.IStateVarInt;
+import language.domain.models.StateVarValue;
 import language.exceptions.AttributeNameNotFoundException;
 
 /**
@@ -18,13 +19,20 @@ public class RouteSegment implements IStateVarInt {
 	private volatile int hashCode;
 
 	private int mSegment;
+	private StateVarValue mValue;
 
-	public RouteSegment(int segment) {
+	public RouteSegment(int segment, ThreatDistribution threatDist) {
 		mSegment = segment;
+		mValue = new StateVarValue("segment " + segment);
+		mValue.putAttributeValue("threatDistribution", threatDist);
 	}
 
 	public int getSegment() {
 		return mSegment;
+	}
+
+	public ThreatDistribution getThreatDistribution() throws AttributeNameNotFoundException {
+		return (ThreatDistribution) getAttributeValue("threatDistribution");
 	}
 
 	@Override
@@ -34,7 +42,7 @@ public class RouteSegment implements IStateVarInt {
 
 	@Override
 	public IStateVarAttribute getAttributeValue(String name) throws AttributeNameNotFoundException {
-		throw new AttributeNameNotFoundException(name);
+		return mValue.getAttributeValue(name);
 	}
 
 	@Override
@@ -46,14 +54,16 @@ public class RouteSegment implements IStateVarInt {
 			return false;
 		}
 		RouteSegment segment = (RouteSegment) obj;
-		return Integer.compare(segment.mSegment, mSegment) == 0;
+		return Integer.compare(segment.mSegment, mSegment) == 0 && segment.mValue.equals(mValue);
 	}
 
 	@Override
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Integer.hashCode(mSegment);
+			result = 17;
+			result = 31 * result + Integer.hashCode(mSegment);
+			result = 31 * result + mValue.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

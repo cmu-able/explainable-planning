@@ -5,32 +5,31 @@ import language.domain.models.IStateVarInt;
 import language.exceptions.AttributeNameNotFoundException;
 
 /**
- * {@link TimePeriod} is a discrete time period t of the mission. This corresponds to the segment t in the mission
- * route.
+ * {@link RouteSegment} is a segment in the mission route.
  * 
  * @author rsukkerd
  *
  */
-public class TimePeriod implements IStateVarInt {
+public class RouteSegment implements IStateVarInt {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private int mPeriod;
+	private int mSegment;
 
-	public TimePeriod(int period) {
-		mPeriod = period;
+	public RouteSegment(int segment) {
+		mSegment = segment;
 	}
 
-	public int getTimePeriod() {
-		return mPeriod;
+	public int getSegment() {
+		return mSegment;
 	}
 
 	@Override
 	public int getValue() {
-		return getTimePeriod();
+		return getSegment();
 	}
 
 	@Override
@@ -43,18 +42,18 @@ public class TimePeriod implements IStateVarInt {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof TimePeriod)) {
+		if (!(obj instanceof RouteSegment)) {
 			return false;
 		}
-		TimePeriod period = (TimePeriod) obj;
-		return Integer.compare(period.mPeriod, mPeriod) == 0;
+		RouteSegment segment = (RouteSegment) obj;
+		return Integer.compare(segment.mSegment, mSegment) == 0;
 	}
 
 	@Override
 	public int hashCode() {
 		int result = hashCode;
 		if (result == 0) {
-			result = Integer.hashCode(mPeriod);
+			result = Integer.hashCode(mSegment);
 			hashCode = result;
 		}
 		return hashCode;
@@ -62,7 +61,7 @@ public class TimePeriod implements IStateVarInt {
 
 	@Override
 	public String toString() {
-		return Integer.toString(mPeriod);
+		return Integer.toString(mSegment);
 	}
 
 }

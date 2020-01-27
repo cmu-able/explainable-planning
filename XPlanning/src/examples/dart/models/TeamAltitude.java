@@ -5,7 +5,9 @@ import language.domain.models.IStateVarInt;
 import language.exceptions.AttributeNameNotFoundException;
 
 /**
- * {@link TeamAltitude} is the type of altitude level of the team. The unit is a discrete level.
+ * {@link TeamAltitude} is the type of altitude level of the team. The unit is a discrete level. It can be used in 2
+ * cases: (1) as a state variable, denoting the altitude at which the team is flying, or (2) as an action parameter,
+ * denoting the change in altitude level.
  * 
  * @author rsukkerd
  *

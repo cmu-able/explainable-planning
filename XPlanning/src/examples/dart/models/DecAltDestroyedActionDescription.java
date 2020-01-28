@@ -15,10 +15,10 @@ import language.mdp.ProbabilisticEffect;
 import language.mdp.ProbabilisticTransition;
 
 /**
- * {@link IncAltDestroyedActionDescription} is the action description for the "teamDestroyed" effect class of an
- * instance of {@link IncAltAction} action type. It uses a {@link FormulaActionDescription} that uses
+ * {@link DecAltDestroyedActionDescription} is the action description for the "teamDestroyed" effect class of an
+ * instance of {@link DecAltAction} action type. It uses a {@link FormulaActionDescription} that uses
  * {@link TeamDestroyedFormula}.
- *
+ * 
  * In the future, the constructor of this type may read an input formula for the "teamDestroyed" effect and create a
  * {@link TeamDestroyedFormula} accordingly.
  * 
@@ -28,17 +28,17 @@ import language.mdp.ProbabilisticTransition;
  * @author rsukkerd
  *
  */
-public class IncAltDestroyedActionDescription implements IActionDescription<IncAltAction> {
+public class DecAltDestroyedActionDescription implements IActionDescription<DecAltAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
-	private FormulaActionDescription<IncAltAction> mIncAltDestroyedActionDesc;
+	private FormulaActionDescription<DecAltAction> mDecAltDestroyedActionDesc;
 
-	public IncAltDestroyedActionDescription(ActionDefinition<IncAltAction> incAltDef,
-			Precondition<IncAltAction> precondition, StateVarDefinition<TeamAltitude> altSrcDef,
+	public DecAltDestroyedActionDescription(ActionDefinition<DecAltAction> decAltDef,
+			Precondition<DecAltAction> precondition, StateVarDefinition<TeamAltitude> altSrcDef,
 			StateVarDefinition<TeamFormation> formSrcDef, StateVarDefinition<TeamECM> ecmSrcDef,
 			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDestDef) {
 		// Discriminant class (i.e., discriminant variables)
@@ -53,39 +53,39 @@ public class IncAltDestroyedActionDescription implements IActionDescription<IncA
 		effectClass.add(destroyedDestDef);
 
 		// Probabilistic transition formula of "teamDestroyed" effect class, of a durative action
-		TeamDestroyedFormula<IncAltAction> destroyedFormula = new TeamDestroyedFormula<>(altSrcDef, formSrcDef,
+		TeamDestroyedFormula<DecAltAction> destroyedFormula = new TeamDestroyedFormula<>(altSrcDef, formSrcDef,
 				ecmSrcDef, segmentSrcDef, destroyedDestDef);
 
-		// Formula action description of "teamDestroyed" effect class, of IncAlt actions
-		mIncAltDestroyedActionDesc = new FormulaActionDescription<>(incAltDef, precondition, discrClass, effectClass,
+		// Formula action description of "teamDestroyed" effect class, of DecAlt actions
+		mDecAltDestroyedActionDesc = new FormulaActionDescription<>(decAltDef, precondition, discrClass, effectClass,
 				destroyedFormula);
 	}
 
 	@Override
-	public Set<ProbabilisticTransition<IncAltAction>> getProbabilisticTransitions(IncAltAction action)
+	public Set<ProbabilisticTransition<DecAltAction>> getProbabilisticTransitions(DecAltAction action)
 			throws XMDPException {
-		return mIncAltDestroyedActionDesc.getProbabilisticTransitions(action);
+		return mDecAltDestroyedActionDesc.getProbabilisticTransitions(action);
 	}
 
 	@Override
-	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, IncAltAction action)
+	public ProbabilisticEffect getProbabilisticEffect(Discriminant discriminant, DecAltAction action)
 			throws XMDPException {
-		return mIncAltDestroyedActionDesc.getProbabilisticEffect(discriminant, action);
+		return mDecAltDestroyedActionDesc.getProbabilisticEffect(discriminant, action);
 	}
 
 	@Override
-	public ActionDefinition<IncAltAction> getActionDefinition() {
-		return mIncAltDestroyedActionDesc.getActionDefinition();
+	public ActionDefinition<DecAltAction> getActionDefinition() {
+		return mDecAltDestroyedActionDesc.getActionDefinition();
 	}
 
 	@Override
 	public DiscriminantClass getDiscriminantClass() {
-		return mIncAltDestroyedActionDesc.getDiscriminantClass();
+		return mDecAltDestroyedActionDesc.getDiscriminantClass();
 	}
 
 	@Override
 	public EffectClass getEffectClass() {
-		return mIncAltDestroyedActionDesc.getEffectClass();
+		return mDecAltDestroyedActionDesc.getEffectClass();
 	}
 
 	@Override
@@ -93,11 +93,11 @@ public class IncAltDestroyedActionDescription implements IActionDescription<IncA
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof IncAltDestroyedActionDescription)) {
+		if (!(obj instanceof DecAltDestroyedActionDescription)) {
 			return false;
 		}
-		IncAltDestroyedActionDescription actionDesc = (IncAltDestroyedActionDescription) obj;
-		return actionDesc.mIncAltDestroyedActionDesc.equals(mIncAltDestroyedActionDesc);
+		DecAltDestroyedActionDescription actionDesc = (DecAltDestroyedActionDescription) obj;
+		return actionDesc.mDecAltDestroyedActionDesc.equals(mDecAltDestroyedActionDesc);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class IncAltDestroyedActionDescription implements IActionDescription<IncA
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
-			result = 31 * result + mIncAltDestroyedActionDesc.hashCode();
+			result = 31 * result + mDecAltDestroyedActionDesc.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

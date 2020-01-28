@@ -9,13 +9,13 @@ import language.mdp.EffectClass;
 import language.mdp.ProbabilisticEffect;
 
 /**
- * {@link TeamDestroyedFormula} is the formula of the probability of the team being destroyed during any durative
- * action.
+ * {@link TeamDestroyedFormula} is the formula of the probability of the team being destroyed during any action of type
+ * {@link IDurativeAction}.
  * 
  * @author rsukkerd
  *
  */
-public class TeamDestroyedFormula implements IProbabilisticTransitionFormula<IDurativeAction> {
+public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabilisticTransitionFormula<E> {
 
 	private static final double THREAT_RANGE = 2;
 	private static final double PSI = 4;
@@ -50,7 +50,7 @@ public class TeamDestroyedFormula implements IProbabilisticTransitionFormula<IDu
 	}
 
 	@Override
-	public ProbabilisticEffect formula(Discriminant discriminant, IDurativeAction action) throws XMDPException {
+	public ProbabilisticEffect formula(Discriminant discriminant, E action) throws XMDPException {
 		// Determining factors of effect on teamDestroyed
 		TeamAltitude srcAlt = discriminant.getStateVarValue(TeamAltitude.class, mAltSrcDef);
 		TeamFormation srcForm = discriminant.getStateVarValue(TeamFormation.class, mFormSrcDef);
@@ -91,10 +91,10 @@ public class TeamDestroyedFormula implements IProbabilisticTransitionFormula<IDu
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof TeamDestroyedFormula)) {
+		if (!(obj instanceof TeamDestroyedFormula<?>)) {
 			return false;
 		}
-		TeamDestroyedFormula formula = (TeamDestroyedFormula) obj;
+		TeamDestroyedFormula<?> formula = (TeamDestroyedFormula<?>) obj;
 		return formula.mAltSrcDef.equals(mAltSrcDef) && formula.mFormSrcDef.equals(mFormSrcDef)
 				&& formula.mECMSrcDef.equals(mECMSrcDef) && formula.mSegmentSrcDef.equals(mSegmentSrcDef)
 				&& formula.mDestroyedDestDef.equals(mDestroyedDestDef);

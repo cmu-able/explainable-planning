@@ -1,6 +1,6 @@
 package examples.dart.metrics;
 
-import examples.dart.models.FlyAction;
+import examples.dart.models.IDurativeAction;
 import examples.dart.models.RouteSegment;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
@@ -17,12 +17,13 @@ import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarClass;
 
 /**
- * {@link FlyDetectTargetDomain} represents the domain of {@link FlyMissTargetEvent}.
+ * {@link DetectTargetDomain} represents the domain of {@link MissTargetEvent}. The {@link ActionDefinition} of this
+ * domain must contain all actions of types IncAlt, DecAlt, and Fly.
  * 
  * @author rsukkerd
  *
  */
-public class FlyDetectTargetDomain implements ITransitionStructure<FlyAction> {
+public class DetectTargetDomain implements ITransitionStructure<IDurativeAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -34,11 +35,11 @@ public class FlyDetectTargetDomain implements ITransitionStructure<FlyAction> {
 	private StateVarDefinition<TeamECM> mECMSrcDef;
 	private StateVarDefinition<RouteSegment> mSegmentSrcDef;
 
-	private TransitionStructure<FlyAction> mDomain = new TransitionStructure<>();
+	private TransitionStructure<IDurativeAction> mDomain = new TransitionStructure<>();
 
-	public FlyDetectTargetDomain(StateVarDefinition<TeamAltitude> altSrcDef,
-			StateVarDefinition<TeamFormation> formSrcDef, StateVarDefinition<TeamECM> ecmSrcDef,
-			StateVarDefinition<RouteSegment> segmentSrcDef, ActionDefinition<FlyAction> flyDef) {
+	public DetectTargetDomain(StateVarDefinition<TeamAltitude> altSrcDef, StateVarDefinition<TeamFormation> formSrcDef,
+			StateVarDefinition<TeamECM> ecmSrcDef, StateVarDefinition<RouteSegment> segmentSrcDef,
+			ActionDefinition<IDurativeAction> durActionDef) {
 		mAltSrcDef = altSrcDef;
 		mFormSrcDef = formSrcDef;
 		mECMSrcDef = ecmSrcDef;
@@ -48,24 +49,24 @@ public class FlyDetectTargetDomain implements ITransitionStructure<FlyAction> {
 		mDomain.addSrcStateVarDef(formSrcDef);
 		mDomain.addSrcStateVarDef(ecmSrcDef);
 		mDomain.addSrcStateVarDef(segmentSrcDef);
-		mDomain.setActionDef(flyDef);
+		mDomain.setActionDef(durActionDef);
 	}
 
-	public TeamAltitude getTeamAltitude(Transition<FlyAction, FlyDetectTargetDomain> transition)
+	public TeamAltitude getTeamAltitude(Transition<IDurativeAction, DetectTargetDomain> transition)
 			throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamAltitude.class, mAltSrcDef);
 	}
 
-	public TeamFormation getTeamFormation(Transition<FlyAction, FlyDetectTargetDomain> transition)
+	public TeamFormation getTeamFormation(Transition<IDurativeAction, DetectTargetDomain> transition)
 			throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamFormation.class, mFormSrcDef);
 	}
 
-	public TeamECM getTeamECM(Transition<FlyAction, FlyDetectTargetDomain> transition) throws VarNotFoundException {
+	public TeamECM getTeamECM(Transition<IDurativeAction, DetectTargetDomain> transition) throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamECM.class, mECMSrcDef);
 	}
 
-	public TargetDistribution getTargetDistribution(Transition<FlyAction, FlyDetectTargetDomain> transition)
+	public TargetDistribution getTargetDistribution(Transition<IDurativeAction, DetectTargetDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		RouteSegment segment = transition.getSrcStateVarValue(RouteSegment.class, mSegmentSrcDef);
 		return segment.getTargetDistribution();
@@ -82,7 +83,7 @@ public class FlyDetectTargetDomain implements ITransitionStructure<FlyAction> {
 	}
 
 	@Override
-	public ActionDefinition<FlyAction> getActionDef() {
+	public ActionDefinition<IDurativeAction> getActionDef() {
 		return mDomain.getActionDef();
 	}
 
@@ -101,10 +102,10 @@ public class FlyDetectTargetDomain implements ITransitionStructure<FlyAction> {
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof FlyDetectTargetDomain)) {
+		if (!(obj instanceof DetectTargetDomain)) {
 			return false;
 		}
-		FlyDetectTargetDomain domain = (FlyDetectTargetDomain) obj;
+		DetectTargetDomain domain = (DetectTargetDomain) obj;
 		return domain.mDomain.equals(mDomain);
 	}
 

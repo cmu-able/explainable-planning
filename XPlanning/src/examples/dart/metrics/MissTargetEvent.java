@@ -1,6 +1,6 @@
 package examples.dart.metrics;
 
-import examples.dart.models.FlyAction;
+import examples.dart.models.IDurativeAction;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
 import examples.dart.models.TeamECM;
@@ -11,13 +11,13 @@ import language.exceptions.AttributeNameNotFoundException;
 import language.exceptions.VarNotFoundException;
 
 /**
- * {@link FlyMissTargetEvent} represent the team missing a target, when the target actually exists in the team's current
- * segment.
+ * {@link MissTargetEvent} represent the team missing a target during IncAlt/DecAlt/Fly action, when the target actually
+ * exists in the team's current segment.
  * 
  * @author rsukkerd
  *
  */
-public class FlyMissTargetEvent implements IEvent<FlyAction, FlyDetectTargetDomain> {
+public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDomain> {
 
 	public static final String NAME = "target";
 
@@ -29,9 +29,9 @@ public class FlyMissTargetEvent implements IEvent<FlyAction, FlyDetectTargetDoma
 	 */
 	private volatile int hashCode;
 
-	private FlyDetectTargetDomain mDomain;
+	private DetectTargetDomain mDomain;
 
-	public FlyMissTargetEvent(FlyDetectTargetDomain domain) {
+	public MissTargetEvent(DetectTargetDomain domain) {
 		mDomain = domain;
 	}
 
@@ -41,12 +41,12 @@ public class FlyMissTargetEvent implements IEvent<FlyAction, FlyDetectTargetDoma
 	}
 
 	@Override
-	public FlyDetectTargetDomain getTransitionStructure() {
+	public DetectTargetDomain getTransitionStructure() {
 		return mDomain;
 	}
 
 	@Override
-	public double getEventProbability(Transition<FlyAction, FlyDetectTargetDomain> transition)
+	public double getEventProbability(Transition<IDurativeAction, DetectTargetDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		// Determining factors of missing target
 		TeamAltitude srcAlt = mDomain.getTeamAltitude(transition);
@@ -75,10 +75,10 @@ public class FlyMissTargetEvent implements IEvent<FlyAction, FlyDetectTargetDoma
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof FlyMissTargetEvent)) {
+		if (!(obj instanceof MissTargetEvent)) {
 			return false;
 		}
-		FlyMissTargetEvent event = (FlyMissTargetEvent) obj;
+		MissTargetEvent event = (MissTargetEvent) obj;
 		return event.mDomain.equals(mDomain);
 	}
 

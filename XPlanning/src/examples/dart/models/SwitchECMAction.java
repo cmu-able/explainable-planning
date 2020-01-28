@@ -31,6 +31,10 @@ public class SwitchECMAction implements IAction {
 		mteamECMDest = ecmDest;
 	}
 
+	public TeamECM getTargetECM() {
+		return mteamECMDest;
+	}
+
 	@Override
 	public String getName() {
 		return mAction.getName();

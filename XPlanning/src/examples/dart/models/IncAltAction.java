@@ -31,6 +31,10 @@ public class IncAltAction implements IDurativeAction {
 		mteamAltChange = teamAltChange;
 	}
 
+	public TeamAltitude getAltitudeChange() {
+		return mteamAltChange;
+	}
+
 	@Override
 	public String getName() {
 		return mAction.getName();

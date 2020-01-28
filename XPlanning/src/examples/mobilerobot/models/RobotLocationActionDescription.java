@@ -16,7 +16,7 @@ import language.mdp.ProbabilisticTransition;
 
 /**
  * {@link RobotLocationActionDescription} is an action description for the "rLoc" effect class of an instance of
- * {@link MoveToAction}. It uses a {@link FormulaActionDescription}.
+ * {@link MoveToAction}. It uses a {@link FormulaActionDescription} that uses {@link RobotLocationFormula}.
  * 
  * In the future, the constructor of this type may read an input formula for the "rLoc" effect and create a
  * {@link RobotLocationFormula} accordingly.

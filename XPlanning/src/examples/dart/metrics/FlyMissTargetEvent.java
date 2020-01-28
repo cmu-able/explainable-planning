@@ -70,4 +70,27 @@ public class FlyMissTargetEvent implements IEvent<FlyAction, FlyDetectTargetDoma
 		return targetDist.getExpectedTargetProbability() * missTargetProbGivenTarget;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof FlyMissTargetEvent)) {
+			return false;
+		}
+		FlyMissTargetEvent event = (FlyMissTargetEvent) obj;
+		return event.mDomain.equals(mDomain);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = hashCode;
+		if (result == 0) {
+			result = 17;
+			result = 31 * result + mDomain.hashCode();
+			hashCode = result;
+		}
+		return result;
+	}
+
 }

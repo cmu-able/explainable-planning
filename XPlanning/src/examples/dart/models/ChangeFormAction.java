@@ -31,6 +31,10 @@ public class ChangeFormAction implements IAction {
 		mteamFormDest = formDest;
 	}
 
+	public TeamFormation getTargetFormation() {
+		return mteamFormDest;
+	}
+
 	@Override
 	public String getName() {
 		return mAction.getName();

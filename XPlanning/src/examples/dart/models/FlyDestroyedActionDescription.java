@@ -40,6 +40,7 @@ public class FlyDestroyedActionDescription implements IActionDescription<FlyActi
 			StateVarDefinition<TeamAltitude> altSrcDef, StateVarDefinition<TeamFormation> formSrcDef,
 			StateVarDefinition<TeamECM> ecmSrcDef, StateVarDefinition<RouteSegment> segmentSrcDef,
 			StateVarDefinition<TeamDestroyed> destroyedDestDef) {
+		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(altSrcDef);
 		discrClass.add(formSrcDef);
@@ -54,7 +55,7 @@ public class FlyDestroyedActionDescription implements IActionDescription<FlyActi
 		TeamDestroyedFormula<FlyAction> destroyedFormula = new TeamDestroyedFormula<>(altSrcDef, formSrcDef, ecmSrcDef,
 				segmentSrcDef, destroyedDestDef);
 
-		// Formula action description of "teamDestroyed" effect class, of DecAlt actions
+		// Formula action description of "teamDestroyed" effect class, of Fly actions
 		mFlyDestroyedActionDesc = new FormulaActionDescription<>(flyDef, precondition, discrClass, effectClass,
 				destroyedFormula);
 	}

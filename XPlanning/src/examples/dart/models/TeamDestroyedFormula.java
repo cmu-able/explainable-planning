@@ -17,8 +17,8 @@ import language.mdp.ProbabilisticEffect;
  */
 public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabilisticTransitionFormula<E> {
 
-	private static final double THREAT_RANGE = 2;
-	private static final double PSI = 4;
+	public static final double THREAT_RANGE = 2;
+	public static final double PSI = 4;
 
 	/*
 	 * Cached hashCode -- Effective Java

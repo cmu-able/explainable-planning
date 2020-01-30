@@ -2,10 +2,11 @@ package examples.dart.metrics;
 
 import examples.dart.models.IDurativeAction;
 import examples.dart.models.RouteSegment;
-import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
+import examples.dart.models.TeamDestroyed;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
+import examples.dart.models.ThreatDistribution;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
 import language.domain.metrics.TransitionStructure;
@@ -17,19 +18,24 @@ import language.exceptions.VarNotFoundException;
 import language.mdp.StateVarClass;
 
 /**
- * {@link DetectTargetDomain} represents the domain of {@link MissTargetEvent}. The {@link ActionDefinition} of this
- * domain is a composite action definition, which contains all actions of types IncAlt, DecAlt, and Fly.
+ * {@link DestroyedProbabilityDomain} represents the domain of {@link DestroyedProbabilityQFunction}. The
+ * {@link ActionDefinition} of this domain is a composite action definition, which contains all actions of types IncAlt,
+ * DecAlt, and Fly.
  * 
  * @author rsukkerd
  *
  */
-public class DetectTargetDomain implements ITransitionStructure<IDurativeAction> {
+public class DestroyedProbabilityDomain implements ITransitionStructure<IDurativeAction> {
 
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
+	// DestroyedProbability value is only applicable when team is still alive
+	private StateVarDefinition<TeamDestroyed> mDestroyedSrcDef;
+
+	// Determining factors of probability of being destroyed -- same as those in TeamDestroyedFormula
 	private StateVarDefinition<TeamAltitude> mAltSrcDef;
 	private StateVarDefinition<TeamFormation> mFormSrcDef;
 	private StateVarDefinition<TeamECM> mECMSrcDef;
@@ -37,14 +43,17 @@ public class DetectTargetDomain implements ITransitionStructure<IDurativeAction>
 
 	private TransitionStructure<IDurativeAction> mDomain = new TransitionStructure<>();
 
-	public DetectTargetDomain(StateVarDefinition<TeamAltitude> altSrcDef, StateVarDefinition<TeamFormation> formSrcDef,
+	public DestroyedProbabilityDomain(StateVarDefinition<TeamDestroyed> destroyedSrcDef,
+			StateVarDefinition<TeamAltitude> altSrcDef, StateVarDefinition<TeamFormation> formSrcDef,
 			StateVarDefinition<TeamECM> ecmSrcDef, StateVarDefinition<RouteSegment> segmentSrcDef,
 			ActionDefinition<IDurativeAction> durActionDef) {
+		mDestroyedSrcDef = destroyedSrcDef;
 		mAltSrcDef = altSrcDef;
 		mFormSrcDef = formSrcDef;
 		mECMSrcDef = ecmSrcDef;
 		mSegmentSrcDef = segmentSrcDef;
 
+		mDomain.addSrcStateVarDef(destroyedSrcDef);
 		mDomain.addSrcStateVarDef(altSrcDef);
 		mDomain.addSrcStateVarDef(formSrcDef);
 		mDomain.addSrcStateVarDef(ecmSrcDef);
@@ -52,24 +61,30 @@ public class DetectTargetDomain implements ITransitionStructure<IDurativeAction>
 		mDomain.setActionDef(durActionDef);
 	}
 
-	public TeamAltitude getTeamAltitude(Transition<IDurativeAction, DetectTargetDomain> transition)
+	public TeamDestroyed getTeamDestroyed(Transition<IDurativeAction, DestroyedProbabilityDomain> transition)
+			throws VarNotFoundException {
+		return transition.getSrcStateVarValue(TeamDestroyed.class, mDestroyedSrcDef);
+	}
+
+	public TeamAltitude getTeamAltitude(Transition<IDurativeAction, DestroyedProbabilityDomain> transition)
 			throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamAltitude.class, mAltSrcDef);
 	}
 
-	public TeamFormation getTeamFormation(Transition<IDurativeAction, DetectTargetDomain> transition)
+	public TeamFormation getTeamFormation(Transition<IDurativeAction, DestroyedProbabilityDomain> transition)
 			throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamFormation.class, mFormSrcDef);
 	}
 
-	public TeamECM getTeamECM(Transition<IDurativeAction, DetectTargetDomain> transition) throws VarNotFoundException {
+	public TeamECM getTeamECM(Transition<IDurativeAction, DestroyedProbabilityDomain> transition)
+			throws VarNotFoundException {
 		return transition.getSrcStateVarValue(TeamECM.class, mECMSrcDef);
 	}
 
-	public TargetDistribution getTargetDistribution(Transition<IDurativeAction, DetectTargetDomain> transition)
+	public ThreatDistribution getThreatDistribution(Transition<IDurativeAction, DestroyedProbabilityDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		RouteSegment segment = transition.getSrcStateVarValue(RouteSegment.class, mSegmentSrcDef);
-		return segment.getTargetDistribution();
+		return segment.getThreatDistribution();
 	}
 
 	@Override
@@ -102,10 +117,10 @@ public class DetectTargetDomain implements ITransitionStructure<IDurativeAction>
 		if (obj == this) {
 			return true;
 		}
-		if (!(obj instanceof DetectTargetDomain)) {
+		if (!(obj instanceof DestroyedProbabilityDomain)) {
 			return false;
 		}
-		DetectTargetDomain domain = (DetectTargetDomain) obj;
+		DestroyedProbabilityDomain domain = (DestroyedProbabilityDomain) obj;
 		return domain.mDomain.equals(mDomain);
 	}
 

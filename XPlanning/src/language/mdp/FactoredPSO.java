@@ -19,6 +19,10 @@ import language.exceptions.XMDPException;
  * 
  * Reference: Using Abstractions for Decision-Theoretic Planning with Time Constraints, Boutilier & Dearden, 1994
  * 
+ * Note: The {@link ActionDefinition} of the {@link FactoredPSO} can be a composite action definition. If so, the
+ * {@link Precondition} is the union of all preconditions of actions in the composite action definition. The
+ * {@link IActionDescription}s are also composite action descriptions of different effect classes.
+ * 
  * @author rsukkerd
  *
  * @param <E>

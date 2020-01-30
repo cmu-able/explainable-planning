@@ -12,6 +12,8 @@ import language.domain.models.IAction;
 /**
  * {@link ActionSpace} represents an action space (i.e., a set of {@link ActionDefinition}s) of an MDP.
  * 
+ * Note: {@link ActionSpace} must NOT contain any composite action definition.
+ * 
  * @author rsukkerd
  *
  */

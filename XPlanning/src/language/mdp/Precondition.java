@@ -19,6 +19,12 @@ import language.exceptions.StateVarClassNotFoundException;
  * in a CNF, where each clause is a {@link UnivarPredicate} of a unique state variable. If a state variable is not
  * present in the precondition, it means that there is no restriction on the applicable values of that variable.
  * 
+ * Note: Since {@link Precondition} is a CNF of allowable values of each state variable, the precondition of a composite
+ * {@link ActionDefinition} needs to be NO stronger than the precondition of any individual action definition. This is
+ * OK because the precondition of a composite action is only used in the reward structure. The individual actions that
+ * make up the composite action in the reward structure are synchronized with the actions in the modules, which have
+ * stronger (or equivalent) precondition.
+ * 
  * @author rsukkerd
  *
  * @param <E>

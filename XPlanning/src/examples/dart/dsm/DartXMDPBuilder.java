@@ -7,19 +7,29 @@ import java.util.Set;
 
 import examples.dart.models.ChangeFormAction;
 import examples.dart.models.DecAltAction;
+import examples.dart.models.DecAltAltitudeActionDescription;
 import examples.dart.models.FlyAction;
+import examples.dart.models.IDurativeAction;
 import examples.dart.models.IncAltAction;
+import examples.dart.models.IncAltAltitudeActionDescription;
 import examples.dart.models.RouteSegment;
+import examples.dart.models.RouteSegmentActionDescription;
 import examples.dart.models.SwitchECMAction;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
 import examples.dart.models.TeamDestroyed;
+import examples.dart.models.TeamDestroyedActionDescription;
 import examples.dart.models.TeamECM;
+import examples.dart.models.TeamECMActionDescription;
 import examples.dart.models.TeamFormation;
+import examples.dart.models.TeamFormationActionDescription;
 import examples.dart.models.ThreatDistribution;
 import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
+import language.exceptions.IncompatibleActionException;
 import language.mdp.ActionSpace;
+import language.mdp.FactoredPSO;
+import language.mdp.Precondition;
 import language.mdp.QSpace;
 import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
@@ -35,8 +45,8 @@ public class DartXMDPBuilder {
 	private StateVarDefinition<TeamAltitude> teamAltDef;
 
 	// Possible altitude changes within 1 period
-	TeamAltitude altChange1 = new TeamAltitude(1);
-	TeamAltitude altChange2 = new TeamAltitude(2);
+	private TeamAltitude altChange1 = new TeamAltitude(1);
+	private TeamAltitude altChange2 = new TeamAltitude(2);
 
 	// Increase altitude actions
 	private IncAltAction incAlt1 = new IncAltAction(altChange1);
@@ -59,9 +69,13 @@ public class DartXMDPBuilder {
 	// Team's formation state variable
 	private StateVarDefinition<TeamFormation> teamFormDef;
 
+	// Available team formations (known, fixed)
+	private TeamFormation looseForm = new TeamFormation("loose");
+	private TeamFormation tightForm = new TeamFormation("tight");
+
 	// Change formation actions
-	private ChangeFormAction goLoose = new ChangeFormAction(new TeamFormation("loose"));
-	private ChangeFormAction goTight = new ChangeFormAction(new TeamFormation("tight"));
+	private ChangeFormAction goLoose = new ChangeFormAction(looseForm);
+	private ChangeFormAction goTight = new ChangeFormAction(tightForm);
 
 	// ChangeForm action definition
 	private ActionDefinition<ChangeFormAction> changeFormDef = new ActionDefinition<>("changeForm", goLoose, goTight);
@@ -73,9 +87,13 @@ public class DartXMDPBuilder {
 	// Team's ECM state variable
 	private StateVarDefinition<TeamECM> teamECMDef;
 
+	// ECM states (known, fixed)
+	private TeamECM ecmOn = new TeamECM(true);
+	private TeamECM ecmOff = new TeamECM(false);
+
 	// Switch ECM actions
-	private SwitchECMAction turnECMOn = new SwitchECMAction(new TeamECM(true));
-	private SwitchECMAction turnECMOff = new SwitchECMAction(new TeamECM(false));
+	private SwitchECMAction turnECMOn = new SwitchECMAction(ecmOn);
+	private SwitchECMAction turnECMOff = new SwitchECMAction(ecmOff);
 
 	// SwitchECM action definition
 	private ActionDefinition<SwitchECMAction> switchECMDef = new ActionDefinition<>("switchECM", turnECMOn, turnECMOff);
@@ -114,35 +132,31 @@ public class DartXMDPBuilder {
 		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(int maxAlt, int horizon, double[] expThreatProbs, double[] expTargetProbs, int iniAltLevel,
-			String iniForm, boolean iniECM) {
-		StateSpace stateSpace = buildStateSpace(maxAlt, horizon, expThreatProbs, expTargetProbs);
+	public XMDP buildXMDP(int maxAltLevel, int horizon, double[] expThreatProbs, double[] expTargetProbs,
+			int iniAltLevel, String iniForm, boolean iniECM) throws IncompatibleActionException {
+		StateSpace stateSpace = buildStateSpace(maxAltLevel, horizon, expThreatProbs, expTargetProbs);
 		ActionSpace actionSpace = buildActionSpace();
 		StateVarTuple initialState = buildInitialState(iniAltLevel, iniForm, iniECM);
 		StateVarTuple goal = buildGoal(horizon);
-		TransitionFunction transFunction = buildTransitionFunction();
+		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon);
 		QSpace qSpace = buildQFunctions();
 		CostFunction costFunction = buildCostFunction(qSpace);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
-	private StateSpace buildStateSpace(int maxAlt, int horizon, double[] expThreatProbs, double[] expTargetProbs) {
+	private StateSpace buildStateSpace(int maxAltLevel, int horizon, double[] expThreatProbs, double[] expTargetProbs) {
 		// Possible values of teamAltitude
 		Set<TeamAltitude> alts = new HashSet<>();
-		for (int i = 0; i < maxAlt; i++) {
+		for (int i = 0; i < maxAltLevel; i++) {
 			TeamAltitude teamAlt = new TeamAltitude(i + 1);
 			alts.add(teamAlt);
 		}
 		teamAltDef = new StateVarDefinition<>("altitude", alts);
 
 		// Possible values of teamFormation
-		TeamFormation tightForm = new TeamFormation("tight");
-		TeamFormation looseForm = new TeamFormation("loose");
 		teamFormDef = new StateVarDefinition<>("formation", tightForm, looseForm);
 
 		// Possible values of teamECM
-		TeamECM ecmOn = new TeamECM(true);
-		TeamECM ecmOff = new TeamECM(false);
 		teamECMDef = new StateVarDefinition<>("ecm", ecmOn, ecmOff);
 
 		// Possible values of routeSegment
@@ -207,8 +221,107 @@ public class DartXMDPBuilder {
 		return goal;
 	}
 
-	private TransitionFunction buildTransitionFunction() {
-		return null;
+	private TransitionFunction buildTransitionFunction(int maxAltLevel, int horizon)
+			throws IncompatibleActionException {
+		// IncAlt and DecAlt: for "teamAltitude" effect class
+		// Preconditions
+		Precondition<IncAltAction> preIncAlt = new Precondition<>(incAltDef);
+		Precondition<DecAltAction> preDecAlt = new Precondition<>(decAltDef);
+
+		for (TeamAltitude altitude : teamAltDef.getPossibleValues()) {
+
+			// Precondition for IncAlt actions
+			for (IncAltAction incAlt : incAltDef.getActions()) {
+				if (altitude.getAltitudeLevel() <= maxAltLevel - incAlt.getAltitudeChange().getAltitudeLevel()) {
+					preIncAlt.add(incAlt, teamAltDef, altitude);
+				}
+			}
+
+			// Precondition for DecAlt actions
+			for (DecAltAction decAlt : decAltDef.getActions()) {
+				// Lowest altitude level is 1
+				if (altitude.getAltitudeLevel() >= 1 + decAlt.getAltitudeChange().getAltitudeLevel()) {
+					preDecAlt.add(decAlt, teamAltDef, altitude);
+				}
+			}
+		}
+
+		// Action descriptions for teamAltitude effect class of IncAlt and DecAlt actions
+		IncAltAltitudeActionDescription incAltAltActionDesc = new IncAltAltitudeActionDescription(incAltDef, preIncAlt,
+				teamAltDef);
+		DecAltAltitudeActionDescription decAltAltActionDesc = new DecAltAltitudeActionDescription(decAltDef, preDecAlt,
+				teamAltDef);
+
+		// PSOs of IncAlt and DecAlt
+		// Note: IncAlt and DecAlt also affect "route segment" and "teamDestroyed" variables, but those effects are
+		// defined using composite action
+		FactoredPSO<IncAltAction> incAltPSO = new FactoredPSO<>(incAltDef, preIncAlt);
+		incAltPSO.addActionDescription(incAltAltActionDesc);
+
+		FactoredPSO<DecAltAction> decAltPSO = new FactoredPSO<>(decAltDef, preDecAlt);
+		decAltPSO.addActionDescription(decAltAltActionDesc);
+
+		// ChangeForm: for "teamFormation" effect class
+		// Precondition
+		Precondition<ChangeFormAction> preChangeForm = new Precondition<>(changeFormDef);
+		preChangeForm.add(goLoose, teamFormDef, tightForm);
+		preChangeForm.add(goTight, teamFormDef, looseForm);
+
+		// Action description for teamFormation (of ChangeForm)
+		TeamFormationActionDescription formActionDesc = new TeamFormationActionDescription(changeFormDef, preChangeForm,
+				teamFormDef);
+
+		// PSO of ChangeForm
+		FactoredPSO<ChangeFormAction> changeFormPSO = new FactoredPSO<>(changeFormDef, preChangeForm);
+		changeFormPSO.addActionDescription(formActionDesc);
+
+		// SwitchECM: for "teamECM" effect class
+		// Precondition
+		Precondition<SwitchECMAction> preSwitchECM = new Precondition<>(switchECMDef);
+		preSwitchECM.add(turnECMOn, teamECMDef, ecmOff);
+		preSwitchECM.add(turnECMOff, teamECMDef, ecmOn);
+
+		// Action description for teamECM (of SwitchECM)
+		TeamECMActionDescription ecmActionDesc = new TeamECMActionDescription(switchECMDef, preSwitchECM, teamECMDef);
+
+		// PSO of SwitchECM
+		FactoredPSO<SwitchECMAction> switchECMPSO = new FactoredPSO<>(switchECMDef, preSwitchECM);
+		switchECMPSO.addActionDescription(ecmActionDesc);
+
+		// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
+		ActionDefinition<IDurativeAction> durativeDef = new ActionDefinition<>("durative", incAlt1, incAlt2, decAlt1,
+				decAlt2, fly);
+
+		// Precondition of durative actions
+		Precondition<IDurativeAction> preDurative = new Precondition<>(durativeDef);
+		for (IDurativeAction durative : durativeDef.getActions()) {
+			for (int i = 0; i < horizon - 1; i++) {
+				// Each durative action takes 1 period (= 1 segment) to execute
+				preDurative.add(durative, segmentDef, mOrderedSegments.get(i));
+			}
+		}
+
+		// Action description for route segment (of durative actions)
+		RouteSegmentActionDescription segmentActionDesc = new RouteSegmentActionDescription(durativeDef, preDurative,
+				segmentDef);
+
+		// Action description for teamDestroyed (of durative actions)
+		TeamDestroyedActionDescription destroyedActionDesc = new TeamDestroyedActionDescription(durativeDef,
+				preDurative, teamAltDef, teamFormDef, teamECMDef, segmentDef, teamDestroyedDef);
+
+		// PSO of composite durative action
+		FactoredPSO<IDurativeAction> durativePSO = new FactoredPSO<>(durativeDef, preDurative);
+		durativePSO.addActionDescription(segmentActionDesc);
+		durativePSO.addActionDescription(destroyedActionDesc);
+
+		// Transition function
+		TransitionFunction transFunction = new TransitionFunction();
+		transFunction.add(incAltPSO);
+		transFunction.add(decAltPSO);
+		transFunction.add(changeFormPSO);
+		transFunction.add(switchECMPSO);
+		transFunction.add(durativePSO);
+		return transFunction;
 	}
 
 	private QSpace buildQFunctions() {

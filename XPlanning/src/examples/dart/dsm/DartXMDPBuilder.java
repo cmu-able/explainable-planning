@@ -1,6 +1,8 @@
 package examples.dart.dsm;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import examples.dart.models.ChangeFormAction;
@@ -11,6 +13,7 @@ import examples.dart.models.RouteSegment;
 import examples.dart.models.SwitchECMAction;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
+import examples.dart.models.TeamDestroyed;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
 import examples.dart.models.ThreatDistribution;
@@ -90,19 +93,33 @@ public class DartXMDPBuilder {
 	// Fly action definition
 	private ActionDefinition<FlyAction> flyDef = new ActionDefinition<>("fly", fly);
 
-	// IncAlt and DecAlt also affect route segment variable
+	// IncAlt and DecAlt actions also affect route segment variable
 
 	// ------ //
+
+	// --- TeamDestroyed --- //
+
+	// Whether or not team has been shot down by a threat
+	private StateVarDefinition<TeamDestroyed> teamDestroyedDef;
+
+	// IncAlt, DecAlt, and Fly actions can affect teamDestroyed variable
+
+	// ------ //
+
+	// List of route segment objects in the order of their numbers
+	// To be used when adding attribute values to each route segment
+	private List<RouteSegment> mOrderedSegments = new ArrayList<>();
 
 	public DartXMDPBuilder() {
 		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(int maxAlt, int horizon, double[] expThreatProbs, double[] expTargetProbs) {
+	public XMDP buildXMDP(int maxAlt, int horizon, double[] expThreatProbs, double[] expTargetProbs, int iniAltLevel,
+			String iniForm, boolean iniECM) {
 		StateSpace stateSpace = buildStateSpace(maxAlt, horizon, expThreatProbs, expTargetProbs);
 		ActionSpace actionSpace = buildActionSpace();
-		StateVarTuple initialState = buildInitialState();
-		StateVarTuple goal = buildGoal();
+		StateVarTuple initialState = buildInitialState(iniAltLevel, iniForm, iniECM);
+		StateVarTuple goal = buildGoal(horizon);
 		TransitionFunction transFunction = buildTransitionFunction();
 		QSpace qSpace = buildQFunctions();
 		CostFunction costFunction = buildCostFunction(qSpace);
@@ -136,14 +153,23 @@ public class DartXMDPBuilder {
 
 			RouteSegment segment = new RouteSegment(i + 1, threatDist, targetDist);
 			segments.add(segment);
+
+			// Add each route segment object in the order of its number
+			mOrderedSegments.add(segment);
 		}
 		segmentDef = new StateVarDefinition<>("segment", segments);
+
+		// Possible values of teamDestroyed
+		TeamDestroyed destroyed = new TeamDestroyed(true);
+		TeamDestroyed alive = new TeamDestroyed(false);
+		teamDestroyedDef = new StateVarDefinition<>("destroyed", destroyed, alive);
 
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(teamAltDef);
 		stateSpace.addStateVarDefinition(teamFormDef);
 		stateSpace.addStateVarDefinition(teamECMDef);
 		stateSpace.addStateVarDefinition(segmentDef);
+		stateSpace.addStateVarDefinition(teamDestroyedDef);
 		return stateSpace;
 	}
 
@@ -157,12 +183,28 @@ public class DartXMDPBuilder {
 		return actionSpace;
 	}
 
-	private StateVarTuple buildInitialState() {
-		return null;
+	private StateVarTuple buildInitialState(int iniAltLevel, String iniForm, boolean iniECM) {
+		TeamAltitude iniTeamAlt = new TeamAltitude(iniAltLevel);
+		TeamFormation iniTeamForm = new TeamFormation(iniForm);
+		TeamECM iniTeamECM = new TeamECM(iniECM);
+		RouteSegment iniSegment = mOrderedSegments.get(0);
+		TeamDestroyed iniDestroyed = new TeamDestroyed(false);
+
+		StateVarTuple initialState = new StateVarTuple();
+		initialState.addStateVar(teamAltDef.getStateVar(iniTeamAlt));
+		initialState.addStateVar(teamFormDef.getStateVar(iniTeamForm));
+		initialState.addStateVar(teamECMDef.getStateVar(iniTeamECM));
+		initialState.addStateVar(segmentDef.getStateVar(iniSegment));
+		initialState.addStateVar(teamDestroyedDef.getStateVar(iniDestroyed));
+		return initialState;
 	}
 
-	private StateVarTuple buildGoal() {
-		return null;
+	private StateVarTuple buildGoal(int horizon) {
+		RouteSegment lastSegment = mOrderedSegments.get(horizon - 1);
+
+		StateVarTuple goal = new StateVarTuple();
+		goal.addStateVar(segmentDef.getStateVar(lastSegment));
+		return goal;
 	}
 
 	private TransitionFunction buildTransitionFunction() {

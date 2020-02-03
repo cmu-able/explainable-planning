@@ -6,13 +6,15 @@ import java.util.Set;
 import language.domain.metrics.IEvent;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
+import language.mdp.ActionSpace;
 
 /**
  * {@link ActionDefinition} defines a set of actions of a particular type.
  * 
  * {@link ActionDefinition} can be a composite action definition. That is, it contains actions of multiple types that
  * are of the same super type. Composite action definition allows {@link IQFunction}, {@link IEvent}, and
- * {@link ITransitionStructure} to be defined over a generic action type.
+ * {@link ITransitionStructure} to be defined over a generic action type. A composite action definition is NOT contained
+ * in {@link ActionSpace}.
  * 
  * @author rsukkerd
  *

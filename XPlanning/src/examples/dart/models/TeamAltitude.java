@@ -12,7 +12,7 @@ import language.exceptions.AttributeNameNotFoundException;
  * @author rsukkerd
  *
  */
-public class TeamAltitude implements IStateVarInt {
+public class TeamAltitude implements IStateVarInt, Comparable<TeamAltitude> {
 
 	/*
 	 * Cached hashCode -- Effective Java
@@ -64,6 +64,11 @@ public class TeamAltitude implements IStateVarInt {
 	@Override
 	public String toString() {
 		return Integer.toString(mAltitudeLevel);
+	}
+
+	@Override
+	public int compareTo(TeamAltitude other) {
+		return mAltitudeLevel - other.mAltitudeLevel;
 	}
 
 }

@@ -19,7 +19,7 @@ import language.exceptions.VarNotFoundException;
  */
 public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDomain> {
 
-	public static final String NAME = "target";
+	public static final String NAME = "missTarget";
 
 	private static final double SENSOR_RANGE = 2;
 	private static final double SIGMA = 4;

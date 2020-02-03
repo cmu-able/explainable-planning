@@ -5,6 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import examples.dart.metrics.DestroyedProbabilityDomain;
+import examples.dart.metrics.DestroyedProbabilityQFunction;
+import examples.dart.metrics.DetectTargetDomain;
+import examples.dart.metrics.MissTargetEvent;
 import examples.dart.models.ChangeFormAction;
 import examples.dart.models.DecAltAction;
 import examples.dart.models.DecAltAltitudeActionDescription;
@@ -24,6 +28,7 @@ import examples.dart.models.TeamECMActionDescription;
 import examples.dart.models.TeamFormation;
 import examples.dart.models.TeamFormationActionDescription;
 import examples.dart.models.ThreatDistribution;
+import language.domain.metrics.CountQFunction;
 import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
@@ -35,7 +40,9 @@ import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
+import language.objectives.AttributeCostFunction;
 import language.objectives.CostFunction;
+import solver.common.Constants;
 
 public class DartXMDPBuilder {
 
@@ -124,6 +131,14 @@ public class DartXMDPBuilder {
 
 	// ------ //
 
+	// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
+	private ActionDefinition<IDurativeAction> durativeDef = new ActionDefinition<>("durative", incAlt1, incAlt2,
+			decAlt1, decAlt2, fly);
+
+	// --- QFunctions --- //
+	private CountQFunction<IDurativeAction, DetectTargetDomain, MissTargetEvent> missTargetQFunction;
+	private DestroyedProbabilityQFunction destroyedProbQFunction;
+
 	// List of route segment objects in the order of their numbers
 	// To be used when adding attribute values to each route segment
 	private List<RouteSegment> mOrderedSegments = new ArrayList<>();
@@ -133,14 +148,15 @@ public class DartXMDPBuilder {
 	}
 
 	public XMDP buildXMDP(int maxAltLevel, int horizon, double[] expThreatProbs, double[] expTargetProbs,
-			int iniAltLevel, String iniForm, boolean iniECM) throws IncompatibleActionException {
+			int iniAltLevel, String iniForm, boolean iniECM, double targetWeight, double threatWeight)
+			throws IncompatibleActionException {
 		StateSpace stateSpace = buildStateSpace(maxAltLevel, horizon, expThreatProbs, expTargetProbs);
 		ActionSpace actionSpace = buildActionSpace();
 		StateVarTuple initialState = buildInitialState(iniAltLevel, iniForm, iniECM);
 		StateVarTuple goal = buildGoal(horizon);
 		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon);
 		QSpace qSpace = buildQFunctions();
-		CostFunction costFunction = buildCostFunction(qSpace);
+		CostFunction costFunction = buildCostFunction(targetWeight, threatWeight);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
@@ -289,10 +305,7 @@ public class DartXMDPBuilder {
 		switchECMPSO.addActionDescription(ecmActionDesc);
 
 		// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
-		ActionDefinition<IDurativeAction> durativeDef = new ActionDefinition<>("durative", incAlt1, incAlt2, decAlt1,
-				decAlt2, fly);
-
-		// Precondition of durative actions
+		// Precondition
 		Precondition<IDurativeAction> preDurative = new Precondition<>(durativeDef);
 		for (IDurativeAction durative : durativeDef.getActions()) {
 			for (int i = 0; i < horizon - 1; i++) {
@@ -325,10 +338,32 @@ public class DartXMDPBuilder {
 	}
 
 	private QSpace buildQFunctions() {
-		return null;
+		// Miss target event
+		DetectTargetDomain detectTargetDomain = new DetectTargetDomain(teamAltDef, teamFormDef, teamECMDef, segmentDef,
+				durativeDef);
+		MissTargetEvent missTargetEvent = new MissTargetEvent(detectTargetDomain);
+		missTargetQFunction = new CountQFunction<>(missTargetEvent);
+
+		// Probability of being destroyed by threat
+		DestroyedProbabilityDomain destroyedProbDomain = new DestroyedProbabilityDomain(teamDestroyedDef, teamAltDef,
+				teamFormDef, teamECMDef, segmentDef, durativeDef);
+		destroyedProbQFunction = new DestroyedProbabilityQFunction(destroyedProbDomain);
+
+		QSpace qSpace = new QSpace();
+		qSpace.addQFunction(missTargetQFunction);
+		qSpace.addQFunction(destroyedProbQFunction);
+		return qSpace;
 	}
 
-	private CostFunction buildCostFunction(QSpace qSpace) {
-		return null;
+	private CostFunction buildCostFunction(double targetWeight, double threatWeight) {
+		AttributeCostFunction<CountQFunction<IDurativeAction, DetectTargetDomain, MissTargetEvent>> targetAttrCostFunc = new AttributeCostFunction<>(
+				missTargetQFunction, 0, 1);
+		AttributeCostFunction<DestroyedProbabilityQFunction> threatAttrCostFunc = new AttributeCostFunction<>(
+				destroyedProbQFunction, 0, 1);
+
+		CostFunction costFunction = new CostFunction(Constants.SSP_COST_OFFSET);
+		costFunction.put(targetAttrCostFunc, targetWeight);
+		costFunction.put(threatAttrCostFunc, threatWeight);
+		return costFunction;
 	}
 }

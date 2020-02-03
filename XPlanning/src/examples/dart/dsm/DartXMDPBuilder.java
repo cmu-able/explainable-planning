@@ -3,12 +3,18 @@ package examples.dart.dsm;
 import java.util.HashSet;
 import java.util.Set;
 
+import examples.dart.models.ChangeFormAction;
+import examples.dart.models.DecAltAction;
+import examples.dart.models.FlyAction;
+import examples.dart.models.IncAltAction;
 import examples.dart.models.RouteSegment;
+import examples.dart.models.SwitchECMAction;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
 import examples.dart.models.ThreatDistribution;
+import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
 import language.mdp.ActionSpace;
 import language.mdp.QSpace;
@@ -21,20 +27,72 @@ import language.objectives.CostFunction;
 public class DartXMDPBuilder {
 
 	// --- TeamAltitude --- //
+
 	// Team's altitude state variable
 	private StateVarDefinition<TeamAltitude> teamAltDef;
 
+	// Possible altitude changes within 1 period
+	TeamAltitude altChange1 = new TeamAltitude(1);
+	TeamAltitude altChange2 = new TeamAltitude(2);
+
+	// Increase altitude actions
+	private IncAltAction incAlt1 = new IncAltAction(altChange1);
+	private IncAltAction incAlt2 = new IncAltAction(altChange2);
+
+	// IncAlt action definition
+	private ActionDefinition<IncAltAction> incAltDef = new ActionDefinition<>("incAlt", incAlt1, incAlt2);
+
+	// Decrease altitude actions
+	private DecAltAction decAlt1 = new DecAltAction(altChange1);
+	private DecAltAction decAlt2 = new DecAltAction(altChange2);
+
+	// DecAlt action definition
+	private ActionDefinition<DecAltAction> decAltDef = new ActionDefinition<>("decAlt", decAlt1, decAlt2);
+
+	// ------ //
+
 	// --- TeamFormation --- //
+
 	// Team's formation state variable
 	private StateVarDefinition<TeamFormation> teamFormDef;
 
+	// Change formation actions
+	private ChangeFormAction goLoose = new ChangeFormAction(new TeamFormation("loose"));
+	private ChangeFormAction goTight = new ChangeFormAction(new TeamFormation("tight"));
+
+	// ChangeForm action definition
+	private ActionDefinition<ChangeFormAction> changeFormDef = new ActionDefinition<>("changeForm", goLoose, goTight);
+
+	// ------ //
+
 	// --- TeamECM --- //
+
 	// Team's ECM state variable
 	private StateVarDefinition<TeamECM> teamECMDef;
 
+	// Switch ECM actions
+	private SwitchECMAction turnECMOn = new SwitchECMAction(new TeamECM(true));
+	private SwitchECMAction turnECMOff = new SwitchECMAction(new TeamECM(false));
+
+	// SwitchECM action definition
+	private ActionDefinition<SwitchECMAction> switchECMDef = new ActionDefinition<>("switchECM", turnECMOn, turnECMOff);
+
+	// ------ //
+
 	// --- RouteSegment --- //
+
 	// Team's current route segment state variable
 	private StateVarDefinition<RouteSegment> segmentDef;
+
+	// Fly (for 1 segment) action
+	private FlyAction fly = new FlyAction();
+
+	// Fly action definition
+	private ActionDefinition<FlyAction> flyDef = new ActionDefinition<>("fly", fly);
+
+	// IncAlt and DecAlt also affect route segment variable
+
+	// ------ //
 
 	public DartXMDPBuilder() {
 		// Constructor may take as input other DSMs
@@ -90,7 +148,13 @@ public class DartXMDPBuilder {
 	}
 
 	private ActionSpace buildActionSpace() {
-		return null;
+		ActionSpace actionSpace = new ActionSpace();
+		actionSpace.addActionDefinition(incAltDef);
+		actionSpace.addActionDefinition(decAltDef);
+		actionSpace.addActionDefinition(flyDef);
+		actionSpace.addActionDefinition(changeFormDef);
+		actionSpace.addActionDefinition(switchECMDef);
+		return actionSpace;
 	}
 
 	private StateVarTuple buildInitialState() {

@@ -1,19 +1,13 @@
 package examples.clinicscheduling.demo;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 import examples.clinicscheduling.dsm.ClinicCostProfile;
 import examples.clinicscheduling.dsm.ClinicSchedulingXMDPBuilder;
 import examples.clinicscheduling.dsm.SchedulingContext;
+import examples.common.CommandLineXMDPLoader;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
 import language.exceptions.XMDPException;
@@ -35,25 +29,10 @@ public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 	private static final String CLIENT_ARRIVAL_RATE_PARAM = "clientArrivalRate";
 
 	private ClinicSchedulingXMDPBuilder mXMDPBuilder;
+	private CommandLineXMDPLoader mCLLoader;
 
 	public ClinicSchedulingXMDPLoader(int branchFactor) {
 		mXMDPBuilder = new ClinicSchedulingXMDPBuilder(branchFactor);
-	}
-
-	@Override
-	public XMDP loadXMDP(File problemFile) throws XMDPException, DSMException {
-		String argsLine = null;
-
-		try (FileReader fileReader = new FileReader(problemFile);
-				BufferedReader buffReader = new BufferedReader(fileReader);) {
-			argsLine = buffReader.readLine();
-		} catch (IOException e) {
-			throw new DSMException(e.getMessage());
-		}
-
-		String[] argsArray = argsLine.split(" ");
-
-		CommandLineParser parser = new DefaultParser();
 
 		Options options = new Options();
 		options.addOption("C", CAPACITY_PARAM, true, "Capacity of the clinic");
@@ -68,25 +47,25 @@ public class ClinicSchedulingXMDPLoader implements IXMDPLoader {
 		options.addOption("x", INI_AB_COUNT_PARAM, true, "Initial number of advance-booking patients");
 		options.addOption("y", INI_NEW_CLIENT_COUNT_PARAM, true, "Initial number of new patients");
 		options.addOption("l", CLIENT_ARRIVAL_RATE_PARAM, true, "Average patient arrival rate");
+		mCLLoader = new CommandLineXMDPLoader(options);
+	}
 
-		CommandLine line = null;
-		try {
-			line = parser.parse(options, argsArray);
-		} catch (ParseException e) {
-			throw new DSMException(e.getMessage());
-		}
-		int capacity = Integer.parseInt(line.getOptionValue(CAPACITY_PARAM, "10"));
-		int maxABP = Integer.parseInt(line.getOptionValue(MAX_ABP_PARAM, "10"));
-		int maxQueueSize = Integer.parseInt(line.getOptionValue(MAX_QUEUE_SIZE_PARAM, "100"));
-		double revenuePerPatient = Double.parseDouble(line.getOptionValue(REVENUE_PARAM, "20"));
-		double overtimeCostPerPatient = Double.parseDouble(line.getOptionValue(OVERTIME_COST_PARAM, "10"));
-		double idleTimeCostPerPatient = Double.parseDouble(line.getOptionValue(IDLE_TIME_COST_PARAM, "0"));
-		double leadTimeCostFactor = Double.parseDouble(line.getOptionValue(LEAD_TIME_COST_PARAM, "0"));
-		double switchABPCostFactor = Double.parseDouble(line.getOptionValue(SWITCH_ABP_COST_PARAM, "10"));
-		int iniABP = Integer.parseInt(line.getOptionValue(INI_ABP_PARAM, "9"));
-		int iniABCount = Integer.parseInt(line.getOptionValue(INI_AB_COUNT_PARAM, "0"));
-		int iniNewClientCount = Integer.parseInt(line.getOptionValue(INI_NEW_CLIENT_COUNT_PARAM, "10"));
-		double clientArrivalRate = Double.parseDouble(line.getOptionValue(CLIENT_ARRIVAL_RATE_PARAM, "10"));
+	@Override
+	public XMDP loadXMDP(File problemFile) throws XMDPException, DSMException {
+		mCLLoader.loadCommandLineFromFile(problemFile);
+
+		int capacity = mCLLoader.getIntArgument(CAPACITY_PARAM);
+		int maxABP = mCLLoader.getIntArgument(MAX_ABP_PARAM);
+		int maxQueueSize = mCLLoader.getIntArgument(MAX_QUEUE_SIZE_PARAM);
+		double revenuePerPatient = mCLLoader.getDoubleArgument(REVENUE_PARAM);
+		double overtimeCostPerPatient = mCLLoader.getDoubleArgument(OVERTIME_COST_PARAM);
+		double idleTimeCostPerPatient = mCLLoader.getDoubleArgument(IDLE_TIME_COST_PARAM);
+		double leadTimeCostFactor = mCLLoader.getDoubleArgument(LEAD_TIME_COST_PARAM);
+		double switchABPCostFactor = mCLLoader.getDoubleArgument(SWITCH_ABP_COST_PARAM);
+		int iniABP = mCLLoader.getIntArgument(INI_ABP_PARAM);
+		int iniABCount = mCLLoader.getIntArgument(INI_AB_COUNT_PARAM);
+		int iniNewClientCount = mCLLoader.getIntArgument(INI_NEW_CLIENT_COUNT_PARAM);
+		double clientArrivalRate = mCLLoader.getDoubleArgument(CLIENT_ARRIVAL_RATE_PARAM);
 
 		ClinicCostProfile clinicCostProfile = new ClinicCostProfile(revenuePerPatient, overtimeCostPerPatient,
 				idleTimeCostPerPatient, leadTimeCostFactor, switchABPCostFactor);

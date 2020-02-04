@@ -7,5 +7,5 @@ import language.mdp.XMDP;
 
 public interface IXMDPLoader {
 
-	public XMDP loadXMDP(File missionJsonFile) throws DSMException, XMDPException;
+	public XMDP loadXMDP(File problemFile) throws DSMException, XMDPException;
 }

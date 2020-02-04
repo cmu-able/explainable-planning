@@ -61,7 +61,7 @@ public class ActionDefinition<E extends IAction> {
 	}
 
 	public boolean isComposite() {
-		return false;
+		return mIsComposite;
 	}
 
 	@Override

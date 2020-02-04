@@ -38,14 +38,14 @@ public class ClinicSchedulingXPlanner {
 		mXPlanner = new XPlanner(xmdpLoader, outputDirs, getVocabulary(), verbalizerSettings);
 	}
 
-	public PolicyInfo runXPlanning(File missionJsonFile)
+	public PolicyInfo runXPlanning(File problemFile)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		return mXPlanner.runXPlanning(missionJsonFile, CostCriterion.AVERAGE_COST);
+		return mXPlanner.runXPlanning(problemFile, CostCriterion.AVERAGE_COST);
 	}
 
-	public PolicyInfo runPlanning(File missionJsonFile) throws DSMException, XMDPException, PrismException, IOException,
+	public PolicyInfo runPlanning(File problemFile) throws DSMException, XMDPException, PrismException, IOException,
 			ResultParsingException, ExplicitModelParsingException, GRBException {
-		return mXPlanner.runPlanning(missionJsonFile, CostCriterion.AVERAGE_COST);
+		return mXPlanner.runPlanning(problemFile, CostCriterion.AVERAGE_COST);
 	}
 
 	public static void main(String[] args)

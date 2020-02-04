@@ -147,12 +147,18 @@ public class DartXMDPBuilder {
 		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(int maxAltLevel, int horizon, double[] expThreatProbs, double[] expTargetProbs,
-			int iniAltLevel, String iniForm, boolean iniECM, double targetWeight, double threatWeight)
-			throws IncompatibleActionException {
-		StateSpace stateSpace = buildStateSpace(maxAltLevel, horizon, expThreatProbs, expTargetProbs);
+	public XMDP buildXMDP(DartMission mission) throws IncompatibleActionException {
+		int maxAltLevel = mission.getMaximumAltitudeLevel();
+		int horizon = mission.getHorizon();
+		double[] expTargetProbs = mission.getExpectedTargetProbabilities();
+		double[] expThreatProbs = mission.getExpectedThreatProbabilities();
+		double targetWeight = mission.getTargetWeight();
+		double threatWeight = mission.getThreatWeight();
+		TeamConfiguration iniTeamConfig = mission.getTeamInitialConfiguration();
+
+		StateSpace stateSpace = buildStateSpace(maxAltLevel, horizon, expTargetProbs, expThreatProbs);
 		ActionSpace actionSpace = buildActionSpace();
-		StateVarTuple initialState = buildInitialState(iniAltLevel, iniForm, iniECM);
+		StateVarTuple initialState = buildInitialState(iniTeamConfig);
 		StateVarTuple goal = buildGoal(horizon);
 		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon);
 		QSpace qSpace = buildQFunctions();
@@ -160,7 +166,7 @@ public class DartXMDPBuilder {
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
 
-	private StateSpace buildStateSpace(int maxAltLevel, int horizon, double[] expThreatProbs, double[] expTargetProbs) {
+	private StateSpace buildStateSpace(int maxAltLevel, int horizon, double[] expTargetProbs, double[] expThreatProbs) {
 		// Possible values of teamAltitude
 		Set<TeamAltitude> alts = new HashSet<>();
 		for (int i = 0; i < maxAltLevel; i++) {
@@ -178,10 +184,10 @@ public class DartXMDPBuilder {
 		// Possible values of routeSegment
 		Set<RouteSegment> segments = new HashSet<>();
 		for (int i = 0; i < horizon; i++) {
-			ThreatDistribution threatDist = new ThreatDistribution(expThreatProbs[i]);
 			TargetDistribution targetDist = new TargetDistribution(expTargetProbs[i]);
+			ThreatDistribution threatDist = new ThreatDistribution(expThreatProbs[i]);
 
-			RouteSegment segment = new RouteSegment(i + 1, threatDist, targetDist);
+			RouteSegment segment = new RouteSegment(i + 1, targetDist, threatDist);
 			segments.add(segment);
 
 			// Add each route segment object in the order of its number
@@ -213,10 +219,10 @@ public class DartXMDPBuilder {
 		return actionSpace;
 	}
 
-	private StateVarTuple buildInitialState(int iniAltLevel, String iniForm, boolean iniECM) {
-		TeamAltitude iniTeamAlt = new TeamAltitude(iniAltLevel);
-		TeamFormation iniTeamForm = new TeamFormation(iniForm);
-		TeamECM iniTeamECM = new TeamECM(iniECM);
+	private StateVarTuple buildInitialState(TeamConfiguration iniTeamConfig) {
+		TeamAltitude iniTeamAlt = new TeamAltitude(iniTeamConfig.getAltitudeLevel());
+		TeamFormation iniTeamForm = new TeamFormation(iniTeamConfig.getFormation());
+		TeamECM iniTeamECM = new TeamECM(iniTeamConfig.getECM());
 		RouteSegment iniSegment = mOrderedSegments.get(0);
 		TeamDestroyed iniDestroyed = new TeamDestroyed(false);
 

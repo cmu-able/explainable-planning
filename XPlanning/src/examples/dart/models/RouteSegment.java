@@ -21,23 +21,23 @@ public class RouteSegment implements IStateVarInt {
 	private int mSegment;
 	private StateVarValue mValue;
 
-	public RouteSegment(int segment, ThreatDistribution threatDist, TargetDistribution targetDist) {
+	public RouteSegment(int segment, TargetDistribution targetDist, ThreatDistribution threatDist) {
 		mSegment = segment;
 		mValue = new StateVarValue("segment " + segment);
-		mValue.putAttributeValue("threatDistribution", threatDist);
 		mValue.putAttributeValue("targetDistribution", targetDist);
+		mValue.putAttributeValue("threatDistribution", threatDist);
 	}
 
 	public int getSegment() {
 		return mSegment;
 	}
 
-	public ThreatDistribution getThreatDistribution() throws AttributeNameNotFoundException {
-		return (ThreatDistribution) getAttributeValue("threatDistribution");
-	}
-
 	public TargetDistribution getTargetDistribution() throws AttributeNameNotFoundException {
 		return (TargetDistribution) getAttributeValue("targetDistribution");
+	}
+
+	public ThreatDistribution getThreatDistribution() throws AttributeNameNotFoundException {
+		return (ThreatDistribution) getAttributeValue("threatDistribution");
 	}
 
 	@Override

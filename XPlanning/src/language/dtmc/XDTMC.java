@@ -59,6 +59,21 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 
 			TwoTBN<IAction> twoTBN = mDTMC.get(actionDef);
 
+			// Any action that is part of a composite action (i.e., constituent action) has additional effect classes
+			// that are defined in the composite action PSO, but not defined in the individual action PSO.
+
+			// Therefore, when we look up action PSO of a constituent action (e.g., of a policy), we must get both the
+			// individual action PSO (if exists) and the composite action PSO -- so that we get all the effect classes
+			// of the constituent action.
+
+			// TODO
+			ActionDefinition<IAction> parentCompActionDef = actionDef.getParentCompositeActionDefinition();
+			if (parentCompActionDef != null) {
+				FactoredPSO<IAction> parentCompActionPSO = xmdp.getTransitionFunction()
+						.getActionPSO(parentCompActionDef);
+				Set<EffectClass> additionalEffectClasses = parentCompActionPSO.getIndependentEffectClasses();
+			}
+
 			FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
 			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 

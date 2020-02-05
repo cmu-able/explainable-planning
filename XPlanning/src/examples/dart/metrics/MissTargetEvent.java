@@ -3,6 +3,7 @@ package examples.dart.metrics;
 import examples.dart.models.IDurativeAction;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
+import examples.dart.models.TeamDestroyed;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
 import language.domain.metrics.IEvent;
@@ -49,10 +50,14 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 	public double getEventProbability(Transition<IDurativeAction, DetectTargetDomain> transition)
 			throws VarNotFoundException, AttributeNameNotFoundException {
 		// Determining factors of missing target
+		TeamDestroyed srcDestroyed = mDomain.getTeamDestroyed(transition);
 		TeamAltitude srcAlt = mDomain.getTeamAltitude(transition);
 		TeamFormation srcForm = mDomain.getTeamFormation(transition);
 		TeamECM srcECM = mDomain.getTeamECM(transition);
 		TargetDistribution targetDist = mDomain.getTargetDistribution(transition);
+
+		// If team is already destroyed, it cannot detect any target
+		double destroyedTerm = srcDestroyed.isDestroyed() ? 0 : 1;
 
 		double altTerm = Math.max(0, SENSOR_RANGE - srcAlt.getAltitudeLevel()) / SENSOR_RANGE;
 		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
@@ -61,7 +66,7 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 		double ecmTerm = (1 - ecm) + ecm / 4.0;
 
 		// Probability of detecting target, given target exists in the segment
-		double detectTargetProbGivenTarget = altTerm * formTerm * ecmTerm;
+		double detectTargetProbGivenTarget = destroyedTerm * altTerm * formTerm * ecmTerm;
 
 		// Probability of missing target, given target exists in the segment
 		double missTargetProbGivenTarget = 1 - detectTargetProbGivenTarget;

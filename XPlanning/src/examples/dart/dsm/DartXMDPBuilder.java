@@ -28,6 +28,7 @@ import examples.dart.models.TeamECMActionDescription;
 import examples.dart.models.TeamFormation;
 import examples.dart.models.TeamFormationActionDescription;
 import examples.dart.models.ThreatDistribution;
+import examples.dart.models.TickAction;
 import language.domain.metrics.CountQFunction;
 import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
@@ -120,9 +121,20 @@ public class DartXMDPBuilder {
 
 	// IncAlt and DecAlt actions also affect route segment variable
 
+	// Helper action "Tick" that advances time by 1 period (corresponding to 1 segment forward) when the team is
+	// destroyed
+	private TickAction tick = new TickAction();
+
+	// Tick action definition
+	private ActionDefinition<TickAction> tickDef = new ActionDefinition<>("tick", tick);
+
 	// ------ //
 
 	// --- TeamDestroyed --- //
+
+	// Team liveness states (known, fixed)
+	private TeamDestroyed destroyed = new TeamDestroyed(true);
+	private TeamDestroyed alive = new TeamDestroyed(false);
 
 	// Whether or not team has been shot down by a threat
 	private StateVarDefinition<TeamDestroyed> teamDestroyedDef;
@@ -133,7 +145,7 @@ public class DartXMDPBuilder {
 
 	// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
 	private ActionDefinition<IDurativeAction> durativeDef = new ActionDefinition<>("durative", incAlt1, incAlt2,
-			decAlt1, decAlt2, fly);
+			decAlt1, decAlt2, fly, tick);
 
 	// --- QFunctions --- //
 	private CountQFunction<IDurativeAction, DetectTargetDomain, MissTargetEvent> missTargetQFunction;
@@ -196,8 +208,6 @@ public class DartXMDPBuilder {
 		segmentDef = new StateVarDefinition<>("segment", segments);
 
 		// Possible values of teamDestroyed
-		TeamDestroyed destroyed = new TeamDestroyed(true);
-		TeamDestroyed alive = new TeamDestroyed(false);
 		teamDestroyedDef = new StateVarDefinition<>("destroyed", destroyed, alive);
 
 		StateSpace stateSpace = new StateSpace();
@@ -216,6 +226,7 @@ public class DartXMDPBuilder {
 		actionSpace.addActionDefinition(flyDef);
 		actionSpace.addActionDefinition(changeFormDef);
 		actionSpace.addActionDefinition(switchECMDef);
+		actionSpace.addActionDefinition(tickDef);
 		return actionSpace;
 	}
 
@@ -254,25 +265,33 @@ public class DartXMDPBuilder {
 
 			// Precondition for IncAlt actions
 			for (IncAltAction incAlt : incAltDef.getActions()) {
+				// on teamAltitude
 				if (altitude.getAltitudeLevel() <= maxAltLevel - incAlt.getAltitudeChange().getAltitudeLevel()) {
 					preIncAlt.add(incAlt, teamAltDef, altitude);
 				}
+
+				// on teamDestroyed
+				preIncAlt.add(incAlt, teamDestroyedDef, alive);
 			}
 
 			// Precondition for DecAlt actions
 			for (DecAltAction decAlt : decAltDef.getActions()) {
+				// on teamAltitude
 				// Lowest altitude level is 1
 				if (altitude.getAltitudeLevel() >= 1 + decAlt.getAltitudeChange().getAltitudeLevel()) {
 					preDecAlt.add(decAlt, teamAltDef, altitude);
 				}
+
+				// on teamDestroyed
+				preDecAlt.add(decAlt, teamDestroyedDef, alive);
 			}
 		}
 
 		// Action descriptions for teamAltitude effect class of IncAlt and DecAlt actions
 		IncAltAltitudeActionDescription incAltAltActionDesc = new IncAltAltitudeActionDescription(incAltDef, preIncAlt,
-				teamAltDef);
+				teamAltDef, teamDestroyedDef);
 		DecAltAltitudeActionDescription decAltAltActionDesc = new DecAltAltitudeActionDescription(decAltDef, preDecAlt,
-				teamAltDef);
+				teamAltDef, teamDestroyedDef);
 
 		// PSOs of IncAlt and DecAlt
 		// Note: IncAlt and DecAlt also affect "route segment" and "teamDestroyed" variables, but those effects are
@@ -286,12 +305,16 @@ public class DartXMDPBuilder {
 		// ChangeForm: for "teamFormation" effect class
 		// Precondition
 		Precondition<ChangeFormAction> preChangeForm = new Precondition<>(changeFormDef);
+		// on teamFormation
 		preChangeForm.add(goLoose, teamFormDef, tightForm);
 		preChangeForm.add(goTight, teamFormDef, looseForm);
+		// on teamDestroyed
+		preChangeForm.add(goLoose, teamDestroyedDef, alive);
+		preChangeForm.add(goTight, teamDestroyedDef, alive);
 
 		// Action description for teamFormation (of ChangeForm)
 		TeamFormationActionDescription formActionDesc = new TeamFormationActionDescription(changeFormDef, preChangeForm,
-				teamFormDef);
+				teamFormDef, teamDestroyedDef);
 
 		// PSO of ChangeForm
 		FactoredPSO<ChangeFormAction> changeFormPSO = new FactoredPSO<>(changeFormDef, preChangeForm);
@@ -300,38 +323,23 @@ public class DartXMDPBuilder {
 		// SwitchECM: for "teamECM" effect class
 		// Precondition
 		Precondition<SwitchECMAction> preSwitchECM = new Precondition<>(switchECMDef);
+		// on teamECM
 		preSwitchECM.add(turnECMOn, teamECMDef, ecmOff);
 		preSwitchECM.add(turnECMOff, teamECMDef, ecmOn);
+		// on teamDestroyed
+		preSwitchECM.add(turnECMOn, teamDestroyedDef, alive);
+		preSwitchECM.add(turnECMOff, teamDestroyedDef, alive);
 
 		// Action description for teamECM (of SwitchECM)
-		TeamECMActionDescription ecmActionDesc = new TeamECMActionDescription(switchECMDef, preSwitchECM, teamECMDef);
+		TeamECMActionDescription ecmActionDesc = new TeamECMActionDescription(switchECMDef, preSwitchECM, teamECMDef,
+				teamDestroyedDef);
 
 		// PSO of SwitchECM
 		FactoredPSO<SwitchECMAction> switchECMPSO = new FactoredPSO<>(switchECMDef, preSwitchECM);
 		switchECMPSO.addActionDescription(ecmActionDesc);
 
-		// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
-		// Precondition
-		Precondition<IDurativeAction> preDurative = new Precondition<>(durativeDef);
-		for (IDurativeAction durative : durativeDef.getActions()) {
-			for (int i = 0; i < horizon - 1; i++) {
-				// Each durative action takes 1 period (= 1 segment) to execute
-				preDurative.add(durative, segmentDef, mOrderedSegments.get(i));
-			}
-		}
-
-		// Action description for route segment (of durative actions)
-		RouteSegmentActionDescription segmentActionDesc = new RouteSegmentActionDescription(durativeDef, preDurative,
-				segmentDef);
-
-		// Action description for teamDestroyed (of durative actions)
-		TeamDestroyedActionDescription destroyedActionDesc = new TeamDestroyedActionDescription(durativeDef,
-				preDurative, teamAltDef, teamFormDef, teamECMDef, segmentDef, teamDestroyedDef);
-
 		// PSO of composite durative action
-		FactoredPSO<IDurativeAction> durativePSO = new FactoredPSO<>(durativeDef, preDurative);
-		durativePSO.addActionDescription(segmentActionDesc);
-		durativePSO.addActionDescription(destroyedActionDesc);
+		FactoredPSO<IDurativeAction> durativePSO = buildDurativePSO(horizon);
 
 		// Transition function
 		TransitionFunction transFunction = new TransitionFunction();
@@ -343,10 +351,43 @@ public class DartXMDPBuilder {
 		return transFunction;
 	}
 
+	private FactoredPSO<IDurativeAction> buildDurativePSO(int horizon) throws IncompatibleActionException {
+		// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
+		// Precondition
+		Precondition<IDurativeAction> preDurative = new Precondition<>(durativeDef);
+		for (IDurativeAction durative : durativeDef.getActions()) {
+			for (int i = 0; i < horizon - 1; i++) {
+				// on route segment (for all durative actions)
+				// Each durative action takes 1 period (= 1 segment) to execute
+				preDurative.add(durative, segmentDef, mOrderedSegments.get(i));
+
+				// on teamDestroyed
+				// Tick is only applicable when team is destroyed
+				// IncAlt, DecAlt, and Fly are only applicable when team is alive
+				preDurative.add(durative, teamDestroyedDef, durative.equals(tick) ? destroyed : alive);
+			}
+		}
+
+		// Action description for route segment (of durative actions)
+		RouteSegmentActionDescription segmentActionDesc = new RouteSegmentActionDescription(durativeDef, preDurative,
+				segmentDef, teamDestroyedDef);
+
+		// Action description for teamDestroyed (of durative actions)
+		TeamDestroyedActionDescription destroyedActionDesc = new TeamDestroyedActionDescription(durativeDef,
+				preDurative, teamAltDef, teamFormDef, teamECMDef, segmentDef, teamDestroyedDef);
+
+		// PSO of composite durative action
+		FactoredPSO<IDurativeAction> durativePSO = new FactoredPSO<>(durativeDef, preDurative);
+		durativePSO.addActionDescription(segmentActionDesc);
+		durativePSO.addActionDescription(destroyedActionDesc);
+
+		return durativePSO;
+	}
+
 	private QSpace buildQFunctions() {
 		// Miss target event
 		DetectTargetDomain detectTargetDomain = new DetectTargetDomain(teamAltDef, teamFormDef, teamECMDef, segmentDef,
-				durativeDef);
+				teamDestroyedDef, durativeDef);
 		MissTargetEvent missTargetEvent = new MissTargetEvent(detectTargetDomain);
 		missTargetQFunction = new CountQFunction<>(missTargetEvent);
 

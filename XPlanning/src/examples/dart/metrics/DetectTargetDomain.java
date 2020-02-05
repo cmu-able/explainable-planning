@@ -4,6 +4,7 @@ import examples.dart.models.IDurativeAction;
 import examples.dart.models.RouteSegment;
 import examples.dart.models.TargetDistribution;
 import examples.dart.models.TeamAltitude;
+import examples.dart.models.TeamDestroyed;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
 import language.domain.metrics.ITransitionStructure;
@@ -34,22 +35,30 @@ public class DetectTargetDomain implements ITransitionStructure<IDurativeAction>
 	private StateVarDefinition<TeamFormation> mFormSrcDef;
 	private StateVarDefinition<TeamECM> mECMSrcDef;
 	private StateVarDefinition<RouteSegment> mSegmentSrcDef;
+	private StateVarDefinition<TeamDestroyed> mDestroyedSrcDef;
 
 	private TransitionStructure<IDurativeAction> mDomain = new TransitionStructure<>();
 
 	public DetectTargetDomain(StateVarDefinition<TeamAltitude> altSrcDef, StateVarDefinition<TeamFormation> formSrcDef,
 			StateVarDefinition<TeamECM> ecmSrcDef, StateVarDefinition<RouteSegment> segmentSrcDef,
-			ActionDefinition<IDurativeAction> durActionDef) {
+			StateVarDefinition<TeamDestroyed> destroyedSrcDef, ActionDefinition<IDurativeAction> durActionDef) {
 		mAltSrcDef = altSrcDef;
 		mFormSrcDef = formSrcDef;
 		mECMSrcDef = ecmSrcDef;
 		mSegmentSrcDef = segmentSrcDef;
+		mDestroyedSrcDef = destroyedSrcDef;
 
 		mDomain.addSrcStateVarDef(altSrcDef);
 		mDomain.addSrcStateVarDef(formSrcDef);
 		mDomain.addSrcStateVarDef(ecmSrcDef);
 		mDomain.addSrcStateVarDef(segmentSrcDef);
+		mDomain.addSrcStateVarDef(destroyedSrcDef);
 		mDomain.setActionDef(durActionDef);
+	}
+
+	public TeamDestroyed getTeamDestroyed(Transition<IDurativeAction, DetectTargetDomain> transition)
+			throws VarNotFoundException {
+		return transition.getSrcStateVarValue(TeamDestroyed.class, mDestroyedSrcDef);
 	}
 
 	public TeamAltitude getTeamAltitude(Transition<IDurativeAction, DetectTargetDomain> transition)

@@ -34,10 +34,12 @@ public class TeamECMActionDescription implements IActionDescription<SwitchECMAct
 	private FormulaActionDescription<SwitchECMAction> mTeamECMActionDesc;
 
 	public TeamECMActionDescription(ActionDefinition<SwitchECMAction> switchECMDef,
-			Precondition<SwitchECMAction> precondition, StateVarDefinition<TeamECM> teamECMDef) {
+			Precondition<SwitchECMAction> precondition, StateVarDefinition<TeamECM> teamECMDef,
+			StateVarDefinition<TeamDestroyed> destroyedSrcDef) {
 		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(teamECMDef);
+		discrClass.add(destroyedSrcDef);
 
 		// Effect class (i.e., effect variables)
 		EffectClass effectClass = new EffectClass();

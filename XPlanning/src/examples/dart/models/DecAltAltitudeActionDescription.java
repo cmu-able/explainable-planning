@@ -35,10 +35,12 @@ public class DecAltAltitudeActionDescription implements IActionDescription<DecAl
 	private FormulaActionDescription<DecAltAction> mDecAltAltitudeActionDesc;
 
 	public DecAltAltitudeActionDescription(ActionDefinition<DecAltAction> decAltDef,
-			Precondition<DecAltAction> precondition, StateVarDefinition<TeamAltitude> teamAltDef) {
+			Precondition<DecAltAction> precondition, StateVarDefinition<TeamAltitude> teamAltDef,
+			StateVarDefinition<TeamDestroyed> destroyedSrcDef) {
 		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(teamAltDef);
+		discrClass.add(destroyedSrcDef);
 
 		// Effect class (i.e., effect variables)
 		EffectClass effectClass = new EffectClass();

@@ -35,10 +35,12 @@ public class TeamFormationActionDescription implements IActionDescription<Change
 	private FormulaActionDescription<ChangeFormAction> mTeamFormActionDesc;
 
 	public TeamFormationActionDescription(ActionDefinition<ChangeFormAction> changeFormDef,
-			Precondition<ChangeFormAction> precondition, StateVarDefinition<TeamFormation> teamFormDef) {
+			Precondition<ChangeFormAction> precondition, StateVarDefinition<TeamFormation> teamFormDef,
+			StateVarDefinition<TeamDestroyed> destroyedSrcDef) {
 		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(teamFormDef);
+		discrClass.add(destroyedSrcDef);
 
 		// Effect class (i.e., effect variables)
 		EffectClass effectClass = new EffectClass();

@@ -8,8 +8,8 @@ import language.exceptions.XMDPException;
 
 /**
  * {@link IActionDescription} is an interface to an action description for a specific {@link EffectClass} of a specific
- * action type. For each action of that type, an action description maps a set of mutually exclusive discriminants to
- * the corresponding probabilistic effects.
+ * action type. For each action of that type, an action description maps a set of mutually exclusive discriminants of
+ * the {@link DiscriminantClass} to the corresponding probabilistic effects.
  * 
  * Note: {@link IActionDescription} can be a composite action description. That is, it is for a generic action type,
  * whose action subtypes have the same effect class and discriminant class.

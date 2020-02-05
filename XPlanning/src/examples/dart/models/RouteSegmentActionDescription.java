@@ -40,10 +40,12 @@ public class RouteSegmentActionDescription implements IActionDescription<IDurati
 	private FormulaActionDescription<IDurativeAction> mSegmentActionDesc;
 
 	public RouteSegmentActionDescription(ActionDefinition<IDurativeAction> durativeDef,
-			Precondition<IDurativeAction> precondition, StateVarDefinition<RouteSegment> segmentDef) {
+			Precondition<IDurativeAction> precondition, StateVarDefinition<RouteSegment> segmentDef,
+			StateVarDefinition<TeamDestroyed> destroyedSrcDef) {
 		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(segmentDef);
+		discrClass.add(destroyedSrcDef);
 
 		// Effect class (i.e., effect variables)
 		EffectClass effectClass = new EffectClass();

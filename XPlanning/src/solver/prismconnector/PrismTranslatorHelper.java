@@ -294,7 +294,7 @@ public class PrismTranslatorHelper {
 			ActionFilter helperActionFilter, boolean hasGoal) throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
-		Set<Map<EffectClass, FactoredPSO<IAction>>> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
+		Set<ChainOfEffectClasses> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
 
 		// These variables are unmodified by the actions in the model.
 		// This is mostly for handling DTMC.
@@ -304,14 +304,15 @@ public class PrismTranslatorHelper {
 		int moduleCount = 0;
 		boolean first = true;
 
-		for (Map<EffectClass, FactoredPSO<IAction>> chain : chainsOfEffectClasses) {
+		for (ChainOfEffectClasses chain : chainsOfEffectClasses) {
 			moduleCount++;
 			StateSpace moduleVarSpace = new StateSpace();
 			Map<FactoredPSO<IAction>, Set<EffectClass>> moduleActionPSOs = new HashMap<>();
 
-			for (Entry<EffectClass, FactoredPSO<IAction>> entry : chain.entrySet()) {
-				EffectClass effectClass = entry.getKey();
-				FactoredPSO<IAction> actionPSO = entry.getValue();
+			int chainLength = chain.getChainLength();
+			for (int i = 0; i < chainLength; i++) {
+				EffectClass effectClass = chain.getEffectClass(i);
+				FactoredPSO<IAction> actionPSO = chain.getFactoredPSO(i);
 
 				moduleVarSpace.addStateVarDefinitions(effectClass);
 
@@ -534,24 +535,37 @@ public class PrismTranslatorHelper {
 	 * @param actionPSOs
 	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @return A set of "chains" of effect classes. Each effect class is mapped to its corresponding action PSO. Two
-	 *         effect classes are "chained" iff: (1)~they are associated with different action types, but they have
-	 *         overlapping state variables, or (2)~they are associated with the same action type (they do not overlap),
-	 *         but they overlap with other effect classes of other action types that are "chained".
+	 *         (NOT necessarily unique) effect classes are "chained" iff: (1)~they are associated with different action
+	 *         types, but they have overlapping state variables, or (2)~they are associated with the same action type
+	 *         (by definition, they do not overlap), but they overlap with other effect classes of other action types
+	 *         that are "chained".
 	 */
-	Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClasses(Iterable<FactoredPSO<IAction>> actionPSOs) {
-		Set<Map<EffectClass, FactoredPSO<IAction>>> currChains = new HashSet<>();
+	Set<ChainOfEffectClasses> getChainsOfEffectClasses(Iterable<FactoredPSO<IAction>> actionPSOs) {
+		// This set of chains will be built iteratively
+		Set<ChainOfEffectClasses> currChains = new HashSet<>();
+
 		boolean firstPSO = true;
 		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
 			Set<EffectClass> actionEffectClasses = actionPSO.getIndependentEffectClasses();
 			if (firstPSO) {
+				// For the 1st actionPSO, establish an initial set of chains, with 1 element in each chain
+				// (all effect classes of a single actionPSO are non-overlapping by definition)
+
 				for (EffectClass effectClass : actionEffectClasses) {
-					Map<EffectClass, FactoredPSO<IAction>> iniChain = new HashMap<>();
-					iniChain.put(effectClass, actionPSO);
+					ChainOfEffectClasses iniChain = new ChainOfEffectClasses();
+
+					// Put 1st element into the chain
+					iniChain.addEffectClass(effectClass, actionPSO);
+
+					// Add this initial chain to the current set of chains
 					currChains.add(iniChain);
 				}
 				firstPSO = false;
 				continue;
 			}
+
+			// Once an initial set of length-1 chains is established, for the remaining actionPSOs, add their effect
+			// classes to the existing chains
 			for (EffectClass effectClass : actionEffectClasses) {
 				currChains = getChainsOfEffectClassesHelper(currChains, effectClass, actionPSO);
 			}
@@ -559,26 +573,70 @@ public class PrismTranslatorHelper {
 		return currChains;
 	}
 
-	private Set<Map<EffectClass, FactoredPSO<IAction>>> getChainsOfEffectClassesHelper(
-			Set<Map<EffectClass, FactoredPSO<IAction>>> currChains, EffectClass effectClass,
-			FactoredPSO<IAction> actionPSO) {
-		Set<Map<EffectClass, FactoredPSO<IAction>>> res = new HashSet<>();
-		Map<EffectClass, FactoredPSO<IAction>> newChain = new HashMap<>();
-		for (Map<EffectClass, FactoredPSO<IAction>> chain : currChains) {
+	/**
+	 * Add the given effectClass-actionPSO pair to the current set of "chains".
+	 * 
+	 * This method does not modify the current set of existing chains.
+	 * 
+	 * @param currChains
+	 * @param effectClass
+	 * @param actionPSO
+	 * @return
+	 */
+	private Set<ChainOfEffectClasses> getChainsOfEffectClassesHelper(Set<ChainOfEffectClasses> currChains,
+			EffectClass effectClass, FactoredPSO<IAction> actionPSO) {
+		// This is the resulting set of chains
+		Set<ChainOfEffectClasses> res = new HashSet<>();
+
+		// This new chain will contain the given effectClass -- either by itself or with other (existing) chained effect
+		// classes
+		// This new chain will be built iteratively
+		ChainOfEffectClasses newChain = new ChainOfEffectClasses();
+
+		// Go over each existing chain to find if the given effectClass overlaps with it
+		for (ChainOfEffectClasses currChain : currChains) {
 			boolean overlapped = false;
-			for (EffectClass currEffectClass : chain.keySet()) {
+			int chainLength = currChain.getChainLength();
+
+			for (int i = 0; i < chainLength; i++) {
+				// Check each effectClass in the existing chain
+				EffectClass currEffectClass = currChain.getEffectClass(i);
+
 				if (effectClass.overlaps(currEffectClass)) {
-					newChain.putAll(chain);
+					// The given effectClass overlaps with the existing chained effectClass
+					// Copy the current chain into the new chain -- the given effectClass will be added to it
+					// later
+					newChain.addChain(currChain);
+
+					// Go to the next existing chain
 					overlapped = true;
 					break;
 				}
 			}
+
+			// If the given effectClass doesn't overlap with this existing chain, this chain is left unmodified
 			if (!overlapped) {
-				res.add(chain);
+				// Copy this chain -- as is -- to the resulting set
+				res.add(currChain);
 			}
+
+			// Check the next existing chain, because it is possible that the given effectClass overlaps with 2+
+			// separate chains
+			// In that case, those separate chains need to be chained together
 		}
-		newChain.put(effectClass, actionPSO);
+
+		// At this point, the new chain may be:
+		// (a)~empty if the given effectClass doesn't overlap with any existing chain, or
+		// (b)~comprises of 1 or more existing chains that the given effectClass overlaps
+
+		// Add the given effectClass to the new chain
+		newChain.addEffectClass(effectClass, actionPSO);
+
+		// Add the new chain to the resulting set
 		res.add(newChain);
+
+		// At this point, the resulting set contains all the unmodified chains from the original set, plus some a new
+		// chain containing the given effectClass
 		return res;
 	}
 

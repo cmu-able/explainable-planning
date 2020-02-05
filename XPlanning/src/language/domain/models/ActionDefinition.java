@@ -30,6 +30,7 @@ public class ActionDefinition<E extends IAction> {
 	private String mName;
 	private Set<E> mActions;
 	private boolean mIsComposite;
+	private ActionDefinition<IAction> mParentCompositeActionDef = null;
 
 	public ActionDefinition(String name, E... actions) {
 		mName = name;
@@ -50,6 +51,14 @@ public class ActionDefinition<E extends IAction> {
 
 	private boolean checkComposite(Set<E> actions) {
 		return actions.stream().map(E::getClass).distinct().count() > 1;
+	}
+
+	public void beConstituentOf(ActionDefinition<IAction> parentCompositeActionDef) {
+		mParentCompositeActionDef = parentCompositeActionDef;
+	}
+
+	public ActionDefinition<IAction> getParentCompositeActionDefinition() {
+		return mParentCompositeActionDef;
 	}
 
 	public String getName() {
@@ -74,7 +83,10 @@ public class ActionDefinition<E extends IAction> {
 		}
 		ActionDefinition<?> actionDef = (ActionDefinition<?>) obj;
 		return actionDef.mName.equals(mName) && actionDef.mActions.equals(mActions)
-				&& actionDef.mIsComposite == mIsComposite;
+				&& actionDef.mIsComposite == mIsComposite
+				&& (actionDef.mParentCompositeActionDef == mParentCompositeActionDef
+						|| actionDef.mParentCompositeActionDef != null
+								&& actionDef.mParentCompositeActionDef.equals(mParentCompositeActionDef));
 	}
 
 	@Override
@@ -85,6 +97,7 @@ public class ActionDefinition<E extends IAction> {
 			result = 31 * result + mName.hashCode();
 			result = 31 * result + mActions.hashCode();
 			result = 31 * result + Boolean.hashCode(mIsComposite);
+			result = 31 * result + ((mParentCompositeActionDef == null) ? 0 : mParentCompositeActionDef.hashCode());
 			hashCode = result;
 		}
 		return result;

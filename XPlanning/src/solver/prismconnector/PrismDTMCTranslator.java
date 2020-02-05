@@ -1,8 +1,6 @@
 package solver.prismconnector;
 
-import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import language.domain.metrics.EventBasedMetric;
 import language.domain.metrics.IEvent;
@@ -16,12 +14,14 @@ import language.dtmc.TwoTBN;
 import language.dtmc.XDTMC;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.mdp.ActionSpace;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
 import language.mdp.FactoredPSO;
 import language.mdp.IActionDescription;
 import language.mdp.ProbabilisticEffect;
 import language.mdp.StateVarTuple;
+import language.mdp.TransitionFunction;
 import language.mdp.XMDP;
 import language.objectives.AttributeCostFunction;
 import language.objectives.CostCriterion;
@@ -71,12 +71,12 @@ public class PrismDTMCTranslator {
 	public String getDTMCTranslation(boolean withQAFunctions, boolean withQACostFunctions) throws XMDPException {
 		XMDP xmdp = mXDTMC.getXMDP();
 
-		Set<ActionDefinition<IAction>> actionDefs = new HashSet<>();
-		Set<FactoredPSO<IAction>> actionPSOs = new HashSet<>();
+		ActionSpace actionDefs = new ActionSpace();
+		TransitionFunction actionPSOs = new TransitionFunction();
 		for (TwoTBN<IAction> twoTBN : mXDTMC) {
 			ActionDefinition<IAction> actionDef = twoTBN.getActionDefinition();
 			FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
-			actionDefs.add(actionDef);
+			actionDefs.addActionDefinition(actionDef);
 			actionPSOs.add(actionPSO);
 		}
 

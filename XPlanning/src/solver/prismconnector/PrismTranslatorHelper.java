@@ -108,13 +108,13 @@ public class PrismTranslatorHelper {
 	 * Build a helper module that handles cycles of choosing action, reward computation, checking if the goal (if any)
 	 * is reached for termination.
 	 * 
-	 * @param actionPSOs
+	 * @param actionDefs
 	 * @param helperActionFilter
 	 * @param hasGoal
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
 	 */
-	String buildHelperModule(Iterable<FactoredPSO<IAction>> actionPSOs, ActionFilter helperActionFilter,
+	String buildHelperModule(Iterable<ActionDefinition<IAction>> actionDefs, ActionFilter helperActionFilter,
 			boolean hasGoal) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
@@ -130,8 +130,7 @@ public class PrismTranslatorHelper {
 		builder.append("computeGo : bool init false;");
 		builder.append("\n\n");
 
-		for (FactoredPSO<IAction> actionPSO : actionPSOs) {
-			ActionDefinition<IAction> actionDef = actionPSO.getActionDefinition();
+		for (ActionDefinition<IAction> actionDef : actionDefs) {
 
 			for (IAction action : actionDef.getActions()) {
 				if (!helperActionFilter.filterAction(action)) {
@@ -344,7 +343,7 @@ public class PrismTranslatorHelper {
 			builder.append(noCommandModule);
 		}
 
-		String helperModule = buildHelperModule(actionPSOs, helperActionFilter, hasGoal);
+		String helperModule = buildHelperModule(actionDefs, helperActionFilter, hasGoal);
 		builder.append("\n\n");
 		builder.append(helperModule);
 		return builder.toString();

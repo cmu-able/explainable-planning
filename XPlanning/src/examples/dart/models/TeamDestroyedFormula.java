@@ -32,51 +32,59 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 	private StateVarDefinition<RouteSegment> mSegmentSrcDef;
 
 	// Effect variable
-	private StateVarDefinition<TeamDestroyed> mDestroyedDestDef;
+	private StateVarDefinition<TeamDestroyed> mDestroyedDef;
 
 	private EffectClass mEffectClass; // of teamDestroyed
 
 	public TeamDestroyedFormula(StateVarDefinition<TeamAltitude> altSrcDef,
 			StateVarDefinition<TeamFormation> formSrcDef, StateVarDefinition<TeamECM> ecmSrcDef,
-			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDestDef) {
+			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDef) {
 		mAltSrcDef = altSrcDef;
 		mFormSrcDef = formSrcDef;
 		mECMSrcDef = ecmSrcDef;
 		mSegmentSrcDef = segmentSrcDef;
-		mDestroyedDestDef = destroyedDestDef;
+		mDestroyedDef = destroyedDef;
 
 		mEffectClass = new EffectClass();
-		mEffectClass.add(destroyedDestDef);
+		mEffectClass.add(destroyedDef);
 	}
 
 	@Override
 	public ProbabilisticEffect formula(Discriminant discriminant, E action) throws XMDPException {
-		// Determining factors of effect on teamDestroyed
-		TeamAltitude srcAlt = discriminant.getStateVarValue(TeamAltitude.class, mAltSrcDef);
-		TeamFormation srcForm = discriminant.getStateVarValue(TeamFormation.class, mFormSrcDef);
-		TeamECM srcECM = discriminant.getStateVarValue(TeamECM.class, mECMSrcDef);
-		RouteSegment srcSegment = discriminant.getStateVarValue(RouteSegment.class, mSegmentSrcDef);
+		// If team is already destroyed, teamDestroyed stays true
+		TeamDestroyed srcDestroyed = discriminant.getStateVarValue(TeamDestroyed.class, mDestroyedDef);
+
+		double destroyedProb;
+		if (srcDestroyed.isDestroyed()) {
+			destroyedProb = 1;
+		} else {
+			// Determining factors of effect on teamDestroyed
+			TeamAltitude srcAlt = discriminant.getStateVarValue(TeamAltitude.class, mAltSrcDef);
+			TeamFormation srcForm = discriminant.getStateVarValue(TeamFormation.class, mFormSrcDef);
+			TeamECM srcECM = discriminant.getStateVarValue(TeamECM.class, mECMSrcDef);
+			RouteSegment srcSegment = discriminant.getStateVarValue(RouteSegment.class, mSegmentSrcDef);
+
+			double altTerm = Math.max(0, THREAT_RANGE - srcAlt.getAltitudeLevel()) / THREAT_RANGE;
+			int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
+			double formTerm = (1 - phi) + phi / PSI;
+			int ecm = srcECM.isECMOn() ? 1 : 0;
+			double ecmTerm = (1 - ecm) + ecm / 4.0;
+
+			// Probability of being destroyed, given threat exists in the segment
+			double destroyedProbGivenThreat = altTerm * formTerm * ecmTerm;
+
+			// Probability of being destroyed
+			destroyedProb = srcSegment.getThreatDistribution().getExpectedThreatProbability()
+					* destroyedProbGivenThreat;
+		}
 
 		// Possible effects on teamDestroyed
 		Effect destroyedEffect = new Effect(mEffectClass);
 		Effect notDestroyedEffect = new Effect(mEffectClass);
 		TeamDestroyed destroyed = new TeamDestroyed(true);
 		TeamDestroyed notDestroyed = new TeamDestroyed(false);
-		destroyedEffect.add(mDestroyedDestDef.getStateVar(destroyed));
-		notDestroyedEffect.add(mDestroyedDestDef.getStateVar(notDestroyed));
-
-		double altTerm = Math.max(0, THREAT_RANGE - srcAlt.getAltitudeLevel()) / THREAT_RANGE;
-		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
-		double formTerm = (1 - phi) + phi / PSI;
-		int ecm = srcECM.isECMOn() ? 1 : 0;
-		double ecmTerm = (1 - ecm) + ecm / 4.0;
-
-		// Probability of being destroyed, given threat exists in the segment
-		double destroyedProbGivenThreat = altTerm * formTerm * ecmTerm;
-
-		// Probability of being destroyed
-		double destroyedProb = srcSegment.getThreatDistribution().getExpectedThreatProbability()
-				* destroyedProbGivenThreat;
+		destroyedEffect.add(mDestroyedDef.getStateVar(destroyed));
+		notDestroyedEffect.add(mDestroyedDef.getStateVar(notDestroyed));
 
 		// Probabilistic Effect on teamDestroyed
 		ProbabilisticEffect destroyedProbEffect = new ProbabilisticEffect(mEffectClass);
@@ -97,7 +105,7 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 		TeamDestroyedFormula<?> formula = (TeamDestroyedFormula<?>) obj;
 		return formula.mAltSrcDef.equals(mAltSrcDef) && formula.mFormSrcDef.equals(mFormSrcDef)
 				&& formula.mECMSrcDef.equals(mECMSrcDef) && formula.mSegmentSrcDef.equals(mSegmentSrcDef)
-				&& formula.mDestroyedDestDef.equals(mDestroyedDestDef);
+				&& formula.mDestroyedDef.equals(mDestroyedDef);
 	}
 
 	@Override
@@ -109,7 +117,7 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 			result = 31 * result + mFormSrcDef.hashCode();
 			result = 31 * result + mECMSrcDef.hashCode();
 			result = 31 * result + mSegmentSrcDef.hashCode();
-			result = 31 * result + mDestroyedDestDef.hashCode();
+			result = 31 * result + mDestroyedDef.hashCode();
 			hashCode = result;
 		}
 		return hashCode;

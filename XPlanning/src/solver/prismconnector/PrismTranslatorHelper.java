@@ -18,6 +18,7 @@ import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
+import language.mdp.ActionSpace;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
 import language.mdp.Effect;
@@ -30,6 +31,7 @@ import language.mdp.ProbabilisticTransition;
 import language.mdp.StateSpace;
 import language.mdp.StateVarTuple;
 import language.mdp.TabularActionDescription;
+import language.mdp.TransitionFunction;
 
 public class PrismTranslatorHelper {
 	private ValueEncodingScheme mEncodings;
@@ -114,8 +116,7 @@ public class PrismTranslatorHelper {
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
 	 */
-	String buildHelperModule(Iterable<ActionDefinition<IAction>> actionDefs, ActionFilter helperActionFilter,
-			boolean hasGoal) {
+	String buildHelperModule(ActionSpace actionDefs, ActionFilter helperActionFilter, boolean hasGoal) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("module helper");
 		builder.append("\n");
@@ -288,8 +289,8 @@ public class PrismTranslatorHelper {
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws XMDPException
 	 */
-	String buildModules(StateSpace stateSpace, StateVarTuple iniState, Iterable<ActionDefinition<IAction>> actionDefs,
-			Iterable<FactoredPSO<IAction>> actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
+	String buildModules(StateSpace stateSpace, StateVarTuple iniState, ActionSpace actionDefs,
+			TransitionFunction actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
 			ActionFilter helperActionFilter, boolean hasGoal) throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
@@ -539,7 +540,7 @@ public class PrismTranslatorHelper {
 	 *         (by definition, they do not overlap), but they overlap with other effect classes of other action types
 	 *         that are "chained".
 	 */
-	Set<ChainOfEffectClasses> getChainsOfEffectClasses(Iterable<FactoredPSO<IAction>> actionPSOs) {
+	Set<ChainOfEffectClasses> getChainsOfEffectClasses(TransitionFunction actionPSOs) {
 		// This set of chains will be built iteratively
 		Set<ChainOfEffectClasses> currChains = new HashSet<>();
 

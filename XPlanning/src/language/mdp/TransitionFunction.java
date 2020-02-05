@@ -14,9 +14,7 @@ import language.exceptions.ActionDefinitionNotFoundException;
  * {@link TransitionFunction} represents a probabilistic transition function (i.e., a set of {@link FactoredPSO}s) of an
  * MDP.
  * 
- * Note: Some {@link FactoredPSO}s in the {@link TransitionFunction} may be composite factored PSOs. However, the
- * composite factored PSOs can only be accessed directly via getActionPSO(). The iterator of {@link TransitionFunction}
- * only iterates over non-composite factored PSOs.
+ * Note: Some {@link FactoredPSO}s in the {@link TransitionFunction} may be composite factored PSOs.
  * 
  * @author rsukkerd
  *
@@ -30,9 +28,6 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 
 	private Set<FactoredPSO<? extends IAction>> mAllTransitions = new HashSet<>();
 
-	// For iterator
-	private Set<FactoredPSO<? extends IAction>> mNonCompositeTransitions = new HashSet<>();
-
 	// For fast look-up
 	private Map<ActionDefinition<? extends IAction>, FactoredPSO<? extends IAction>> mLookupTable = new HashMap<>();
 
@@ -42,10 +37,6 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 
 	public void add(FactoredPSO<? extends IAction> actionPSO) {
 		mAllTransitions.add(actionPSO);
-		if (!actionPSO.getActionDefinition().isComposite()) {
-			// Iterator will iterate over non-composite action PSOs only
-			mNonCompositeTransitions.add(actionPSO);
-		}
 		mLookupTable.put(actionPSO.getActionDefinition(), actionPSO);
 	}
 
@@ -58,14 +49,11 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 		return (FactoredPSO<E>) mLookupTable.get(actionDefinition);
 	}
 
-	/**
-	 * This iterator only iterates over non-composite {@link FactoredPSO}s.
-	 */
 	@Override
 	public Iterator<FactoredPSO<IAction>> iterator() {
 		return new Iterator<FactoredPSO<IAction>>() {
 
-			private Iterator<FactoredPSO<? extends IAction>> iter = mNonCompositeTransitions.iterator();
+			private Iterator<FactoredPSO<? extends IAction>> iter = mAllTransitions.iterator();
 
 			@Override
 			public boolean hasNext() {

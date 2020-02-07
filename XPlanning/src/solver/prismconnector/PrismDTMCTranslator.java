@@ -75,7 +75,16 @@ public class PrismDTMCTranslator {
 		TransitionFunction actionPSOs = new TransitionFunction();
 		for (TwoTBN<IAction> twoTBN : mXDTMC) {
 			ActionDefinition<IAction> actionDef = twoTBN.getActionDefinition();
-			FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
+
+			// Some action definition may only have its parent composite action PSO, and doesn't have its own individual
+			// action PSO
+			// In such case, obtain its parent composite action PSO
+			FactoredPSO<IAction> actionPSO;
+			if (xmdp.getTransitionFunction().hasActionPSO(actionDef)) {
+				actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
+			} else {
+				actionPSO = xmdp.getTransitionFunction().getParentCompositeActionPSO(actionDef);
+			}
 			actionDefs.addActionDefinition(actionDef);
 			actionPSOs.add(actionPSO);
 		}
@@ -129,6 +138,10 @@ public class PrismDTMCTranslator {
 		}
 
 		return builder.toString();
+	}
+
+	private void helper() {
+
 	}
 
 	/**

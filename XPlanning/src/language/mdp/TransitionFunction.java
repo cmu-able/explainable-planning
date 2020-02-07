@@ -62,6 +62,16 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 		return (FactoredPSO<E>) mLookupTable.get(actionDefinition);
 	}
 
+	public FactoredPSO<IAction> getParentCompositeActionPSO(ActionDefinition<? extends IAction> actionDefinition)
+			throws ActionDefinitionNotFoundException {
+		ActionDefinition<IAction> parentCompActionDef = actionDefinition.getParentCompositeActionDefinition();
+		if (parentCompActionDef == null) {
+			throw new IllegalArgumentException(
+					"Action definition: " + actionDefinition.getName() + " doesn't have a parent composite action");
+		}
+		return getActionPSO(parentCompActionDef);
+	}
+
 	@Override
 	public Iterator<FactoredPSO<IAction>> iterator() {
 		return new Iterator<FactoredPSO<IAction>>() {

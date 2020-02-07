@@ -53,8 +53,8 @@ public class ActionDefinition<E extends IAction> {
 		return actions.stream().map(E::getClass).distinct().count() > 1;
 	}
 
-	public void beConstituentOf(ActionDefinition<IAction> parentCompositeActionDef) {
-		mParentCompositeActionDef = parentCompositeActionDef;
+	public void beConstituentOf(ActionDefinition<? extends IAction> parentCompositeActionDef) {
+		mParentCompositeActionDef = (ActionDefinition<IAction>) parentCompositeActionDef;
 	}
 
 	public ActionDefinition<IAction> getParentCompositeActionDefinition() {

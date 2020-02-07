@@ -220,6 +220,12 @@ public class DartXMDPBuilder {
 	}
 
 	private ActionSpace buildActionSpace() {
+		// Set all constituent actions of durative action
+		incAltDef.beConstituentOf(durativeDef);
+		decAltDef.beConstituentOf(durativeDef);
+		flyDef.beConstituentOf(durativeDef);
+		tickDef.beConstituentOf(durativeDef);
+
 		ActionSpace actionSpace = new ActionSpace();
 		actionSpace.addActionDefinition(incAltDef);
 		actionSpace.addActionDefinition(decAltDef);

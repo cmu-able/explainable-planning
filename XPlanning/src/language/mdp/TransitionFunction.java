@@ -40,6 +40,19 @@ public class TransitionFunction implements Iterable<FactoredPSO<IAction>> {
 		mLookupTable.put(actionPSO.getActionDefinition(), actionPSO);
 	}
 
+	/**
+	 * Check whether the given action definition has a corresponding action PSO.
+	 * 
+	 * Some constituent action definitions may only have their parent composite action PSOs, but don't have their own
+	 * individual action PSOs (e.g., Fly and Tick actions in DART domain).
+	 * 
+	 * @param actionDefinition
+	 * @return Whether the given action definition has a corresponding action PSO
+	 */
+	public boolean hasActionPSO(ActionDefinition<? extends IAction> actionDefinition) {
+		return mLookupTable.containsKey(actionDefinition);
+	}
+
 	public <E extends IAction> FactoredPSO<E> getActionPSO(ActionDefinition<E> actionDefinition)
 			throws ActionDefinitionNotFoundException {
 		if (!mLookupTable.containsKey(actionDefinition)) {

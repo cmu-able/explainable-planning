@@ -62,35 +62,69 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 			// Any action that is part of a composite action (i.e., constituent action) has additional effect classes
 			// that are defined in the composite action PSO, but not defined in the individual action PSO.
 
-			// Therefore, when we look up action PSO of a constituent action (e.g., of a policy), we must get both the
-			// individual action PSO (if exists) and the composite action PSO -- so that we get all the effect classes
-			// of the constituent action.
+			// Therefore, when we look up action PSO of a constituent action (e.g., in a policy), we must get both the
+			// individual action PSO (if exists) and the parent composite action PSO -- so that we get all the effect
+			// classes of the constituent action.
 
-			// TODO
+			// Need to handle any additional effect classes defined in the parent composite action PSO
 			ActionDefinition<IAction> parentCompActionDef = actionDef.getParentCompositeActionDefinition();
 			if (parentCompActionDef != null) {
+				// This actionDef is a constituent action defn
+				// Obtain the parent composition action defn
 				FactoredPSO<IAction> parentCompActionPSO = xmdp.getTransitionFunction()
 						.getActionPSO(parentCompActionDef);
-				Set<EffectClass> additionalEffectClasses = parentCompActionPSO.getIndependentEffectClasses();
+
+				// Add the tuples <predicate, action, probabilistic effect> of the additional effect classes, defined in
+				// the parent composite action PSO, to the 2TBN
+				induceDTMCHelper(predicate, action, parentCompActionPSO, twoTBN);
 			}
 
-			FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
-			Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+			// Some constituent actions may only have their parent composite action PSOs, and don't have their own
+			// individual action PSOs (e.g., Fly and Tick actions in DART domain).
+			// For such constituent actions, skip the following steps.
 
-			for (EffectClass effectClass : effectClasses) {
-				IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
-				DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
+			if (xmdp.getTransitionFunction().hasActionPSO(actionDef)) {
+				// This actionDef has its own individual action PSO
+				FactoredPSO<IAction> indivActionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
 
-				Discriminant discriminant = new Discriminant(discrClass);
-				for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
-					IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
-					StateVar<IStateVarValue> stateVar = stateVarDef.getStateVar(value);
-					discriminant.add(stateVar);
-				}
-
-				ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, action);
-				twoTBN.add(predicate, action, probEffect);
+				// Add the tuples <predicate, action, probabilistic effect> of the effect classes, defined directly in
+				// the individual action PSO, to the 2TBN
+				induceDTMCHelper(predicate, action, indivActionPSO, twoTBN);
 			}
+		}
+	}
+
+	/**
+	 * Add (state predicate, action, probabilistic effect) tuples
+	 * 
+	 * @param predicate
+	 * @param action
+	 * @param actionPSO
+	 *            : This can be either: the individual action PSO, or the parent composite action PSO
+	 * @param twoTBN
+	 *            : 2TBN output parameter
+	 * @throws XMDPException
+	 */
+	private void induceDTMCHelper(StateVarTuple predicate, IAction action, FactoredPSO<IAction> actionPSO,
+			TwoTBN<IAction> twoTBN) throws XMDPException {
+		// These effect classes are either:
+		// - defined directly in the individual action PSO, or
+		// - additional effect classes defined in the parent composite action PSO
+		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+
+		for (EffectClass effectClass : effectClasses) {
+			IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
+			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
+
+			Discriminant discriminant = new Discriminant(discrClass);
+			for (StateVarDefinition<IStateVarValue> stateVarDef : discrClass) {
+				IStateVarValue value = predicate.getStateVarValue(IStateVarValue.class, stateVarDef);
+				StateVar<IStateVarValue> stateVar = stateVarDef.getStateVar(value);
+				discriminant.add(stateVar);
+			}
+
+			ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, action);
+			twoTBN.add(predicate, action, probEffect);
 		}
 	}
 

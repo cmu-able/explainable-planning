@@ -1,1 +1,1 @@
---maxAltitude=3 --horizon=2 --targetSensorReadings=0,1 --threatSensorReadings=0,1 --targetWeight=0.5 --threatWeight=0.5 --iniAltitude=1 --iniFormation=loose --iniECM=false
+--maxAltitude=3 --horizon=3 --targetSensorReadings=1,0,0 --threatSensorReadings=1,0,0 --targetWeight=0.5 --threatWeight=0.5 --iniAltitude=1 --iniFormation=loose --iniECM=false

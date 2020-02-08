@@ -77,11 +77,6 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 				// Add the tuples <predicate, action, probabilistic effect> of the additional effect classes, defined in
 				// the parent composite action PSO, to the 2TBN
 				induceDTMCHelper(predicate, action, parentCompActionPSO, twoTBN);
-
-				// Add the mapping from the parent composite action defn (in addition to the individual action defn) to
-				// the 2TBN
-				// This is to allow PrismDTMCTranslator to build module commands from composite action descriptions
-				mDTMC.put(parentCompActionDef, twoTBN);
 			}
 
 			// Some constituent actions may only have their parent composite action PSOs, and don't have their own
@@ -100,7 +95,8 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 	}
 
 	/**
-	 * Add (state predicate, action, probabilistic effect) tuples
+	 * Add <predicate, action, probabilistic effect> tuples to the output 2TBN. The probabilistic effect is constructed
+	 * according to the effect classes defined in the given action PSO.
 	 * 
 	 * @param predicate
 	 * @param action
@@ -131,6 +127,10 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 			ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, action);
 			twoTBN.add(predicate, action, probEffect);
 		}
+	}
+
+	public boolean contains(ActionDefinition<IAction> actionDef) {
+		return mDTMC.containsKey(actionDef);
 	}
 
 	public TwoTBN<IAction> get2TBN(ActionDefinition<IAction> actionDef) {

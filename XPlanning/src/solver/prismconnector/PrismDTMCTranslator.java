@@ -1,6 +1,8 @@
 package solver.prismconnector;
 
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import language.domain.metrics.EventBasedMetric;
 import language.domain.metrics.IEvent;
@@ -140,10 +142,6 @@ public class PrismDTMCTranslator {
 		return builder.toString();
 	}
 
-	private void helper() {
-
-	}
-
 	/**
 	 * 
 	 * @param eventBasedMetric
@@ -222,11 +220,56 @@ public class PrismDTMCTranslator {
 	 * @throws XMDPException
 	 */
 	private String buildDTMCPartialModuleCommands(IActionDescription<IAction> actionDescription) throws XMDPException {
-		TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(actionDescription.getActionDefinition());
+		ActionDefinition<IAction> actionDef = actionDescription.getActionDefinition();
+
+		if (actionDef.isComposite()) {
+			// The action description is of a composite action definition -- its effect class corresponds to multiple
+			// action types.
+			// Thus, the module commands that update the variables in the effect class must include all of the
+			// constituent action types.
+
+			StringBuilder builder = new StringBuilder();
+
+			// Create module commands for each constituent action definition
+			for (ActionDefinition<IAction> constituentActionDef : filterConstituentActionDefinitions(actionDef)) {
+				TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(constituentActionDef);
+
+				String partialCommands = buildDTMCPartialModuleCommandsHelper(twoTBN, actionDescription);
+
+				builder.append("\n");
+				builder.append(PrismTranslatorUtils.INDENT);
+				builder.append("// ");
+				builder.append(constituentActionDef.getName());
+				builder.append("\n");
+				builder.append(partialCommands);
+			}
+			return builder.toString();
+		} else {
+			TwoTBN<IAction> twoTBN = mXDTMC.get2TBN(actionDef);
+			return buildDTMCPartialModuleCommandsHelper(twoTBN, actionDescription);
+		}
+	}
+
+	/**
+	 * Build partial module commands based on the given 2TBN (of a particular action type) and the action description
+	 * (of a particular action type and effect class).
+	 * 
+	 * Note that the action type of the 2TBN can be a constituent of the action type of the action description.
+	 * 
+	 * @param twoTBN
+	 *            : 2TBN -- with all effect classes of its action type
+	 * @param actionDescription
+	 *            : Action description -- with only 1 effect class (containing the variables defined in the module)
+	 * @return Partial module commands based on the 2TBN and the action description.
+	 * @throws XMDPException
+	 */
+	private String buildDTMCPartialModuleCommandsHelper(TwoTBN<IAction> twoTBN,
+			IActionDescription<IAction> actionDescription) throws XMDPException {
 		DiscriminantClass discrClass = actionDescription.getDiscriminantClass();
 
 		StringBuilder builder = new StringBuilder();
 		boolean first = true;
+
 		for (Entry<StateVarTuple, IAction> entry : twoTBN) {
 			StateVarTuple state = entry.getKey();
 			IAction action = entry.getValue();
@@ -248,6 +291,29 @@ public class PrismDTMCTranslator {
 			builder.append(command);
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * Filter unique action definitions that are present in the XDTMC.
+	 * 
+	 * @param compositeActionDef
+	 * @return Unique action definitions that are present in the XDTM.
+	 */
+	private Set<ActionDefinition<IAction>> filterConstituentActionDefinitions(
+			ActionDefinition<IAction> compositeActionDef) {
+		Set<ActionDefinition<IAction>> res = new HashSet<>();
+
+		for (IAction constituentAction : compositeActionDef.getActions()) {
+			// Look up constituent action definition
+			ActionDefinition<IAction> constituentActionDef = mXDTMC.getXMDP().getActionSpace()
+					.getActionDefinition(constituentAction);
+
+			if (mXDTMC.contains(constituentActionDef)) {
+				res.add(constituentActionDef);
+			}
+		}
+
+		return res;
 	}
 
 }

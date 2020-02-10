@@ -28,6 +28,7 @@ import uiconnector.PolicyWriter;
 
 public class Verbalizer {
 
+	private static final double EQUALITY_THRESHOLD = 5e-4;
 	private static final String COMMA_AND = ", and ";
 
 	private Vocabulary mVocabulary;
@@ -339,10 +340,23 @@ public class Verbalizer {
 		builder.append(altPolicyJsonFile.getAbsolutePath());
 		builder.append("] would ");
 		builder.append(verbalizeQADifferences(altPolicyInfo, qaValueGains, qaCostGains));
-		builder.append(". However, I didn't choose that policy because it would ");
-		builder.append(verbalizeQADifferences(altPolicyInfo, qaValueLosses, qaCostLosses));
 		builder.append(". ");
-		builder.append(verbalizePreference(qaValueGains, qaValueLosses));
+
+		PolicyInfo solnPolicyInfo = tradeoff.getSolutionPolicyInfo();
+		double objCostDiff = Math.abs(solnPolicyInfo.getObjectiveCost() - altPolicyInfo.getObjectiveCost());
+
+		if (objCostDiff <= EQUALITY_THRESHOLD) {
+			builder.append("It would also ");
+			builder.append(verbalizeQADifferences(altPolicyInfo, qaValueLosses, qaCostLosses));
+			builder.append(". ");
+			builder.append("The objective function is indifferent between this alternative and the solution policy.");
+		} else {
+			builder.append("However, I didn't choose that policy because it would ");
+			builder.append(verbalizeQADifferences(altPolicyInfo, qaValueLosses, qaCostLosses));
+			builder.append(". ");
+			builder.append(verbalizePreference(qaValueGains, qaValueLosses));
+		}
+
 		return builder.toString();
 	}
 

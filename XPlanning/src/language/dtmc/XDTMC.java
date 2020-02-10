@@ -70,7 +70,7 @@ public class XDTMC implements Iterable<TwoTBN<IAction>> {
 			ActionDefinition<IAction> parentCompActionDef = actionDef.getParentCompositeActionDefinition();
 			if (parentCompActionDef != null) {
 				// This actionDef is a constituent action defn
-				// Obtain the parent composition action defn
+				// Obtain the parent composition action PSO
 				FactoredPSO<IAction> parentCompActionPSO = xmdp.getTransitionFunction()
 						.getActionPSO(parentCompActionDef);
 

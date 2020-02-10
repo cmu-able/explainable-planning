@@ -78,17 +78,34 @@ public class PrismDTMCTranslator {
 		for (TwoTBN<IAction> twoTBN : mXDTMC) {
 			ActionDefinition<IAction> actionDef = twoTBN.getActionDefinition();
 
-			// Some action definition may only have its parent composite action PSO, and doesn't have its own individual
-			// action PSO
-			// In such case, obtain its parent composite action PSO
-			FactoredPSO<IAction> actionPSO;
-			if (xmdp.getTransitionFunction().hasActionPSO(actionDef)) {
-				actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
-			} else {
-				actionPSO = xmdp.getTransitionFunction().getParentCompositeActionPSO(actionDef);
-			}
+			// Add any action definition from the DTMC to the set actionDefs
 			actionDefs.addActionDefinition(actionDef);
-			actionPSOs.add(actionPSO);
+
+			// Any action that is part of a composite action (i.e., constituent action) has additional effect classes
+			// that are defined in the composite action PSO, but not defined in the individual action PSO.
+
+			// Therefore, we must obtain both the individual constituent action PSO (if exists) and the parent composite
+			// action PSO -- so that we get all the effect classes of the constituent action.
+
+			if (actionDef.getParentCompositeActionDefinition() != null) {
+				// This actionDef is a constituent action defn
+				// Obtain the parent composition action PSO
+				FactoredPSO<IAction> parentCompActionPSO = xmdp.getTransitionFunction()
+						.getParentCompositeActionPSO(actionDef);
+
+				// Add the parent composite action PSO to the set actionPSOs
+				actionPSOs.add(parentCompActionPSO);
+			}
+
+			// Some action definition may only have its parent composite action PSO, and doesn't have its own individual
+			// action PSO.
+
+			if (xmdp.getTransitionFunction().hasActionPSO(actionDef)) {
+				FactoredPSO<IAction> actionPSO = xmdp.getTransitionFunction().getActionPSO(actionDef);
+
+				// Add the individual action PSO to the set actionPSOs
+				actionPSOs.add(actionPSO);
+			}
 		}
 
 		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {

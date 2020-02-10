@@ -56,7 +56,7 @@ public class DartXPlanner {
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		DartXPlanner xplanner = new DartXPlanner(outputDirs, defaultVerbalizerSettings);
-		xplanner.runPlanning(problemFile);
+		xplanner.runXPlanning(problemFile);
 	}
 
 	public static Vocabulary getVocabulary() {

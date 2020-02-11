@@ -33,6 +33,7 @@ import language.domain.metrics.CountQFunction;
 import language.domain.models.ActionDefinition;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleActionException;
+import language.exceptions.XMDPException;
 import language.mdp.ActionSpace;
 import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
@@ -159,7 +160,7 @@ public class DartXMDPBuilder {
 		// Constructor may take as input other DSMs
 	}
 
-	public XMDP buildXMDP(DartMission mission) throws IncompatibleActionException {
+	public XMDP buildXMDP(DartMission mission) throws XMDPException {
 		int maxAltLevel = mission.getMaximumAltitudeLevel();
 		int horizon = mission.getHorizon();
 		double[] expTargetProbs = mission.getExpectedTargetProbabilities();

@@ -42,8 +42,8 @@ public class StateSpace implements Iterable<StateVarDefinition<IStateVarValue>> 
 		}
 	}
 
-	public StateVarDefinition<IStateVarValue> getStateVarDefinition(String stateVarName) {
-		return (StateVarDefinition<IStateVarValue>) mStateVarDefsLookup.get(stateVarName);
+	public <E extends IStateVarValue> StateVarDefinition<E> getStateVarDefinition(String stateVarName) {
+		return (StateVarDefinition<E>) mStateVarDefsLookup.get(stateVarName);
 	}
 
 	/**

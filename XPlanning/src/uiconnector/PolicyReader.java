@@ -107,7 +107,8 @@ public class PolicyReader {
 			if (actionParamType.equals(Boolean.class)) {
 				boolean boolParam = PolicyJSONParserUtils.parseBooleanActionParameter(i, decisionJsonObj);
 				actionParam = String.valueOf(boolParam);
-			} else if (actionParamType.equals(Integer.class)) {
+			} else if (actionParamType.equals(Long.class)) {
+				// JSONSimple uses "long" type for whole numbers
 				int intParam = PolicyJSONParserUtils.parseIntActionParameter(i, decisionJsonObj);
 				actionParam = String.valueOf(intParam);
 			} else if (actionParamType.equals(Double.class)) {

@@ -27,7 +27,9 @@ public class PolicyJSONParserUtils {
 	}
 
 	public static int parseIntVar(String varName, JSONObject decisionJsonObj) {
-		return parseVar(Integer.class, varName, decisionJsonObj);
+		// JSONSimple uses "long" type for whole numbers
+		Long longVar = parseVar(Long.class, varName, decisionJsonObj);
+		return longVar.intValue();
 	}
 
 	public static boolean parseBooleanVar(String varName, JSONObject decisionJsonObj) {
@@ -55,7 +57,9 @@ public class PolicyJSONParserUtils {
 	}
 
 	public static int parseIntActionParameter(int index, JSONObject decisionJsonObj) {
-		return parseActionParameter(Integer.class, index, decisionJsonObj);
+		// JSONSimple uses "long" type for whole numbers
+		Long longActionParam = parseActionParameter(Long.class, index, decisionJsonObj);
+		return longActionParam.intValue();
 	}
 
 	public static boolean parseBooleanActionParameter(int index, JSONObject decisionJsonObj) {

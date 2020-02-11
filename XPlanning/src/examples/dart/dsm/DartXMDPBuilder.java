@@ -163,6 +163,10 @@ public class DartXMDPBuilder {
 	public XMDP buildXMDP(DartMission mission) throws XMDPException {
 		int maxAltLevel = mission.getMaximumAltitudeLevel();
 		int horizon = mission.getHorizon();
+		double sensorRange = mission.getSensorRange();
+		double threatRange = mission.getThreatRange();
+		double sigma = mission.getSigma();
+		double psi = mission.getPsi();
 		double[] expTargetProbs = mission.getExpectedTargetProbabilities();
 		double[] expThreatProbs = mission.getExpectedThreatProbabilities();
 		double targetWeight = mission.getTargetWeight();
@@ -173,8 +177,8 @@ public class DartXMDPBuilder {
 		ActionSpace actionSpace = buildActionSpace();
 		StateVarTuple initialState = buildInitialState(iniTeamConfig);
 		StateVarTuple goal = buildGoal(horizon);
-		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon);
-		QSpace qSpace = buildQFunctions();
+		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon, threatRange, psi);
+		QSpace qSpace = buildQFunctions(sensorRange, sigma);
 		CostFunction costFunction = buildCostFunction(targetWeight, threatWeight);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
@@ -261,7 +265,7 @@ public class DartXMDPBuilder {
 		return goal;
 	}
 
-	private TransitionFunction buildTransitionFunction(int maxAltLevel, int horizon)
+	private TransitionFunction buildTransitionFunction(int maxAltLevel, int horizon, double threatRange, double psi)
 			throws IncompatibleActionException {
 		// IncAlt and DecAlt: for "teamAltitude" effect class
 		// Preconditions
@@ -346,7 +350,7 @@ public class DartXMDPBuilder {
 		switchECMPSO.addActionDescription(ecmActionDesc);
 
 		// PSO of composite durative action
-		FactoredPSO<IDurativeAction> durativePSO = buildDurativePSO(horizon);
+		FactoredPSO<IDurativeAction> durativePSO = buildDurativePSO(horizon, threatRange, psi);
 
 		// Transition function
 		TransitionFunction transFunction = new TransitionFunction();
@@ -358,7 +362,8 @@ public class DartXMDPBuilder {
 		return transFunction;
 	}
 
-	private FactoredPSO<IDurativeAction> buildDurativePSO(int horizon) throws IncompatibleActionException {
+	private FactoredPSO<IDurativeAction> buildDurativePSO(int horizon, double threatRange, double psi)
+			throws IncompatibleActionException {
 		// Composite durative action: for "route segment" and "teamDestroyed" independent effect classes
 		// Precondition
 		Precondition<IDurativeAction> preDurative = new Precondition<>(durativeDef);
@@ -381,7 +386,7 @@ public class DartXMDPBuilder {
 
 		// Action description for teamDestroyed (of durative actions)
 		TeamDestroyedActionDescription destroyedActionDesc = new TeamDestroyedActionDescription(durativeDef,
-				preDurative, teamAltDef, teamFormDef, teamECMDef, segmentDef, teamDestroyedDef);
+				preDurative, teamAltDef, teamFormDef, teamECMDef, segmentDef, teamDestroyedDef, threatRange, psi);
 
 		// PSO of composite durative action
 		FactoredPSO<IDurativeAction> durativePSO = new FactoredPSO<>(durativeDef, preDurative);
@@ -391,11 +396,11 @@ public class DartXMDPBuilder {
 		return durativePSO;
 	}
 
-	private QSpace buildQFunctions() {
+	private QSpace buildQFunctions(double sensorRange, double sigma) {
 		// Miss target event
 		DetectTargetDomain detectTargetDomain = new DetectTargetDomain(teamAltDef, teamFormDef, teamECMDef, segmentDef,
 				teamDestroyedDef, durativeDef);
-		MissTargetEvent missTargetEvent = new MissTargetEvent(detectTargetDomain);
+		MissTargetEvent missTargetEvent = new MissTargetEvent(detectTargetDomain, sensorRange, sigma);
 		missTargetQFunction = new CountQFunction<>(missTargetEvent);
 
 		// Probability of being destroyed by threat

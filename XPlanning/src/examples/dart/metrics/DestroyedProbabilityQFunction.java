@@ -3,7 +3,6 @@ package examples.dart.metrics;
 import examples.dart.models.IDurativeAction;
 import examples.dart.models.TeamAltitude;
 import examples.dart.models.TeamDestroyed;
-import examples.dart.models.TeamDestroyedFormula;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
 import examples.dart.models.ThreatDistribution;
@@ -30,6 +29,9 @@ public class DestroyedProbabilityQFunction
 	private volatile int hashCode;
 
 	private DestroyedProbabilityDomain mDomain;
+	private double mThreatRange; // at an altitude of r_T or higher, threats cannot shoot down the team
+	private double mPsi; // factor by which the probability of being destroyed is reduced due to flying in tight
+							// formation
 
 	public DestroyedProbabilityQFunction(DestroyedProbabilityDomain domain) {
 		mDomain = domain;
@@ -54,10 +56,9 @@ public class DestroyedProbabilityQFunction
 		TeamECM srcECM = mDomain.getTeamECM(transition);
 		ThreatDistribution threatDist = mDomain.getThreatDistribution(transition);
 
-		double altTerm = Math.max(0, TeamDestroyedFormula.THREAT_RANGE - srcAlt.getAltitudeLevel())
-				/ TeamDestroyedFormula.THREAT_RANGE;
+		double altTerm = Math.max(0, mThreatRange - srcAlt.getAltitudeLevel()) / mThreatRange;
 		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
-		double formTerm = (1 - phi) + phi / TeamDestroyedFormula.PSI;
+		double formTerm = (1 - phi) + phi / mPsi;
 		int ecm = srcECM.isECMOn() ? 1 : 0;
 		double ecmTerm = (1 - ecm) + ecm / 4.0;
 

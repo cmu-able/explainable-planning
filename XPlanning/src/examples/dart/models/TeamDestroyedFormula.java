@@ -17,9 +17,6 @@ import language.mdp.ProbabilisticEffect;
  */
 public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabilisticTransitionFormula<E> {
 
-	public static final double THREAT_RANGE = 2;
-	public static final double PSI = 4;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
@@ -36,14 +33,23 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 
 	private EffectClass mEffectClass; // of teamDestroyed
 
+	// Constants
+	private double mThreatRange; // at an altitude of r_T or higher, threats cannot shoot down the team
+	private double mPsi; // factor by which the probability of being destroyed is reduced due to flying in tight
+							// formation
+
 	public TeamDestroyedFormula(StateVarDefinition<TeamAltitude> altSrcDef,
 			StateVarDefinition<TeamFormation> formSrcDef, StateVarDefinition<TeamECM> ecmSrcDef,
-			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDef) {
+			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDef,
+			double threatRange, double psi) {
 		mAltSrcDef = altSrcDef;
 		mFormSrcDef = formSrcDef;
 		mECMSrcDef = ecmSrcDef;
 		mSegmentSrcDef = segmentSrcDef;
 		mDestroyedDef = destroyedDef;
+
+		mThreatRange = threatRange;
+		mPsi = psi;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(destroyedDef);
@@ -64,9 +70,9 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 			TeamECM srcECM = discriminant.getStateVarValue(TeamECM.class, mECMSrcDef);
 			RouteSegment srcSegment = discriminant.getStateVarValue(RouteSegment.class, mSegmentSrcDef);
 
-			double altTerm = Math.max(0, THREAT_RANGE - srcAlt.getAltitudeLevel()) / THREAT_RANGE;
+			double altTerm = Math.max(0, mThreatRange - srcAlt.getAltitudeLevel()) / mThreatRange;
 			int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
-			double formTerm = (1 - phi) + phi / PSI;
+			double formTerm = (1 - phi) + phi / mPsi;
 			int ecm = srcECM.isECMOn() ? 1 : 0;
 			double ecmTerm = (1 - ecm) + ecm / 4.0;
 

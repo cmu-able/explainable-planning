@@ -22,18 +22,19 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 
 	public static final String NAME = "missTarget";
 
-	private static final double SENSOR_RANGE = 2;
-	private static final double SIGMA = 4;
-
 	/*
 	 * Cached hashCode -- Effective Java
 	 */
 	private volatile int hashCode;
 
 	private DetectTargetDomain mDomain;
+	private double mSensorRange; // at an altitude of r_S or higher, it is not possible to detect targets
+	private double mSigma; // factor by which the detection probability is reduced due to flying in tight formation
 
-	public MissTargetEvent(DetectTargetDomain domain) {
+	public MissTargetEvent(DetectTargetDomain domain, double sensorRange, double sigma) {
 		mDomain = domain;
+		mSensorRange = sensorRange;
+		mSigma = sigma;
 	}
 
 	@Override
@@ -59,9 +60,9 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 		// If team is already destroyed, it cannot detect any target
 		double destroyedTerm = srcDestroyed.isDestroyed() ? 0 : 1;
 
-		double altTerm = Math.max(0, SENSOR_RANGE - srcAlt.getAltitudeLevel()) / SENSOR_RANGE;
+		double altTerm = Math.max(0, mSensorRange - srcAlt.getAltitudeLevel()) / mSensorRange;
 		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
-		double formTerm = (1 - phi) + phi / SIGMA;
+		double formTerm = (1 - phi) + phi / mSigma;
 		int ecm = srcECM.isECMOn() ? 1 : 0;
 		double ecmTerm = (1 - ecm) + ecm / 4.0;
 

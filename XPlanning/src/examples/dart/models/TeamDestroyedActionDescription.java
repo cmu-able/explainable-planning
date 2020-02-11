@@ -42,7 +42,8 @@ public class TeamDestroyedActionDescription implements IActionDescription<IDurat
 	public TeamDestroyedActionDescription(ActionDefinition<IDurativeAction> durativeDef,
 			Precondition<IDurativeAction> precondition, StateVarDefinition<TeamAltitude> altSrcDef,
 			StateVarDefinition<TeamFormation> formSrcDef, StateVarDefinition<TeamECM> ecmSrcDef,
-			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDef) {
+			StateVarDefinition<RouteSegment> segmentSrcDef, StateVarDefinition<TeamDestroyed> destroyedDef,
+			double threatRange, double psi) {
 		// Discriminant class (i.e., discriminant variables)
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(altSrcDef);
@@ -57,7 +58,7 @@ public class TeamDestroyedActionDescription implements IActionDescription<IDurat
 
 		// Probabilistic transition formula of "teamDestroyed" effect class, of a durative action
 		TeamDestroyedFormula<IDurativeAction> destroyedFormula = new TeamDestroyedFormula<>(altSrcDef, formSrcDef,
-				ecmSrcDef, segmentSrcDef, destroyedDef);
+				ecmSrcDef, segmentSrcDef, destroyedDef, threatRange, psi);
 
 		// Formula action description of "teamDestroyed" effect class, of durative actions
 		mDestroyedActionDesc = new FormulaActionDescription<>(durativeDef, precondition, discrClass, effectClass,

@@ -178,7 +178,7 @@ public class DartXMDPBuilder {
 		StateVarTuple initialState = buildInitialState(iniTeamConfig);
 		StateVarTuple goal = buildGoal(horizon);
 		TransitionFunction transFunction = buildTransitionFunction(maxAltLevel, horizon, threatRange, psi);
-		QSpace qSpace = buildQFunctions(sensorRange, sigma);
+		QSpace qSpace = buildQFunctions(sensorRange, sigma, threatRange, psi);
 		CostFunction costFunction = buildCostFunction(targetWeight, threatWeight);
 		return new XMDP(stateSpace, actionSpace, initialState, goal, transFunction, qSpace, costFunction);
 	}
@@ -396,7 +396,7 @@ public class DartXMDPBuilder {
 		return durativePSO;
 	}
 
-	private QSpace buildQFunctions(double sensorRange, double sigma) {
+	private QSpace buildQFunctions(double sensorRange, double sigma, double threatRange, double psi) {
 		// Miss target event
 		DetectTargetDomain detectTargetDomain = new DetectTargetDomain(teamAltDef, teamFormDef, teamECMDef, segmentDef,
 				teamDestroyedDef, durativeDef);
@@ -406,7 +406,7 @@ public class DartXMDPBuilder {
 		// Probability of being destroyed by threat
 		DestroyedProbabilityDomain destroyedProbDomain = new DestroyedProbabilityDomain(teamDestroyedDef, teamAltDef,
 				teamFormDef, teamECMDef, segmentDef, durativeDef);
-		destroyedProbQFunction = new DestroyedProbabilityQFunction(destroyedProbDomain);
+		destroyedProbQFunction = new DestroyedProbabilityQFunction(destroyedProbDomain, threatRange, psi);
 
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(missTargetQFunction);

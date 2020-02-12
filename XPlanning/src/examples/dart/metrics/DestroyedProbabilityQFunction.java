@@ -33,8 +33,10 @@ public class DestroyedProbabilityQFunction
 	private double mPsi; // factor by which the probability of being destroyed is reduced due to flying in tight
 							// formation
 
-	public DestroyedProbabilityQFunction(DestroyedProbabilityDomain domain) {
+	public DestroyedProbabilityQFunction(DestroyedProbabilityDomain domain, double threatRange, double psi) {
 		mDomain = domain;
+		mThreatRange = threatRange;
+		mPsi = psi;
 	}
 
 	@Override

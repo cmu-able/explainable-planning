@@ -70,7 +70,19 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 			TeamECM srcECM = discriminant.getStateVarValue(TeamECM.class, mECMSrcDef);
 			RouteSegment srcSegment = discriminant.getStateVarValue(RouteSegment.class, mSegmentSrcDef);
 
-			double altTerm = Math.max(0, mThreatRange - srcAlt.getAltitudeLevel()) / mThreatRange;
+			// Use the average altitude of the team during the segment to compute probability of being destroyed
+			double avgAltitude = srcAlt.getAltitudeLevel();
+
+			// If the action changes teamAltitude (i.e., incAlt and decAlt actions), compute the average altitude
+			if (action.getNamePrefix().equals("incAlt") || action.getNamePrefix().equals("decAlt")) {
+				// Get altitude change parameter
+				TeamAltitude altChange = (TeamAltitude) action.getParameters().get(0);
+
+				int sign = action.getNamePrefix().equals("incAlt") ? 1 : -1;
+				avgAltitude += sign * altChange.getAltitudeLevel() / 2.0;
+			}
+
+			double altTerm = Math.max(0, mThreatRange - avgAltitude) / mThreatRange;
 			int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
 			double formTerm = (1 - phi) + phi / mPsi;
 			int ecm = srcECM.isECMOn() ? 1 : 0;

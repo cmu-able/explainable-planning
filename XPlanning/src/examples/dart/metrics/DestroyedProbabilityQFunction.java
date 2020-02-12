@@ -57,8 +57,21 @@ public class DestroyedProbabilityQFunction
 		TeamFormation srcForm = mDomain.getTeamFormation(transition);
 		TeamECM srcECM = mDomain.getTeamECM(transition);
 		ThreatDistribution threatDist = mDomain.getThreatDistribution(transition);
+		IDurativeAction durative = transition.getAction();
 
-		double altTerm = Math.max(0, mThreatRange - srcAlt.getAltitudeLevel()) / mThreatRange;
+		// Use the average altitude of the team during the segment to compute probability of being destroyed
+		double avgAltitude = srcAlt.getAltitudeLevel();
+
+		// If the action changes teamAltitude (i.e., incAlt and decAlt actions), compute the average altitude
+		if (durative.getNamePrefix().equals("incAlt") || durative.getNamePrefix().equals("decAlt")) {
+			// Get altitude change parameter
+			TeamAltitude altChange = (TeamAltitude) durative.getParameters().get(0);
+
+			int sign = durative.getNamePrefix().equals("incAlt") ? 1 : -1;
+			avgAltitude += sign * altChange.getAltitudeLevel() / 2.0;
+		}
+
+		double altTerm = Math.max(0, mThreatRange - avgAltitude) / mThreatRange;
 		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
 		double formTerm = (1 - phi) + phi / mPsi;
 		int ecm = srcECM.isECMOn() ? 1 : 0;

@@ -26,9 +26,9 @@ public class DecAltAction implements IDurativeAction {
 	private Action mAction;
 	private TeamAltitude mteamAltChange;
 
-	public DecAltAction(TeamAltitude teamAltDest) {
-		mAction = new Action("decAlt", teamAltDest);
-		mteamAltChange = teamAltDest;
+	public DecAltAction(TeamAltitude teamAltChange) {
+		mAction = new Action("decAlt", teamAltChange);
+		mteamAltChange = teamAltChange;
 	}
 
 	public TeamAltitude getAltitudeChange() {

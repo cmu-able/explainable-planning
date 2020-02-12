@@ -56,11 +56,24 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 		TeamFormation srcForm = mDomain.getTeamFormation(transition);
 		TeamECM srcECM = mDomain.getTeamECM(transition);
 		TargetDistribution targetDist = mDomain.getTargetDistribution(transition);
+		IDurativeAction durative = transition.getAction();
 
 		// If team is already destroyed, it cannot detect any target
 		double destroyedTerm = srcDestroyed.isDestroyed() ? 0 : 1;
 
-		double altTerm = Math.max(0, mSensorRange - srcAlt.getAltitudeLevel()) / mSensorRange;
+		// Use the average altitude of the team during the segment to compute probability of detecting target
+		double avgAltitude = srcAlt.getAltitudeLevel();
+
+		// If the action changes teamAltitude (i.e., incAlt and decAlt actions), compute the average altitude
+		if (durative.getNamePrefix().equals("incAlt") || durative.getNamePrefix().equals("decAlt")) {
+			// Get altitude change parameter
+			TeamAltitude altChange = (TeamAltitude) durative.getParameters().get(0);
+
+			int sign = durative.getNamePrefix().equals("incAlt") ? 1 : -1;
+			avgAltitude += sign * altChange.getAltitudeLevel() / 2.0;
+		}
+
+		double altTerm = Math.max(0, mSensorRange - avgAltitude) / mSensorRange;
 		int phi = srcForm.getFormation().equals("loose") ? 0 : 1; // loose: phi = 0, tight: phi = 1
 		double formTerm = (1 - phi) + phi / mSigma;
 		int ecm = srcECM.isECMOn() ? 1 : 0;

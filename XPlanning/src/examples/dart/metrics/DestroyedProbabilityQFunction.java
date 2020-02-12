@@ -84,7 +84,8 @@ public class DestroyedProbabilityQFunction
 			return false;
 		}
 		DestroyedProbabilityQFunction qFunction = (DestroyedProbabilityQFunction) obj;
-		return qFunction.mDomain.equals(mDomain);
+		return qFunction.mDomain.equals(mDomain) && Double.compare(qFunction.mThreatRange, mThreatRange) == 0
+				&& Double.compare(qFunction.mPsi, mPsi) == 0;
 	}
 
 	@Override
@@ -93,6 +94,8 @@ public class DestroyedProbabilityQFunction
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDomain.hashCode();
+			result = 31 * result + Double.hashCode(mThreatRange);
+			result = 31 * result + Double.hashCode(mPsi);
 			hashCode = result;
 		}
 		return result;

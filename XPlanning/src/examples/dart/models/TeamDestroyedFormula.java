@@ -111,7 +111,8 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 		TeamDestroyedFormula<?> formula = (TeamDestroyedFormula<?>) obj;
 		return formula.mAltSrcDef.equals(mAltSrcDef) && formula.mFormSrcDef.equals(mFormSrcDef)
 				&& formula.mECMSrcDef.equals(mECMSrcDef) && formula.mSegmentSrcDef.equals(mSegmentSrcDef)
-				&& formula.mDestroyedDef.equals(mDestroyedDef);
+				&& formula.mDestroyedDef.equals(mDestroyedDef)
+				&& Double.compare(formula.mThreatRange, mThreatRange) == 0 && Double.compare(formula.mPsi, mPsi) == 0;
 	}
 
 	@Override
@@ -124,6 +125,8 @@ public class TeamDestroyedFormula<E extends IDurativeAction> implements IProbabi
 			result = 31 * result + mECMSrcDef.hashCode();
 			result = 31 * result + mSegmentSrcDef.hashCode();
 			result = 31 * result + mDestroyedDef.hashCode();
+			result = 31 * result + Double.hashCode(mThreatRange);
+			result = 31 * result + Double.hashCode(mPsi);
 			hashCode = result;
 		}
 		return hashCode;

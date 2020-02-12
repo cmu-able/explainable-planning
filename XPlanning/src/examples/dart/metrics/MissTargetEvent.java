@@ -85,7 +85,8 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 			return false;
 		}
 		MissTargetEvent event = (MissTargetEvent) obj;
-		return event.mDomain.equals(mDomain);
+		return event.mDomain.equals(mDomain) && Double.compare(event.mSensorRange, mSensorRange) == 0
+				&& Double.compare(event.mSigma, mSigma) == 0;
 	}
 
 	@Override
@@ -94,6 +95,8 @@ public class MissTargetEvent implements IEvent<IDurativeAction, DetectTargetDoma
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mDomain.hashCode();
+			result = 31 * result + Double.hashCode(mSensorRange);
+			result = 31 * result + Double.hashCode(mSigma);
 			hashCode = result;
 		}
 		return result;

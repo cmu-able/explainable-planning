@@ -1,0 +1,1 @@
+--maxAltitude=4 --horizon=4 --targetSensorReadings=0,1,1,0 --threatSensorReadings=0,0,1,0 --targetWeight=0.5 --threatWeight=0.5 --iniAltitude=1 --iniFormation=loose --iniECM=false --sensorRange=4 --threatRange=4 --sigma=1.33 --psi=1.33

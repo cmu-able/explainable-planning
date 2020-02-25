@@ -47,11 +47,12 @@ public class Discriminant implements IStateVarTuple {
 		mVarTuple.addStateVarTuple(discriminant.mVarTuple);
 	}
 
-	public void addAll(StateVarTuple stateVarTuple) throws IncompatibleVarsException {
-		if (!sanityCheck(stateVarTuple)) {
-			throw new IncompatibleVarsException(stateVarTuple);
+	public void addAllRelevant(StateVarTuple stateVarTuple) throws VarNotFoundException {
+		for (StateVarDefinition<IStateVarValue> discrVarDef : mDiscriminantClass) {
+			IStateVarValue value = stateVarTuple.getStateVarValue(IStateVarValue.class, discrVarDef);
+			StateVar<IStateVarValue> stateVar = discrVarDef.getStateVar(value);
+			mVarTuple.addStateVar(stateVar);
 		}
-		mVarTuple.addStateVarTuple(stateVarTuple);
 	}
 
 	private boolean sanityCheck(StateVar<? extends IStateVarValue> stateVar) {

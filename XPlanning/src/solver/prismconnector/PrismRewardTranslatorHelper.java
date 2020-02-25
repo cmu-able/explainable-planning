@@ -18,7 +18,6 @@ import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
 import language.exceptions.ActionNotFoundException;
 import language.exceptions.AttributeNameNotFoundException;
-import language.exceptions.IncompatibleVarsException;
 import language.exceptions.StateVarClassNotFoundException;
 import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
@@ -578,13 +577,13 @@ public class PrismRewardTranslatorHelper {
 
 	private <E extends IAction> Set<Discriminant> getApplicableDiscriminantsFromPrecondition(Precondition<E> precond,
 			DiscriminantClass discrClass, E action, StateVarTuple srcVars)
-			throws ActionNotFoundException, StateVarClassNotFoundException, IncompatibleVarsException {
+			throws ActionNotFoundException, StateVarClassNotFoundException, VarNotFoundException {
 		Set<StateVarTuple> applicableTuples = precond.getApplicableTuples(action, discrClass.getStateVarClass(),
 				srcVars);
 		Set<Discriminant> applicableDiscriminants = new HashSet<>();
 		for (StateVarTuple applicableTuple : applicableTuples) {
 			Discriminant applicableDiscr = new Discriminant(discrClass);
-			applicableDiscr.addAll(applicableTuple);
+			applicableDiscr.addAllRelevant(applicableTuple);
 			applicableDiscriminants.add(applicableDiscr);
 		}
 		return applicableDiscriminants;

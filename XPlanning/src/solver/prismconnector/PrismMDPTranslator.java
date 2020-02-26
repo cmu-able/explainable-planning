@@ -25,8 +25,16 @@ public class PrismMDPTranslator {
 	private PrismPropertyTranslator mPropertyTranslator;
 	private PrismTranslatorHelper mHelper;
 
+	// Query state is the source state of a user's why-not (s,a) query
+	private StateVarTuple mQueryState;
+
 	public PrismMDPTranslator(XMDP xmdp) {
+		this(xmdp, null);
+	}
+
+	public PrismMDPTranslator(XMDP xmdp, StateVarTuple queryState) {
 		mXMDP = xmdp;
+		mQueryState = queryState;
 		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
 				xmdp.getCostFunction());
 		mActionFilter = action -> mXMDP.getActionSpace().contains(action);
@@ -48,20 +56,7 @@ public class PrismMDPTranslator {
 	}
 
 	/**
-	 * Get Prism MDP translation of this XMDP.
-	 * 
-	 * @param withQAFunctions
-	 *            : Whether or not to include QA functions in the MDP translation
-	 * @return Prism model of this MDP, including constants' declarations, MDP model, a reward structure representing
-	 *         the cost function, and optionally reward structure(s) representing the QA function(s).
-	 * @throws XMDPException
-	 */
-	public String getMDPTranslation(boolean withQAFunctions) throws XMDPException {
-		return getMDPTranslation(withQAFunctions, null);
-	}
-
-	/**
-	 * Get Prism MDP translation of this XMDP. The given query state will be made an absorbing state.
+	 * Get Prism MDP translation of this XMDP. The query state (if exists) will be made an absorbing state.
 	 * 
 	 * @param withQAFunctions
 	 *            : Whether or not to include QA functions in the MDP translation
@@ -71,7 +66,7 @@ public class PrismMDPTranslator {
 	 *         the cost function, and optionally reward structure(s) representing the QA function(s).
 	 * @throws XMDPException
 	 */
-	public String getMDPTranslation(boolean withQAFunctions, StateVarTuple queryState) throws XMDPException {
+	public String getMDPTranslation(boolean withQAFunctions) throws XMDPException {
 		PartialModuleCommandsBuilder partialCommandsBuilder = new PartialModuleCommandsBuilder() {
 
 			@Override
@@ -87,7 +82,7 @@ public class PrismMDPTranslator {
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder, hasGoal);
 		// helper module
-		String helperModule = mHelper.buildHelperModule(mXMDP.getActionSpace(), mActionFilter, hasGoal, queryState);
+		String helperModule = mHelper.buildHelperModule(mXMDP.getActionSpace(), mActionFilter, hasGoal, mQueryState);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();

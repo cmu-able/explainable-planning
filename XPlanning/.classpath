@@ -38,7 +38,7 @@
 	<classpathentry kind="lib" path="lib/log4j.jar"/>
 	<classpathentry kind="lib" path="lib/lpsolve55j.jar"/>
 	<classpathentry kind="lib" path="lib/nailgun-server.jar"/>
-	<classpathentry kind="lib" path="lib/prism.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/prism.jar"/>
 	<classpathentry kind="lib" path="lib/pepa.zip"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

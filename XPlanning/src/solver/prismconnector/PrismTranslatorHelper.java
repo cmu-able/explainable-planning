@@ -112,12 +112,53 @@ public class PrismTranslatorHelper {
 	 * 
 	 * @param actionDefs
 	 * @param helperActionFilter
+	 *            : A function that filters actions of the helper module
 	 * @param hasGoal
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
+	 * @throws VarNotFoundException
 	 */
-	String buildHelperModule(ActionSpace actionDefs, ActionFilter helperActionFilter, boolean hasGoal) {
+	String buildHelperModule(ActionSpace actionDefs, ActionFilter helperActionFilter, boolean hasGoal)
+			throws VarNotFoundException {
+		return buildHelperModule(actionDefs, helperActionFilter, hasGoal, null);
+	}
+
+	/**
+	 * Build a helper module that handles cycles of choosing action, reward computation, checking if the goal (if any)
+	 * is reached for termination.
+	 * 
+	 * Additionally, the helper module handles a "query state", which is a source state of a user's why-not question.
+	 * This query state is to be made absorbing, so that the effect of the why-not action is not reverted by the
+	 * planner.
+	 * 
+	 * @param actionDefs
+	 * @param helperActionFilter
+	 *            : A function that filters actions of the helper module
+	 * @param hasGoal
+	 * @param queryState
+	 *            : null if there is no why-not query
+	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
+	 *         reached for termination
+	 * @throws VarNotFoundException
+	 */
+	String buildHelperModule(ActionSpace actionDefs, ActionFilter helperActionFilter, boolean hasGoal,
+			StateVarTuple queryState) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
+
+		// Check if there is a why-not query state to handle
+		String queryStateFormula;
+		if (queryState != null) {
+			String queryStateExpr = PrismTranslatorUtils.buildExpression(queryState, mEncodings);
+			queryStateFormula = "formula query_state = " + queryStateExpr + ";";
+		} else {
+			queryStateFormula = "formual query_state = false;";
+		}
+
+		// Add query state formula
+		builder.append(queryStateFormula);
+		builder.append("\n\n");
+
+		// module helper [...] endmodule
 		builder.append("module helper");
 		builder.append("\n");
 
@@ -156,9 +197,16 @@ public class PrismTranslatorHelper {
 
 		builder.append("\n");
 		if (hasGoal) {
+			// Compute cost value and continue if not in query state
 			builder.append(PrismTranslatorUtils.INDENT);
-			builder.append("[compute] computeGo & barrier -> (computeGo'=false);");
+			builder.append("[compute] computeGo & barrier & !query_state -> (computeGo'=false);");
 			builder.append("\n");
+
+			// Make query state absorbing state
+			builder.append(PrismTranslatorUtils.INDENT);
+			builder.append("[absorb] computeGo & barrier & query_state -> true;");
+			builder.append("\n");
+
 			builder.append(PrismTranslatorUtils.INDENT);
 			builder.append("[next] !computeGo & barrier & !goal -> (barrier'=false);");
 			builder.append("\n");
@@ -282,16 +330,14 @@ public class PrismTranslatorHelper {
 	 *            : PSOs of actions that are present in this model (either MDP or DTMC)
 	 * @param partialCommandsBuilder
 	 *            : A function that builds partial commands of a module, given an action description
-	 * @param helperActionFilter
-	 *            : A function that filters actions of the helper module
 	 * @param hasGoal
 	 *            : Whether the MDP has a goal
 	 * @return module {name} {vars decl} {commands} endmodule ...
 	 * @throws XMDPException
 	 */
 	String buildModules(StateSpace stateSpace, StateVarTuple iniState, ActionSpace actionDefs,
-			TransitionFunction actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder,
-			ActionFilter helperActionFilter, boolean hasGoal) throws XMDPException {
+			TransitionFunction actionPSOs, PartialModuleCommandsBuilder partialCommandsBuilder, boolean hasGoal)
+			throws XMDPException {
 		// This determines a set of module variables. Each set of variables are updated independently.
 		// These variables are updated by some actions in the model.
 		Set<ChainOfEffectClasses> chainsOfEffectClasses = getChainsOfEffectClasses(actionPSOs);
@@ -344,9 +390,6 @@ public class PrismTranslatorHelper {
 			builder.append(noCommandModule);
 		}
 
-		String helperModule = buildHelperModule(actionDefs, helperActionFilter, hasGoal);
-		builder.append("\n\n");
-		builder.append(helperModule);
 		return builder.toString();
 	}
 

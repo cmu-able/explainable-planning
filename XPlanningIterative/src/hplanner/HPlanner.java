@@ -21,7 +21,7 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 public class HPlanner {
 
 	public HPlanner() {
-
+		// Can potentially have HPlanner settings
 	}
 
 	public PolicyInfo computeHPolicy(PrismConnector prismConnectorForHModel, IQFunction<?, ?> queryQFunction,

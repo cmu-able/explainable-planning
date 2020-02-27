@@ -112,7 +112,7 @@ public class HModelGenerator {
 		return combineProbabilisticEffectsHelper(combinedProbEffect, otherProbEffects);
 	}
 
-	public double computeQAValueConstraint(String queryQAName)
+	public double computeQAValueConstraint(IQFunction<?, ?> queryQFunction)
 			throws PrismException, ResultParsingException, XMDPException {
 		// Create XMDP model identical to the original model, but with the query state as initial state
 		XMDP xmdp = new XMDP(mQueryXMDP.getStateSpace(), mQueryXMDP.getActionSpace(), mQueryState, mQueryXMDP.getGoal(),
@@ -120,8 +120,6 @@ public class HModelGenerator {
 
 		// Create Prism connector (without the query state as absorbing state)
 		PrismConnector prismConnector = new PrismConnector(xmdp, mCostCriterion, mPrismConnSettings);
-
-		IQFunction<?, ?> queryQFunction = mQueryXMDP.getQSpace().getQFunction(IQFunction.class, queryQAName);
 
 		// Compute QA value of the query policy, starting from the query state
 		double queryQAValue = prismConnector.computeQAValue(mQueryPolicyInfo.getPolicy(), queryQFunction);

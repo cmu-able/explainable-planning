@@ -116,13 +116,22 @@ public class AlternativeExplorer {
 	 */
 	public PolicyInfo getParetoOptimalAlternative(PolicyInfo policyInfo, IQFunction<?, ?> qFunction)
 			throws XMDPException, IOException, ExplicitModelParsingException, GRBException {
+		// QA value of the solution policy
+		double currQAValue = policyInfo.getQAValue(qFunction);
+
+		if (mDiffScaler == null) {
+			// Hard constraint
+
+			// Find a constraint-satisfying, optimal policy, if exists
+			return computeHardConstraintSatisfyingAlternative(policyInfo.getXMDP(), qFunction, currQAValue);
+		}
+
+		// Soft constraint
+
 		CostFunction costFunction = policyInfo.getXMDP().getCostFunction();
 
 		// Create a new objective function with a demoted QA
 		AdditiveCostFunction objectiveFunction = createNewObjective(costFunction, qFunction);
-
-		// QA value of the solution policy
-		double currQAValue = policyInfo.getQAValue(qFunction);
 
 		// Set a new aspirational level of the QA; use this as a constraint for an alternative
 
@@ -134,27 +143,43 @@ public class AlternativeExplorer {
 		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, hardBoundType,
 				currQAValue);
 
-		if (mDiffScaler != null) {
-			// Non-strict, soft upper/lower bound
-			BOUND_TYPE softBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.UPPER_BOUND : BOUND_TYPE.LOWER_BOUND;
+		// Non-strict, soft upper/lower bound
+		BOUND_TYPE softBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.UPPER_BOUND : BOUND_TYPE.LOWER_BOUND;
 
-			// Weber scaling -- decrease or increase in value for improvement
-			double softBoundValue = mDiffScaler.getSignificantImprovement(qFunction, currQAValue);
+		// Weber scaling -- decrease or increase in value for improvement
+		double softBoundValue = mDiffScaler.getSignificantImprovement(qFunction, currQAValue);
 
-			// Penalty function for soft-constraint violation
-			// FIXME
-			double penaltyScalingConst = policyInfo.getObjectiveCost();
-			IPenaltyFunction penaltyFunction = new QuadraticPenaltyFunction(penaltyScalingConst, 5);
+		// Penalty function for soft-constraint violation
+		// FIXME
+		double penaltyScalingConst = policyInfo.getObjectiveCost();
+		IPenaltyFunction penaltyFunction = new QuadraticPenaltyFunction(penaltyScalingConst, 5);
 
-			AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint = new AttributeConstraint<>(qFunction,
-					softBoundType, softBoundValue, penaltyFunction);
+		AttributeConstraint<IQFunction<?, ?>> attrSoftConstraint = new AttributeConstraint<>(qFunction, softBoundType,
+				softBoundValue, penaltyFunction);
 
-			// Find a constraint-satisfying, optimal policy (with soft constraint), if exists
-			return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrSoftConstraint, attrHardConstraint);
-		} else {
-			// Find a constraint-satisfying, optimal policy, if exists
-			return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrHardConstraint);
-		}
+		// Find a constraint-satisfying, optimal policy (with soft constraint), if exists
+		return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrSoftConstraint, attrHardConstraint);
+	}
+
+	public PolicyInfo computeHardConstraintSatisfyingAlternative(XMDP xmdp, IQFunction<?, ?> qFunction,
+			double qaValueConstraint) throws ExplicitModelParsingException, XMDPException, IOException, GRBException {
+		CostFunction costFunction = xmdp.getCostFunction();
+
+		// Create a new objective function with a demoted QA
+		AdditiveCostFunction objectiveFunction = createNewObjective(costFunction, qFunction);
+
+		// Set a new aspirational level of the QA; use this as a constraint for an alternative
+
+		double attrCostFuncSlope = costFunction.getAttributeCostFunction(qFunction).getSlope();
+
+		// Strict, hard upper/lower bound
+		BOUND_TYPE hardBoundType = attrCostFuncSlope > 0 ? BOUND_TYPE.STRICT_UPPER_BOUND
+				: BOUND_TYPE.STRICT_LOWER_BOUND;
+		AttributeConstraint<IQFunction<?, ?>> attrHardConstraint = new AttributeConstraint<>(qFunction, hardBoundType,
+				qaValueConstraint);
+
+		// Find a constraint-satisfying, optimal policy, if exists
+		return mGRBConnector.generateOptimalPolicy(objectiveFunction, attrHardConstraint);
 	}
 
 	/**

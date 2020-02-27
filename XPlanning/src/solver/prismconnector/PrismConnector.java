@@ -65,6 +65,10 @@ public class PrismConnector {
 		return mXMDP;
 	}
 
+	public CostCriterion getCostCriterion() {
+		return mCostCriterion;
+	}
+
 	public PrismMDPTranslator getPrismMDPTranslator() {
 		return mMDPTranslator;
 	}

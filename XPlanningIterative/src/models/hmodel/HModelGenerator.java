@@ -1,4 +1,4 @@
-package hmodel;
+package models.hmodel;
 
 import java.util.HashSet;
 import java.util.Map.Entry;

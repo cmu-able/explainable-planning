@@ -43,6 +43,15 @@ public class StateVarTuple implements IStateVarTuple {
 		}
 	}
 
+	public void addStateVarTupleWithFilter(IStateVarTuple stateVarTuple, StateVarClass filterClass)
+			throws VarNotFoundException {
+		for (StateVarDefinition<IStateVarValue> stateVarDef : filterClass) {
+			IStateVarValue value = stateVarTuple.getStateVarValue(IStateVarValue.class, stateVarDef);
+			StateVar<IStateVarValue> stateVar = stateVarDef.getStateVar(value);
+			addStateVar(stateVar);
+		}
+	}
+
 	@Override
 	public boolean isEmpty() {
 		return mStateVarMap.isEmpty();

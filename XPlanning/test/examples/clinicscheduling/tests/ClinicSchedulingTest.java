@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.clinicscheduling.demo.ClinicSchedulingXMDPLoader;
 import examples.common.DSMException;
-import examples.utils.LPMCComparisonTestUtis;
+import examples.utils.LPMCComparisonTestUtils;
 import examples.utils.SimpleConsoleLogger;
 import examples.utils.XMDPDataProvider;
 import gurobi.GRBException;
@@ -31,7 +31,7 @@ public class ClinicSchedulingTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testUnconstrainedAverageCost(File problemFile, XMDP xmdp)
 			throws PrismException, XMDPException, IOException, GRBException, PrismConnectorException {
-		double[][] diffs = LPMCComparisonTestUtis.compareUnconstrainedMDPCase(problemFile, xmdp,
+		double[][] diffs = LPMCComparisonTestUtils.compareUnconstrainedMDPCase(problemFile, xmdp,
 				CostCriterion.AVERAGE_COST, EQUALITY_TOL);
 		checkDifferences(diffs);
 	}
@@ -39,7 +39,7 @@ public class ClinicSchedulingTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testConstrainedAverageCost(File problemFile, XMDP xmdp)
 			throws PrismException, XMDPException, IOException, GRBException, PrismConnectorException {
-		Map<IQFunction<?, ?>, double[][]> resultDiffs = LPMCComparisonTestUtis.compareConstrainedMDPCase(problemFile,
+		Map<IQFunction<?, ?>, double[][]> resultDiffs = LPMCComparisonTestUtils.compareConstrainedMDPCase(problemFile,
 				xmdp, CostCriterion.AVERAGE_COST, EQUALITY_TOL);
 
 		for (Entry<IQFunction<?, ?>, double[][]> e : resultDiffs.entrySet()) {
@@ -49,8 +49,8 @@ public class ClinicSchedulingTest {
 	}
 
 	private void checkDifferences(double[][] diffs) {
-		assertTrue(LPMCComparisonTestUtis.allSmallQAValueDifferences(diffs, 1), "Large QA value difference");
-		assertTrue(LPMCComparisonTestUtis.allSmallPercentQAValueDifferences(diffs, 1),
+		assertTrue(LPMCComparisonTestUtils.allSmallQAValueDifferences(diffs, 1), "Large QA value difference");
+		assertTrue(LPMCComparisonTestUtils.allSmallPercentQAValueDifferences(diffs, 1),
 				"Large percentage QA value difference");
 		// assertTrue(LPMCComparisonTestUtis.allSmallScaledQACostDifferences(diffs, 1), "Large scaled QA cost
 		// difference");

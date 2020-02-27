@@ -29,7 +29,7 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
-public class LPMCComparisonTestUtis {
+public class LPMCComparisonTestUtils {
 
 	public static double[][] compareUnconstrainedMDPCase(File problemFile, XMDP xmdp, CostCriterion costCriterion,
 			double equalityTol)

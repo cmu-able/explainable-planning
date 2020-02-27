@@ -37,6 +37,12 @@ public class StateVarTuple implements IStateVarTuple {
 		mStateVarMap.putAll(stateVarTuple.mStateVarMap);
 	}
 
+	public void addStateVarTuple(IStateVarTuple stateVarTuple) {
+		for (StateVar<IStateVarValue> stateVar : stateVarTuple) {
+			addStateVar(stateVar);
+		}
+	}
+
 	@Override
 	public boolean isEmpty() {
 		return mStateVarMap.isEmpty();

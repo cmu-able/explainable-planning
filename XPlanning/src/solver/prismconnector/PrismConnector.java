@@ -16,6 +16,7 @@ import language.domain.models.IAction;
 import language.dtmc.XDTMC;
 import language.exceptions.QFunctionNotFoundException;
 import language.exceptions.XMDPException;
+import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.AttributeConstraint;
 import language.objectives.AttributeCostFunction;
@@ -44,9 +45,14 @@ public class PrismConnector {
 
 	public PrismConnector(XMDP xmdp, CostCriterion costCriterion, PrismConnectorSettings settings)
 			throws PrismException {
+		this(xmdp, null, costCriterion, settings);
+	}
+
+	public PrismConnector(XMDP xmdp, StateVarTuple queryState, CostCriterion costCriterion,
+			PrismConnectorSettings settings) throws PrismException {
 		mXMDP = xmdp;
 		mCostCriterion = costCriterion;
-		mMDPTranslator = new PrismMDPTranslator(xmdp);
+		mMDPTranslator = new PrismMDPTranslator(xmdp, queryState);
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper();
 

@@ -28,7 +28,7 @@ import solver.prismconnector.exceptions.ResultParsingException;
 public class HModelGenerator {
 
 	private PolicyInfo mQueryPolicyInfo;
-	private XMDP mQueryXMDP;
+	private XMDP mOriginalXMDP;
 	private CostCriterion mCostCriterion;
 	private PrismConnectorSettings mPrismConnSettings;
 
@@ -39,7 +39,7 @@ public class HModelGenerator {
 	public HModelGenerator(PolicyInfo queryPolicyInfo, CostCriterion costCriterion,
 			PrismConnectorSettings prismConnSettings) {
 		mQueryPolicyInfo = queryPolicyInfo;
-		mQueryXMDP = queryPolicyInfo.getXMDP();
+		mOriginalXMDP = queryPolicyInfo.getXMDP();
 		mCostCriterion = costCriterion;
 		mPrismConnSettings = prismConnSettings;
 	}
@@ -47,8 +47,8 @@ public class HModelGenerator {
 	public void query(StateVarTuple queryState, IAction queryAction) throws XMDPException {
 		mQueryState = queryState;
 
-		ActionDefinition<IAction> actionDef = mQueryXMDP.getActionSpace().getActionDefinition(queryAction);
-		FactoredPSO<IAction> actionPSO = mQueryXMDP.getTransitionFunction().getActionPSO(actionDef);
+		ActionDefinition<IAction> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(queryAction);
+		FactoredPSO<IAction> actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(actionDef);
 		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 
 		Set<ProbabilisticEffect> probEffects = new HashSet<>();
@@ -115,11 +115,11 @@ public class HModelGenerator {
 	public double computeQAValueConstraint(IQFunction<?, ?> queryQFunction)
 			throws PrismException, ResultParsingException, XMDPException {
 		// Create XMDP model identical to the original model, but with the query state as initial state
-		XMDP xmdp = new XMDP(mQueryXMDP.getStateSpace(), mQueryXMDP.getActionSpace(), mQueryState, mQueryXMDP.getGoal(),
-				mQueryXMDP.getTransitionFunction(), mQueryXMDP.getQSpace(), mQueryXMDP.getCostFunction());
+		XMDP queryXMDP = new XMDP(mOriginalXMDP.getStateSpace(), mOriginalXMDP.getActionSpace(), mQueryState, mOriginalXMDP.getGoal(),
+				mOriginalXMDP.getTransitionFunction(), mOriginalXMDP.getQSpace(), mOriginalXMDP.getCostFunction());
 
 		// Create Prism connector (without the query state as absorbing state)
-		PrismConnector prismConnector = new PrismConnector(xmdp, mCostCriterion, mPrismConnSettings);
+		PrismConnector prismConnector = new PrismConnector(queryXMDP, mCostCriterion, mPrismConnSettings);
 
 		// Compute QA value of the query policy, starting from the query state
 		double queryQAValue = prismConnector.computeQAValue(mQueryPolicyInfo.getPolicy(), queryQFunction);
@@ -139,9 +139,9 @@ public class HModelGenerator {
 			newIniState.addStateVarTuple(effect);
 
 			// Create HModel identical to the original XMDP model, but with the resulting state of the why-not query as initial state
-			XMDP xmdpHModel = new XMDP(mQueryXMDP.getStateSpace(), mQueryXMDP.getActionSpace(), newIniState,
-					mQueryXMDP.getGoal(), mQueryXMDP.getTransitionFunction(), mQueryXMDP.getQSpace(),
-					mQueryXMDP.getCostFunction());
+			XMDP xmdpHModel = new XMDP(mOriginalXMDP.getStateSpace(), mOriginalXMDP.getActionSpace(), newIniState,
+					mOriginalXMDP.getGoal(), mOriginalXMDP.getTransitionFunction(), mOriginalXMDP.getQSpace(),
+					mOriginalXMDP.getCostFunction());
 
 			// Create Prism connector with the query state as absorbing state
 			PrismConnector prismConnHModel = new PrismConnector(xmdpHModel, mQueryState, mCostCriterion,

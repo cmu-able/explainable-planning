@@ -167,6 +167,10 @@ public class HModel<E extends IAction> {
 		mQueryQAValueConstraints.get(newIniState).put(qFunction, queryQAValueConstraint);
 	}
 
+	public double getQueryQAValueConstraint(StateVarTuple newIniState, IQFunction<?, ?> qFunction) {
+		return mQueryQAValueConstraints.get(newIniState).get(qFunction);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

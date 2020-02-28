@@ -1,27 +1,18 @@
 package models.hmodel;
 
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import analysis.PolicyAnalyzer;
 import explanation.analysis.PolicyInfo;
 import language.domain.metrics.IQFunction;
+import language.domain.metrics.ITransitionStructure;
+import language.domain.metrics.Transition;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
-import language.exceptions.IncompatibleEffectClassException;
 import language.exceptions.XMDPException;
-import language.mdp.Discriminant;
-import language.mdp.DiscriminantClass;
-import language.mdp.Effect;
-import language.mdp.EffectClass;
-import language.mdp.FactoredPSO;
-import language.mdp.IActionDescription;
-import language.mdp.ProbabilisticEffect;
+import language.mdp.StateVarClass;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import prism.PrismException;
-import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ResultParsingException;
 
@@ -29,126 +20,93 @@ public class HModelGenerator {
 
 	private PolicyInfo mQueryPolicyInfo;
 	private XMDP mOriginalXMDP;
-	private CostCriterion mCostCriterion;
-	private PrismConnectorSettings mPrismConnSettings;
-
-	// Inputs to be set from the user's why-not query
-	private StateVarTuple mQueryState;
-	private ProbabilisticEffect mNewIniStateDist;
+	private PolicyAnalyzer mPolicyAnalyzer;
 
 	public HModelGenerator(PolicyInfo queryPolicyInfo, CostCriterion costCriterion,
 			PrismConnectorSettings prismConnSettings) {
 		mQueryPolicyInfo = queryPolicyInfo;
 		mOriginalXMDP = queryPolicyInfo.getXMDP();
-		mCostCriterion = costCriterion;
-		mPrismConnSettings = prismConnSettings;
+
+		mPolicyAnalyzer = new PolicyAnalyzer(mOriginalXMDP, costCriterion, prismConnSettings);
 	}
 
-	public void query(StateVarTuple queryState, IAction queryAction) throws XMDPException {
-		mQueryState = queryState;
+	public <E extends IAction> HModel<E> generateHModel(StateVarTuple queryState, E queryAction)
+			throws XMDPException, ResultParsingException, PrismException {
+		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction);
 
-		ActionDefinition<IAction> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(queryAction);
-		FactoredPSO<IAction> actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(actionDef);
-		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+		for (StateVarTuple queryDestState : hModel.getAllDestStatesOfQuery()) {
 
-		Set<ProbabilisticEffect> probEffects = new HashSet<>();
+			// Compute QA values, costs, etc. of the original policy, starting from s_query onwards
+			// This is for comparison to alternative policy satisfying the why-not query
+			PartialPolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer
+					.computePartialPolicyInfo(mQueryPolicyInfo.getPolicy(), queryState);
 
-		for (EffectClass effectClass : effectClasses) {
-			IActionDescription<IAction> actionDesc = actionPSO.getActionDescription(effectClass);
-			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
+			for (IQFunction<?, ?> qFunction : mOriginalXMDP.getQSpace()) {
 
-			Discriminant discriminant = new Discriminant(discrClass);
-			discriminant.addAllRelevant(queryState);
-			ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, queryAction);
+				// If this QA function has non-compatible action type with a_query,
+				// then QA value of (s_query, a_query, s') is 0
+				double oneStepQAValue = 0;
 
-			probEffects.add(probEffect);
-		}
+				if (checkCompatibleActionType(queryAction, qFunction)) {
+					// Compute 1-step QA value of a query transition (s_query, a_query, s')
+					oneStepQAValue = computeOneStepQAValue(hModel.getQueryState(), hModel.getQueryAction(),
+							queryDestState, qFunction);
+				}
 
-		// New initial state(s)
-		ProbabilisticEffect combinedProbEffect = combineProbabilisticEffects(probEffects);
-		mNewIniStateDist = combinedProbEffect;
-	}
+				// QA value constraint for alternative policy starting from s' onwards
+				double queryQAValueConstraint = originalPartialPolicyInfo.getPartialQAValue(qFunction) - oneStepQAValue;
 
-	private ProbabilisticEffect combineProbabilisticEffects(Set<ProbabilisticEffect> probEffects)
-			throws IncompatibleEffectClassException {
-		ProbabilisticEffect probEffect = probEffects.iterator().next();
-		probEffects.iterator().remove();
-		return combineProbabilisticEffectsHelper(probEffect, probEffects);
-	}
-
-	private ProbabilisticEffect combineProbabilisticEffectsHelper(ProbabilisticEffect probEffect,
-			Set<ProbabilisticEffect> otherProbEffects) throws IncompatibleEffectClassException {
-		if (otherProbEffects.isEmpty()) {
-			return probEffect;
-		}
-
-		ProbabilisticEffect otherProbEffect = otherProbEffects.iterator().next();
-		otherProbEffects.iterator().remove();
-
-		EffectClass combinedEffectClass = new EffectClass();
-		combinedEffectClass.addAll(probEffect.getEffectClass());
-		combinedEffectClass.addAll(otherProbEffect.getEffectClass());
-
-		ProbabilisticEffect combinedProbEffect = new ProbabilisticEffect(combinedEffectClass);
-
-		for (Entry<Effect, Double> eA : probEffect) {
-			Effect effectA = eA.getKey();
-			double probA = eA.getValue();
-
-			for (Entry<Effect, Double> eB : otherProbEffect) {
-				Effect effectB = eB.getKey();
-				double probB = eB.getValue();
-
-				Effect combinedEffect = new Effect(combinedEffectClass);
-				combinedEffect.addAll(effectA);
-				combinedEffect.addAll(effectB);
-
-				double combinedProb = probA * probB;
-
-				combinedProbEffect.put(combinedEffect, combinedProb);
+				// Add each QA value constraint for state s' to HModel
+				hModel.putQueryQAValueConstraint(queryDestState, qFunction, queryQAValueConstraint);
 			}
 		}
 
-		return combineProbabilisticEffectsHelper(combinedProbEffect, otherProbEffects);
+		return hModel;
 	}
 
-	public double computeQAValueConstraint(IQFunction<?, ?> queryQFunction)
-			throws PrismException, ResultParsingException, XMDPException {
-		// Create XMDP model identical to the original model, but with the query state as initial state
-		XMDP queryXMDP = new XMDP(mOriginalXMDP.getStateSpace(), mOriginalXMDP.getActionSpace(), mQueryState, mOriginalXMDP.getGoal(),
-				mOriginalXMDP.getTransitionFunction(), mOriginalXMDP.getQSpace(), mOriginalXMDP.getCostFunction());
+	/**
+	 * 
+	 * @param queryAction
+	 *            : Query action
+	 * @param qFunction
+	 *            : QA function
+	 * @return Query action has a compatible action type with QA function if they have the same action definition, or if
+	 *         the parent composite action definition of the query action is the same as the action definition of the QA
+	 *         function
+	 */
+	private <F extends IAction, E extends IAction, T extends ITransitionStructure<E>> boolean checkCompatibleActionType(
+			F queryAction, IQFunction<E, T> qFunction) {
+		ActionDefinition<F> queryActionDef = mOriginalXMDP.getActionSpace().getActionDefinition(queryAction);
+		// Parent composite action definition of a_query
+		ActionDefinition<IAction> parentCompActionDef = queryActionDef.getParentCompositeActionDefinition();
 
-		// Create Prism connector (without the query state as absorbing state)
-		PrismConnector prismConnector = new PrismConnector(queryXMDP, mCostCriterion, mPrismConnSettings);
+		ActionDefinition<E> qFuncActionDef = qFunction.getTransitionStructure().getActionDef();
 
-		// Compute QA value of the query policy, starting from the query state
-		double queryQAValue = prismConnector.computeQAValue(mQueryPolicyInfo.getPolicy(), queryQFunction);
-
-		// Close down PRISM
-		prismConnector.terminate();
-
-		return queryQAValue;
+		return queryActionDef.equals(qFuncActionDef)
+				|| (parentCompActionDef != null && parentCompActionDef.equals(qFuncActionDef));
 	}
 
-	public Set<PrismConnector> buildPrismConnectorsForHModels() throws PrismException {
-		Set<PrismConnector> prismConnectors = new HashSet<>();
+	private <E extends IAction, T extends ITransitionStructure<E>> double computeOneStepQAValue(
+			StateVarTuple queryState, IAction queryAction, StateVarTuple queryDestState, IQFunction<E, T> qFunction)
+			throws XMDPException {
+		T transStructure = qFunction.getTransitionStructure();
 
-		for (Entry<Effect, Double> e : mNewIniStateDist) {
-			Effect effect = e.getKey();
-			StateVarTuple newIniState = new StateVarTuple();
-			newIniState.addStateVarTuple(effect);
+		// Relevant source state variables in query state
+		StateVarClass srcStateVarClass = transStructure.getSrcStateVarClass();
+		StateVarTuple srcVars = new StateVarTuple();
+		srcVars.addStateVarTupleWithFilter(queryState, srcStateVarClass);
 
-			// Create HModel identical to the original XMDP model, but with the resulting state of the why-not query as initial state
-			XMDP xmdpHModel = new XMDP(mOriginalXMDP.getStateSpace(), mOriginalXMDP.getActionSpace(), newIniState,
-					mOriginalXMDP.getGoal(), mOriginalXMDP.getTransitionFunction(), mOriginalXMDP.getQSpace(),
-					mOriginalXMDP.getCostFunction());
+		// Relevant destination state variables in resulting state of query
+		StateVarClass destStateVarClass = transStructure.getSrcStateVarClass();
+		StateVarTuple destVars = new StateVarTuple();
+		destVars.addStateVarTupleWithFilter(queryDestState, destStateVarClass);
 
-			// Create Prism connector with the query state as absorbing state
-			PrismConnector prismConnHModel = new PrismConnector(xmdpHModel, mQueryState, mCostCriterion,
-					mPrismConnSettings);
-			prismConnectors.add(prismConnHModel);
-		}
+		// We already ensure that a_query has a compatible action type with the QA function
+		// Cast up (e.g., incAlt -> durative action)
+		E castedQueryAction = (E) queryAction;
 
-		return prismConnectors;
+		Transition<E, T> transition = new Transition<>(transStructure, castedQueryAction, srcVars, destVars);
+		return qFunction.getValue(transition);
 	}
+
 }

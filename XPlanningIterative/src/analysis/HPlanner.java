@@ -12,7 +12,9 @@ import language.exceptions.XMDPException;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
+import language.policy.Policy;
 import models.hmodel.HModel;
+import models.hmodel.HPolicy;
 import prism.PrismException;
 import solver.gurobiconnector.GRBConnector;
 import solver.gurobiconnector.GRBConnectorSettings;
@@ -34,9 +36,13 @@ public class HPlanner {
 		mPrismConnSettings = prismConnSettings;
 	}
 
-	public <E extends IAction, T extends ITransitionStructure<E>> PolicyInfo computeHPolicy(HModel<E> hModel,
-			IQFunction<E, T> queryQFunction)
+	public <E extends IAction, T extends ITransitionStructure<E>> HPolicy computeHPolicy(HModel<E> hModel,
+			Policy queryPolicy, IQFunction<E, T> queryQFunction)
 			throws PrismException, ExplicitModelParsingException, XMDPException, IOException, GRBException {
+		StateVarTuple queryState = hModel.getQueryState();
+		E queryAction = hModel.getQueryAction();
+		HPolicy totalHPolicy = new HPolicy(queryPolicy, queryState, queryAction);
+
 		for (StateVarTuple newIniState : hModel.getAllDestStatesOfQuery()) {
 
 			// Query XMDP has one of the resulting states of the why-not query as initial state
@@ -50,15 +56,17 @@ public class HPlanner {
 			double queryQAValueConstraint = hModel.getQueryQAValueConstraint(newIniState, queryQFunction);
 
 			// Compute a constraint-satisfying alternative policy starting from the new initial state
-			PolicyInfo partialHPolicy = computePartialHPolicy(prismConnectorForHModel, queryQFunction,
+			PolicyInfo partialHPolicy = computePartialHPolicyInfo(prismConnectorForHModel, queryQFunction,
 					queryQAValueConstraint);
+
+			// Map each new initial state to partial HPolicy
+			totalHPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
 		}
 
-		// TODO
-		return null;
+		return totalHPolicy;
 	}
 
-	public PolicyInfo computePartialHPolicy(PrismConnector prismConnectorForHModel, IQFunction<?, ?> queryQFunction,
+	public PolicyInfo computePartialHPolicyInfo(PrismConnector prismConnectorForHModel, IQFunction<?, ?> queryQFunction,
 			double queryQAValueConstraint)
 			throws XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
 		// Query XMDP has one of the resulting states of the why-not query as initial state

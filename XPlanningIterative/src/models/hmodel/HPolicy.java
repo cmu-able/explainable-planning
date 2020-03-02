@@ -21,9 +21,9 @@ public class HPolicy {
 	// Total hypothetical policy -- built from 1 or more partial HPolicies
 	private Policy mTotalHPolicy;
 
-	public HPolicy(PolicyInfo queryPolicyInfo, StateVarTuple queryState, IAction queryAction) {
+	public HPolicy(Policy queryPolicy, StateVarTuple queryState, IAction queryAction) {
 		// Initialize total HPolicy to be the query policy (this will be overridden later)
-		mTotalHPolicy = new Policy(queryPolicyInfo.getPolicy());
+		mTotalHPolicy = new Policy(queryPolicy);
 
 		// In the total HPolicy, a_query is taken in s_query
 		mTotalHPolicy.put(queryState, queryAction);

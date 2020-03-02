@@ -1,7 +1,6 @@
 package models.hmodel;
 
 import analysis.PolicyAnalyzer;
-import explanation.analysis.PolicyInfo;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
@@ -11,26 +10,21 @@ import language.exceptions.XMDPException;
 import language.mdp.StateVarClass;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
-import language.objectives.CostCriterion;
+import language.policy.Policy;
 import prism.PrismException;
-import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class HModelGenerator {
 
-	private PolicyInfo mQueryPolicyInfo;
 	private XMDP mOriginalXMDP;
 	private PolicyAnalyzer mPolicyAnalyzer;
 
-	public HModelGenerator(PolicyInfo queryPolicyInfo, CostCriterion costCriterion,
-			PrismConnectorSettings prismConnSettings) {
-		mQueryPolicyInfo = queryPolicyInfo;
-		mOriginalXMDP = queryPolicyInfo.getXMDP();
-
-		mPolicyAnalyzer = new PolicyAnalyzer(mOriginalXMDP, costCriterion, prismConnSettings);
+	public HModelGenerator(PolicyAnalyzer policyAnalyzer) {
+		mOriginalXMDP = policyAnalyzer.getXMDP();
+		mPolicyAnalyzer = policyAnalyzer;
 	}
 
-	public <E extends IAction> HModel<E> generateHModel(StateVarTuple queryState, E queryAction)
+	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction)
 			throws XMDPException, ResultParsingException, PrismException {
 		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction);
 
@@ -38,8 +32,8 @@ public class HModelGenerator {
 
 			// Compute QA values, costs, etc. of the original policy, starting from s_query onwards
 			// This is for comparison to alternative policy satisfying the why-not query
-			PartialPolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer
-					.computePartialPolicyInfo(mQueryPolicyInfo.getPolicy(), queryState);
+			PartialPolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer.computePartialPolicyInfo(queryPolicy,
+					queryState);
 
 			for (IQFunction<?, ?> qFunction : mOriginalXMDP.getQSpace()) {
 

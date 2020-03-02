@@ -46,4 +46,8 @@ public class PolicyAnalyzer {
 
 		return partialPolicyInfo;
 	}
+
+	public XMDP getXMDP() {
+		return mXMDP;
+	}
 }

@@ -6,6 +6,7 @@ import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
+import models.hmodel.HPolicy;
 import models.hmodel.PartialPolicyInfo;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
@@ -33,7 +34,7 @@ public class PolicyAnalyzer {
 		XMDP queryXMDP = new XMDP(mXMDP.getStateSpace(), mXMDP.getActionSpace(), queryState, mXMDP.getGoal(),
 				mXMDP.getTransitionFunction(), mXMDP.getQSpace(), mXMDP.getCostFunction());
 
-		// Create Prism connector (without the query state as absorbing state)
+		// Create PrismConnector (without the query state as absorbing state)
 		PrismConnector prismConnector = new PrismConnector(queryXMDP, mCostCriterion, mPrismConnSettings);
 
 		// Compute QA values, objective cost, scaled QA costs of the policy, starting from the query state
@@ -45,6 +46,21 @@ public class PolicyAnalyzer {
 		prismConnector.terminate();
 
 		return partialPolicyInfo;
+	}
+
+	public PolicyInfo computeHPolicyInfo(HPolicy hPolicy) throws PrismException, ResultParsingException, XMDPException {
+		Policy totalHPolicy = hPolicy.getTotalHPolicy();
+
+		// Create PrismConnector for the original XMDP
+		PrismConnector prismConnector = new PrismConnector(mXMDP, mCostCriterion, mPrismConnSettings);
+
+		// Compute QA values, objective cost, scaled QA costs of the total HPolicy, starting from the initial state of the original XMDP
+		PolicyInfo totalHPolicyInfo = prismConnector.buildPolicyInfo(totalHPolicy);
+
+		// Close down PRISM
+		prismConnector.terminate();
+
+		return totalHPolicyInfo;
 	}
 
 	public XMDP getXMDP() {

@@ -30,7 +30,17 @@ public class Policy implements Iterable<Decision> {
 		// mDecisions and mPolicy are initially empty
 	}
 
+	public Policy(Policy initialPolicy) {
+		// Initialize this policy with existing content
+		// Part of this content may be overridden later
+		mDecisions.addAll(initialPolicy.mDecisions);
+		mPolicy.putAll(initialPolicy.mPolicy);
+	}
+
 	public void put(StateVarTuple state, IAction action) {
+		// Override state->action mapping in this policy (if already exists)
+		mDecisions.removeIf(existingDecision -> existingDecision.getState().equals(state));
+
 		Decision decision = new Decision(state, action);
 		mDecisions.add(decision);
 		mPolicy.put(state, action);
@@ -41,6 +51,10 @@ public class Policy implements Iterable<Decision> {
 			throw new StateNotFoundException(state);
 		}
 		return mPolicy.get(state);
+	}
+
+	public boolean containsState(StateVarTuple state) {
+		return mPolicy.containsKey(state);
 	}
 
 	public boolean containsAction(IAction action) {

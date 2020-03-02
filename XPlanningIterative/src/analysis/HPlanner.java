@@ -22,6 +22,7 @@ import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
+import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
@@ -37,8 +38,8 @@ public class HPlanner {
 	}
 
 	public <E extends IAction, T extends ITransitionStructure<E>> HPolicy computeHPolicy(HModel<E> hModel,
-			Policy queryPolicy, IQFunction<E, T> queryQFunction)
-			throws PrismException, ExplicitModelParsingException, XMDPException, IOException, GRBException {
+			Policy queryPolicy, IQFunction<E, T> queryQFunction) throws PrismException, ExplicitModelParsingException,
+			XMDPException, IOException, GRBException, ResultParsingException {
 		StateVarTuple queryState = hModel.getQueryState();
 		E queryAction = hModel.getQueryAction();
 		HPolicy totalHPolicy = new HPolicy(queryPolicy, queryState, queryAction);
@@ -59,6 +60,15 @@ public class HPlanner {
 			PolicyInfo partialHPolicy = computePartialHPolicyInfo(prismConnectorForHModel, queryQFunction,
 					queryQAValueConstraint);
 
+			// If no QA-constraint-satisfying alternative policy exists, 
+			// try to compute alternative policy that satisfies why-not query
+			if (partialHPolicy == null) {
+				partialHPolicy = prismConnectorForHModel.generateOptimalPolicy();
+			}
+
+			// Close down PRISM
+			prismConnectorForHModel.terminate();
+
 			// Map each new initial state to partial HPolicy
 			totalHPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
 		}
@@ -66,8 +76,8 @@ public class HPlanner {
 		return totalHPolicy;
 	}
 
-	public PolicyInfo computePartialHPolicyInfo(PrismConnector prismConnectorForHModel, IQFunction<?, ?> queryQFunction,
-			double queryQAValueConstraint)
+	private PolicyInfo computePartialHPolicyInfo(PrismConnector prismConnectorForHModel,
+			IQFunction<?, ?> queryQFunction, double queryQAValueConstraint)
 			throws XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
 		// Query XMDP has one of the resulting states of the why-not query as initial state
 		XMDP queryXMDP = prismConnectorForHModel.getXMDP();

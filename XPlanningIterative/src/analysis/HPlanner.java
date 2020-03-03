@@ -6,7 +6,6 @@ import explanation.analysis.AlternativeExplorer;
 import explanation.analysis.PolicyInfo;
 import gurobi.GRBException;
 import language.domain.metrics.IQFunction;
-import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.StateVarTuple;
@@ -37,11 +36,11 @@ public class HPlanner {
 		mPrismConnSettings = prismConnSettings;
 	}
 
-	public <E extends IAction, T extends ITransitionStructure<E>> HPolicy computeHPolicy(HModel<E> hModel,
-			Policy queryPolicy, IQFunction<E, T> queryQFunction) throws PrismException, ExplicitModelParsingException,
-			XMDPException, IOException, GRBException, ResultParsingException {
+	public HPolicy computeHPolicy(HModel<? extends IAction> hModel, Policy queryPolicy, IQFunction<?, ?> queryQFunction)
+			throws PrismException, ExplicitModelParsingException, XMDPException, IOException, GRBException,
+			ResultParsingException {
 		StateVarTuple queryState = hModel.getQueryState();
-		E queryAction = hModel.getQueryAction();
+		IAction queryAction = hModel.getQueryAction();
 		HPolicy totalHPolicy = new HPolicy(queryPolicy, queryState, queryAction);
 
 		for (StateVarTuple newIniState : hModel.getAllDestStatesOfQuery()) {

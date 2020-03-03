@@ -25,7 +25,7 @@ import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
 
 public class Explainer {
 
-	private static final double DEFAULT_EQUALITY_TOL = 1e-6;
+	public static final double DEFAULT_EQUALITY_TOL = 1e-6;
 
 	private ExplainerSettings mSettings;
 

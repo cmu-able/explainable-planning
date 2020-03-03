@@ -1,6 +1,7 @@
 package models.hmodel;
 
 import analysis.PolicyAnalyzer;
+import explanation.analysis.PolicyInfo;
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.metrics.Transition;
@@ -32,8 +33,7 @@ public class HModelGenerator {
 
 			// Compute QA values, costs, etc. of the original policy, starting from s_query onwards
 			// This is for comparison to alternative policy satisfying the why-not query
-			PartialPolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer.computePartialPolicyInfo(queryPolicy,
-					queryState);
+			PolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer.computePartialPolicyInfo(queryPolicy, queryState);
 
 			for (IQFunction<?, ?> qFunction : mOriginalXMDP.getQSpace()) {
 
@@ -48,7 +48,7 @@ public class HModelGenerator {
 				}
 
 				// QA value constraint for alternative policy starting from s' onwards
-				double queryQAValueConstraint = originalPartialPolicyInfo.getPartialQAValue(qFunction) - oneStepQAValue;
+				double queryQAValueConstraint = originalPartialPolicyInfo.getQAValue(qFunction) - oneStepQAValue;
 
 				// Add each QA value constraint for state s' to HModel
 				hModel.putQueryQAValueConstraint(queryDestState, qFunction, queryQAValueConstraint);

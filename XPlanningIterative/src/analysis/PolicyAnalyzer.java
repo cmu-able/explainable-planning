@@ -7,7 +7,6 @@ import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
 import models.hmodel.HPolicy;
-import models.hmodel.PartialPolicyInfo;
 import prism.PrismException;
 import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
@@ -25,7 +24,7 @@ public class PolicyAnalyzer {
 		mPrismConnSettings = prismConnSettings;
 	}
 
-	public PartialPolicyInfo computePartialPolicyInfo(Policy policy, StateVarTuple queryState)
+	public PolicyInfo computePartialPolicyInfo(Policy policy, StateVarTuple queryState)
 			throws PrismException, ResultParsingException, XMDPException {
 		// Create a new PrismConnector each time a new query state is given
 		// Use the query state as initial state to compute QA value
@@ -38,9 +37,7 @@ public class PolicyAnalyzer {
 		PrismConnector prismConnector = new PrismConnector(queryXMDP, mCostCriterion, mPrismConnSettings);
 
 		// Compute QA values, objective cost, scaled QA costs of the policy, starting from the query state
-		PolicyInfo policyInfo = prismConnector.buildPolicyInfo(policy);
-
-		PartialPolicyInfo partialPolicyInfo = new PartialPolicyInfo(queryState, policyInfo);
+		PolicyInfo partialPolicyInfo = prismConnector.buildPolicyInfo(policy);
 
 		// Close down PRISM
 		prismConnector.terminate();

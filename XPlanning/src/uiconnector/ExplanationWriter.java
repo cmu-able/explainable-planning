@@ -26,18 +26,52 @@ public class ExplanationWriter {
 	private File mExplanationJsonDir;
 	private Verbalizer mVerbalizer;
 
+	// Customized information in this explanation will be added as (Key, Value)
+	private JSONObject mExplanationJsonObj = new JSONObject();
+
 	public ExplanationWriter(File explanationJsonDir, Verbalizer verbalizer) {
 		mExplanationJsonDir = explanationJsonDir;
 		mExplanationJsonDir.mkdirs(); // only make directories when ones don't exist
 		mVerbalizer = verbalizer;
 	}
 
+	public void addDefaultExplanationInfo(String missionJsonFilename, Policy solnPolicy) {
+		mExplanationJsonObj.put("Mission", missionJsonFilename);
+		addPolicyEntry("Solution Policy", solnPolicy);
+	}
+
+	public void addPolicyEntry(String policyKey, Policy policy) {
+		File policyJsonFile = mVerbalizer.getPolicyJsonFile(policy);
+		mExplanationJsonObj.put(policyKey, policyJsonFile);
+	}
+
+	public void addPolicyQAValues(QuantitativePolicy quantPolicy) {
+		File policyJsonFile = mVerbalizer.getPolicyJsonFile(quantPolicy.getPolicy());
+		String policyJsonFilename = policyJsonFile.getName();
+		JSONObject policyValuesJsonObj = writeQAValuesToJSONObject(quantPolicy, mVerbalizer.getQADecimalFormatter());
+		mExplanationJsonObj.put(policyJsonFilename, policyValuesJsonObj);
+	}
+
+	public void addCustomizedExplanationInfo(String key, Object value) {
+		mExplanationJsonObj.put(key, value);
+	}
+
+	public File exportExplanationToFile(String explanationJsonFilename) throws IOException {
+		File explanationJsonFile = new File(mExplanationJsonDir, explanationJsonFilename);
+		try (FileWriter writer = new FileWriter(explanationJsonFile)) {
+			writer.write(mExplanationJsonObj.toJSONString());
+			writer.flush();
+		}
+
+		// Clear explanation content in this object
+		mExplanationJsonObj.clear();
+
+		return explanationJsonFile;
+	}
+
 	public File writeExplanation(String missionJsonFilename, Explanation explanation, String explanationJsonFilename)
 			throws IOException {
 		String verbalization = mVerbalizer.verbalize(explanation);
-
-		Policy solutionPolicy = explanation.getSolutionPolicyInfo().getPolicy();
-		File solnPolicyJsonFile = mVerbalizer.getPolicyJsonFile(solutionPolicy);
 
 		Set<QuantitativePolicy> allQuantPolicies = new HashSet<>();
 		allQuantPolicies.add(explanation.getSolutionPolicyInfo().getQuantitativePolicy());
@@ -52,32 +86,20 @@ public class ExplanationWriter {
 			allQuantPolicies.add(tradeoff.getAlternativePolicyInfo().getQuantitativePolicy());
 		}
 
-		JSONObject explanationJsonObj = new JSONObject();
-		explanationJsonObj.put("Mission", missionJsonFilename);
-		explanationJsonObj.put("Solution Policy", solnPolicyJsonFile.getAbsolutePath());
-		explanationJsonObj.put("Alternative Policies", altPolicyJsonArray);
-		explanationJsonObj.put("Explanation", verbalization);
+		Policy solnPolicy = explanation.getSolutionPolicyInfo().getPolicy();
 
-		writeQAValuesToExplanationJSONObject(allQuantPolicies, explanationJsonObj);
+		// "Mission" and "Solution Policy" entries
+		addDefaultExplanationInfo(missionJsonFilename, solnPolicy);
 
-		File explanationJsonFile = new File(mExplanationJsonDir, explanationJsonFilename);
-		try (FileWriter writer = new FileWriter(explanationJsonFile)) {
-			writer.write(explanationJsonObj.toJSONString());
-			writer.flush();
+		addCustomizedExplanationInfo("Alternative Policies", altPolicyJsonArray);
+		addCustomizedExplanationInfo("Explanation", verbalization);
+
+		// All policies: QA values of each policy
+		for (QuantitativePolicy quantPolicy : allQuantPolicies) {
+			addPolicyQAValues(quantPolicy);
 		}
 
-		return explanationJsonFile;
-	}
-
-	private void writeQAValuesToExplanationJSONObject(Set<QuantitativePolicy> quantPolicies,
-			JSONObject explanationJsonObj) {
-		for (QuantitativePolicy quantPolicy : quantPolicies) {
-			File policyJsonFile = mVerbalizer.getPolicyJsonFile(quantPolicy.getPolicy());
-			String policyJsonFilename = policyJsonFile.getName();
-			JSONObject policyValuesJsonObj = writeQAValuesToJSONObject(quantPolicy,
-					mVerbalizer.getQADecimalFormatter());
-			explanationJsonObj.put(policyJsonFilename, policyValuesJsonObj);
-		}
+		return exportExplanationToFile(explanationJsonFilename);
 	}
 
 	public static JSONObject writeQAValuesToJSONObject(QuantitativePolicy quantPolicy,

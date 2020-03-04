@@ -51,10 +51,7 @@ public class Verbalizer {
 		CostFunction costFunction = explanation.getCostFunction();
 		Set<Tradeoff> tradeoffs = explanation.getTradeoffs();
 
-		String policyJsonFilename = "solnPolicy.json";
-		Policy solutionPolicy = solnPolicyInfo.getPolicy();
-		File policyJsonFile = mPolicyWriter.writePolicy(solutionPolicy, policyJsonFilename);
-		mPolicyJsonFiles.put(solutionPolicy, policyJsonFile);
+		File policyJsonFile = writePolicyToFile(solnPolicyInfo.getPolicy(), "solnPolicy.json");
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("I'm planning to follow this policy [");
@@ -82,12 +79,22 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
+	public File writePolicyToFile(Policy policy, String policyJsonFilename) throws IOException {
+		File policyJsonFile = mPolicyWriter.writePolicy(policy, policyJsonFilename);
+		mPolicyJsonFiles.put(policy, policyJsonFile);
+		return policyJsonFile;
+	}
+
 	public File getPolicyJsonFile(Policy policy) {
 		return mPolicyJsonFiles.get(policy);
 	}
 
 	public QADecimalFormatter getQADecimalFormatter() {
 		return mSettings.getQADecimalFormatter();
+	}
+
+	public Vocabulary getVocabulary() {
+		return mVocabulary;
 	}
 
 	private String verbalizeQAs(PolicyInfo policyInfo) {
@@ -306,9 +313,9 @@ public class Verbalizer {
 		return builder.toString();
 	}
 
-	private String listQAs(Set<IQFunction<IAction, ITransitionStructure<IAction>>> optimalQAs) {
+	public String listQAs(Set<IQFunction<IAction, ITransitionStructure<IAction>>> groupQAs) {
 		StringBuilder builder = new StringBuilder();
-		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = optimalQAs.iterator();
+		Iterator<IQFunction<IAction, ITransitionStructure<IAction>>> iter = groupQAs.iterator();
 		boolean firstQA = true;
 		while (iter.hasNext()) {
 			IQFunction<?, ?> qFunction = iter.next();
@@ -332,8 +339,8 @@ public class Verbalizer {
 		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaValueLosses = tradeoff.getQAValueLosses();
 		Map<IQFunction<IAction, ITransitionStructure<IAction>>, Double> qaCostLosses = tradeoff.getQACostLosses();
 		Policy alternativePolicy = altPolicyInfo.getPolicy();
-		File altPolicyJsonFile = mPolicyWriter.writePolicy(alternativePolicy, "altPolicy" + index + ".json");
-		mPolicyJsonFiles.put(alternativePolicy, altPolicyJsonFile);
+
+		File altPolicyJsonFile = writePolicyToFile(alternativePolicy, "altPolicy" + index + ".json");
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("Alternatively, following this policy [");

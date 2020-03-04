@@ -60,7 +60,7 @@ public class XPlanner {
 		// Run regular planning
 		PolicyInfo policyInfo = runPlanning(problemFile, costCriterion);
 
-		PrismConnectorSettings prismConnSettings = createPrismConnectorSettings(problemFile);
+		PrismConnectorSettings prismConnSettings = createPrismConnectorSettings(problemFile, mOutputDirs);
 		// ExplainerSettings define what DifferenceScaler to use, if any
 		ExplainerSettings explainerSettings = new ExplainerSettings(prismConnSettings);
 		explainerSettings.setDifferenceScaler(diffScaler);
@@ -85,7 +85,7 @@ public class XPlanner {
 
 	public PolicyInfo runPlanning(File problemFile, CostCriterion costCriterion) throws DSMException, XMDPException,
 			ExplicitModelParsingException, PrismException, IOException, GRBException, ResultParsingException {
-		PrismConnectorSettings prismConnSettings = createPrismConnectorSettings(problemFile);
+		PrismConnectorSettings prismConnSettings = createPrismConnectorSettings(problemFile, mOutputDirs);
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
 
 		if (costCriterion == CostCriterion.TOTAL_COST) {
@@ -127,10 +127,11 @@ public class XPlanner {
 		return grbConnector.generateOptimalPolicy();
 	}
 
-	private PrismConnectorSettings createPrismConnectorSettings(File problemFile) {
+	public static PrismConnectorSettings createPrismConnectorSettings(File problemFile,
+			XPlannerOutDirectories outputDirs) {
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		Path modelOutputPath = mOutputDirs.getPrismModelsOutputPath().resolve(problemName);
-		Path advOutputPath = mOutputDirs.getPrismAdvsOutputPath().resolve(problemName);
+		Path modelOutputPath = outputDirs.getPrismModelsOutputPath().resolve(problemName);
+		Path advOutputPath = outputDirs.getPrismAdvsOutputPath().resolve(problemName);
 		return new PrismConnectorSettings(modelOutputPath.toString(), advOutputPath.toString());
 	}
 

@@ -38,6 +38,12 @@ import verbalization.HPolicyVerbalizer;
 
 public class WhyNotXPlanner {
 
+	private static final String XPLANNER_ITER_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanningIterative/output";
+
+	public static final String POLICIES_OUTPUT_PATH = XPLANNER_ITER_OUTPUT_PATH + "/policies";
+	public static final String EXPLANATIONS_OUTPUT_PATH = XPLANNER_ITER_OUTPUT_PATH + "/explanations";
+	public static final String PRISM_OUTPUT_PATH = XPLANNER_ITER_OUTPUT_PATH + "/prism";
+
 	private IXMDPLoader mXMDPLoader;
 	private XPlannerOutDirectories mOutputDirs;
 	private Vocabulary mVocabulary;

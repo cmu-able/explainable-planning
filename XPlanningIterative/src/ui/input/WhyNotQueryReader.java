@@ -6,10 +6,10 @@ import language.domain.models.IAction;
 import language.mdp.StateVarTuple;
 import models.explanation.WhyNotQuery;
 
-public class WhyNotQueryInputReader {
+public class WhyNotQueryReader {
 
 	public <E extends IAction, T extends ITransitionStructure<E>> WhyNotQuery<E, T> readWhyNotQuery(
-			String whyNotQueryStr) {
+			String queryStateStr, String queryActionStr, String queryQFunctionStr) {
 		return null;
 	}
 

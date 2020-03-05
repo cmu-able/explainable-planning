@@ -2,6 +2,8 @@ package main;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.json.simple.parser.ParseException;
 
@@ -19,8 +21,13 @@ import models.explanation.WhyNotQuery;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import ui.input.WhyNotQueryReader;
 
 public class DartWhyNotXPlanner {
+
+	private static final String DART_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/dart";
+	private static final String PROBLEMS_PATH = DART_PATH + "/missions";
+	private static final String POLICIES_PATH = DART_PATH + "/policies";
 
 	private WhyNotXPlanner mWhyNotXPlanner;
 
@@ -36,9 +43,29 @@ public class DartWhyNotXPlanner {
 				whyNotQuery);
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	public static void main(String[] args) throws IOException, ResultParsingException, ExplicitModelParsingException,
+			DSMException, XMDPException, ParseException, PrismException, GRBException {
+		String problemFilename = args[0];
+		String queryPolicyFilename = args[1];
+		String queryStateStr = args[2];
+		String queryActionStr = args[3];
+		String queryQFunctionStr = args[4];
 
+		File problemFile = new File(PROBLEMS_PATH, problemFilename);
+		File queryPolicyJsonFile = new File(POLICIES_PATH, queryPolicyFilename);
+
+		WhyNotQueryReader queryReader = new WhyNotQueryReader();
+		WhyNotQuery<?, ?> whyNotQuery = queryReader.readWhyNotQuery(queryStateStr, queryActionStr, queryQFunctionStr);
+
+		Path policiesOutputPath = Paths.get(WhyNotXPlanner.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(WhyNotXPlanner.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(WhyNotXPlanner.PRISM_OUTPUT_PATH);
+		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
+				prismOutputPath);
+
+		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
+		DartWhyNotXPlanner whyNotXPlanner = new DartWhyNotXPlanner(outputDirs, defaultVerbalizerSettings);
+		whyNotXPlanner.answerWhyNotQuery(problemFile, queryPolicyJsonFile, whyNotQuery);
 	}
 
 }

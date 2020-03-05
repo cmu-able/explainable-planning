@@ -24,7 +24,7 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class DartXPlanner {
 
-	public static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/dart/missions";
+	private static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/dart/missions";
 
 	private XPlanner mXPlanner;
 

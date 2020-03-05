@@ -18,6 +18,18 @@ public class WhyNotQueryReader {
 		mXMDP = xmdp;
 	}
 
+	/**
+	 * 
+	 * @param whyNotQueryStr
+	 *            : Format: query state;query action;query QA
+	 * @return Why-not query
+	 */
+	public <E extends IAction, T extends ITransitionStructure<E>> WhyNotQuery<E, T> readWhyNotQuery(
+			String whyNotQueryStr) {
+		String[] queryStrs = whyNotQueryStr.split(";");
+		return readWhyNotQuery(queryStrs[0], queryStrs[1], queryStrs[2]);
+	}
+
 	public <E extends IAction, T extends ITransitionStructure<E>> WhyNotQuery<E, T> readWhyNotQuery(
 			String queryStateStr, String queryActionStr, String queryQFunctionStr) {
 		StateVarTuple queryState = readQueryState(queryStateStr);

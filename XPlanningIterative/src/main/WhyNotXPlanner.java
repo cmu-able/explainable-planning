@@ -32,6 +32,7 @@ import prism.PrismException;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
+import ui.input.WhyNotQueryReader;
 import uiconnector.ExplanationWriter;
 import uiconnector.PolicyReader;
 import verbalization.HPolicyVerbalizer;
@@ -58,9 +59,12 @@ public class WhyNotXPlanner {
 	}
 
 	public HPolicyExplanation answerWhyNotQuery(File problemFile, CostCriterion costCriterion, File queryPolicyJsonFile,
-			WhyNotQuery<?, ?> whyNotQuery) throws DSMException, XMDPException, IOException, ParseException,
+			String whyNotQueryStr) throws DSMException, XMDPException, IOException, ParseException,
 			ResultParsingException, PrismException, ExplicitModelParsingException, GRBException {
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
+
+		WhyNotQueryReader queryReader = new WhyNotQueryReader(xmdp);
+		WhyNotQuery<?, ?> whyNotQuery = queryReader.readWhyNotQuery(whyNotQueryStr);
 
 		// HModelGenerator and PolicyAnalyzer
 		PrismConnectorSettings prismConnSettings = XPlanner.createPrismConnectorSettings(problemFile, mOutputDirs);
@@ -109,4 +113,5 @@ public class WhyNotXPlanner {
 
 		return hPolicyExplanation;
 	}
+
 }

@@ -21,11 +21,17 @@ public class WhyNotQueryReader {
 	public <E extends IAction, T extends ITransitionStructure<E>> WhyNotQuery<E, T> readWhyNotQuery(
 			String queryStateStr, String queryActionStr, String queryQFunctionStr) {
 		StateVarTuple queryState = readQueryState(queryStateStr);
-		E queryAction = readQueryAction(queryActionStr);
+		IAction queryAction = readQueryAction(queryActionStr);
 		IQFunction<E, T> queryQFunction = readQueryQFunction(queryQFunctionStr);
 		return new WhyNotQuery<>(queryState, queryAction, queryQFunction);
 	}
 
+	/**
+	 * 
+	 * @param queryStateStr
+	 *            : Format: varName1=value1,varName2=value2,...,varNameN=valueN
+	 * @return Query state
+	 */
 	private StateVarTuple readQueryState(String queryStateStr) {
 		StateVarTuple queryState = new StateVarTuple();
 
@@ -52,12 +58,12 @@ public class WhyNotQueryReader {
 		return queryState;
 	}
 
-	private <E extends IAction> E readQueryAction(String queryActionStr) {
-		return null;
+	private IAction readQueryAction(String queryActionStr) {
+		return mXMDP.getActionSpace().getAction(queryActionStr);
 	}
 
 	private <E extends IAction, T extends ITransitionStructure<E>> IQFunction<E, T> readQueryQFunction(
 			String queryQFunctionStr) {
-		return null;
+		return mXMDP.getQSpace().getQFunction(IQFunction.class, queryQFunctionStr);
 	}
 }

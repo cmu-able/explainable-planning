@@ -2,6 +2,7 @@ package models.hmodel;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -96,8 +97,9 @@ public class HModel<E extends IAction> {
 
 	private ProbabilisticEffect combineProbabilisticEffects(Set<ProbabilisticEffect> probEffects)
 			throws IncompatibleEffectClassException {
-		ProbabilisticEffect probEffect = probEffects.iterator().next();
-		probEffects.iterator().remove();
+		Iterator<ProbabilisticEffect> iter = probEffects.iterator();
+		ProbabilisticEffect probEffect = iter.next();
+		iter.remove();
 		return combineProbabilisticEffectsHelper(probEffect, probEffects);
 	}
 
@@ -107,8 +109,9 @@ public class HModel<E extends IAction> {
 			return probEffect;
 		}
 
-		ProbabilisticEffect otherProbEffect = otherProbEffects.iterator().next();
-		otherProbEffects.iterator().remove();
+		Iterator<ProbabilisticEffect> iter = otherProbEffects.iterator();
+		ProbabilisticEffect otherProbEffect = iter.next();
+		iter.remove();
 
 		EffectClass combinedEffectClass = new EffectClass();
 		combinedEffectClass.addAll(probEffect.getEffectClass());

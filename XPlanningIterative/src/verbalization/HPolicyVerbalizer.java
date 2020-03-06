@@ -26,6 +26,8 @@ public class HPolicyVerbalizer {
 	public String verbalize(WhyNotQuery<?, ?> whyNotQuery, HPolicyExplanation hPolicyExplanation) throws IOException {
 		String whyNotDecisionVP = verbalizeWhyNotDecisionVP(whyNotQuery);
 		String queryQAConsequenceSummary = summarizeQueriedQAConsequence(hPolicyExplanation, whyNotQuery);
+		File queryPolicyJsonFile = mVerbalizer.writePolicyToFile(hPolicyExplanation.getQueryPolicyInfo().getPolicy(),
+				"queryPolicy.json");
 		File hPolicyJsonFile = mVerbalizer.writePolicyToFile(hPolicyExplanation.getHPolicyInfo().getPolicy(),
 				"hPolicy.json");
 

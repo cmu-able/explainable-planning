@@ -169,6 +169,10 @@ public class HModel<E extends IAction> {
 
 	}
 
+	public XMDP getOriginalXMDP() {
+		return mOriginalXMDP;
+	}
+
 	public StateVarTuple getQueryState() {
 		return mQueryState;
 	}

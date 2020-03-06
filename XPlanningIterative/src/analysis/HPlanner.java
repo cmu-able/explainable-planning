@@ -11,6 +11,7 @@ import language.exceptions.XMDPException;
 import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
+import language.policy.Decision;
 import language.policy.Policy;
 import models.hmodel.HModel;
 import models.hmodel.HPolicy;
@@ -41,7 +42,7 @@ public class HPlanner {
 			ResultParsingException {
 		StateVarTuple queryState = hModel.getQueryState();
 		IAction queryAction = hModel.getQueryAction();
-		HPolicy totalHPolicy = new HPolicy(queryPolicy, queryState, queryAction);
+		HPolicy hPolicy = new HPolicy(queryPolicy, queryState, queryAction);
 
 		for (StateVarTuple newIniState : hModel.getAllDestStatesOfQuery()) {
 
@@ -69,10 +70,14 @@ public class HPlanner {
 			prismConnectorForHModel.terminate();
 
 			// Map each new initial state to partial HPolicy
-			totalHPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
+			hPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
 		}
 
-		return totalHPolicy;
+		// Remove all "residual" decisions,
+		// whose states are not reachable from the original initial state, following HPolicy
+		removeResidualQueryPolicy(hModel.getOriginalXMDP(), queryPolicy, hPolicy);
+
+		return hPolicy;
 	}
 
 	private PolicyInfo computePartialHPolicyInfo(PrismConnector prismConnectorForHModel,
@@ -101,6 +106,31 @@ public class HPlanner {
 		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 		return altExplorer.computeHardConstraintSatisfyingAlternative(queryXMDP, queryQFunction,
 				queryQAValueConstraint);
+	}
+
+	private void removeResidualQueryPolicy(XMDP originalXMDP, Policy queryPolicy, HPolicy hPolicyWithResidual)
+			throws PrismException, ResultParsingException, XMDPException {
+		Policy totalHPolicyWithResidual = hPolicyWithResidual.getTotalHPolicy();
+
+		// Create PrismConnector for the original XMDP -- without a query state
+		PrismConnector prismConnector = new PrismConnector(originalXMDP, mCostCriterion, mPrismConnSettings);
+
+		// Check each state that is in the query policy,
+		// whether it is reachable from the original initial state, following HPolicy
+		for (Decision originalDecision : queryPolicy) {
+			StateVarTuple originalState = originalDecision.getState();
+
+			double reachProb = prismConnector.computeReachabilityProbability(totalHPolicyWithResidual, originalState);
+
+			// Any state that is not reachable from the original initial state, following HPolicy,
+			// is to be removed from HPolicy
+			if (reachProb == 0) {
+				hPolicyWithResidual.removeResidualDecision(originalDecision);
+			}
+		}
+
+		// Close down PRISM
+		prismConnector.terminate();
 	}
 
 }

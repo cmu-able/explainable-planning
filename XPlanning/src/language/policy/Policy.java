@@ -46,15 +46,16 @@ public class Policy implements Iterable<Decision> {
 		mPolicy.put(state, action);
 	}
 
+	public void remove(Decision decision) {
+		mDecisions.remove(decision);
+		mPolicy.remove(decision.getState(), decision.getAction());
+	}
+
 	public IAction getAction(StateVarTuple state) throws StateNotFoundException {
 		if (!mPolicy.containsKey(state)) {
 			throw new StateNotFoundException(state);
 		}
 		return mPolicy.get(state);
-	}
-
-	public boolean containsState(StateVarTuple state) {
-		return mPolicy.containsKey(state);
 	}
 
 	public boolean containsAction(IAction action) {

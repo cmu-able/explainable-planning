@@ -43,6 +43,10 @@ public class HPolicy {
 		}
 	}
 
+	public void removeResidualDecision(Decision residualDecision) {
+		mTotalHPolicy.remove(residualDecision);
+	}
+
 	public Policy getTotalHPolicy() {
 		// Total HPolicy is the query policy overridden by:
 		// - (s_query, a_query) decision

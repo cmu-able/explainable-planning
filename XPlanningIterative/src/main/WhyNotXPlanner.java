@@ -108,7 +108,7 @@ public class WhyNotXPlanner {
 		explanationWriter.addPolicyQAValues(queryPolicyInfo.getQuantitativePolicy());
 		explanationWriter.addPolicyQAValues(hPolicyInfo.getQuantitativePolicy());
 		explanationWriter.addCustomizedExplanationInfo("Why-Not Explanation", whyNotVerbalization);
-		explanationWriter.addCustomizedExplanationInfo("HPolicy Tag", hPolicyExplanation.getHPolicyTag());
+		explanationWriter.addCustomizedExplanationInfo("HPolicy Tag", hPolicyExplanation.getHPolicyTag().toString());
 		explanationWriter.exportExplanationToFile(explanationJsonFilename);
 
 		return hPolicyExplanation;

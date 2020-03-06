@@ -42,7 +42,7 @@ public class ExplanationWriter {
 
 	public void addPolicyEntry(String policyKey, Policy policy) {
 		File policyJsonFile = mVerbalizer.getPolicyJsonFile(policy);
-		mExplanationJsonObj.put(policyKey, policyJsonFile);
+		mExplanationJsonObj.put(policyKey, policyJsonFile.getAbsolutePath());
 	}
 
 	public void addPolicyQAValues(QuantitativePolicy quantPolicy) {

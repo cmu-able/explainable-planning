@@ -91,7 +91,7 @@ public class HModelGenerator {
 		srcVars.addStateVarTupleWithFilter(queryState, srcStateVarClass);
 
 		// Relevant destination state variables in resulting state of query
-		StateVarClass destStateVarClass = transStructure.getSrcStateVarClass();
+		StateVarClass destStateVarClass = transStructure.getDestStateVarClass();
 		StateVarTuple destVars = new StateVarTuple();
 		destVars.addStateVarTupleWithFilter(queryDestState, destStateVarClass);
 

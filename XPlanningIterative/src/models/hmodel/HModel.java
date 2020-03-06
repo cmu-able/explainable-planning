@@ -10,6 +10,8 @@ import java.util.Set;
 import language.domain.metrics.IQFunction;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
+import language.domain.models.IStateVarValue;
+import language.domain.models.StateVar;
 import language.exceptions.IncompatibleEffectClassException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
@@ -143,8 +145,19 @@ public class HModel<E extends IAction> {
 	private void createQueryXMDPs() {
 		for (Entry<Effect, Double> e : mProbEffectOfQuery) {
 			Effect effect = e.getKey();
+
+			// New initial state
 			StateVarTuple newIniState = new StateVarTuple();
+
+			// Add effect of the query (s_query, a_query)
 			newIniState.addStateVarTuple(effect);
+
+			// Set values of the variables unaffected by the query, in the new initial state
+			for (StateVar<IStateVarValue> stateVar : mQueryState) {
+				if (!effect.contains(stateVar.getDefinition())) {
+					newIniState.addStateVar(stateVar);
+				}
+			}
 
 			// Create HModel identical to the original XMDP model, but with the resulting state of the why-not query as initial state
 			XMDP queryXMDP = new XMDP(mOriginalXMDP.getStateSpace(), mOriginalXMDP.getActionSpace(), newIniState,

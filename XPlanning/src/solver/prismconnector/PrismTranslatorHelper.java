@@ -151,7 +151,7 @@ public class PrismTranslatorHelper {
 			String queryStateExpr = PrismTranslatorUtils.buildExpression(queryState, mEncodings);
 			queryStateFormula = "formula query_state = " + queryStateExpr + ";";
 		} else {
-			queryStateFormula = "formual query_state = false;";
+			queryStateFormula = "formula query_state = false;";
 		}
 
 		// Add query state formula

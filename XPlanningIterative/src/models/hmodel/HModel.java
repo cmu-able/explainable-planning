@@ -59,13 +59,28 @@ public class HModel<E extends IAction> {
 	private ProbabilisticEffect computeProbabilisticEffect(StateVarTuple queryState, E queryAction)
 			throws XMDPException {
 		ActionDefinition<E> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(queryAction);
-		FactoredPSO<E> actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(actionDef);
+
+		// Use <? super E> because we may need to use parent composite actionPSO for the query action
+		FactoredPSO<? super E> actionPSO;
+
+		// Check if action definition of the query action has its own actionPSO
+		if (mOriginalXMDP.getTransitionFunction().hasActionPSO(actionDef)) {
+			// The query action has its own actionPSO
+			actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(actionDef);
+		} else {
+			// The query action is a constituent action that doesn't have its own actionPSO
+			// (e.g., Fly and Tick actions in DART domain)
+			// Use its parent composite actionPSO
+			ActionDefinition<IAction> parentCompositeActionDef = actionDef.getParentCompositeActionDefinition();
+			actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(parentCompositeActionDef);
+		}
+
 		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
 
 		Set<ProbabilisticEffect> probEffects = new HashSet<>();
 
 		for (EffectClass effectClass : effectClasses) {
-			IActionDescription<E> actionDesc = actionPSO.getActionDescription(effectClass);
+			IActionDescription<? super E> actionDesc = actionPSO.getActionDescription(effectClass);
 			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
 
 			Discriminant discriminant = new Discriminant(discrClass);

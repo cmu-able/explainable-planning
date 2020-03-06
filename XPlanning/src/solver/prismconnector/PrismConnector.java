@@ -484,6 +484,15 @@ public class PrismConnector {
 		return eventBasedQAValue;
 	}
 
+	public double computeReachabilityProbability(Policy policy, StateVarTuple queryState)
+			throws XMDPException, ResultParsingException, PrismException {
+		XDTMC xdtmc = new XDTMC(mXMDP, policy);
+		PrismDTMCTranslator dtmcTranslator = new PrismDTMCTranslator(xdtmc);
+		String dtmc = dtmcTranslator.getDTMCTranslation(false, false);
+		String queryProperty = dtmcTranslator.getReachabilityQueryPropertyTranslation(queryState);
+		return mPrismAPI.queryPropertyFromDTMC(dtmc, queryProperty);
+	}
+
 	/**
 	 * Closing down PRISM. Only invoke this method when finishing using this {@link PrismConnector}.
 	 */

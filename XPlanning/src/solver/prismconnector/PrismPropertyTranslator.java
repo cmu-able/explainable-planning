@@ -165,6 +165,23 @@ public class PrismPropertyTranslator {
 		return buildRewardQueryProperty(null, DTMC_REWARD_QUERY, goal, costCriterion);
 	}
 
+	/**
+	 * 
+	 * @param queryState
+	 *            : State for which to compute reachability probability
+	 * @return P=? [ F {query state predicate} ]
+	 * @throws VarNotFoundException
+	 */
+	public String buildDTMCReachabilityQueryProperty(StateVarTuple queryState) throws VarNotFoundException {
+		String queryStateExpr = PrismTranslatorUtils.buildExpression(queryState, mEncodings);
+
+		StringBuilder builder = new StringBuilder();
+		builder.append("P=? [ F ");
+		builder.append(queryStateExpr);
+		builder.append(" ]");
+		return builder.toString();
+	}
+
 	private String buildRewardQueryProperty(String rewardName, String query, StateVarTuple goal,
 			CostCriterion costCriterion) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();

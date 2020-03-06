@@ -233,6 +233,17 @@ public class PrismDTMCTranslator {
 	}
 
 	/**
+	 * 
+	 * @param queryState
+	 *            : Query state
+	 * @return Reachability probability query property of the query state
+	 * @throws VarNotFoundException
+	 */
+	public String getReachabilityQueryPropertyTranslation(StateVarTuple queryState) throws VarNotFoundException {
+		return mPropertyTranslator.buildDTMCReachabilityQueryProperty(queryState);
+	}
+
+	/**
 	 * Build partial commands of a module -- for DTMC.
 	 * 
 	 * @param actionDescription

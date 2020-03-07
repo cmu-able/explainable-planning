@@ -63,25 +63,56 @@ public class HModel<E extends IAction> {
 			throws XMDPException {
 		ActionDefinition<E> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(queryAction);
 
-		// Use <? super E> because we may need to use parent composite actionPSO for the query action
-		FactoredPSO<? super E> actionPSO;
+		// Use <? super E> because if the query action is a constituent action that doesn't have its own
+		// actionPSO, we need to use its parent composite actionPSO
+		FactoredPSO<? super E> actionPSO = null;
 
-		// Check if action definition of the query action has its own actionPSO
+		// If the query action is a constituent action, we must use its parent composite actionPSO
+		// to get the full effect of the query action
+		FactoredPSO<? super E> parentCompositeActionPSO = null;
+
+		// Check if the query action has its own actionPSO
 		if (mOriginalXMDP.getTransitionFunction().hasActionPSO(actionDef)) {
 			// The query action has its own actionPSO
 			actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(actionDef);
-		} else {
-			// The query action is a constituent action that doesn't have its own actionPSO
-			// (e.g., Fly and Tick actions in DART domain)
-			// Use its parent composite actionPSO
-			ActionDefinition<IAction> parentCompositeActionDef = actionDef.getParentCompositeActionDefinition();
-			actionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(parentCompositeActionDef);
 		}
 
-		Set<EffectClass> effectClasses = actionPSO.getIndependentEffectClasses();
+		// The query action is a constituent action that doesn't have its own actionPSO
+		// (e.g., Fly and Tick actions in DART domain)
+		// Use its parent composite actionPSO
 
+		// Check if the query action has parent composite actionPSO
+		ActionDefinition<IAction> parentCompositeActionDef = actionDef.getParentCompositeActionDefinition();
+		if (parentCompositeActionDef != null) {
+			// The query action has parent composite actionPSO
+			parentCompositeActionPSO = mOriginalXMDP.getTransitionFunction().getActionPSO(parentCompositeActionDef);
+		}
+
+		// All probabilistic effects of the query action, including both its direct effects, 
+		// and its parent effects
 		Set<ProbabilisticEffect> probEffects = new HashSet<>();
 
+		if (actionPSO != null) {
+			// The query action has its own actionPSO
+			// Add the direct probabilistic effects of the query action
+			Set<EffectClass> directEffectClasses = actionPSO.getIndependentEffectClasses();
+			addProbabilisticEffects(directEffectClasses, actionPSO, queryState, queryAction, probEffects);
+		}
+
+		if (parentCompositeActionPSO != null) {
+			// The query action has parent composite actionPSO
+			// Add the parent probabilistic effects of the query action
+			Set<EffectClass> parentEffectClasses = parentCompositeActionPSO.getIndependentEffectClasses();
+			addProbabilisticEffects(parentEffectClasses, parentCompositeActionPSO, queryState, queryAction,
+					probEffects);
+		}
+
+		// Combined probabilistic effect of the (s,q) query
+		return combineProbabilisticEffects(probEffects);
+	}
+
+	private void addProbabilisticEffects(Set<EffectClass> effectClasses, FactoredPSO<? super E> actionPSO,
+			StateVarTuple queryState, E queryAction, Set<ProbabilisticEffect> probEffectsOutput) throws XMDPException {
 		for (EffectClass effectClass : effectClasses) {
 			IActionDescription<? super E> actionDesc = actionPSO.getActionDescription(effectClass);
 			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
@@ -90,11 +121,8 @@ public class HModel<E extends IAction> {
 			discriminant.addAllRelevant(queryState);
 			ProbabilisticEffect probEffect = actionDesc.getProbabilisticEffect(discriminant, queryAction);
 
-			probEffects.add(probEffect);
+			probEffectsOutput.add(probEffect);
 		}
-
-		// Combined probabilistic effect of the (s,q) query
-		return combineProbabilisticEffects(probEffects);
 	}
 
 	private ProbabilisticEffect combineProbabilisticEffects(Set<ProbabilisticEffect> probEffects)

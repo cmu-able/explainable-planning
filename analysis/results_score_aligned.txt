@@ -199,7 +199,7 @@ boundary (singular) fit: see ?isSingular
            R2m       R2c
 [1,] 0.0296406 0.6157625
 > 
-> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Check if adding random slope for each question (but not each participant) improves the model fit
 > # Not conclusive -- model failed to converge
 > anova(m_score, m_score_q, refit=FALSE)
 Data: data

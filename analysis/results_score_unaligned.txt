@@ -151,7 +151,7 @@ Model failed to converge with max|grad| = 0.00293156 (tol = 0.002, component 1)
             R2m      R2c
 [1,] 0.08541751 0.286396
 > 
-> # Check if adding random slope for each particiant (but not each question) improves the model fit
+> # Check if adding random slope for each partticiant (but not each question) improves the model fit
 > # Not conclusive
 > anova(m_score, m_score_p, refit=FALSE)
 Error in anova.merMod(m_score, m_score_p, refit = FALSE) : 
@@ -197,7 +197,7 @@ gropxprmntl -0.763
           R2m       R2c
 [1,] 0.182468 0.4544162
 > 
-> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Check if adding random slope for each question (but not each participant) improves the model fit
 > # Significant: p=0.0067
 > anova(m_score, m_score_q, refit=FALSE)
 Data: data

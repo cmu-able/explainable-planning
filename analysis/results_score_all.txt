@@ -203,7 +203,7 @@ gropxprmntl -0.706
            R2m       R2c
 [1,] 0.0871528 0.3935775
 > 
-> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Check if adding random slope for each question (but not each participant) improves the model fit
 > # Somewhat significant: p=0.010
 > anova(m_score, m_score_q, refit=FALSE)
 Data: data

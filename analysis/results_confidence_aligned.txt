@@ -1,0 +1,168 @@
+> ### CONFIDENCE LEVEL ###
+> table(data$confidence)
+
+ 0  1  2  3  4 
+ 1 15 29 54 59 
+> 
+> # Random intercepts for each participant and each question
+> m_confidence = lmer(confidence ~ 
++                  group 
++                + (1|participant) 
++                + (1|question.ref)
++                , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_confidence)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 422.3
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.84939 -0.54269  0.09856  0.57967  1.86126 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.4782   0.6915  
+ question.ref (Intercept) 0.0000   0.0000  
+ Residual                 0.4761   0.6900  
+Number of obs: 158, groups:  participant, 93; question.ref, 25
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         2.8637     0.1318 95.3221  21.735   <2e-16 ***
+groupexperimental   0.3346     0.1852 95.1604   1.807    0.074 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.711
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_confidence)
+            R2m       R2c
+[1,] 0.02867272 0.5154013
+Warning message:
+'r.squaredGLMM' now calculates a revised statistic. See the help page. 
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> # anova(m_confidence)
+> 
+> # Standard error
+> se_m_confidence <- sqrt(diag(vcov(m_confidence)))
+> 
+> # Table of estimates with 95% CI
+> tab_ci_m_confidence <- cbind(Est = fixef(m_confidence), LL = fixef(m_confidence) - 1.96 * se_m_confidence, UL = fixef(m_confidence) + 1.96 * se_m_confidence)
+> # 95% CI [-0.028, 0.698]
+> tab_ci_m_confidence
+                        Est          LL        UL
+(Intercept)       2.8636895  2.60545403 3.1219250
+groupexperimental 0.3346323 -0.02840088 0.6976655
+> 
+> # Random slopes for each participant and each question -- in addition to random intercepts
+> m_confidence_pq = lmer(confidence ~ 
++                     group 
++                   + (1+group|participant) 
++                   + (1+group|question.ref)
++                   , data = data)
+Error: number of observations (=158) <= number of random effects (=186) for term (1 + group | participant); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+> 
+> summary(m_confidence_pq)
+Error in summary(m_confidence_pq) : object 'm_confidence_pq' not found
+> r.squaredGLMM(m_confidence_pq)
+Error in r.squaredGLMM(m_confidence_pq) : 
+  object 'm_confidence_pq' not found
+> 
+> # Check if adding random slopes for each participant and each question improves the model fit
+> # No model
+> anova(m_confidence, m_confidence_pq, refit=FALSE)
+Error in anova.lmerModLmerTest(m_confidence, m_confidence_pq, refit = FALSE) : 
+  object 'm_confidence_pq' not found
+> 
+> # Random slope for each participant, but not for each question -- in addition to random intercepts
+> m_confidence_p = lmer(confidence ~ 
++                    group 
++                  + (1+group|participant) 
++                  + (1|question.ref)
++                  , data = data)
+Error: number of observations (=158) <= number of random effects (=186) for term (1 + group | participant); the random-effects parameters and the residual variance (or scale parameter) are probably unidentifiable
+> 
+> summary(m_confidence_p)
+Error in summary(m_confidence_p) : object 'm_confidence_p' not found
+> r.squaredGLMM(m_confidence_p)
+Error in r.squaredGLMM(m_confidence_p) : 
+  object 'm_confidence_p' not found
+> 
+> # Check if adding random slope for each participant (but not each question) improves the model fit
+> # No model
+> anova(m_confidence, m_confidence_p, refit=FALSE)
+Error in anova.lmerModLmerTest(m_confidence, m_confidence_p, refit = FALSE) : 
+  object 'm_confidence_p' not found
+> 
+> # Random slope for each question, but not for each participant -- in addition to random intercepts
+> m_confidence_q = lmer(confidence ~ 
++                    group 
++                  + (1|participant) 
++                  + (1+group|question.ref)
++                  , data = data)
+Warning message:
+In checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv,  :
+  Model failed to converge with max|grad| = 0.0151025 (tol = 0.002, component 1)
+> 
+> summary(m_confidence_q)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 422.3
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-2.84965 -0.54274  0.09854  0.57957  1.86144 
+
+Random effects:
+ Groups       Name              Variance  Std.Dev.  Corr 
+ participant  (Intercept)       4.783e-01 0.6916066      
+ question.ref (Intercept)       5.889e-07 0.0007674      
+              groupexperimental 3.417e-07 0.0005845 -0.91
+ Residual                       4.760e-01 0.6899246      
+Number of obs: 158, groups:  participant, 93; question.ref, 25
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         2.8637     0.1318 95.2858  21.734   <2e-16 ***
+groupexperimental   0.3346     0.1852 95.1400   1.807    0.074 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.711
+convergence code: 0
+Model failed to converge with max|grad| = 0.0151025 (tol = 0.002, component 1)
+
+> r.squaredGLMM(m_confidence_q)
+            R2m       R2c
+[1,] 0.02867148 0.5155185
+> 
+> # Check if adding random slope for each question (but not each participant) improves the model fit
+> # Model failed to converge
+> anova(m_confidence, m_confidence_q, refit=FALSE)
+Data: data
+Models:
+m_confidence: confidence ~ group + (1 | participant) + (1 | question.ref)
+m_confidence_q: confidence ~ group + (1 | participant) + (1 + group | question.ref)
+               Df    AIC    BIC  logLik deviance Chisq Chi Df Pr(>Chisq)
+m_confidence    5 432.28 447.60 -211.14   422.28                        
+m_confidence_q  7 436.28 457.72 -211.14   422.28     0      2          1
+> 
+> # Comparing models based on BIC
+> # The best model according to BIC is m_score
+> BIC(m_confidence, m_confidence_pq, m_confidence_p, m_confidence_q)
+Error in lapply(list(object, ...), ll) : 
+  object 'm_confidence_pq' not found

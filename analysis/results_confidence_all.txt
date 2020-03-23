@@ -220,7 +220,7 @@ boundary (singular) fit: see ?isSingular
             R2m       R2c
 [1,] 0.04376289 0.5892055
 > 
-> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Check if adding random slope for each question (but not each participant) improves the model fit
 > # Not significant: p=0.9258
 > anova(m_confidence, m_confidence_q, refit=FALSE)
 Data: data

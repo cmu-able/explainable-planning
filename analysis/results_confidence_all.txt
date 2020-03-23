@@ -1,0 +1,242 @@
+> ### CONFIDENCE LEVEL ###
+> table(data$confidence)
+
+  0   1   2   3   4 
+  4  23  48 106 116 
+> 
+> # Random intercepts for each participant and each question
+> m_confidence = lmer(confidence ~ 
++                  group 
++                + (1|participant) 
++                + (1|question.ref)
++                , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_confidence)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 742.5
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.0387 -0.4860  0.2429  0.4659  2.4228 
+
+Random effects:
+ Groups       Name        Variance Std.Dev.
+ participant  (Intercept) 0.5347   0.7312  
+ question.ref (Intercept) 0.0000   0.0000  
+ Residual                 0.4175   0.6461  
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         2.8231     0.1173 96.9999  24.074   <2e-16 ***
+groupexperimental   0.4169     0.1650 96.9999   2.526   0.0131 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.711
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_confidence)
+            R2m       R2c
+[1,] 0.04377183 0.5807273
+> 
+> # Doesn't make sense to use ANOVA here since we only have 1 fixed effect
+> # Instead, report marignal R^2 (R2m) and conditional R^2 (R2c)
+> # anova(m_confidence)
+> 
+> # Standard error
+> se_m_confidence <- sqrt(diag(vcov(m_confidence)))
+> 
+> # Table of estimates with 95% CI
+> tab_ci_m_confidence <- cbind(Est = fixef(m_confidence), LL = fixef(m_confidence) - 1.96 * se_m_confidence, UL = fixef(m_confidence) + 1.96 * se_m_confidence)
+> # 95% CI [0.09, 0.74]
+> tab_ci_m_confidence
+                        Est         LL        UL
+(Intercept)       2.8231293 2.59327922 3.0529793
+groupexperimental 0.4168707 0.09344309 0.7402984
+> 
+> # Random slopes for each participant and each question -- in addition to random intercepts
+> m_confidence_pq = lmer(confidence ~ 
++                     group 
++                   + (1+group|participant) 
++                   + (1+group|question.ref)
++                   , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_confidence_pq)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 + group | participant) + (1 + group |      question.ref)
+   Data: data
+
+REML criterion at convergence: 737.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1115 -0.4929  0.1870  0.5415  2.3540 
+
+Random effects:
+ Groups       Name              Variance  Std.Dev.  Corr 
+ participant  (Intercept)       3.289e-01 0.5735108      
+              groupexperimental 7.666e-01 0.8755716 -0.36
+ question.ref (Intercept)       0.000e+00 0.0000000      
+              groupexperimental 1.409e-08 0.0001187  NaN 
+ Residual                       4.175e-01 0.6461417      
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error       df t value Pr(>|t|)    
+(Intercept)        2.82313    0.09774 47.99788  28.885   <2e-16 ***
+groupexperimental  0.41687    0.16451 89.76582   2.534    0.013 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.594
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_confidence_pq)
+            R2m       R2c
+[1,] 0.04377253 0.5807299
+> 
+> # Check if adding random slopes for each participant and each question improves the model fit
+> # Not significant: p=0.3231
+> anova(m_confidence, m_confidence_pq, refit=FALSE)
+Data: data
+Models:
+m_confidence: confidence ~ group + (1 | participant) + (1 | question.ref)
+m_confidence_pq: confidence ~ group + (1 + group | participant) + (1 + group | 
+m_confidence_pq:     question.ref)
+                Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
+m_confidence     5 752.51 770.98 -371.25   742.51                         
+m_confidence_pq  9 755.84 789.08 -368.92   737.84 4.6677      4     0.3231
+> 
+> # Random slope for each participant, but not for each question -- in addition to random intercepts
+> m_confidence_p = lmer(confidence ~ 
++                    group 
++                  + (1+group|participant) 
++                  + (1|question.ref)
++                  , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_confidence_p)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 + group | participant) + (1 | question.ref)
+   Data: data
+
+REML criterion at convergence: 737.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-3.1115 -0.4929  0.1870  0.5416  2.3540 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr
+ participant  (Intercept)       0.3289   0.5735       
+              groupexperimental 0.3751   0.6124   0.05
+ question.ref (Intercept)       0.0000   0.0000       
+ Residual                       0.4175   0.6462       
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error       df t value Pr(>|t|)    
+(Intercept)        2.82313    0.09773 48.00187  28.886   <2e-16 ***
+groupexperimental  0.41687    0.16450 89.77678   2.534    0.013 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.594
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_confidence_p)
+            R2m       R2c
+[1,] 0.04377452 0.5806943
+> 
+> # Check if adding random slope for each participant (but not each question) improves the model fit
+> # Not very significant: p=0.09692
+> anova(m_confidence, m_confidence_p, refit=FALSE)
+Data: data
+Models:
+m_confidence: confidence ~ group + (1 | participant) + (1 | question.ref)
+m_confidence_p: confidence ~ group + (1 + group | participant) + (1 | question.ref)
+               Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)  
+m_confidence    5 752.51 770.98 -371.25   742.51                           
+m_confidence_p  7 751.84 777.70 -368.92   737.84 4.6677      2    0.09692 .
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+> 
+> # Random slope for each question, but not for each participant -- in addition to random intercepts
+> m_confidence_q = lmer(confidence ~ 
++                    group 
++                  + (1|participant) 
++                  + (1+group|question.ref)
++                  , data = data)
+boundary (singular) fit: see ?isSingular
+> 
+> summary(m_confidence_q)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: confidence ~ group + (1 | participant) + (1 + group | question.ref)
+   Data: data
+
+REML criterion at convergence: 742.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.9714 -0.4629  0.2281  0.4583  2.3811 
+
+Random effects:
+ Groups       Name              Variance Std.Dev. Corr 
+ participant  (Intercept)       0.53656  0.7325        
+ question.ref (Intercept)       0.01225  0.1107        
+              groupexperimental 0.02610  0.1616   -1.00
+ Residual                       0.40966  0.6400        
+Number of obs: 297, groups:  participant, 99; question.ref, 48
+
+Fixed effects:
+                  Estimate Std. Error      df t value Pr(>|t|)    
+(Intercept)         2.8230     0.1183 89.4748  23.864   <2e-16 ***
+groupexperimental   0.4171     0.1666 89.2369   2.504   0.0141 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+gropxprmntl -0.716
+convergence code: 0
+boundary (singular) fit: see ?isSingular
+
+> r.squaredGLMM(m_confidence_q)
+            R2m       R2c
+[1,] 0.04376289 0.5892055
+> 
+> # Check if adding random slope for each question (but not each paricipant) improves the model fit
+> # Not significant: p=0.9258
+> anova(m_confidence, m_confidence_q, refit=FALSE)
+Data: data
+Models:
+m_confidence: confidence ~ group + (1 | participant) + (1 | question.ref)
+m_confidence_q: confidence ~ group + (1 | participant) + (1 + group | question.ref)
+               Df    AIC    BIC  logLik deviance  Chisq Chi Df Pr(>Chisq)
+m_confidence    5 752.51 770.98 -371.25   742.51                         
+m_confidence_q  7 756.35 782.21 -371.18   742.35 0.1542      2     0.9258
+> 
+> # Comparing models based on BIC
+> # The best model according to BIC is m_score
+> BIC(m_confidence, m_confidence_pq, m_confidence_p, m_confidence_q)
+                df      BIC
+m_confidence     5 770.9773
+m_confidence_pq  9 789.0844
+m_confidence_p   7 777.6970
+m_confidence_q   7 782.2105
+> 

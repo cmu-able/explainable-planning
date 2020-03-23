@@ -18,16 +18,12 @@ From model:\
 +                    , data = data)\
 > \
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 p = Prob(correct)\
+p = Prob(correct)\
 x1 = 0 for control group; 1 for treatment group\
 Logistic regression: log (p / (1 - p)) = B0 + B1*x1\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 ## Preference-Aligned Case ##\
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 \
+\
+## Preference-Aligned Case ##\
+\
 Fixed effects:\
                   Estimate Std. Error z value Pr(>|z|)  \
 (Intercept)         1.2416     0.4907    2.53   0.0114 *\
@@ -56,8 +52,7 @@ Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1
 \
 ##\
 \
-\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
-\cf0 B0 = -0.4849, B1 = 1.8072\
+B0 = -0.4849, B1 = 1.8072\
 \
 # Control Group\
 p_control = 1 / (1 + e^-B0) = 0.3811\
@@ -74,7 +69,7 @@ groupexperimental   1.3352     0.3168   4.215  2.5e-05 ***\
 ---\
 Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
 \
-###\
+##\
 \
 B0 = 0.2633, B1 = 1.3352\
 \

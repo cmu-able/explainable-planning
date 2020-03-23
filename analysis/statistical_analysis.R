@@ -6,11 +6,13 @@ library(stargazer)
 
 # setwd("~/Downloads")
 setwd("~/Projects/explainable-planning/analysis")
-data = read.csv("data_3qs.csv")
-#data = read.csv("data_3qs_aligned.csv")
-#data = read.csv("data_3qs_unaligned.csv")
+data_all = read.csv("data_3qs.csv")
 data_aligned = read.csv("data_3qs_aligned.csv")
 data_unaligned = read.csv("data_3qs_unaligned.csv")
+
+data = data_all
+# data = data_aligned
+# data = data_unaligned
 names(data)
 
 str(data)
@@ -213,7 +215,7 @@ m_score_q = lmer(score ~
 summary(m_score_q)
 r.squaredGLMM(m_score_q)
 
-# Check if adding random slope for each question (but not each paricipant) improves the model fit
+# Check if adding random slope for each question (but not each participant) improves the model fit
 # Somewhat significant: p=0.010
 anova(m_score, m_score_q, refit=FALSE)
 
@@ -303,7 +305,7 @@ m_confidence_q = lmer(confidence ~
 summary(m_confidence_q)
 r.squaredGLMM(m_confidence_q)
 
-# Check if adding random slope for each question (but not each paricipant) improves the model fit
+# Check if adding random slope for each question (but not each participant) improves the model fit
 # Not significant: p=0.9258
 anova(m_confidence, m_confidence_q, refit=FALSE)
 

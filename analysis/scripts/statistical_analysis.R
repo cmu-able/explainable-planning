@@ -5,7 +5,7 @@ library(MuMIn) # R squared
 library(stargazer)
 
 # setwd("~/Downloads")
-setwd("~/Projects/explainable-planning/analysis")
+setwd("~/Projects/explainable-planning/analysis/data")
 data_all = read.csv("data_3qs.csv")
 data_aligned = read.csv("data_3qs_aligned.csv")
 data_unaligned = read.csv("data_3qs_unaligned.csv")
@@ -40,6 +40,7 @@ boxplot(list(control = as.numeric(data[data$group=="control",]$accuracy),
 # Random intercepts for each participant and each question
 m_accuracy = glmer(accuracy ~ 
                      group 
+                   + case
                    + (1|participant) 
                    + (1|question.ref)
                    , family = "binomial"

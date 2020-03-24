@@ -63,7 +63,7 @@ se_m_accuracy <- sqrt(diag(vcov(m_accuracy)))
 # Table of estimates with 95% CI
 tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.96 * se_m_accuracy, UL = fixef(m_accuracy) + 1.96 * se_m_accuracy)
 
-# 95% CI of accuracy: [2.03, 7.12]
+# 95% CI of group: [2.03, 7.12]
 # 95% CI of case: [0.19, 0.70]
 exp(tab_ci_m_accuracy)
 
@@ -117,7 +117,7 @@ summary(m_accuracy_q)
 r.squaredGLMM(m_accuracy_q)
 
 # Check if adding random slope for each question (but not each participant) improves the model fit
-# Significant: p value = 0.004847
+# Significant: p=0.004847
 anova(m_accuracy, m_accuracy_q, refit=FALSE)
 
 # Comparing models based on BIC
@@ -128,24 +128,14 @@ BIC(m_accuracy, m_accuracy_pq, m_accuracy_p, m_accuracy_q)
 ### CONFIDENCE-WEIGHTED SCORE ###
 table(data$score)
 
+## MODEL 1
 # Random intercepts for each participant and each question
 m_score = lmer(score ~ 
                  group 
+               + case
                + (1|participant) 
                + (1|question.ref)
                , data = data)
-
-m_score_aligned = lmer(score ~
-                         group
-                       + (1|participant)
-                       + (1|question.ref)
-                       , data = data_aligned)
-
-m_score_unaligned = lmer(score ~
-                           group
-                         + (1|participant)
-                         + (1|question.ref)
-                         , data = data_unaligned)
 
 summary(m_score)
 r.squaredGLMM(m_score)
@@ -159,18 +149,17 @@ se_m_score <- sqrt(diag(vcov(m_score)))
 
 # Table of estimates with 95% CI
 tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_score, UL = fixef(m_score) + 1.96 * se_m_score)
-# 95% CI [1.04, 2.42]
+
+# 95% CI of group: [1.03, 2.42]
+# 95% CI of case: [-1.81, -0.38]
 tab_ci_m_score
 
-stargazer(m_score, m_score_aligned, m_score_unaligned, type = "latex", title = "Results",
-          column.labels = c("all","aligned","misaligned"),
-          digits = 3,
-          star.cutoffs = c(0.05, 0.01, 0.001),
-          digit.separator = "")
-
+## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts
+# Model failed to converge
 m_score_pq = lmer(score ~ 
                     group 
+                  + case
                   + (1+group|participant) 
                   + (1+group|question.ref)
                   , data = data)
@@ -179,27 +168,31 @@ summary(m_score_pq)
 r.squaredGLMM(m_score_pq)
 
 # Check if adding random slopes for each participant and each question improves the model fit
-# Somewhat significant: p=0.013
+# Not conclusive because model failed to converge
 anova(m_score, m_score_pq, refit=FALSE)
 
+## MODEL 3
 # Random slope for each participant, but not for each question -- in addition to random intercepts
+# Model failed to converge
 m_score_p = lmer(score ~ 
                    group 
+                 + case
                  + (1+group|participant) 
                  + (1|question.ref)
                  , data = data)
 
-# Model failed to converge
 summary(m_score_p)
 r.squaredGLMM(m_score_p)
 
 # Check if adding random slope for each participant (but not each question) improves the model fit
-# Not significant: p=0.33
+# Not conclusive because model failed to converge
 anova(m_score, m_score_p, refit=FALSE)
 
+## MODEL 4
 # Random slope for each question, but not for each participant -- in addition to random intercepts
 m_score_q = lmer(score ~ 
                    group 
+                 + case
                  + (1|participant) 
                  + (1+group|question.ref)
                  , data = data)
@@ -208,7 +201,7 @@ summary(m_score_q)
 r.squaredGLMM(m_score_q)
 
 # Check if adding random slope for each question (but not each participant) improves the model fit
-# Somewhat significant: p=0.010
+# Significant: p=0.004546 
 anova(m_score, m_score_q, refit=FALSE)
 
 # Comparing models based on BIC

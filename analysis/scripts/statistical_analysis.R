@@ -37,6 +37,7 @@ boxplot(list(control = as.numeric(data[data$group=="control",]$accuracy),
 
 ### ACCURACY ###
 
+## MODEL 1
 # Random intercepts for each participant and each question
 m_accuracy = glmer(accuracy ~ 
                      group 
@@ -46,21 +47,7 @@ m_accuracy = glmer(accuracy ~
                    , family = "binomial"
                    , data = data)
 
-m_accuracy_aligned = glmer(accuracy ~ 
-                             group
-                           + (1|participant)
-                           + (1|question.ref)
-                           , family = "binomial"
-                           , data = data_aligned)
-
-m_accuracy_unaligned = glmer(accuracy ~ 
-                               group
-                             + (1|participant)
-                             + (1|question.ref)
-                             , family = "binomial"
-                             , data = data_unaligned)
-
-summary(m_accuracy) # experimental group are exp(1.3352) = 3.8 times more likely to answer correctly!
+summary(m_accuracy) # experimental group are exp(1.3366) = 3.8 times more likely to answer correctly!
 
 # R2m: describes the proportion of variance explained by the fixed factor(s) alone
 # R2c: describes the proportion of variance explained by both the fixed and random factors
@@ -75,18 +62,17 @@ se_m_accuracy <- sqrt(diag(vcov(m_accuracy)))
 
 # Table of estimates with 95% CI
 tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.96 * se_m_accuracy, UL = fixef(m_accuracy) + 1.96 * se_m_accuracy)
-# 95% CI [2.04, 7.07]
+
+# 95% CI of accuracy: [2.03, 7.12]
+# 95% CI of case: [0.19, 0.70]
 exp(tab_ci_m_accuracy)
 
-stargazer(m_accuracy, m_accuracy_aligned, m_accuracy_unaligned, type = "latex", title = "Results",
-          column.labels = c("all","aligned","misaligned"),
-          digits = 3,
-          star.cutoffs = c(0.05, 0.01, 0.001),
-          digit.separator = "")
-
+## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts
+# Model failed to converge
 m_accuracy_pq = glmer(accuracy ~ 
                         group 
+                      + case
                       + (1+group|participant) 
                       + (1+group|question.ref)
                       , family = "binomial"
@@ -96,12 +82,15 @@ summary(m_accuracy_pq)
 r.squaredGLMM(m_accuracy_pq)
 
 # Check if adding random slopes for each participant and each question improves the model fit
-# Not very significant: p=0.07
+# Not conclusive because model failed to converge
 anova(m_accuracy, m_accuracy_pq, refit=FALSE)
 
+## MODEL 3
 # Random slope for each participant, but not for each question -- in addition to random intercepts
+# Model failed to converge
 m_accuracy_p = glmer(accuracy ~ 
                        group 
+                     + case
                      + (1+group|participant) 
                      + (1|question.ref)
                      , family = "binomial"
@@ -111,12 +100,14 @@ summary(m_accuracy_p)
 r.squaredGLMM(m_accuracy_p)
 
 # Check if adding random slope for each participant (but not each question) improves the model fit
-# Not significant: p=0.69
+# Not conclusive because model failed to converge
 anova(m_accuracy, m_accuracy_p, refit=FALSE)
 
+## MODEL 4
 # Random slope for each question, but not for each participant -- in addition to random intercepts
 m_accuracy_q = glmer(accuracy ~ 
                        group 
+                     + case
                      + (1|participant) 
                      + (1+group|question.ref)
                      , family = "binomial"
@@ -126,7 +117,7 @@ summary(m_accuracy_q)
 r.squaredGLMM(m_accuracy_q)
 
 # Check if adding random slope for each question (but not each participant) improves the model fit
-# Somewhat significant: p=0.019
+# Significant: p value = 0.004847
 anova(m_accuracy, m_accuracy_q, refit=FALSE)
 
 # Comparing models based on BIC

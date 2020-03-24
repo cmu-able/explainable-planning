@@ -212,24 +212,14 @@ BIC(m_score, m_score_pq, m_score_p, m_score_q)
 ### CONFIDENCE LEVEL ###
 table(data$confidence)
 
+## MODEL 1
 # Random intercepts for each participant and each question
 m_confidence = lmer(confidence ~ 
-                 group 
-               + (1|participant) 
-               + (1|question.ref)
-               , data = data)
-
-m_confidence_aligned = lmer(confidence ~
-                         group
-                       + (1|participant)
-                       + (1|question.ref)
-                       , data = data_aligned)
-
-m_confidence_unaligned = lmer(confidence ~
-                           group
-                         + (1|participant)
-                         + (1|question.ref)
-                         , data = data_unaligned)
+                      group 
+                    + case 
+                    + (1|participant) 
+                    + (1|question.ref)
+                    , data = data)
 
 summary(m_confidence)
 r.squaredGLMM(m_confidence)
@@ -243,57 +233,60 @@ se_m_confidence <- sqrt(diag(vcov(m_confidence)))
 
 # Table of estimates with 95% CI
 tab_ci_m_confidence <- cbind(Est = fixef(m_confidence), LL = fixef(m_confidence) - 1.96 * se_m_confidence, UL = fixef(m_confidence) + 1.96 * se_m_confidence)
-# 95% CI [0.09, 0.74]
+
+# 95% CI of group: [0.09, 0.74]
+# 95% CI of case: [-0.18, 0.16]
 tab_ci_m_confidence
 
-stargazer(m_confidence, m_confidence_aligned, m_confidence_unaligned, type = "latex", title = "Results",
-          column.labels = c("all","aligned","misaligned"),
-          digits = 3,
-          star.cutoffs = c(0.05, 0.01, 0.001),
-          digit.separator = "")
-
+## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts
 m_confidence_pq = lmer(confidence ~ 
-                    group 
-                  + (1+group|participant) 
-                  + (1+group|question.ref)
-                  , data = data)
+                         group 
+                       + case 
+                       + (1+group|participant) 
+                       + (1+group|question.ref)
+                       , data = data)
 
 summary(m_confidence_pq)
 r.squaredGLMM(m_confidence_pq)
 
 # Check if adding random slopes for each participant and each question improves the model fit
-# Not significant: p=0.3231
+# Not significant: p=0.3197
 anova(m_confidence, m_confidence_pq, refit=FALSE)
 
+## MODEL 3
 # Random slope for each participant, but not for each question -- in addition to random intercepts
+# Model failed to converge
 m_confidence_p = lmer(confidence ~ 
-                   group 
-                 + (1+group|participant) 
-                 + (1|question.ref)
-                 , data = data)
+                        group 
+                      + case 
+                      + (1+group|participant) 
+                      + (1|question.ref)
+                      , data = data)
 
 summary(m_confidence_p)
 r.squaredGLMM(m_confidence_p)
 
 # Check if adding random slope for each participant (but not each question) improves the model fit
-# Not very significant: p=0.09692
+# Not conclusive because model failed to converge
 anova(m_confidence, m_confidence_p, refit=FALSE)
 
+## MODEL 4
 # Random slope for each question, but not for each participant -- in addition to random intercepts
 m_confidence_q = lmer(confidence ~ 
-                   group 
-                 + (1|participant) 
-                 + (1+group|question.ref)
-                 , data = data)
+                        group 
+                      + case 
+                      + (1|participant) 
+                      + (1+group|question.ref)
+                      , data = data)
 
 summary(m_confidence_q)
 r.squaredGLMM(m_confidence_q)
 
 # Check if adding random slope for each question (but not each participant) improves the model fit
-# Not significant: p=0.9258
+# Not significant: p=0.9273
 anova(m_confidence, m_confidence_q, refit=FALSE)
 
 # Comparing models based on BIC
-# The best model according to BIC is m_score
+# The best model according to BIC is m_confidence
 BIC(m_confidence, m_confidence_pq, m_confidence_p, m_confidence_q)

@@ -9,73 +9,61 @@
 \
 From model:\
 \
+> ## MODEL 1\
 > # Random intercepts for each participant and each question\
 > m_accuracy = glmer(accuracy ~ \
 +                      group \
++                    + case\
 +                    + (1|participant) \
 +                    + (1|question.ref)\
 +                    , family = "binomial"\
 +                    , data = data)\
 > \
-\
+\
 p = Prob(correct)\
 x1 = 0 for control group; 1 for treatment group\
-Logistic regression: log (p / (1 - p)) = B0 + B1*x1\
+x2 = 0 for aligned case; 1 for unaligned case\
 \
-## Preference-Aligned Case ##\
+Logistic regression: log (p / (1 - p)) = B0 + B1*x1 + B2*x2\
 \
-Fixed effects:\
-                  Estimate Std. Error z value Pr(>|z|)  \
-(Intercept)         1.2416     0.4907    2.53   0.0114 *\
-groupexperimental   0.9751     0.6057    1.61   0.1074  \
----\
-Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
-\
-##\
-\
-B0 = 1.2416, B1 = 0.9751\
-\
-# Control Group\
-p_control = 1 / (1 + e^-B0) = 0.7758\
-\
-# Treatment Group\
-p_treatment = 1 / (1 + e^-(B0 + B1)) = 0.9017\
-\
-## Preference-Unaligned Case ##\
+## Regression ##\
 \
 Fixed effects:\
                   Estimate Std. Error z value Pr(>|z|)    \
-(Intercept)        -0.4849     0.2926  -1.657   0.0974 .  \
-groupexperimental   1.8072     0.4177   4.326 1.52e-05 ***\
+(Intercept)         0.7464     0.2704   2.760  0.00577 ** \
+groupexperimental   1.3366     0.3196   4.183 2.88e-05 ***\
+caseunaligned      -1.0085     0.3345  -3.015  0.00257 ** \
 ---\
 Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
 \
 ##\
 \
-B0 = -0.4849, B1 = 1.8072\
+B0 = 0.7464, B1 = 1.3366, B2 = -1.0085\
 \
-# Control Group\
-p_control = 1 / (1 + e^-B0) = 0.3811\
+# Effect of explanation (treatment group)\
+odds of being correct = p / (1 - p) = e^(B0 + B1*x1 + B2*x2) = e^B0 * e^(B1*x1) * e^(B2*x2)\
+When x1 changes from 0 to 1, the odds increases by e^B1 = 3.8061 times\
 \
-# Treatment Group\
-p_treatment = 1 / (1 + e^-(B0 + B1)) = 0.7896\
+# Control Group; Aligned Case\
 \
-## Both Cases Combined ##\
+log(odds) = log (p / (1 - p)) = B0 + B1*0 + B2*0 = 0.7464\
+odds of being correct = e^B0 = 2.1094\
+p = 1 / (1 + e^-B0) = 0.6784\
 \
-Fixed effects:\
-                  Estimate Std. Error z value Pr(>|z|)    \
-(Intercept)         0.2633     0.2196   1.199    0.231    \
-groupexperimental   1.3352     0.3168   4.215  2.5e-05 ***\
----\
-Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
+# Treatment Group; Aligned Case\
 \
-##\
+log(odds) = log (p / (1 - p)) = B0 + B1*1 + B2*0 = 2.083\
+odds of being correct = e^(B0 + B1) = 8.0285\
+p = 1 / (1 + e^-(B0 + B1)) = 0.8892\
 \
-B0 = 0.2633, B1 = 1.3352\
+# Control Group; Unaligned Case\
 \
-# Control Group\
-p_control = 1 / (1 + e^-B0) = 0.5654\
+log(odds) = log (p / (1 - p)) = B0 + B1*0 + B2*1 = -0.2621\
+odds of being correct = e^(B0 + B2) = 0.7694\
+p = 1 / (1 + e^-(B0 + B2)) = 0.4348\
 \
-# Treatment Group\
-p_treatment = 1 / (1 + e^-(B0 + B1)) = 0.8318\
-}
+# Treatment Group; Unaligned Case\
+\
+log(odds) = log (p / (1 - p)) = B0 + B1*1 + B2*1 = 1.0745\
+odds of being correct = e^(B0 + B1 + B2) = 2.9285\
+p = 1 / (1 + e^-(B0 + B1 + B2)) = 0.7455}

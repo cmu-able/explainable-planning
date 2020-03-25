@@ -1,0 +1,68 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2511
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 ### CONFIDENCE-WEIGHTED SCORE ###\
+\
+From model:\
+\
+> ## MODEL 1\
+> # Random intercepts for each participant and each question\
+> m_score = lmer(score ~ \
++                  group \
++                + case\
++                + (1|participant) \
++                + (1|question.ref)\
++                , data = data)\
+> \
+\
+y = confidence-weighted score from -4 to +4\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 x1 = 0 for control group; 1 for treatment group\
+x2 = 0 for aligned case; 1 for unaligned case\
+\
+Linear regression: y = B0 + B1*x1 + B2*x2\
+\
+## Regression ##\
+\
+Fixed effects:\
+                  Estimate Std. Error      df t value Pr(>|t|)    \
+(Intercept)         0.8598     0.3211 92.9418   2.677  0.00878 ** \
+groupexperimental   1.7225     0.3557 76.1306   4.842 6.58e-06 ***\
+caseunaligned      -1.0954     0.3656 39.6514  -2.996  0.00470 ** \
+---\
+Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
+\
+##\
+\
+B0 = 0.8598, B1 = 1.7225, B2 = -1.0954\
+\
+# Effect of explanation (treatment group)\
+score = B0 + B1*x1 + B2*x2\
+When x1 changes from 0 to 1, the score increases by 1.7225\
+\
+# Effect of preference misalignment (unaligned case)\
+When x2 changes from 0 to 1, the score decreases by 1.0954\
+\
+# Control Group; Aligned Case\
+\
+y = B0 + B1*0 + B2*0 = 0.8598\
+score = 0.86 on the scale [-4, 4]\
+\
+# Treatment Group; Aligned Case\
+\
+y = B0 + B1*1 + B2*0 = 0.8598 + 1.7225 = 2.5823\
+score = 2.58 on the scale [-4, 4]\
+\
+# Control Group; Unaligned Case\
+\
+y = B0 + B1*0 + B2*1 = 0.8598 + (-1.0954) = -0.2356\
+score = -0.24 on the scale [-4, 4]\
+\
+# Treatment Group; Unaligned Case\
+\
+y = B0 + B1*1 + B2*1 = 0.8598 + 1.7225 + (-1.0954) = 1.4869\
+score = 1.49 on the scale [-4, 4]}

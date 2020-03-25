@@ -44,6 +44,9 @@ B0 = 0.7464, B1 = 1.3366, B2 = -1.0085\
 odds of being correct = p / (1 - p) = e^(B0 + B1*x1 + B2*x2) = e^B0 * e^(B1*x1) * e^(B2*x2)\
 When x1 changes from 0 to 1, the odds increases by e^B1 = 3.8061 times\
 \
+# Effect of preference misalignment (unaligned case)\
+When x2 changes from 0 to 1, the odds decreases by the factor of e^B2 = 0.3648\
+\
 # Control Group; Aligned Case\
 \
 log(odds) = log (p / (1 - p)) = B0 + B1*0 + B2*0 = 0.7464\

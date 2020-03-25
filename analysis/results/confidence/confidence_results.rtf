@@ -7,75 +7,50 @@
 
 \f0\fs24 \cf0 ### CONFIDENCE LEVEL ###\
 \
-From model:\
-\
+> ## MODEL 1\
 > # Random intercepts for each participant and each question\
 > m_confidence = lmer(confidence ~ \
-+                  group \
-+                + (1|participant) \
-+                + (1|question.ref)\
-+                , data = data)\
++                       group \
++                     + case \
++                     + (1|participant) \
++                     + (1|question.ref)\
++                     , data = data)\
 boundary (singular) fit: see ?isSingular\
 > \
 \
 y = confidence level from 0 to 4\
 x1 = 0 for control group; 1 for treatment group\
-Linear regression: y = B0 + B1*x1\
-with random intercept B0 for each participant and each question\
+x2 = 0 for aligned case; 1 for unaligned case\
 \
-## Preference-Aligned Case ##\
+Linear regression: y = B0 + B1*x1 + B2*x2\
+\
+## Regression ##\
 \
 Fixed effects:\
-                  Estimate Std. Error      df t value Pr(>|t|)    \
-(Intercept)         2.8637     0.1318 95.3221  21.735   <2e-16 ***\
-groupexperimental   0.3346     0.1852 95.1604   1.807    0.074 .  \
+                   Estimate Std. Error        df t value Pr(>|t|)    \
+(Intercept)         2.82872    0.12449 118.39579  22.722   <2e-16 ***\
+groupexperimental   0.41684    0.16521  96.47122   2.523   0.0133 *  \
+caseunaligned      -0.01190    0.08818 235.86385  -0.135   0.8927    \
 ---\
 Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
 \
 ##\
 \
-B0 = 2.8637, B1 = 0.3346\
+B0 = 2.82872, B1 = 0.41684, B2 = -0.01190\
+\
+# Effect of explanation (treatment group)\
+confidence level = B0 + B1*x1 + B2*x2\
+When x1 changes from 0 to 1, the confidence level increases by 0.41684\
+\
+# Effect of preference misalignment (unaligned case)\
+p-value of B2 is high -> cannot reject the null hypothesis that B2=0 -> drop the \'93case\'94 predictor variable from the model\
 \
 # Control Group\
-y_control = B0 = 2.8637\
+\
+y = B0 + B1*0 = 2.82872\
+confidence level = 2.8 out of 4\
 \
 # Treatment Group\
-y_treatment = B0 + B1 = 2.8637 + 0.3346 = 3.1983\
 \
-## Preference-Unaligned Case ##\
-\
-Fixed effects:\
-                  Estimate Std. Error      df t value Pr(>|t|)    \
-(Intercept)         2.8347     0.1405 77.5252  20.175   <2e-16 ***\
-groupexperimental   0.5210     0.1976 77.7678   2.636   0.0101 *  \
----\
-Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
-\
-##\
-\
-B0 = 2.8347, B1 = 0.5210\
-\
-# Control Group\
-y_control = B0 = 2.8347\
-\
-# Treatment Group\
-y_treatment = B0 + B1 = 3.3557\
-\
-## Both Cases Combined ##\
-\
-Fixed effects:\
-                  Estimate Std. Error      df t value Pr(>|t|)    \
-(Intercept)         2.8231     0.1173 96.9999  24.074   <2e-16 ***\
-groupexperimental   0.4169     0.1650 96.9999   2.526   0.0131 *  \
----\
-Signif. codes:  0 \'91***\'92 0.001 \'91**\'92 0.01 \'91*\'92 0.05 \'91.\'92 0.1 \'91 \'92 1\
-\
-##\
-\
-B0 = 2.8231, B1 = 0.4169\
-\
-# Control Group\
-y_control = B0 = 2.8231\
-\
-# Treatment Group\
-y_treatment = B0 + B1 = 3.24}
+y = B0 + B1*1 = 2.82872 + 0.41684 = 3.24556\
+confidence level = 3.2 out of 4}

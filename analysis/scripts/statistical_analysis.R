@@ -1,5 +1,5 @@
 library(lme4)
-library(lmerTest)
+library(lmerTest) # Comment this out when using stargazer
 # library(r2glmm) # R squared
 library(MuMIn) # R squared
 library(stargazer)
@@ -290,3 +290,7 @@ anova(m_confidence, m_confidence_q, refit=FALSE)
 # Comparing models based on BIC
 # The best model according to BIC is m_confidence
 BIC(m_confidence, m_confidence_pq, m_confidence_p, m_confidence_q)
+
+# NOTE: Comment out library(lmerTest) before running stargazer
+# Regression table of MDOEL 1 of accuracy, confidence, and score
+# stargazer(m_accuracy, m_confidence, m_score, type = "latex", digits = 2)

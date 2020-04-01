@@ -35,6 +35,9 @@ boxplot(list(control = as.numeric(data[data$group=="control",]$accuracy),
              treatment = as.numeric(data[data$group=="experimental",]$accuracy)))
 
 
+# Reference: https://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html
+# Read: REML vs. ML
+
 ### ACCURACY ###
 
 ## MODEL 1
@@ -66,6 +69,22 @@ tab_ci_m_accuracy <- cbind(Est = fixef(m_accuracy), LL = fixef(m_accuracy) - 1.9
 # 95% CI of group: [2.03, 7.12]
 # 95% CI of case: [0.19, 0.70]
 exp(tab_ci_m_accuracy)
+
+# MODEL 1.1
+# Check if there is an interaction between "group" and "case" on accuracy
+m_accuracy_gc = glmer(accuracy ~ 
+                     group 
+                   * case
+                   + (1|participant) 
+                   + (1|question.ref)
+                   , family = "binomial"
+                   , data = data)
+
+summary(m_accuracy_gc)
+
+# Check if adding group*case term improves the model fit
+# Not significant: p=0.06224
+anova(m_accuracy, m_accuracy_gc, refit=FALSE)
 
 ## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts
@@ -154,6 +173,21 @@ tab_ci_m_score <- cbind(Est = fixef(m_score), LL = fixef(m_score) - 1.96 * se_m_
 # 95% CI of case: [-1.81, -0.38]
 tab_ci_m_score
 
+# MODEL 1.1
+# Check if there is an interaction between "group" and "case" on score
+m_score_gc = lmer(score ~ 
+                    group 
+                  * case 
+                  + (1|participant) 
+                  + (1|question.ref)
+                  , data = data)
+
+summary(m_score_gc)
+
+# Check if adding group*case term improves the model fit
+# Significant: p=0.002486
+anova(m_score, m_score_gc, refit=FALSE)
+
 ## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts
 # Model failed to converge
@@ -237,6 +271,21 @@ tab_ci_m_confidence <- cbind(Est = fixef(m_confidence), LL = fixef(m_confidence)
 # 95% CI of group: [0.09, 0.74]
 # 95% CI of case: [-0.18, 0.16]
 tab_ci_m_confidence
+
+# MODEL 1.1
+# Check if there is an interaction between "group" and "case" on confidence
+m_confidence_gc = lmer(confidence ~ 
+                         group 
+                       * case 
+                       + (1|participant) 
+                       + (1|question.ref)
+                       , data = data)
+
+summary(m_confidence_gc)
+
+# Check if adding group*case term improves the model fit
+# Not significant at all: p=1
+anova(m_confidence, m_confidence_gc, refit=FALSE)
 
 ## MODEL 2
 # Random slopes for each participant and each question -- in addition to random intercepts

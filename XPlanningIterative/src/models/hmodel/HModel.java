@@ -173,6 +173,13 @@ public class HModel<E extends IAction> {
 	private void createQueryXMDPs() {
 		for (Entry<Effect, Double> e : mProbEffectOfQuery) {
 			Effect effect = e.getKey();
+			double prob = e.getValue();
+
+			// Skip effect that has 0 probability
+			// For simplicity, assume for now that the query cannot lead to more than 1 non-absorbing state
+			if (prob == 0) {
+				continue;
+			}
 
 			// New initial state
 			StateVarTuple newIniState = new StateVarTuple();
@@ -213,6 +220,11 @@ public class HModel<E extends IAction> {
 		return mProbEffectOfQuery;
 	}
 
+	/**
+	 * For simplicity, assume for now that the query cannot lead to more than 1 non-absorbing state.
+	 * 
+	 * @return Destination states of the query
+	 */
 	public Set<StateVarTuple> getAllDestStatesOfQuery() {
 		return mQueryXMDPs.keySet();
 	}

@@ -3,6 +3,7 @@ package main;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
@@ -30,8 +31,7 @@ import models.hmodel.HModelGenerator;
 import models.hmodel.HPolicy;
 import prism.PrismException;
 import solver.prismconnector.PrismConnectorSettings;
-import solver.prismconnector.exceptions.ExplicitModelParsingException;
-import solver.prismconnector.exceptions.ResultParsingException;
+import solver.prismconnector.exceptions.PrismConnectorException;
 import ui.input.WhyNotQueryReader;
 import uiconnector.ExplanationWriter;
 import uiconnector.PolicyReader;
@@ -59,8 +59,8 @@ public class WhyNotXPlanner {
 	}
 
 	public HPolicyExplanation answerWhyNotQuery(File problemFile, CostCriterion costCriterion, File queryPolicyJsonFile,
-			String whyNotQueryStr) throws DSMException, XMDPException, IOException, ParseException,
-			ResultParsingException, PrismException, ExplicitModelParsingException, GRBException {
+			String whyNotQueryStr) throws DSMException, XMDPException, PrismConnectorException, IOException,
+			ParseException, PrismException, GRBException {
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
 
 		WhyNotQueryReader queryReader = new WhyNotQueryReader(xmdp);
@@ -112,6 +112,13 @@ public class WhyNotXPlanner {
 		explanationWriter.exportExplanationToFile(explanationJsonFilename);
 
 		return hPolicyExplanation;
+	}
+
+	public static XPlannerOutDirectories getDefaultXPlannerOutDirectories() throws IOException {
+		Path policiesOutputPath = Paths.get(WhyNotXPlanner.POLICIES_OUTPUT_PATH);
+		Path explanationOutputPath = Paths.get(WhyNotXPlanner.EXPLANATIONS_OUTPUT_PATH);
+		Path prismOutputPath = Paths.get(WhyNotXPlanner.PRISM_OUTPUT_PATH);
+		return new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath, prismOutputPath);
 	}
 
 }

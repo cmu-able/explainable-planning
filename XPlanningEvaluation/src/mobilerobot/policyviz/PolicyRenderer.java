@@ -27,6 +27,17 @@ public class PolicyRenderer {
 		mPolicyToGraph = new PolicyJSONToGraphViz(graphRenderer, false);
 	}
 
+	/**
+	 * 
+	 * @param policiesDirOrFile
+	 *            : Structure of policiesDir is /policies/ -> /mission[i]/ -> [policyName].json
+	 * @param missionsRootDir
+	 *            : Structure of missionsRootDir is /missions/ -> mission[i].json
+	 * @throws IOException
+	 * @throws ParseException
+	 * @throws URISyntaxException
+	 * @throws MapTopologyException
+	 */
 	public void renderAll(File policiesDirOrFile, File missionsRootDir)
 			throws IOException, ParseException, URISyntaxException, MapTopologyException {
 		if (!policiesDirOrFile.isDirectory()) {
@@ -102,6 +113,7 @@ public class PolicyRenderer {
 
 		PolicyRenderer policyRenderer = new PolicyRenderer();
 
+		// Render all policies in policiesDir
 		policyRenderer.renderAll(policiesDir, missionsRootDir);
 	}
 }

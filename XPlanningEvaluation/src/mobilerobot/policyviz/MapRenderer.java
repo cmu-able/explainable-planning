@@ -23,6 +23,12 @@ public class MapRenderer {
 		mGraphRenderer = new GraphVizRenderer(meterPerInch, scalingFactor);
 	}
 
+	public void renderAll(File mapsDir) throws MapTopologyException, IOException, ParseException {
+		for (File mapJsonFile : mapsDir.listFiles()) {
+			render(mapJsonFile);
+		}
+	}
+
 	public void render(File mapJsonFile) throws MapTopologyException, IOException, ParseException {
 		render(mapJsonFile, FileIOUtils.getOutputDir());
 	}
@@ -44,12 +50,10 @@ public class MapRenderer {
 			mapsDir = FileIOUtils.getMapsResourceDir(MapRenderer.class);
 		}
 
-		File[] mapJsonFiles = mapsDir.listFiles();
 		MapRenderer mapRenderer = new MapRenderer();
 
-		for (File mapJsonFile : mapJsonFiles) {
-			mapRenderer.render(mapJsonFile);
-		}
+		// Render all maps in mapsDir
+		mapRenderer.renderAll(mapsDir);
 	}
 
 }

@@ -90,26 +90,26 @@ public class GraphVizRenderer {
 
 	public static void main(String[] args)
 			throws URISyntaxException, IOException, ParseException, MapTopologyException {
-		String option = args[0];
+		String option = args[0]; // option: "map" or "policy"
 		File mapJsonFile;
 		File policyJsonFile;
 
 		if (option.equals("map")) {
-			String mapJsonFilename = args[1];
+			String mapJsonFilename = args[1]; // a single [mapName].json filename
 			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);
 
-			// Render map
+			// Render a single map
 			MapRenderer mapRenderer = new MapRenderer(METER_PER_INCH, SCALING_FACTOR);
 			mapRenderer.render(mapJsonFile);
 		} else if (option.equals("policy")) {
-			String mapJsonFilename = args[1];
-			String policyJsonFilename = args[2];
+			String mapJsonFilename = args[1]; // a single [mapName].json
+			String policyJsonFilename = args[2]; // a single [policyName].json
 			String startID = args[3];
 			String goalID = args[4];
 			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);
 			policyJsonFile = FileIOUtils.getPolicyFile(GraphVizRenderer.class, policyJsonFilename);
 
-			// Render policy
+			// Render a single policy
 			PolicyRenderer policyRenderer = new PolicyRenderer(METER_PER_INCH, SCALING_FACTOR);
 			policyRenderer.render(policyJsonFile, mapJsonFile, startID, goalID);
 		} else {

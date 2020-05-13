@@ -1,0 +1,1 @@
+rLoc=L23,rSpeed=0.7;moveTo(L24);intrusiveness

@@ -99,21 +99,26 @@ public class PolicyRenderer {
 
 	public static void main(String[] args)
 			throws URISyntaxException, MapTopologyException, IOException, ParseException {
-		File policiesDir;
-		File missionsRootDir;
-		if (args.length > 1) {
-			String policiesPath = args[0];
-			String missionsPath = args[1];
-			policiesDir = new File(policiesPath);
-			missionsRootDir = new File(missionsPath);
-		} else {
-			policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
-			missionsRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
-		}
-
 		PolicyRenderer policyRenderer = new PolicyRenderer();
 
-		// Render all policies in policiesDir
-		policyRenderer.renderAll(policiesDir, missionsRootDir);
+		if (args.length > 1) {
+			String policyJsonPath = args[0]; // path to arbitrary [policyName].json
+			String mapJsonPath = args[1]; // path to arbitrary [mapName].json
+			String startID = args[2];
+			String goalID = args[3];
+
+			File policyJsonFile = new File(policyJsonPath);
+			File mapJsonFile = new File(mapJsonPath);
+
+			// Render a single [policyName].json
+			policyRenderer.render(policyJsonFile, mapJsonFile, startID, goalID);
+		} else {
+			File policiesDir = FileIOUtils.getPoliciesResourceDir(PolicyRenderer.class);
+			File missionsRootDir = FileIOUtils.getMissionsResourceDir(XPlanningRunner.class);
+
+			// Render all policies in policiesDir
+			policyRenderer.renderAll(policiesDir, missionsRootDir);
+		}
+
 	}
 }

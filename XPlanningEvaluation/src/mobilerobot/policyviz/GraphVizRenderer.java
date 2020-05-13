@@ -94,6 +94,8 @@ public class GraphVizRenderer {
 		File mapJsonFile;
 		File policyJsonFile;
 
+		// Get files from /resources/mobilerobot/policyviz/
+
 		if (option.equals("map")) {
 			String mapJsonFilename = args[1]; // a single [mapName].json filename
 			mapJsonFile = FileIOUtils.getMapFile(GraphVizRenderer.class, mapJsonFilename);

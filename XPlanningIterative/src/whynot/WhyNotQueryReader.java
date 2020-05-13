@@ -1,4 +1,4 @@
-package ui.input;
+package whynot;
 
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;

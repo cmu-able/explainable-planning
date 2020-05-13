@@ -17,6 +17,8 @@ import language.objectives.CostCriterion;
 import models.explanation.HPolicyExplanation;
 import prism.PrismException;
 import solver.prismconnector.exceptions.PrismConnectorException;
+import whynot.IWhyNotXPlanner;
+import whynot.WhyNotXPlanner;
 
 public class DartWhyNotXPlanner implements IWhyNotXPlanner {
 

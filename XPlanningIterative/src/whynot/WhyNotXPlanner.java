@@ -1,4 +1,4 @@
-package main;
+package whynot;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +32,6 @@ import models.hmodel.HPolicy;
 import prism.PrismException;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.exceptions.PrismConnectorException;
-import ui.input.WhyNotQueryReader;
 import uiconnector.ExplanationWriter;
 import uiconnector.PolicyReader;
 import verbalization.HPolicyVerbalizer;

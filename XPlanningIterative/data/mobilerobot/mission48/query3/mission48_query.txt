@@ -1,0 +1,1 @@
+rLoc=L7,rSpeed=0.7;setSpeed(0.35),moveTo(L8);collision

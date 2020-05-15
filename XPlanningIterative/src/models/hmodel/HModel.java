@@ -333,7 +333,7 @@ public class HModel<E extends IAction> {
 		return mQueryXMDPs.get(newIniState);
 	}
 
-	public void putQueryQAValueConstraint(StateVarTuple newIniState, IQFunction<?, ?> qFunction,
+	public void putQAValueConstraint(StateVarTuple newIniState, IQFunction<?, ?> qFunction,
 			double queryQAValueConstraint) {
 		if (!mQueryQAValueConstraints.containsKey(newIniState)) {
 			mQueryQAValueConstraints.put(newIniState, new HashMap<>());
@@ -342,7 +342,7 @@ public class HModel<E extends IAction> {
 		mQueryQAValueConstraints.get(newIniState).put(qFunction, queryQAValueConstraint);
 	}
 
-	public double getQueryQAValueConstraint(StateVarTuple newIniState, IQFunction<?, ?> qFunction) {
+	public double getQAValueConstraint(StateVarTuple newIniState, IQFunction<?, ?> qFunction) {
 		return mQueryQAValueConstraints.get(newIniState).get(qFunction);
 	}
 

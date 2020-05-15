@@ -1,5 +1,7 @@
 package models.hmodel;
 
+import java.util.List;
+
 import analysis.PolicyAnalyzer;
 import explanation.analysis.PolicyInfo;
 import language.domain.metrics.IQFunction;
@@ -27,35 +29,77 @@ public class HModelGenerator {
 
 	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction)
 			throws XMDPException, ResultParsingException, PrismException {
+		// Create HModel for single-action query
 		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction);
+
+		// Computer and put query QA value constraints for HModel
+		computeQAValueConstraintsForHModel(hModel, queryPolicy, queryState);
+
+		return hModel;
+	}
+
+	/**
+	 * Generate HModel with a composite query action. A composite query action consists of a sequence of
+	 * (re)configuration actions prior to the main query action (e.g., in mobilerobot, setSpeed before moveTo).
+	 * 
+	 * Assume that the pre-configuration actions themselves do not impact any QA directly (e.g., setSpeed action itself
+	 * does not cost anything). But they can change how the subsequent main query action impact QAs.
+	 * 
+	 * @param queryPolicy
+	 * @param queryState
+	 *            : Query state
+	 * @param queryAction
+	 *            : Main query action
+	 * @param preConfigActions
+	 *            : Configuration actions to apply in the query state, prior to the main query action
+	 * @return HModel with a composite query action
+	 * @throws PrismException
+	 * @throws XMDPException
+	 * @throws ResultParsingException
+	 */
+	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction,
+			List<? extends IAction> preConfigActions) throws ResultParsingException, XMDPException, PrismException {
+		// Create HModel for composite-action query
+		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction, preConfigActions);
+
+		// Computer QA value constraints for HModel
+		computeQAValueConstraintsForHModel(hModel, queryPolicy, queryState);
+
+		return hModel;
+	}
+
+	private <E extends IAction> void computeQAValueConstraintsForHModel(HModel<E> hModel, Policy queryPolicy,
+			StateVarTuple queryState) throws ResultParsingException, PrismException, XMDPException {
+		// Compute QA values, costs, etc. of the original policy, starting from s_query onwards
+		// This is for comparison to alternative policy satisfying the why-not query
+		PolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer.computePartialPolicyInfo(queryPolicy, queryState);
 
 		for (StateVarTuple queryDestState : hModel.getAllDestStatesOfQuery()) {
 
-			// Compute QA values, costs, etc. of the original policy, starting from s_query onwards
-			// This is for comparison to alternative policy satisfying the why-not query
-			PolicyInfo originalPartialPolicyInfo = mPolicyAnalyzer.computePartialPolicyInfo(queryPolicy, queryState);
-
 			for (IQFunction<?, ?> qFunction : mOriginalXMDP.getQSpace()) {
 
+				// Assume that pre-configuration actions don't cost anything
+
 				// If this QA function has non-compatible action type with a_query,
-				// then QA value of (s_query, a_query, s') is 0
+				// then QA value of (s_query_final, a_query_final, s') is 0
 				double oneStepQAValue = 0;
 
-				if (checkCompatibleActionType(queryAction, qFunction)) {
-					// Compute 1-step QA value of a query transition (s_query, a_query, s')
-					oneStepQAValue = computeOneStepQAValue(hModel.getQueryState(), hModel.getQueryAction(),
-							queryDestState, qFunction);
+				StateVarTuple finalQueryState = hModel.getFinalQueryState();
+				E finalQueryAction = hModel.getFinalQueryAction();
+
+				if (checkCompatibleActionType(finalQueryAction, qFunction)) {
+					// Compute 1-step QA value of a query transition (s_query_final, a_query_final, s')
+					oneStepQAValue = computeOneStepQAValue(finalQueryState, finalQueryAction, queryDestState,
+							qFunction);
 				}
 
 				// QA value constraint for alternative policy starting from s' onwards
 				double queryQAValueConstraint = originalPartialPolicyInfo.getQAValue(qFunction) - oneStepQAValue;
 
 				// Add each QA value constraint for state s' to HModel
-				hModel.putQueryQAValueConstraint(queryDestState, qFunction, queryQAValueConstraint);
+				hModel.putQAValueConstraint(queryDestState, qFunction, queryQAValueConstraint);
 			}
 		}
-
-		return hModel;
 	}
 
 	/**

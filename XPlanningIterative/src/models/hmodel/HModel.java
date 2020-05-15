@@ -98,14 +98,14 @@ public class HModel<E extends IAction> {
 	 * @throws XMDPException
 	 */
 	private Map<StateVarTuple, IAction> buildPreConfigPolicyConstraints() throws XMDPException {
-		Map<StateVarTuple, IAction> policyConstraints = new HashMap<>();
+		Map<StateVarTuple, IAction> preConfigPolicyConstraints = new HashMap<>();
 
 		// currState must contain all variables, because it will be placed in a Policy
 		StateVarTuple currState = mQueryState;
 
 		for (IAction preConfigAction : mPreConfigActions) {
 			// Map state -> pre-configuration action
-			policyConstraints.put(currState, preConfigAction);
+			preConfigPolicyConstraints.put(currState, preConfigAction);
 
 			ProbabilisticEffect probEffect = computeProbabilisticEffect(currState, preConfigAction);
 
@@ -127,7 +127,7 @@ public class HModel<E extends IAction> {
 		// Final query state is NOT included in the pre-configuration policy constraints
 		mFinalQueryState = currState;
 
-		return policyConstraints;
+		return preConfigPolicyConstraints;
 	}
 
 	private <T extends IAction> ProbabilisticEffect computeProbabilisticEffect(StateVarTuple state, T action)

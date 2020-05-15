@@ -27,17 +27,6 @@ public class HModelGenerator {
 		mPolicyAnalyzer = policyAnalyzer;
 	}
 
-	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction)
-			throws XMDPException, ResultParsingException, PrismException {
-		// Create HModel for single-action query
-		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction);
-
-		// Computer and put query QA value constraints for HModel
-		computeQAValueConstraintsForHModel(hModel, queryPolicy, queryState);
-
-		return hModel;
-	}
-
 	/**
 	 * Generate HModel with a composite query action. A composite query action consists of a sequence of
 	 * (re)configuration actions prior to the main query action (e.g., in mobilerobot, setSpeed before moveTo).
@@ -59,7 +48,7 @@ public class HModelGenerator {
 	 */
 	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction,
 			List<? extends IAction> preConfigActions) throws ResultParsingException, XMDPException, PrismException {
-		// Create HModel for composite-action query
+		// Create HModel
 		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction, preConfigActions);
 
 		// Computer QA value constraints for HModel

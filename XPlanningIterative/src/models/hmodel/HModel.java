@@ -1,6 +1,5 @@
 package models.hmodel;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,10 +69,6 @@ public class HModel<E extends IAction> {
 
 	// QA value constraints for alternative policy, starting from each resulting state of the query onwards
 	private Map<StateVarTuple, Map<IQFunction<?, ?>, Double>> mQueryQAValueConstraints = new HashMap<>();
-
-	public HModel(XMDP originalXMDP, StateVarTuple queryState, E queryAction) throws XMDPException {
-		this(originalXMDP, queryState, queryAction, new ArrayList<>());
-	}
 
 	public HModel(XMDP originalXMDP, StateVarTuple queryState, E queryAction, List<? extends IAction> preConfigActions)
 			throws XMDPException {

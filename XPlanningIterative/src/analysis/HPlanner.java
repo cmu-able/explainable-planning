@@ -1,6 +1,9 @@
 package analysis;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import explanation.analysis.AlternativeExplorer;
 import explanation.analysis.PolicyInfo;
@@ -40,25 +43,37 @@ public class HPlanner {
 	public HPolicy computeHPolicy(HModel<? extends IAction> hModel, Policy queryPolicy, IQFunction<?, ?> queryQFunction)
 			throws PrismException, ExplicitModelParsingException, XMDPException, IOException, GRBException,
 			ResultParsingException {
-		StateVarTuple queryState = hModel.getQueryState();
-		IAction queryAction = hModel.getQueryAction();
-		HPolicy hPolicy = new HPolicy(queryPolicy, queryState, queryAction);
+		// Pre-configuration state-action mapping (deterministic effect only; can be empty)
+		Map<StateVarTuple, IAction> preConfigPolicyConstraints = hModel.getPreConfigPolicyConstraints();
+
+		// Final query state and action (can have probabilistic effect)
+		StateVarTuple finalQueryState = hModel.getFinalQueryState();
+		IAction finalQueryAction = hModel.getFinalQueryAction();
+
+		// HPolicy
+		HPolicy hPolicy = new HPolicy(queryPolicy, preConfigPolicyConstraints, finalQueryState, finalQueryAction);
+
+		// All query states (1st query state plus all subsequent states of applying pre-configuration actions)
+		// will be made absorbing states
+		Set<StateVarTuple> queryStates = new HashSet<>();
+		queryStates.addAll(preConfigPolicyConstraints.keySet());
+		queryStates.add(finalQueryState);
 
 		for (StateVarTuple newIniState : hModel.getAllDestStatesOfQuery()) {
 
 			// Query XMDP has one of the resulting states of the why-not query as initial state
 			XMDP queryXMDP = hModel.getQueryXMDP(newIniState);
 
-			// Create new PrismConnector with the query state as absorbing state
-			PrismConnector prismConnectorForHModel = new PrismConnector(queryXMDP, hModel.getQueryState(),
-					mCostCriterion, mPrismConnSettings);
+			// Create new PrismConnector with the query state(s) as absorbing state(s)
+			PrismConnector prismConnectorForHModel = new PrismConnector(queryXMDP, queryStates, mCostCriterion,
+					mPrismConnSettings);
 
 			// Get QA value constraint on alternative policy starting from the new initial state
-			double queryQAValueConstraint = hModel.getQueryQAValueConstraint(newIniState, queryQFunction);
+			double qaValueConstraint = hModel.getQAValueConstraint(newIniState, queryQFunction);
 
 			// Compute a constraint-satisfying alternative policy starting from the new initial state
 			PolicyInfo partialHPolicy = computePartialHPolicyInfo(prismConnectorForHModel, queryQFunction,
-					queryQAValueConstraint);
+					qaValueConstraint);
 
 			// If no QA-constraint-satisfying alternative policy exists, 
 			// try to compute alternative policy that satisfies why-not query
@@ -81,7 +96,7 @@ public class HPlanner {
 	}
 
 	private PolicyInfo computePartialHPolicyInfo(PrismConnector prismConnectorForHModel,
-			IQFunction<?, ?> queryQFunction, double queryQAValueConstraint)
+			IQFunction<?, ?> queryQFunction, double qaValueConstraint)
 			throws XMDPException, PrismException, IOException, ExplicitModelParsingException, GRBException {
 		// Query XMDP has one of the resulting states of the why-not query as initial state
 		XMDP queryXMDP = prismConnectorForHModel.getXMDP();
@@ -105,7 +120,7 @@ public class HPlanner {
 		// i.e., satisfying why-not query and improve the query QA
 		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
 		return altExplorer.computeHardConstraintSatisfyingAlternative(queryXMDP, queryQFunction,
-				queryQAValueConstraint);
+				qaValueConstraint);
 	}
 
 	private void removeResidualQueryPolicy(XMDP originalXMDP, Policy queryPolicy, HPolicy hPolicyWithResidual)

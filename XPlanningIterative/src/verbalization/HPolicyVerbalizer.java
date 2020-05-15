@@ -2,6 +2,9 @@ package verbalization;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 
 import explanation.analysis.Tradeoff;
 import explanation.verbalization.Verbalizer;
@@ -53,11 +56,11 @@ public class HPolicyVerbalizer {
 	 */
 	private String verbalizeWhyNotDecisionVP(WhyNotQuery<?, ?> whyNotQuery) {
 		StateVarTuple queryState = whyNotQuery.getQueryState();
-		IAction queryAction = whyNotQuery.getQueryAction();
+		List<IAction> queryActions = whyNotQuery.getQueryActions();
 
 		StringBuilder builder = new StringBuilder();
 		builder.append("take action ");
-		builder.append(queryAction.toString());
+		builder.append(StringUtils.join(queryActions, ", "));
 		builder.append(" when in state ");
 		builder.append(queryState.toString());
 		return builder.toString();

@@ -1,5 +1,7 @@
 package models.explanation;
 
+import java.util.List;
+
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
@@ -13,12 +15,12 @@ public class WhyNotQuery<E extends IAction, T extends ITransitionStructure<E>> {
 	private volatile int hashCode;
 
 	private StateVarTuple mQueryState;
-	private IAction mQueryAction;
+	private List<IAction> mQueryActions;
 	private IQFunction<E, T> mQueryQFunction;
 
-	public WhyNotQuery(StateVarTuple queryState, IAction queryAction, IQFunction<E, T> queryQFunction) {
+	public WhyNotQuery(StateVarTuple queryState, List<IAction> queryActions, IQFunction<E, T> queryQFunction) {
 		mQueryState = queryState;
-		mQueryAction = queryAction;
+		mQueryActions = queryActions;
 		mQueryQFunction = queryQFunction;
 	}
 
@@ -26,8 +28,8 @@ public class WhyNotQuery<E extends IAction, T extends ITransitionStructure<E>> {
 		return mQueryState;
 	}
 
-	public IAction getQueryAction() {
-		return mQueryAction;
+	public List<IAction> getQueryActions() {
+		return mQueryActions;
 	}
 
 	public IQFunction<E, T> getQueryQFunction() {
@@ -43,7 +45,7 @@ public class WhyNotQuery<E extends IAction, T extends ITransitionStructure<E>> {
 			return false;
 		}
 		WhyNotQuery<?, ?> query = (WhyNotQuery<?, ?>) obj;
-		return query.mQueryState.equals(mQueryState) && query.mQueryAction.equals(mQueryAction)
+		return query.mQueryState.equals(mQueryState) && query.mQueryActions.equals(mQueryActions)
 				&& query.mQueryQFunction.equals(mQueryQFunction);
 	}
 
@@ -53,7 +55,7 @@ public class WhyNotQuery<E extends IAction, T extends ITransitionStructure<E>> {
 		if (result == 0) {
 			result = 17;
 			result = 31 * result + mQueryState.hashCode();
-			result = 31 * result + mQueryAction.hashCode();
+			result = 31 * result + mQueryActions.hashCode();
 			result = 31 * result + mQueryQFunction.hashCode();
 			hashCode = result;
 		}

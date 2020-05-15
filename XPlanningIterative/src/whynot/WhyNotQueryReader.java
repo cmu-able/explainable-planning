@@ -1,5 +1,8 @@
 package whynot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import language.domain.metrics.IQFunction;
 import language.domain.metrics.ITransitionStructure;
 import language.domain.models.IAction;
@@ -33,9 +36,9 @@ public class WhyNotQueryReader {
 	public <E extends IAction, T extends ITransitionStructure<E>> WhyNotQuery<E, T> readWhyNotQuery(
 			String queryStateStr, String queryActionStr, String queryQFunctionStr) {
 		StateVarTuple queryState = readQueryState(queryStateStr);
-		IAction queryAction = readQueryAction(queryActionStr);
+		List<IAction> queryActions = readQueryActions(queryActionStr);
 		IQFunction<E, T> queryQFunction = readQueryQFunction(queryQFunctionStr);
-		return new WhyNotQuery<>(queryState, queryAction, queryQFunction);
+		return new WhyNotQuery<>(queryState, queryActions, queryQFunction);
 	}
 
 	/**
@@ -70,8 +73,16 @@ public class WhyNotQueryReader {
 		return queryState;
 	}
 
-	private IAction readQueryAction(String queryActionStr) {
-		return mXMDP.getActionSpace().getAction(queryActionStr);
+	private List<IAction> readQueryActions(String queryActionStr) {
+		List<IAction> queryActions = new ArrayList<>();
+
+		String[] actions = queryActionStr.split(",");
+		for (String actionStr : actions) {
+			IAction queryAction = mXMDP.getActionSpace().getAction(actionStr);
+			queryActions.add(queryAction);
+		}
+
+		return queryActions;
 	}
 
 	private <E extends IAction, T extends ITransitionStructure<E>> IQFunction<E, T> readQueryQFunction(

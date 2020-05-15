@@ -131,24 +131,26 @@ public class PrismTranslatorHelper {
 	 * This query state is to be made absorbing, so that the effect of the why-not action is not reverted by the
 	 * planner.
 	 * 
+	 * There may be multiple query states, all of which are to be made absorbing.
+	 * 
 	 * @param actionDefs
 	 * @param helperActionFilter
 	 *            : A function that filters actions of the helper module
 	 * @param hasGoal
-	 * @param queryState
+	 * @param queryStates
 	 *            : null if there is no why-not query
 	 * @return A helper module that handles cycles of choosing action, reward computation, checking if the goal is
 	 *         reached for termination
 	 * @throws VarNotFoundException
 	 */
 	String buildHelperModule(ActionSpace actionDefs, ActionFilter helperActionFilter, boolean hasGoal,
-			StateVarTuple queryState) throws VarNotFoundException {
+			Set<StateVarTuple> queryStates) throws VarNotFoundException {
 		StringBuilder builder = new StringBuilder();
 
 		// Check if there is a why-not query state to handle
 		String queryStateFormula;
-		if (queryState != null) {
-			String queryStateExpr = PrismTranslatorUtils.buildExpression(queryState, mEncodings);
+		if (queryStates != null) {
+			String queryStateExpr = PrismTranslatorUtils.buildExpression(queryStates, mEncodings);
 			queryStateFormula = "formula query_state = " + queryStateExpr + ";";
 		} else {
 			queryStateFormula = "formula query_state = false;";

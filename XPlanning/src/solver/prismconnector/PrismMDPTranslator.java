@@ -26,15 +26,15 @@ public class PrismMDPTranslator {
 	private PrismTranslatorHelper mHelper;
 
 	// Query state is the source state of a user's why-not (s,a) query
-	private StateVarTuple mQueryState;
+	private Set<StateVarTuple> mQueryStates;
 
 	public PrismMDPTranslator(XMDP xmdp) {
 		this(xmdp, null);
 	}
 
-	public PrismMDPTranslator(XMDP xmdp, StateVarTuple queryState) {
+	public PrismMDPTranslator(XMDP xmdp, Set<StateVarTuple> queryStates) {
 		mXMDP = xmdp;
-		mQueryState = queryState;
+		mQueryStates = queryStates;
 		mEncodings = new ValueEncodingScheme(xmdp.getStateSpace(), xmdp.getActionSpace(), xmdp.getQSpace(),
 				xmdp.getCostFunction());
 		mActionFilter = action -> mXMDP.getActionSpace().contains(action);
@@ -82,7 +82,7 @@ public class PrismMDPTranslator {
 		String modules = mHelper.buildModules(mXMDP.getStateSpace(), mXMDP.getInitialState(), mXMDP.getActionSpace(),
 				mXMDP.getTransitionFunction(), partialCommandsBuilder, hasGoal);
 		// helper module
-		String helperModule = mHelper.buildHelperModule(mXMDP.getActionSpace(), mActionFilter, hasGoal, mQueryState);
+		String helperModule = mHelper.buildHelperModule(mXMDP.getActionSpace(), mActionFilter, hasGoal, mQueryStates);
 		String costStruct = mRewardTranslator.getCostFunctionTranslation(mXMDP.getCostFunction());
 
 		StringBuilder builder = new StringBuilder();

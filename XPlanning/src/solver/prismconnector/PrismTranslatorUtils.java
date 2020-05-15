@@ -1,5 +1,7 @@
 package solver.prismconnector;
 
+import java.util.Set;
+
 import language.domain.models.IStateVarBoolean;
 import language.domain.models.IStateVarInt;
 import language.domain.models.IStateVarValue;
@@ -68,6 +70,35 @@ public class PrismTranslatorUtils {
 				builder.append(encodedValue);
 			}
 		}
+		return builder.toString();
+	}
+
+	/**
+	 * Build a disjunction expression of the given predicates.
+	 * 
+	 * @param predicates
+	 * @param encodings
+	 * @return (predicate_1) | ... | (predicate_m)
+	 * @throws VarNotFoundException
+	 */
+	public static String buildExpression(Set<? extends IStateVarTuple> predicates, ValueEncodingScheme encodings)
+			throws VarNotFoundException {
+		StringBuilder builder = new StringBuilder();
+		boolean first = true;
+		for (IStateVarTuple predicate : predicates) {
+			String predicateExpr = buildExpression(predicate, encodings);
+
+			if (!first) {
+				builder.append(" | ");
+			} else {
+				first = false;
+			}
+
+			builder.append("(");
+			builder.append(predicateExpr);
+			builder.append(")");
+		}
+
 		return builder.toString();
 	}
 }

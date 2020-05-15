@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import explanation.analysis.EventBasedQAValue;
 import explanation.analysis.PolicyInfo;
@@ -48,11 +49,11 @@ public class PrismConnector {
 		this(xmdp, null, costCriterion, settings);
 	}
 
-	public PrismConnector(XMDP xmdp, StateVarTuple queryState, CostCriterion costCriterion,
+	public PrismConnector(XMDP xmdp, Set<StateVarTuple> queryStates, CostCriterion costCriterion,
 			PrismConnectorSettings settings) throws PrismException {
 		mXMDP = xmdp;
 		mCostCriterion = costCriterion;
-		mMDPTranslator = new PrismMDPTranslator(xmdp, queryState);
+		mMDPTranslator = new PrismMDPTranslator(xmdp, queryStates);
 		mSettings = settings;
 		mPrismAPI = new PrismAPIWrapper();
 

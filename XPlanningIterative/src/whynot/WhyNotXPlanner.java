@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
@@ -20,6 +21,7 @@ import explanation.verbalization.Verbalizer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
+import language.domain.models.IAction;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
@@ -75,9 +77,14 @@ public class WhyNotXPlanner {
 		Policy queryPolicy = policyReader.readPolicy(queryPolicyJsonFile);
 		PolicyInfo queryPolicyInfo = policyAnalyzer.computePartialPolicyInfo(queryPolicy, xmdp.getInitialState());
 
+		// Query actions: pre-configuration actions (possibly none) and main query action
+		List<IAction> queryActions = whyNotQuery.getQueryActions();
+		IAction queryAction = queryActions.get(queryActions.size() - 1);
+		List<IAction> preConfigActions = queryActions.subList(0, queryActions.size() - 1);
+
 		// HModel and HPlanner
-		HModel<?> hModel = hModelGenerator.generateHModel(queryPolicy, whyNotQuery.getQueryState(),
-				whyNotQuery.getQueryAction());
+		HModel<?> hModel = hModelGenerator.generateHModel(queryPolicy, whyNotQuery.getQueryState(), queryAction,
+				preConfigActions);
 		HPlanner hPlanner = new HPlanner(costCriterion, prismConnSettings);
 
 		// HPolicy and HPolicyExplainer

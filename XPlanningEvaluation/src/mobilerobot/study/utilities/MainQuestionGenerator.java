@@ -11,7 +11,6 @@ import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.study.prefalign.PrefAlignQuestionGenerator;
-import mobilerobot.study.prefinterp.PrefInterpQuestionGenerator;
 import mobilerobot.utilities.FileIOUtils;
 import prism.PrismException;
 import solver.prismconnector.exceptions.PrismConnectorException;
@@ -49,9 +48,7 @@ public class MainQuestionGenerator {
 
 		File mapsDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
 		IQuestionGenerator questionGenerator;
-		if (studyName.equals("PrefInterp")) {
-			questionGenerator = new PrefInterpQuestionGenerator(mapsDir);
-		} else if (studyName.equals("PrefAlign")) {
+		if (studyName.equals("PrefAlign")) {
 			questionGenerator = new PrefAlignQuestionGenerator(mapsDir);
 		} else {
 			throw new IllegalArgumentException("Invalid Study Name");

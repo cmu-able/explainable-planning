@@ -49,6 +49,12 @@ public class ActionSpace implements Iterable<ActionDefinition<IAction>> {
 		return mActionDefsLookup.containsKey(action);
 	}
 
+	public <E extends IAction> ActionDefinition<E> getActionDefinition(String actionName) {
+		// Casting: ensure type-safety in the caller methods
+		return (ActionDefinition<E>) mActionDefs.stream().filter(actionDef -> actionDef.getName().equals(actionName))
+				.findFirst().orElse(null);
+	}
+
 	public <E extends IAction> ActionDefinition<E> getActionDefinition(E action) {
 		// Casting: We ensure type-safety in addActionDefinition()
 		return (ActionDefinition<E>) mActionDefsLookup.get(action);

@@ -1,7 +1,6 @@
 package mobilerobot.study.utilities;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -103,24 +102,19 @@ public class QuestionUtils {
 	}
 
 	public static File[] listQuestionDirs(File rootDir) {
-		return rootDir.listFiles(getQuestionDirFileFilter());
-	}
-
-	private static FileFilter getQuestionDirFileFilter() {
-		return QuestionUtils::isQuestionDir;
+		return rootDir.listFiles(QuestionUtils::isQuestionDir);
 	}
 
 	public static boolean isQuestionDir(File file) {
 		return file.isDirectory() && file.getName().matches("question-mission[0-9]+");
 	}
 
-	public static boolean isExplanationDir(File file) {
-		return file.isDirectory() && file.getName().matches("explanation-agent[0-9]+");
+	public static File[] listExplanationDirs(File questionDir) {
+		return questionDir.listFiles(QuestionUtils::isExplanationDir);
 	}
 
-	public static File getExplanationDir(File questionDir, int agentIndex) {
-		String explanationDirname = "explanation-agent" + agentIndex;
-		return new File(questionDir, explanationDirname);
+	public static boolean isExplanationDir(File file) {
+		return file.isDirectory() && file.getName().matches("explanation-agent[0-9]+");
 	}
 
 	public static JSONObject getSimpleCostStructureJSONObject(File questionDir) throws IOException, ParseException {

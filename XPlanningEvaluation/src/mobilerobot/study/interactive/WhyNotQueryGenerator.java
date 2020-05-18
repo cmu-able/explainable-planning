@@ -25,6 +25,18 @@ public class WhyNotQueryGenerator {
 		mXMDPLoader = new MobileRobotXMDPLoader(mapsJsonDir);
 	}
 
+	public void generateAllWhyNotQueries(File questionsRootDir)
+			throws IOException, DSMException, XMDPException, ParseException {
+		File[] questionDirsIn = QuestionUtils.listQuestionDirs(questionsRootDir);
+
+		for (File questionDirIn : questionDirsIn) {
+			File missionFile = QuestionUtils.getMissionJSONFile(questionDirIn);
+			File questionDirOut = QuestionUtils.initializeQuestionDir(missionFile, false);
+
+			generateAllWhyNotQueries(questionDirIn, questionDirOut);
+		}
+	}
+
 	public void generateAllWhyNotQueries(File questionDirIn, File questionDirOut)
 			throws DSMException, XMDPException, IOException, ParseException {
 		// questionDirIn: /prefaign/questions/question-mission[X]/

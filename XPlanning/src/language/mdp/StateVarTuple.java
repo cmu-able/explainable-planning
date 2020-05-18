@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVar;
 import language.domain.models.StateVarDefinition;
@@ -129,7 +131,8 @@ public class StateVarTuple implements IStateVarTuple {
 
 	@Override
 	public String toString() {
-		return mStateVarMap.toString();
+		// Format: var1_name=value,...,varN_name=value
+		return StringUtils.join(mStateVarMap.values(), ",");
 	}
 
 }

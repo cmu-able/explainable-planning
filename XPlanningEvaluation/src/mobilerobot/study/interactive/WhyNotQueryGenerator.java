@@ -10,6 +10,7 @@ import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.RobotSpeed;
 import examples.mobilerobot.models.SetSpeedAction;
+import language.domain.metrics.IQFunction;
 import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarValue;
@@ -19,6 +20,7 @@ import language.exceptions.XMDPException;
 import language.mdp.FactoredPSO;
 import language.mdp.Precondition;
 import language.mdp.QSpace;
+import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.policy.Decision;
 import language.policy.Policy;
@@ -59,11 +61,11 @@ public class WhyNotQueryGenerator {
 			}).collect(Collectors.toSet());
 
 			// Queries without pre-configuration action
-			Set<String> moveToOnlyQueries = createStringQueries(Collections.emptySet(), nonBackTrackMoveToActions,
-					xmdp.getQSpace());
+			Set<String> moveToOnlyQueries = createStringQueries(decision.getState(), Collections.emptySet(),
+					nonBackTrackMoveToActions, xmdp.getQSpace());
 
 			// Queries with pre-configuration action
-			Set<String> setSpeedMoveToQueries = createStringQueries(applicableSetSpeedActions,
+			Set<String> setSpeedMoveToQueries = createStringQueries(decision.getState(), applicableSetSpeedActions,
 					nonBackTrackMoveToActions, xmdp.getQSpace());
 
 			stringQueries.addAll(moveToOnlyQueries);
@@ -122,24 +124,52 @@ public class WhyNotQueryGenerator {
 		return false;
 	}
 
-	private Set<String> createStringQueries(Set<? extends IAction> preConfigActions,
+	private Set<String> createStringQueries(StateVarTuple queryState, Set<? extends IAction> preConfigActions,
 			Set<? extends IAction> mainQueryActions, QSpace qFunctions) {
 		Set<String> stringQueries = new HashSet<>();
 
-		for (IAction mainQueryAction : mainQueryActions) { // main query action (moveTo) is required
-			StringBuilder builder = new StringBuilder();
+		// Main query action (moveTo) is required
+		for (IAction mainQueryAction : mainQueryActions) {
 
-			// TODO: state
-			builder.append(mainQueryAction);
+			// Target QA is required
+			for (IQFunction<?, ?> targetQFunction : qFunctions) {
 
-			for (IAction preConfigAction : preConfigActions) { // pre-configuration action (setSpeed) is optional
-				builder.insert(0, preConfigAction);
-				builder.insert(preConfigAction.toString().length(), ",");
+				// Pre-configuration action (setSpeed) is optional
+				if (preConfigActions.isEmpty()) {
+					String queryNoPreConfigAction = createStringQuery(queryState, null, mainQueryAction, targetQFunction);
+					stringQueries.add(queryNoPreConfigAction);
+				} else {
+					for (IAction preConfigAction : preConfigActions) {
+						String queryWithPreConfigAction = createStringQuery(queryState, preConfigAction,
+								mainQueryAction, targetQFunction);
+						stringQueries.add(queryWithPreConfigAction);
+					}
+				}
 			}
-
-			// TODO: QA function
 		}
 
 		return stringQueries;
+	}
+
+	private String createStringQuery(StateVarTuple queryState, IAction preConfigAction, IAction mainQueryAction,
+			IQFunction<?, ?> targetQFunction) {
+		// Query format: [query state];[pre-configuration action],[main query action];[target QA name]
+		StringBuilder builder = new StringBuilder();
+
+		builder.append(queryState); // query state: rLoc=L_,rSpeed=_
+		builder.append(";");
+
+		if (preConfigAction != null) {
+			builder.append(preConfigAction); // pre-configuration action: setSpeed(_)
+			builder.append(",");
+		}
+
+		builder.append(mainQueryAction); // main query action: moveTo(L_)
+		builder.append(";");
+
+		String qFunctionName = targetQFunction.getName();
+		builder.append(qFunctionName); // target QA name: traveTime|collision|intrusiveness
+
+		return builder.toString();
 	}
 }

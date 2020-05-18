@@ -36,17 +36,37 @@ public class QuestionUtils {
 		throw new IllegalStateException("Utility class");
 	}
 
-	public static File initializeQuestionDir(File missionFile) throws IOException {
+	/**
+	 * Create /question-mission[X]/ directory under /output/. Initialize it with mission[X].json file, which is either a
+	 * copy of a source file or a symbolic link to a source file.
+	 * 
+	 * @param missionFile
+	 *            : A source mission[X].json file
+	 * @param copyMissionFile
+	 *            : Whether to make a copy of mission[X].json source file, or to create a symbolic link to it
+	 * @return Question directory /question-mission[X]/ containing mission[X].json file or symbolic link
+	 * @throws IOException
+	 */
+	public static File initializeQuestionDir(File missionFile, boolean copyMissionFile) throws IOException {
+		// Everything here will be created in XPlanningEvaluation/output/
 		File outputDir = FileIOUtils.getOutputDir();
+
 		String missionName = FilenameUtils.removeExtension(missionFile.getName());
 
-		// Create question directory: /output/question-missionX/
+		// Create question directory: /output/question-mission[X]/
 		String questionDirname = "question-" + missionName;
 		File questionDir = FileIOUtils.createOutSubDir(outputDir, questionDirname);
 
-		// Copy missionX.json file from /output/missions-of-{mapName}/ to /output/question-missionX/
-		// Note: missionX name is unique across all maps
-		Files.copy(missionFile.toPath(), questionDir.toPath().resolve(missionFile.getName()));
+		if (copyMissionFile) {
+			// Copy mission[X].json file from source (e.g., /output/missions-of-{mapName}/) to /output/question-mission[X]/
+			// Note: mission[X] name is unique across all maps
+			Files.copy(missionFile.toPath(), questionDir.toPath().resolve(missionFile.getName()));
+		} else {
+			// Create a symbolic link mission[X].json under /output/question-mission[X]/ 
+			// and point it to source (e.g., /question-mission[X]/mission[X].json file in /prefalign/questions/)
+			Path missionFileLink = questionDir.toPath().resolve(missionFile.getName());
+			Files.createSymbolicLink(missionFileLink, missionFile.toPath());
+		}
 
 		return questionDir;
 	}
@@ -96,6 +116,11 @@ public class QuestionUtils {
 
 	public static boolean isExplanationDir(File file) {
 		return file.isDirectory() && file.getName().matches("explanation-agent[0-9]+");
+	}
+
+	public static File getExplanationDir(File questionDir, int agentIndex) {
+		String explanationDirname = "explanation-agent" + agentIndex;
+		return new File(questionDir, explanationDirname);
 	}
 
 	public static JSONObject getSimpleCostStructureJSONObject(File questionDir) throws IOException, ParseException {

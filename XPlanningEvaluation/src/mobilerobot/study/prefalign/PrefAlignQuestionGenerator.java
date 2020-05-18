@@ -55,7 +55,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 			// Each question dir contains multiple questions, all of which have the same mission but different agent's
 			// proposed policies
-			File questionDir = QuestionUtils.initializeQuestionDir(missionFile);
+			File questionDir = QuestionUtils.initializeQuestionDir(missionFile, true);
 			QuestionUtils.writeSolutionPolicyToQuestionDir(solnPolicyInfo, questionDir);
 
 			// Each question dir has a simpleCostStructure.json defining the preference

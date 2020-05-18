@@ -119,7 +119,7 @@ public class PrefAlignValidationQuestionGenerator {
 				// Create a question dir, /question-mission[X]/, for each validation mission
 				// Each question dir contains multiple questions, all of which have the same mission but different agent's
 				// proposed policies
-				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissionFile);
+				File validationQuestionDir = QuestionUtils.initializeQuestionDir(validationMissionFile, true);
 
 				// Copy simpleCostStructure.json from linked questions to /question-mission[X]/
 				copySimpleCostStructureFile(linkedQuestions, validationQuestionDir);

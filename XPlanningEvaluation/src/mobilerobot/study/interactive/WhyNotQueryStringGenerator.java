@@ -40,43 +40,60 @@ public class WhyNotQueryStringGenerator {
 	public Set<String> generateAllWhyNotStringQueries(Policy queryPolicy) throws XMDPException {
 		Set<String> stringQueries = new HashSet<>();
 
-		for (Decision decision : queryPolicy) {
+		StateVarTuple iniState = mXMDP.getInitialState();
+		StateVarTuple goalState = mXMDP.getGoal();
+		StateVarTuple curState = iniState;
+
+		while (curState != goalState) {
+			IAction curAction = queryPolicy.getAction(curState);
+
 			// Pre-configuration action (optional): setSpeed
-			// Other applicable setSpeed actions at this decision state
-			Set<SetSpeedAction> applicableSetSpeedActions = getApplicableCandidateActions(decision, RobotSpeed.class,
-					"rSpeed", "setSpeed");
+			// OTHER applicable setSpeed actions at this decision-state
+			Set<SetSpeedAction> otherApplicableSetSpeedActions = getApplicableCandidateActions(curState, curAction,
+					RobotSpeed.class, "rSpeed", "setSpeed", true);
 
 			// Main query action (required): moveTo
-			// Other applicable moveTo actions at this decision state
-			Set<MoveToAction> applicableMoveToActions = getApplicableCandidateActions(decision, Location.class, "rLoc",
-					"moveTo");
+			// ALL applicable moveTo actions at this decision-state
+			Set<MoveToAction> applicableMoveToActions = getApplicableCandidateActions(curState, curAction,
+					Location.class, "rLoc", "moveTo", false);
 
 			// Filter out moveTo actions that backtrack from the query location
+			StateVarTuple queryState = curState;
 			Set<MoveToAction> nonBackTrackMoveToActions = applicableMoveToActions.stream().filter(candidateMoveTo -> {
 				try {
-					return !isBackTrackMoveToDestination(queryPolicy, decision.getState(), candidateMoveTo);
+					return !isBackTrackMoveToDestination(queryPolicy, queryState, candidateMoveTo);
 				} catch (VarNotFoundException e) {
 					throw new RuntimeException(e.getMessage());
 				}
 			}).collect(Collectors.toSet());
 
-			// Queries without pre-configuration action
-			Set<String> moveToOnlyQueries = createStringQueries(decision.getState(), Collections.emptySet(),
-					nonBackTrackMoveToActions);
+			// Queries WITHOUT pre-configuration action:
+			// Main query actions must be different from the decision-action
+			Set<MoveToAction> nonBackTrackOtherMoveToActions = nonBackTrackMoveToActions.stream()
+					.filter(nonBackTrackMoveTo -> !nonBackTrackMoveTo.equals(curAction)).collect(Collectors.toSet());
 
-			// Queries with pre-configuration action
-			Set<String> setSpeedMoveToQueries = createStringQueries(decision.getState(), applicableSetSpeedActions,
+			Set<String> moveToOnlyQueries = createStringQueries(curState, Collections.emptySet(),
+					nonBackTrackOtherMoveToActions);
+
+			// Queries WITH pre-configuration action:
+			// Main query actions can be the same as the decision-action
+			Set<String> setSpeedMoveToQueries = createStringQueries(curState, otherApplicableSetSpeedActions,
 					nonBackTrackMoveToActions);
 
 			stringQueries.addAll(moveToOnlyQueries);
 			stringQueries.addAll(setSpeedMoveToQueries);
+
+			// Update curState to point to the next state with the next location in the query policy
+			StateVarTuple nextLocState = getNextLocationState(queryPolicy, curState);
+			curState = nextLocState;
 		}
 
 		return stringQueries;
 	}
 
-	private <E extends IAction, T extends IStateVarValue> Set<E> getApplicableCandidateActions(Decision decision,
-			Class<T> varType, String varName, String actionName) throws XMDPException {
+	private <E extends IAction, T extends IStateVarValue> Set<E> getApplicableCandidateActions(StateVarTuple curState,
+			IAction curAction, Class<T> varType, String varName, String actionName, boolean otherActionsOnly)
+			throws XMDPException {
 		// Action type: setSpeed or moveTo
 		ActionDefinition<E> actionDef = mXMDP.getActionSpace().getActionDefinition(actionName);
 		FactoredPSO<E> actionPSO = mXMDP.getTransitionFunction().getActionPSO(actionDef);
@@ -88,13 +105,13 @@ public class WhyNotQueryStringGenerator {
 		Set<E> applicableCandidateActions = new HashSet<>();
 
 		for (E candidateAction : actionDef.getActions()) {
-			if (candidateAction.equals(decision.getAction())) {
-				// Skip the action used in the query policy
+			if (otherActionsOnly && candidateAction.equals(curAction)) {
+				// Collection only actions that are different from the decision-action in the query policy
 				continue;
 			}
 
 			Set<T> applicableValues = precond.getApplicableValues(candidateAction, varDef);
-			T rValue = decision.getState().getStateVarValue(varType, varDef);
+			T rValue = curState.getStateVarValue(varType, varDef);
 
 			if (applicableValues.contains(rValue)) {
 				// This candidate action is applicable in this decision state
@@ -194,6 +211,44 @@ public class WhyNotQueryStringGenerator {
 		builder.append(qFunctionName); // target QA name: traveTime|collision|intrusiveness
 
 		return builder.toString();
+	}
+
+	private StateVarTuple getNextLocationState(Policy queryPolicy, StateVarTuple curState) throws XMDPException {
+		IAction curAction = queryPolicy.getAction(curState);
+
+		if (curAction instanceof MoveToAction) {
+			MoveToAction curMoveTo = (MoveToAction) curAction;
+			Location destLoc = curMoveTo.getDestination();
+
+			// Next state, new location
+			StateVarTuple nextLocState = new StateVarTuple();
+
+			// Update rLoc value
+			nextLocState.addStateVar(mrLocDef.getStateVar(destLoc));
+
+			// Same rSpeed value
+			RobotSpeed curSpeed = curState.getStateVarValue(RobotSpeed.class, mrSpeedDef);
+			nextLocState.addStateVar(mrSpeedDef.getStateVar(curSpeed));
+
+			return nextLocState;
+		} else if (curAction instanceof SetSpeedAction) {
+			SetSpeedAction curSetSpeed = (SetSpeedAction) curAction;
+			RobotSpeed destSpeed = curSetSpeed.getTargetSpeed();
+
+			// Next state, same location
+			StateVarTuple nextState = new StateVarTuple();
+
+			// Update rSpeed value
+			nextState.addStateVar(mrSpeedDef.getStateVar(destSpeed));
+
+			// Same rLoc value
+			Location curLoc = curState.getStateVarValue(Location.class, mrLocDef);
+			nextState.addStateVar(mrLocDef.getStateVar(curLoc));
+
+			return getNextLocationState(queryPolicy, nextState);
+		}
+
+		throw new IllegalArgumentException("Wrong action type: " + curAction);
 	}
 
 }

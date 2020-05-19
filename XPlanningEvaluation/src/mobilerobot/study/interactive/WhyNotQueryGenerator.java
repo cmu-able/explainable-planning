@@ -2,6 +2,7 @@ package mobilerobot.study.interactive;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
@@ -14,7 +15,9 @@ import examples.mobilerobot.demo.MobileRobotXMDPLoader;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.policy.Policy;
+import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
+import mobilerobot.utilities.FileIOUtils;
 import uiconnector.PolicyReader;
 
 public class WhyNotQueryGenerator {
@@ -88,5 +91,16 @@ public class WhyNotQueryGenerator {
 
 			j++;
 		}
+	}
+
+	public static void main(String[] args)
+			throws URISyntaxException, IOException, DSMException, XMDPException, ParseException {
+		String questionsRootPath = args[0];
+
+		File questionsRootDir = new File(questionsRootPath);
+		File mapsJsonDir = FileIOUtils.getMapsResourceDir(MissionJSONGenerator.class);
+
+		WhyNotQueryGenerator queryGenerator = new WhyNotQueryGenerator(mapsJsonDir);
+		queryGenerator.generateAllWhyNotQueries(questionsRootDir);
 	}
 }

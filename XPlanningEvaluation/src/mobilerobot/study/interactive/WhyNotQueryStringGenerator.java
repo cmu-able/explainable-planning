@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import examples.mobilerobot.dsm.MobileRobotXMDPBuilder;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
+import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotSpeed;
 import examples.mobilerobot.models.SetSpeedAction;
 import language.domain.metrics.IQFunction;
@@ -26,9 +28,13 @@ import language.policy.Policy;
 public class WhyNotQueryStringGenerator {
 
 	private XMDP mXMDP;
+	private StateVarDefinition<Location> mrLocDef;
+	private StateVarDefinition<RobotSpeed> mrSpeedDef;
 
 	public WhyNotQueryStringGenerator(XMDP xmdp) {
 		mXMDP = xmdp;
+		mrLocDef = xmdp.getStateSpace().getStateVarDefinition("rLoc");
+		mrSpeedDef = xmdp.getStateSpace().getStateVarDefinition("rSpeed");
 	}
 
 	public Set<String> generateAllWhyNotStringQueries(Policy queryPolicy) throws XMDPException {
@@ -101,13 +107,11 @@ public class WhyNotQueryStringGenerator {
 
 	private boolean isBackTrackMoveToDestination(Policy queryPolicy, StateVarTuple queryState,
 			MoveToAction candidateMoveTo) throws VarNotFoundException {
-		StateVarDefinition<Location> rLocDef = mXMDP.getStateSpace().getStateVarDefinition("rLoc");
-
-		Location querySrcLoc = queryState.getStateVarValue(Location.class, rLocDef);
+		Location querySrcLoc = queryState.getStateVarValue(Location.class, mrLocDef);
 		Location candidateDest = candidateMoveTo.getDestination();
 
 		for (Decision decision : queryPolicy) {
-			Location srcLoc = decision.getState().getStateVarValue(Location.class, rLocDef);
+			Location srcLoc = decision.getState().getStateVarValue(Location.class, mrLocDef);
 
 			if (srcLoc.equals(candidateDest) && decision.getAction() instanceof MoveToAction) {
 				MoveToAction moveTo = (MoveToAction) decision.getAction();
@@ -121,32 +125,53 @@ public class WhyNotQueryStringGenerator {
 		return false;
 	}
 
-	private Set<String> createStringQueries(StateVarTuple queryState, Set<? extends IAction> preConfigActions,
-			Set<? extends IAction> mainQueryActions) {
+	private boolean isSuboptimalQueryAction(StateVarTuple queryState, SetSpeedAction preConfigSetSpeed,
+			MoveToAction mainQueryMoveTo) throws XMDPException {
+		Location rLocSrc = queryState.getStateVarValue(Location.class, mrLocDef);
+		RobotSpeed rSpeedSrc = preConfigSetSpeed == null ? queryState.getStateVarValue(RobotSpeed.class, mrSpeedDef)
+				: preConfigSetSpeed.getTargetSpeed();
+		Occlusion occlusion = mainQueryMoveTo.getOcclusion(mrLocDef.getStateVar(rLocSrc));
+
+		return occlusion == Occlusion.CLEAR && rSpeedSrc.getSpeed() < MobileRobotXMDPBuilder.FULL_SPEED;
+	}
+
+	private Set<String> createStringQueries(StateVarTuple queryState, Set<SetSpeedAction> preConfigSetSpeedActions,
+			Set<MoveToAction> mainQueryMoveToActions) throws XMDPException {
 		Set<String> stringQueries = new HashSet<>();
 
 		// Main query action (moveTo) is required
-		for (IAction mainQueryAction : mainQueryActions) {
+		for (MoveToAction mainQueryMoveTo : mainQueryMoveToActions) {
 
 			// Target QA is required
 			for (IQFunction<?, ?> targetQFunction : mXMDP.getQSpace()) {
 
 				// Pre-configuration action (setSpeed) is optional
-				if (preConfigActions.isEmpty()) {
-					String queryNoPreConfigAction = createStringQuery(queryState, null, mainQueryAction,
-							targetQFunction);
-					stringQueries.add(queryNoPreConfigAction);
+				if (preConfigSetSpeedActions.isEmpty()) {
+					createStringQueryFilterSuboptimalQuery(queryState, null, mainQueryMoveTo, targetQFunction,
+							stringQueries);
 				} else {
-					for (IAction preConfigAction : preConfigActions) {
-						String queryWithPreConfigAction = createStringQuery(queryState, preConfigAction,
-								mainQueryAction, targetQFunction);
-						stringQueries.add(queryWithPreConfigAction);
+					for (SetSpeedAction preConfigSetSpeed : preConfigSetSpeedActions) {
+						createStringQueryFilterSuboptimalQuery(queryState, preConfigSetSpeed, mainQueryMoveTo,
+								targetQFunction, stringQueries);
 					}
 				}
 			}
 		}
 
 		return stringQueries;
+	}
+
+	private void createStringQueryFilterSuboptimalQuery(StateVarTuple queryState, SetSpeedAction preConfigSetSpeed,
+			MoveToAction mainQueryMoveTo, IQFunction<?, ?> targetQFunction, Set<String> outputStringQueries)
+			throws XMDPException {
+		// Check if the query action is immediately suboptimal
+		boolean suboptimalQueryAction = isSuboptimalQueryAction(queryState, preConfigSetSpeed, mainQueryMoveTo);
+
+		// If so, exclude it
+		if (!suboptimalQueryAction) {
+			String queryStr = createStringQuery(queryState, preConfigSetSpeed, mainQueryMoveTo, targetQFunction);
+			outputStringQueries.add(queryStr);
+		}
 	}
 
 	private String createStringQuery(StateVarTuple queryState, IAction preConfigAction, IAction mainQueryAction,

@@ -41,6 +41,15 @@ public class ExplanationUtils {
 		return (JSONObject) explanationJsonObj.get(policyJsonFilename);
 	}
 
+	public static int getAgentIndex(File explanationDir) {
+		Pattern indexPattern = Pattern.compile("[0-9]+");
+		Matcher matcher = indexPattern.matcher(explanationDir.getName());
+		if (!matcher.find()) {
+			throw new IllegalArgumentException("No agent index in " + explanationDir.getName());
+		}
+		return Integer.parseInt(matcher.group());
+	}
+
 	public static String removeZeroValueComponents(String policyExplanation) {
 		Pattern pattern = Pattern.compile(EVENT_BASED_QA_VALUE_REGEX);
 		Matcher matcher = pattern.matcher(policyExplanation);

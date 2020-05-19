@@ -16,6 +16,7 @@ import language.exceptions.XMDPException;
 import language.mdp.XMDP;
 import language.policy.Policy;
 import mobilerobot.missiongen.MissionJSONGenerator;
+import mobilerobot.study.utilities.ExplanationUtils;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
 import uiconnector.PolicyReader;
@@ -56,10 +57,10 @@ public class WhyNotQueryGenerator {
 		File[] explanationDirs = QuestionUtils.listExplanationDirs(questionDirIn);
 
 		// Create why-not queries for all agents' solution policies
-		for (int agentIndex = 0; agentIndex < explanationDirs.length; agentIndex++) {
+		for (File explanationDir : explanationDirs) {
+			int agentIndex = ExplanationUtils.getAgentIndex(explanationDir);
 
 			// Read query policy from the agent's solnPolicy.json in questionDirIn/explanation-agent[Y]/
-			File explanationDir = explanationDirs[agentIndex];
 			File queryPolicyJsonFile = new File(explanationDir, "solnPolicy.json");
 			PolicyReader policyReader = new PolicyReader(xmdp);
 			Policy queryPolicy = policyReader.readPolicy(queryPolicyJsonFile);

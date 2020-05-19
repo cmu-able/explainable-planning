@@ -44,7 +44,7 @@ public class WhyNotQueryStringGenerator {
 		StateVarTuple goalState = mXMDP.getGoal();
 		StateVarTuple curState = iniState;
 
-		while (curState != goalState) {
+		while (!atGoalLocation(curState, goalState)) {
 			IAction curAction = queryPolicy.getAction(curState);
 
 			// Pre-configuration action (optional): setSpeed
@@ -249,6 +249,12 @@ public class WhyNotQueryStringGenerator {
 		}
 
 		throw new IllegalArgumentException("Wrong action type: " + curAction);
+	}
+
+	private boolean atGoalLocation(StateVarTuple curState, StateVarTuple goalState) throws VarNotFoundException {
+		Location curLoc = curState.getStateVarValue(Location.class, mrLocDef);
+		Location goalLoc = goalState.getStateVarValue(Location.class, mrLocDef);
+		return curLoc.equals(goalLoc);
 	}
 
 }

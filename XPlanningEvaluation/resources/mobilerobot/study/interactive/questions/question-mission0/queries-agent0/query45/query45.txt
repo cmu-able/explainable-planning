@@ -1,0 +1,1 @@
+rLoc=L17,rSpeed=0.7;moveTo(L18);intrusiveness

@@ -102,10 +102,10 @@ public class HPlanner {
 		XMDP queryXMDP = prismConnectorForHModel.getXMDP();
 		CostCriterion costCriterion = prismConnectorForHModel.getCostCriterion();
 
-		// Use PrismConnector for HModel (with query state to be made absorbing state in the underlying PRISM MDP model)
+		// Use PrismConnector for HModel -- with query state(s) to be made absorbing state(s) in the underlying PRISM MDP model
 		// to export PRISM explicit model files from the XMDP,
 		// so that GRBConnector can create the corresponding ExplicitMDP
-		// ExplicitMDP has the query state as absorbing state
+		// ExplicitMDP has the query state(s) as absorbing state(s)
 		PrismExplicitModelPointer prismExplicitModelPtr = prismConnectorForHModel.exportExplicitModelFiles();
 		ValueEncodingScheme encodings = prismConnectorForHModel.getPrismMDPTranslator().getValueEncodingScheme();
 		PrismExplicitModelReader prismExplicitModelReader = new PrismExplicitModelReader(prismExplicitModelPtr,
@@ -119,8 +119,7 @@ public class HPlanner {
 		// AlternativeExplorer: use GRBConnector to compute a constraint-satisfying alternative policy on HModel,
 		// i.e., satisfying why-not query and improve the query QA
 		AlternativeExplorer altExplorer = new AlternativeExplorer(grbConnector);
-		return altExplorer.computeHardConstraintSatisfyingAlternative(queryXMDP, queryQFunction,
-				qaValueConstraint);
+		return altExplorer.computeHardConstraintSatisfyingAlternative(queryXMDP, queryQFunction, qaValueConstraint);
 	}
 
 	private void removeResidualQueryPolicy(XMDP originalXMDP, Policy queryPolicy, HPolicy hPolicyWithResidual)

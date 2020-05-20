@@ -58,6 +58,10 @@ public class Policy implements Iterable<Decision> {
 		return mPolicy.get(state);
 	}
 
+	public boolean containsState(StateVarTuple state) {
+		return mPolicy.containsKey(state);
+	}
+
 	public boolean containsAction(IAction action) {
 		return mPolicy.containsValue(action);
 	}

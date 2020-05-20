@@ -23,6 +23,7 @@ import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.domain.models.IAction;
 import language.exceptions.XMDPException;
+import language.mdp.StateVarTuple;
 import language.mdp.XMDP;
 import language.objectives.CostCriterion;
 import language.policy.Policy;
@@ -77,18 +78,24 @@ public class WhyNotXPlanner {
 		Policy queryPolicy = policyReader.readPolicy(queryPolicyJsonFile);
 		PolicyInfo queryPolicyInfo = policyAnalyzer.computePartialPolicyInfo(queryPolicy, xmdp.getInitialState());
 
+		StateVarTuple queryState = whyNotQuery.getQueryState();
 		// Query actions: pre-configuration actions (possibly none) and main query action
 		List<IAction> queryActions = whyNotQuery.getQueryActions();
 		IAction queryAction = queryActions.get(queryActions.size() - 1);
 		List<IAction> preConfigActions = queryActions.subList(0, queryActions.size() - 1);
 
 		// HModel and HPlanner
-		HModel<?> hModel = hModelGenerator.generateHModel(queryPolicy, whyNotQuery.getQueryState(), queryAction,
-				preConfigActions);
+		HModel<?> hModel = hModelGenerator.generateHModel(queryPolicy, queryState, queryAction, preConfigActions);
 		HPlanner hPlanner = new HPlanner(costCriterion, prismConnSettings);
 
 		// HPolicy and HPolicyExplainer
 		HPolicy hPolicy = hPlanner.computeHPolicy(hModel, queryPolicy, whyNotQuery.getQueryQFunction());
+
+		// Check if the query action forces the agent to revisit a state prior to the query state
+		// If so, we still produce HPolicy, but it will not contain the query state and action
+		// Indicate this as a flag in explanation.json
+		boolean forcesRevisitPriorState = hPolicy.forcesRevisitPriorState(queryState);
+
 		PolicyInfo hPolicyInfo = policyAnalyzer.computeHPolicyInfo(hPolicy);
 		HPolicyExplainer hPolicyExplainer = new HPolicyExplainer(policyAnalyzer);
 		HPolicyExplanation hPolicyExplanation = hPolicyExplainer.explainHPolicy(queryPolicyInfo, whyNotQuery, hPolicy);
@@ -115,6 +122,7 @@ public class WhyNotXPlanner {
 		explanationWriter.addPolicyQAValues(hPolicyInfo.getQuantitativePolicy());
 		explanationWriter.addCustomizedExplanationInfo("Why-Not Explanation", whyNotVerbalization);
 		explanationWriter.addCustomizedExplanationInfo("HPolicy Tag", hPolicyExplanation.getHPolicyTag().toString());
+		explanationWriter.addCustomizedExplanationInfo("Forces Revisit Prior State", forcesRevisitPriorState);
 		explanationWriter.exportExplanationToFile(explanationJsonFilename);
 
 		return hPolicyExplanation;

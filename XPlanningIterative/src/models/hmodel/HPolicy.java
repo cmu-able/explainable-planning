@@ -65,6 +65,22 @@ public class HPolicy {
 		return mPartialHPolicies.get(newIniState);
 	}
 
+	/**
+	 * Determine whether the query action forces the agent to revisit a state prior to the query state.
+	 * 
+	 * If so, it means that the total HPolicy, after removing all the residual decisions, does NOT contain the query
+	 * state.
+	 * 
+	 * Note: All residual decisions must be removed via removeResidualDecision() before calling this method.
+	 * 
+	 * @param queryState
+	 *            : Query state
+	 * @return Whether the total HPolicy, with all residual decisions removed, does NOT contain the query state
+	 */
+	public boolean forcesRevisitPriorState(StateVarTuple queryState) {
+		return !mTotalHPolicy.containsState(queryState);
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

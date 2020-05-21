@@ -26,5 +26,6 @@
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/XPlanning"/>
 	<classpathentry kind="lib" path="/XPlanning/lib/prism.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/XPlanningIterative"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

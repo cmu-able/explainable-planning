@@ -35,6 +35,9 @@ public class WhyNotQueryGenerator {
 
 		for (File questionDirIn : questionDirsIn) {
 			File missionFile = QuestionUtils.getMissionJSONFile(questionDirIn);
+
+			// Create a symbolic link mission[X].json in questionDirOut that points to
+			// the mission file in questionDirIn
 			File questionDirOut = QuestionUtils.initializeQuestionDir(missionFile, false);
 
 			generateAllWhyNotQueries(questionDirIn, questionDirOut);
@@ -70,15 +73,20 @@ public class WhyNotQueryGenerator {
 
 			// Write all allowable why-not queries to files
 			// Files' structure: questionDirOut/queries-agent[i]/query0/query0.txt ... /query[k]/query[k].txt
-			writeQueriesToFiles(whyNotStringQueries, questionDirOut, agentIndex);
+			writeQueriesToFiles(questionDirOut, agentIndex, queryPolicyJsonFile, whyNotStringQueries);
 		}
 	}
 
-	private void writeQueriesToFiles(Set<String> whyNotStringQueries, File questionDirOut, int agentIndex)
-			throws IOException {
+	private void writeQueriesToFiles(File questionDirOut, int agentIndex, File queryPolicyJsonFile,
+			Set<String> whyNotStringQueries) throws IOException {
 		// Create /queries-agent[i]/ dir under questionDirOut
 		Path queriesPath = questionDirOut.toPath().resolve("queries-agent" + agentIndex);
 		Files.createDirectory(queriesPath);
+
+		// Create a symbolic link queryPolicy.json in questionDirOut/queries-agent[i]/ that points to
+		// the agent[i]'s policy in questionDirIn
+		Path queryPolicyFileLink = queriesPath.resolve("queryPolicy.json");
+		Files.createSymbolicLink(queryPolicyFileLink, queryPolicyJsonFile.toPath());
 
 		// For each query, create /query[j]/ dir under /queries-agent[i]/ dir
 		int j = 0;

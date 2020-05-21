@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 
+import org.apache.commons.io.FilenameUtils;
 import org.json.simple.parser.ParseException;
 
 import examples.common.DSMException;
@@ -23,6 +25,7 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 public class WhyNotXPlanningRunner {
 
 	private MobileRobotWhyNotXPlanner mWhyNotXPlanner;
+	private XPlannerOutDirectories mOutputDirs;
 
 	public WhyNotXPlanningRunner(File mapsJsonDir) throws IOException {
 		XPlannerOutDirectories outputDirs = FileIOUtils.createXPlannerOutDirectories();
@@ -34,6 +37,7 @@ public class WhyNotXPlanningRunner {
 		MobileRobotXPlanner.setVerbalizerOrdering(verbalizerSettings);
 
 		mWhyNotXPlanner = new MobileRobotWhyNotXPlanner(mapsJsonDir, outputDirs, verbalizerSettings);
+		mOutputDirs = outputDirs;
 	}
 
 	/**
@@ -67,6 +71,29 @@ public class WhyNotXPlanningRunner {
 		String whyNotQueryStr = new String(Files.readAllBytes(whyNotQueryFile.toPath()));
 
 		mWhyNotXPlanner.answerWhyNotQuery(missionJsonFile, queryPolicyJsonFile, whyNotQueryStr);
+
+		// Copy output HPolicy: hPolicy.json and query explanation: mission[X]_explanation.json to /query[j]/ dir
+		copyOutputToQueryDir(missionJsonFile, queryDir);
+	}
+
+	private void copyOutputToQueryDir(File missionJsonFile, File queryDir) throws IOException {
+		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
+
+		// Policies output path: /[XPlannerOutDir]/policies/mission[X]/
+		Path policiesOutputPath = mOutputDirs.getPoliciesOutputPath().resolve(missionName);
+		String hPolicyFilename = "hPolicy.json";
+		Path hPolicyPath = policiesOutputPath.resolve(hPolicyFilename);
+
+		// Copy hPolicy.json from /[XPlannerOutDir]/policies/mission[X]/ to /query[j]/ dir
+		Files.copy(hPolicyPath, queryDir.toPath().resolve(hPolicyFilename));
+
+		// Explanations output path: /[XPlannerOutDir]/explanations/
+		String queryExplanationFilename = missionName + "_explanation.json";
+		Path explanationsOutputPath = mOutputDirs.getExplanationsOutputPath();
+		Path queryExplanationPath = explanationsOutputPath.resolve(queryExplanationFilename);
+
+		// Copy mission[X]_explanation.json from /[XPlannerOutDir]/explanations/ to /query[j]/ dir
+		Files.copy(queryExplanationPath, queryDir.toPath().resolve(queryExplanationFilename));
 	}
 
 	/**

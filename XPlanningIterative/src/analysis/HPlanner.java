@@ -25,6 +25,7 @@ import solver.prismconnector.PrismConnector;
 import solver.prismconnector.PrismConnectorSettings;
 import solver.prismconnector.ValueEncodingScheme;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
+import solver.prismconnector.exceptions.GoalStatesParsingException;
 import solver.prismconnector.exceptions.ResultParsingException;
 import solver.prismconnector.explicitmodel.PrismExplicitModelPointer;
 import solver.prismconnector.explicitmodel.PrismExplicitModelReader;
@@ -72,20 +73,32 @@ public class HPlanner {
 			double qaValueConstraint = hModel.getQAValueConstraint(newIniState, queryQFunction);
 
 			// Compute a constraint-satisfying alternative policy starting from the new initial state
-			PolicyInfo partialHPolicy = computePartialHPolicyInfo(prismConnectorForHModel, queryQFunction,
-					qaValueConstraint);
+			PolicyInfo partialHPolicy = null;
+			try {
+				partialHPolicy = computePartialHPolicyInfo(prismConnectorForHModel, queryQFunction, qaValueConstraint);
 
-			// If no QA-constraint-satisfying alternative policy exists, 
-			// try to compute alternative policy that satisfies why-not query
-			if (partialHPolicy == null) {
-				partialHPolicy = prismConnectorForHModel.generateOptimalPolicy();
+				// If no QA-constraint-satisfying alternative policy exists, 
+				// try to compute alternative policy that satisfies why-not query
+				if (partialHPolicy == null) {
+					partialHPolicy = prismConnectorForHModel.generateOptimalPolicy();
+				}
+
+				// Map each new initial state to partial HPolicy
+				hPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
+
+			} catch (GoalStatesParsingException e) {
+				// The query makes the goal states unreachable in HModel
+				// PRISM explicit model does not contain unreachable states
+
+				// HPolicy will not have a mapping from this newIniState to partialHPolicy
+
+				// If the mapping from newIniStates to partialHPolicies is empty,
+				// HPolicy.solutionExists() will return false
 			}
 
 			// Close down PRISM
 			prismConnectorForHModel.terminate();
 
-			// Map each new initial state to partial HPolicy
-			hPolicy.mapNewInitialStateToPartialHPolicyInfo(newIniState, partialHPolicy);
 		}
 
 		// Remove all "residual" decisions,

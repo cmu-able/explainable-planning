@@ -91,6 +91,14 @@ public class WhyNotXPlanner {
 		// HPolicy and HPolicyExplainer
 		HPolicy hPolicy = hPlanner.computeHPolicy(hModel, queryPolicy, whyNotQuery.getQueryQFunction());
 
+		// Check if a solution for HPolicy exists
+		if (!hPolicy.solutionExists()) {
+			// This query forces goal states to be unreachable in HModel
+
+			// Skip the HPolicy explanation steps below
+			return null;
+		}
+
 		// Check if the query action forces the agent to revisit a state prior to the query state
 		// If so, we still produce HPolicy, but it will not contain the query state and action
 		// Indicate this as a flag in explanation.json

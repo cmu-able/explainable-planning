@@ -81,6 +81,18 @@ public class HPolicy {
 		return !mTotalHPolicy.containsState(queryState);
 	}
 
+	/**
+	 * Solution for HPolicy exists iff a goal state is reachable.
+	 * 
+	 * Some invalid queries may force goal states to be unreachable in HModel. In such case, HPolicy does not have a
+	 * solution.
+	 * 
+	 * @return Whether a solution for HPolicy exists
+	 */
+	public boolean solutionExists() {
+		return !mPartialHPolicies.isEmpty();
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj == this) {

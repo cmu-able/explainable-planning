@@ -99,15 +99,17 @@ public class WhyNotXPlanner {
 			return null;
 		}
 
-		// Check if the query action forces the agent to revisit a state prior to the query state
-		// If so, we still produce HPolicy, but it will not contain the query state and action
-		// Indicate this as a flag in explanation.json
-		boolean forcesRevisitPriorState = hPolicy.forcesRevisitPriorState(queryState);
-
-		PolicyInfo hPolicyInfo = policyAnalyzer.computeHPolicyInfo(hPolicy);
 		HPolicyExplainer hPolicyExplainer = new HPolicyExplainer(policyAnalyzer);
 		HPolicyExplanation hPolicyExplanation = hPolicyExplainer.explainHPolicy(queryPolicyInfo, whyNotQuery, hPolicy);
 
+		// Output HPolicyExplanation to file
+		outputHPolicyExplanation(problemFile, costCriterion, whyNotQuery, hPolicyExplanation);
+
+		return hPolicyExplanation;
+	}
+
+	private void outputHPolicyExplanation(File problemFile, CostCriterion costCriterion, WhyNotQuery<?, ?> whyNotQuery,
+			HPolicyExplanation hPolicyExplanation) throws IOException {
 		// HPolicyVerbalizer
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
 		Path policyJsonPath = mOutputDirs.getPoliciesOutputPath().resolve(problemName);
@@ -124,7 +126,17 @@ public class WhyNotXPlanner {
 		ExplanationWriter explanationWriter = new ExplanationWriter(explanationOutputPath.toFile(), verbalizer);
 
 		// Customized why-not explanation content
-		explanationWriter.addDefaultExplanationInfo(problemFile.getName(), queryPolicy);
+		PolicyInfo queryPolicyInfo = hPolicyExplanation.getQueryPolicyInfo();
+		PolicyInfo hPolicyInfo = hPolicyExplanation.getHPolicyInfo();
+
+		// Check if the query action forces the agent to revisit a state prior to the query state
+		// If so, we still produce HPolicy, but it will not contain the query state and action
+		// Indicate this as a flag in explanation.json
+		StateVarTuple queryState = whyNotQuery.getQueryState();
+		HPolicy hPolicy = hPolicyExplanation.getHPolicy();
+		boolean forcesRevisitPriorState = hPolicy.forcesRevisitPriorState(queryState);
+
+		explanationWriter.addDefaultExplanationInfo(problemFile.getName(), queryPolicyInfo.getPolicy());
 		explanationWriter.addPolicyEntry("HPolicy", hPolicyInfo.getPolicy());
 		explanationWriter.addPolicyQAValues(queryPolicyInfo.getQuantitativePolicy());
 		explanationWriter.addPolicyQAValues(hPolicyInfo.getQuantitativePolicy());
@@ -132,8 +144,6 @@ public class WhyNotXPlanner {
 		explanationWriter.addCustomizedExplanationInfo("HPolicy Tag", hPolicyExplanation.getHPolicyTag().toString());
 		explanationWriter.addCustomizedExplanationInfo("Forces Revisit Prior State", forcesRevisitPriorState);
 		explanationWriter.exportExplanationToFile(explanationJsonFilename);
-
-		return hPolicyExplanation;
 	}
 
 	public static XPlannerOutDirectories getDefaultXPlannerOutDirectories() throws IOException {

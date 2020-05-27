@@ -2,6 +2,7 @@ package models.explanation;
 
 import explanation.analysis.PolicyInfo;
 import explanation.analysis.Tradeoff;
+import models.hmodel.HPolicy;
 
 public class HPolicyExplanation {
 
@@ -10,12 +11,18 @@ public class HPolicyExplanation {
 	 */
 	private volatile int hashCode;
 
+	private HPolicy mHPolicy;
 	private HPolicyTag mHPolicyTag;
 	private Tradeoff mTradeoff;
 
-	public HPolicyExplanation(HPolicyTag hPolicyTag, Tradeoff tradeoff) {
+	public HPolicyExplanation(HPolicy hPolicy, HPolicyTag hPolicyTag, Tradeoff tradeoff) {
+		mHPolicy = hPolicy;
 		mHPolicyTag = hPolicyTag;
 		mTradeoff = tradeoff;
+	}
+
+	public HPolicy getHPolicy() {
+		return mHPolicy;
 	}
 
 	public HPolicyTag getHPolicyTag() {
@@ -43,7 +50,8 @@ public class HPolicyExplanation {
 			return false;
 		}
 		HPolicyExplanation explanation = (HPolicyExplanation) obj;
-		return explanation.mHPolicyTag == mHPolicyTag && explanation.mTradeoff.equals(mTradeoff);
+		return explanation.mHPolicy.equals(mHPolicy) && explanation.mHPolicyTag == mHPolicyTag
+				&& explanation.mTradeoff.equals(mTradeoff);
 	}
 
 	@Override
@@ -51,6 +59,7 @@ public class HPolicyExplanation {
 		int result = hashCode;
 		if (result == 0) {
 			result = 17;
+			result = 31 * result + mHPolicy.hashCode();
 			result = 31 * result + mHPolicyTag.hashCode();
 			result = 31 * result + mTradeoff.hashCode();
 			hashCode = result;

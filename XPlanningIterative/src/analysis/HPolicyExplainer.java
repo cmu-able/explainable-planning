@@ -70,6 +70,6 @@ public class HPolicyExplainer {
 			hPolicyTag = HPolicyTag.EQUIVALENT;
 		}
 
-		return new HPolicyExplanation(hPolicyTag, tradeoff);
+		return new HPolicyExplanation(hPolicy, hPolicyTag, tradeoff);
 	}
 }

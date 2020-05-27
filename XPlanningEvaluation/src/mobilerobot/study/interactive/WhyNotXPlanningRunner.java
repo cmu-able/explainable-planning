@@ -19,6 +19,7 @@ import main.MobileRobotWhyNotXPlanner;
 import mobilerobot.missiongen.MissionJSONGenerator;
 import mobilerobot.study.utilities.QuestionUtils;
 import mobilerobot.utilities.FileIOUtils;
+import models.explanation.HPolicyExplanation;
 import prism.PrismException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 
@@ -70,10 +71,17 @@ public class WhyNotXPlanningRunner {
 		File whyNotQueryFile = new File(queryDir, queryID + ".txt");
 		String whyNotQueryStr = new String(Files.readAllBytes(whyNotQueryFile.toPath()));
 
-		mWhyNotXPlanner.answerWhyNotQuery(missionJsonFile, queryPolicyJsonFile, whyNotQueryStr);
+		HPolicyExplanation hPolicyExplanation = mWhyNotXPlanner.answerWhyNotQuery(missionJsonFile, queryPolicyJsonFile,
+				whyNotQueryStr);
 
-		// Copy output HPolicy: hPolicy.json and query explanation: mission[X]_explanation.json to /query[j]/ dir
-		copyOutputToQueryDir(missionJsonFile, queryDir);
+		// hPolicyExplanation is null if no HPolicy solution exists
+		// In such case, no output files
+
+		if (hPolicyExplanation != null) {
+			// HPolicy solution exists
+			// Copy output HPolicy: hPolicy.json and query explanation: mission[X]_explanation.json to /query[j]/ dir
+			copyOutputToQueryDir(missionJsonFile, queryDir);
+		}
 	}
 
 	private void copyOutputToQueryDir(File missionJsonFile, File queryDir) throws IOException {

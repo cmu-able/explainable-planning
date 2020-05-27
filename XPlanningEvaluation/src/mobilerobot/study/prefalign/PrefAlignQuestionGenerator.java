@@ -38,7 +38,7 @@ public class PrefAlignQuestionGenerator implements IQuestionGenerator {
 
 	public PrefAlignQuestionGenerator(File mapsJsonDir) throws IOException {
 		mAgentGenerator = new PrefAlignAgentGenerator(mapsJsonDir);
-		mQuestionViz = new QuestionViz(mapsJsonDir);
+		mQuestionViz = new QuestionViz(mapsJsonDir, true);
 	}
 
 	@Override

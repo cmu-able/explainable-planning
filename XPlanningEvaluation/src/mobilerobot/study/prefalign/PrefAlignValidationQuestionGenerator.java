@@ -45,7 +45,7 @@ public class PrefAlignValidationQuestionGenerator {
 		mValidationMapsDir = validationMapsDir;
 		mAllLinkedPrefAlignQuestions = allLinkedPrefAlignQuestions;
 		mAgentGenerator = new PrefAlignAgentGenerator(validationMapsDir);
-		mQuestionViz = new QuestionViz(validationMapsDir);
+		mQuestionViz = new QuestionViz(validationMapsDir, true);
 	}
 
 	public File[][] generateValidationMissionFiles(int startMissionIndex)

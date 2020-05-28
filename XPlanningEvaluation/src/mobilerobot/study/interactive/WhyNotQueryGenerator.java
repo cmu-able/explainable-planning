@@ -63,7 +63,11 @@ public class WhyNotQueryGenerator {
 		for (File explanationDir : explanationDirs) {
 			int agentIndex = ExplanationUtils.getAgentIndex(explanationDir);
 
-			// Read query policy from the agent's solnPolicy.json in questionDirIn/explanation-agent[Y]/
+			// Get the agent's mission[Y].json file from questionDirIn/explanation-agent[i]/
+			// This is not necessarily the same as mission[X].json
+			File agentMissionJsonFile = ExplanationUtils.getMissionJSONFile(explanationDir);
+
+			// Read query policy from the agent's solnPolicy.json in questionDirIn/explanation-agent[i]/
 			File queryPolicyJsonFile = new File(explanationDir, "solnPolicy.json");
 			PolicyReader policyReader = new PolicyReader(xmdp);
 			Policy queryPolicy = policyReader.readPolicy(queryPolicyJsonFile);
@@ -73,15 +77,21 @@ public class WhyNotQueryGenerator {
 
 			// Write all allowable why-not queries to files
 			// Files' structure: questionDirOut/queries-agent[i]/query0/query0.txt ... /query[k]/query[k].txt
-			writeQueriesToFiles(questionDirOut, agentIndex, queryPolicyJsonFile, whyNotStringQueries);
+			writeQueriesToFiles(questionDirOut, agentIndex, agentMissionJsonFile, queryPolicyJsonFile,
+					whyNotStringQueries);
 		}
 	}
 
-	private void writeQueriesToFiles(File questionDirOut, int agentIndex, File queryPolicyJsonFile,
-			Set<String> whyNotStringQueries) throws IOException {
+	private void writeQueriesToFiles(File questionDirOut, int agentIndex, File agentMissionJsonFile,
+			File queryPolicyJsonFile, Set<String> whyNotStringQueries) throws IOException {
 		// Create /queries-agent[i]/ dir under questionDirOut
 		Path queriesPath = questionDirOut.toPath().resolve("queries-agent" + agentIndex);
 		Files.createDirectory(queriesPath);
+
+		// Create a symbolic link mission[Y].json in questionDirOut/queries-agent[i]/ that points to
+		// the agent[i]'s mission file in questionDirIn
+		Path agentMissionFileLink = queriesPath.resolve(agentMissionJsonFile.getName());
+		Files.createSymbolicLink(agentMissionFileLink, agentMissionJsonFile.toPath());
 
 		// Create a symbolic link queryPolicy.json in questionDirOut/queries-agent[i]/ that points to
 		// the agent[i]'s policy in questionDirIn

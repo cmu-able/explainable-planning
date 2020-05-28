@@ -18,13 +18,20 @@ public class ExplanationUtils {
 	private static final String ZERO_UNIT_REGEX = "\\s0 [a-z]+"; // 0 [unit(s)]
 	private static final String ZERO_PENALTY_REGEX = "(0-penalty)";
 
+	private static final String JSON_EXTENSION = ".json";
+
 	private ExplanationUtils() {
 		throw new IllegalStateException("Utility class");
 	}
 
 	public static File getExplanationJSONFile(File explanationDir) {
 		// There is only 1 [explanation name].json per explanation dir
-		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", ".json")[0];
+		return FileIOUtils.listFilesWithContainFilter(explanationDir, "explanation", JSON_EXTENSION)[0];
+	}
+
+	public static File getMissionJSONFile(File explanationDir) {
+		// There is only 1 mission[X].json per explanation dir
+		return FileIOUtils.listFilesWithRegexFilter(explanationDir, "mission[0-9]+", JSON_EXTENSION)[0];
 	}
 
 	public static String[] getExplanationParagraphs(File explanationDir) throws IOException, ParseException {

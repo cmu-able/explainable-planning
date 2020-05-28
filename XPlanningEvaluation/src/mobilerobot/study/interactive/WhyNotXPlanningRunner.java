@@ -44,12 +44,19 @@ public class WhyNotXPlanningRunner {
 	/**
 	 * Run why-not explanation on a given query.
 	 * 
-	 * The queries parent directory of the given query directory must contain a symbolic link queryPolicy.json.
+	 * The queries parent directory /queries-agent[i]/ of the given query directory /query[j]/ must contain symbolic
+	 * links mission[Y].json and queryPolicy.json.
+	 * 
+	 * The symbolic link mission[Y].json points to the agent[i]'s mission file.
+	 * 
+	 * The symbolic link queryPolicy.json points to the agent[i]'s solution policy file.
 	 * 
 	 * @param missionJsonFile
-	 *            : Mission file or symbolic link to it: mission[X].json
+	 *            : Mission file mission[Y].json or a symbolic link to it
+	 * @param queryPolicyJsonFile
+	 *            : Query policy file queryPolicy.json or a symbolic link to it
 	 * @param queryDir
-	 *            : Query_j directory containing query[j].txt
+	 *            : Query directory /query[j]/ containing query[j].txt
 	 * @throws IOException
 	 * @throws DSMException
 	 * @throws XMDPException
@@ -58,14 +65,8 @@ public class WhyNotXPlanningRunner {
 	 * @throws PrismException
 	 * @throws GRBException
 	 */
-	public void runQuery(File missionJsonFile, File queryDir) throws IOException, DSMException, XMDPException,
-			PrismConnectorException, ParseException, PrismException, GRBException {
-		// Queries parent dir: /queries-agent[i]/ contains all allowable queries of the agent[i]'s policy
-		File queriesParentDir = queryDir.getParentFile();
-
-		// /queries-agent[i]/ contains a symbolic link queryPolicy.json that points to the agent[i]'s policy
-		File queryPolicyJsonFile = new File(queriesParentDir, "queryPolicy.json");
-
+	public void runQuery(File missionJsonFile, File queryPolicyJsonFile, File queryDir) throws IOException,
+			DSMException, XMDPException, PrismConnectorException, ParseException, PrismException, GRBException {
 		// Query dir: /query[j]/ contains query[j].txt
 		String queryID = queryDir.getName();
 		File whyNotQueryFile = new File(queryDir, queryID + ".txt");
@@ -109,8 +110,11 @@ public class WhyNotXPlanningRunner {
 	 * 
 	 * Directory structure: /question-mission[X]/ -> /queries-agent[i]/ -> /query[j]/ -> query[j].txt.
 	 * 
-	 * Directory /question-mission[X]/ contains a symbolic link to mission[X].json. Each /queries-agent[i]/ contains a
-	 * symbolic link to the agent[i]'s policy JSON file.
+	 * Directory /question-mission[X]/ contains a symbolic link mission[X].json, which points to the actual
+	 * mission[X].json file in study.prefalign.
+	 * 
+	 * Each /queries-agent[i]/ contains symbolic links mission[Y].json and queryPolicy.json, which point to the actual
+	 * mission[Y].json file of the agent[i], and the actual agent[i]'s solnPolicy.json file, respectively.
 	 * 
 	 * @param questionDir
 	 *            : Question directory of a particular mission: /question-mission[X]/
@@ -124,22 +128,28 @@ public class WhyNotXPlanningRunner {
 	 */
 	public void runAllQueriesOfSingleQuestion(File questionDir) throws IOException, DSMException, XMDPException,
 			PrismConnectorException, ParseException, PrismException, GRBException {
-		// Symbolic link /question-mission[X]/mission[X].json points to the actual mission[X].json file
-		// in study.prefalign
-		File missionJsonFile = QuestionUtils.getMissionJSONFile(questionDir);
-
-		// /question-mission[X] contains multiple directories /queries-agent[i]/ (and potentially others
+		// /question-mission[X]/ contains multiple directories /queries-agent[i]/ (and potentially others
 		// if we allow build-up queries)
 		File[] queriesParentDirs = questionDir.listFiles(File::isDirectory);
 
 		for (File queriesParentDir : queriesParentDirs) {
+			// Each /queries-agent[i]/ contains:
+
+			// Symbolic link mission[Y].json that points to the actual agent[i]'s mission file
+			// in study.prefalign
+			File agentMissionJsonFile = QuestionUtils.getMissionJSONFile(queriesParentDir);
+
+			// Symbolic link queryPolicy.json points to the actual agent[i]'s solution policy file
+			// in study.prefalign
+			File queryPolicyJsonFile = new File(queriesParentDir, "queryPolicy.json");
+
 			// Each /queries-agent[i]/ contains all allowable queries of the agent[i]'s policy (or potentially
 			// HPolicy from a prior query)
 			File[] queryDirs = queriesParentDir.listFiles(File::isDirectory);
 
 			// Run each query[j] in /queries-agent[i]/
 			for (File queryDir : queryDirs) {
-				runQuery(missionJsonFile, queryDir);
+				runQuery(agentMissionJsonFile, queryPolicyJsonFile, queryDir);
 			}
 		}
 	}

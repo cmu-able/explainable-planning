@@ -1,0 +1,1 @@
+rLoc=L17,rSpeed=0.7;setSpeed(0.35),moveTo(L16);travelTime

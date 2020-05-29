@@ -38,7 +38,7 @@ public class DartWhyNotXPlanner implements IWhyNotXPlanner {
 			throws DSMException, XMDPException, PrismConnectorException, IOException, ParseException, PrismException,
 			GRBException {
 		return mWhyNotXPlanner.answerWhyNotQuery(problemFile, CostCriterion.TOTAL_COST, queryPolicyJsonFile,
-				whyNotQueryStr);
+				whyNotQueryStr, null);
 	}
 
 	public static void main(String[] args) throws IOException, DSMException, XMDPException, PrismConnectorException,

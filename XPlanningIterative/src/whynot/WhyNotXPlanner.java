@@ -61,8 +61,8 @@ public class WhyNotXPlanner {
 	}
 
 	public HPolicyExplanation answerWhyNotQuery(File problemFile, CostCriterion costCriterion, File queryPolicyJsonFile,
-			String whyNotQueryStr) throws DSMException, XMDPException, PrismConnectorException, IOException,
-			ParseException, PrismException, GRBException {
+			String whyNotQueryStr, String nonRepeatableQueryVarName) throws DSMException, XMDPException,
+			PrismConnectorException, IOException, ParseException, PrismException, GRBException {
 		XMDP xmdp = mXMDPLoader.loadXMDP(problemFile);
 
 		WhyNotQueryReader queryReader = new WhyNotQueryReader(xmdp);
@@ -71,7 +71,7 @@ public class WhyNotXPlanner {
 		// HModelGenerator and PolicyAnalyzer
 		PrismConnectorSettings prismConnSettings = XPlanner.createPrismConnectorSettings(problemFile, mOutputDirs);
 		PolicyAnalyzer policyAnalyzer = new PolicyAnalyzer(xmdp, costCriterion, prismConnSettings);
-		HModelGenerator hModelGenerator = new HModelGenerator(policyAnalyzer);
+		HModelGenerator hModelGenerator = new HModelGenerator(policyAnalyzer, nonRepeatableQueryVarName);
 
 		// Query policy
 		PolicyReader policyReader = new PolicyReader(xmdp);

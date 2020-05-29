@@ -60,6 +60,12 @@ public class HPlanner {
 		queryStates.addAll(preConfigPolicyConstraints.keySet());
 		queryStates.add(finalQueryState);
 
+		if (hModel.hasNonRepeatableQueryPredicate()) {
+			// Add non-repeatable query predicate (e.g., rLoc=L[Q]) to the set of all query states
+			// This prevents HPolicy to undo the effect of the main query action
+			queryStates.add(hModel.getNonRepeatableQueryPredicate());
+		}
+
 		for (StateVarTuple newIniState : hModel.getAllDestStatesOfQuery()) {
 
 			// Query XMDP has one of the resulting states of the why-not query as initial state

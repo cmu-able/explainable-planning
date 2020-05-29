@@ -21,10 +21,12 @@ public class HModelGenerator {
 
 	private XMDP mOriginalXMDP;
 	private PolicyAnalyzer mPolicyAnalyzer;
+	private String mNonRepeatableQueryVarName;
 
-	public HModelGenerator(PolicyAnalyzer policyAnalyzer) {
+	public HModelGenerator(PolicyAnalyzer policyAnalyzer, String nonRepeatableQueryVarName) {
 		mOriginalXMDP = policyAnalyzer.getXMDP();
 		mPolicyAnalyzer = policyAnalyzer;
+		mNonRepeatableQueryVarName = nonRepeatableQueryVarName;
 	}
 
 	/**
@@ -49,7 +51,8 @@ public class HModelGenerator {
 	public <E extends IAction> HModel<E> generateHModel(Policy queryPolicy, StateVarTuple queryState, E queryAction,
 			List<? extends IAction> preConfigActions) throws ResultParsingException, XMDPException, PrismException {
 		// Create HModel
-		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction, preConfigActions);
+		HModel<E> hModel = new HModel<>(mOriginalXMDP, queryState, queryAction, preConfigActions,
+				mNonRepeatableQueryVarName);
 
 		// Computer QA value constraints for HModel
 		computeQAValueConstraintsForHModel(hModel, queryPolicy, queryState);

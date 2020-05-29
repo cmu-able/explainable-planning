@@ -41,7 +41,7 @@ public class MobileRobotWhyNotXPlanner implements IWhyNotXPlanner {
 			throws DSMException, XMDPException, PrismConnectorException, IOException, ParseException, PrismException,
 			GRBException {
 		return mWhyNotXPlanner.answerWhyNotQuery(missionJsonFile, CostCriterion.TOTAL_COST, queryPolicyJsonFile,
-				whyNotQueryStr);
+				whyNotQueryStr, "rLoc");
 	}
 
 	public static void main(String[] args) throws IOException, DSMException, XMDPException, PrismConnectorException,

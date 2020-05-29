@@ -14,7 +14,9 @@ import language.domain.models.ActionDefinition;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarValue;
 import language.domain.models.StateVar;
+import language.domain.models.StateVarDefinition;
 import language.exceptions.IncompatibleEffectClassException;
+import language.exceptions.VarNotFoundException;
 import language.exceptions.XMDPException;
 import language.mdp.Discriminant;
 import language.mdp.DiscriminantClass;
@@ -41,6 +43,10 @@ public class HModel<E extends IAction> {
 
 	// First query state (may not be the final query state)
 	private StateVarTuple mQueryState;
+
+	// Non-repeatable query state variable
+	// HPolicy must not revisit this state value
+	private StateVar<? extends IStateVarValue> mNonRepeatableQueryStateVar;
 
 	// Main query action (final query action)
 	private E mQueryAction;
@@ -70,12 +76,17 @@ public class HModel<E extends IAction> {
 	// QA value constraints for alternative policy, starting from each resulting state of the query onwards
 	private Map<StateVarTuple, Map<IQFunction<?, ?>, Double>> mQueryQAValueConstraints = new HashMap<>();
 
-	public HModel(XMDP originalXMDP, StateVarTuple queryState, E queryAction, List<? extends IAction> preConfigActions)
-			throws XMDPException {
+	public HModel(XMDP originalXMDP, StateVarTuple queryState, E queryAction, List<? extends IAction> preConfigActions,
+			String nonRepeatableQueryVarName) throws XMDPException {
 		mOriginalXMDP = originalXMDP;
 		mQueryState = queryState;
 		mQueryAction = queryAction;
 		mPreConfigActions = preConfigActions;
+
+		if (nonRepeatableQueryVarName != null) {
+			// Set non-repeatable query state variable
+			setNonRepeatableQueryStateVar(nonRepeatableQueryVarName);
+		}
 
 		// Derived fields
 		mPreConfigPolicyConstraints = buildPreConfigPolicyConstraints();
@@ -125,17 +136,17 @@ public class HModel<E extends IAction> {
 		return preConfigPolicyConstraints;
 	}
 
-	private <T extends IAction> ProbabilisticEffect computeProbabilisticEffect(StateVarTuple state, T action)
+	private <F extends IAction> ProbabilisticEffect computeProbabilisticEffect(StateVarTuple state, F action)
 			throws XMDPException {
-		ActionDefinition<T> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(action);
+		ActionDefinition<F> actionDef = mOriginalXMDP.getActionSpace().getActionDefinition(action);
 
-		// Use <? super T> because if the query action is a constituent action that doesn't have its own
+		// Use <? super F> because if the query action is a constituent action that doesn't have its own
 		// actionPSO, we need to use its parent composite actionPSO
-		FactoredPSO<? super T> actionPSO = null;
+		FactoredPSO<? super F> actionPSO = null;
 
 		// If the query action is a constituent action, we must use its parent composite actionPSO
 		// to get the full effect of the query action
-		FactoredPSO<? super T> parentCompositeActionPSO = null;
+		FactoredPSO<? super F> parentCompositeActionPSO = null;
 
 		// Check if the query action has its own actionPSO
 		if (mOriginalXMDP.getTransitionFunction().hasActionPSO(actionDef)) {
@@ -176,11 +187,11 @@ public class HModel<E extends IAction> {
 		return combineProbabilisticEffects(probEffects);
 	}
 
-	private <T extends IAction> void addProbabilisticEffects(Set<EffectClass> effectClasses,
-			FactoredPSO<? super T> actionPSO, StateVarTuple queryState, T queryAction,
+	private <F extends IAction> void addProbabilisticEffects(Set<EffectClass> effectClasses,
+			FactoredPSO<? super F> actionPSO, StateVarTuple queryState, F queryAction,
 			Set<ProbabilisticEffect> probEffectsOutput) throws XMDPException {
 		for (EffectClass effectClass : effectClasses) {
-			IActionDescription<? super T> actionDesc = actionPSO.getActionDescription(effectClass);
+			IActionDescription<? super F> actionDesc = actionPSO.getActionDescription(effectClass);
 			DiscriminantClass discrClass = actionDesc.getDiscriminantClass();
 
 			Discriminant discriminant = new Discriminant(discrClass);
@@ -270,8 +281,24 @@ public class HModel<E extends IAction> {
 
 	}
 
+	private void setNonRepeatableQueryStateVar(String stateVarName) throws VarNotFoundException {
+		StateVarDefinition<IStateVarValue> varDef = mOriginalXMDP.getStateSpace().getStateVarDefinition(stateVarName);
+		IStateVarValue value = mQueryState.getStateVarValue(IStateVarValue.class, varDef);
+		mNonRepeatableQueryStateVar = varDef.getStateVar(value);
+	}
+
 	public XMDP getOriginalXMDP() {
 		return mOriginalXMDP;
+	}
+
+	public boolean hasNonRepeatableQueryPredicate() {
+		return mNonRepeatableQueryStateVar != null;
+	}
+
+	public StateVarTuple getNonRepeatableQueryPredicate() {
+		StateVarTuple queryPred = new StateVarTuple();
+		queryPred.addStateVar(mNonRepeatableQueryStateVar);
+		return queryPred;
 	}
 
 	/**
@@ -351,6 +378,7 @@ public class HModel<E extends IAction> {
 		}
 		HModel<?> hModel = (HModel<?>) obj;
 		return hModel.mOriginalXMDP.equals(mOriginalXMDP) && hModel.mQueryState.equals(mQueryState)
+				&& hModel.mNonRepeatableQueryStateVar.equals(mNonRepeatableQueryStateVar)
 				&& hModel.mQueryAction.equals(mQueryAction) && hModel.mPreConfigActions.equals(mPreConfigActions)
 				&& hModel.mQueryQAValueConstraints.equals(mQueryQAValueConstraints);
 	}
@@ -362,6 +390,7 @@ public class HModel<E extends IAction> {
 			result = 17;
 			result = 31 * result + mOriginalXMDP.hashCode();
 			result = 31 * result + mQueryState.hashCode();
+			result = 31 * result + mNonRepeatableQueryStateVar.hashCode();
 			result = 31 * result + mQueryAction.hashCode();
 			result = 31 * result + mPreConfigActions.hashCode();
 			result = 31 * result + mQueryQAValueConstraints.hashCode();

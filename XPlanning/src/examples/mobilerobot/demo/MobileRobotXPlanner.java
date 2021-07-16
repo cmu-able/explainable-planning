@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
+import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
+import examples.common.PlannerArguments;
 import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.metrics.CollisionEvent;
@@ -24,10 +27,10 @@ import prism.PrismException;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
+// java -cp "target/classes:lib/*" examples.mobilerobot.demo.MobileRobotXPlanner --props data/docker-globals.properties --props data/mobilerobot/docker-problem-spec.properties mission0.json
 
 public class MobileRobotXPlanner {
-	public static final String MAPS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/maps";
-	public static final String MISSIONS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/mobilerobot/missions";
+	public static final String MAPS_PATH_PROP = "Maps.Path";
 
 	private XPlanner mXPlanner;
 
@@ -53,19 +56,17 @@ public class MobileRobotXPlanner {
 
 	public static void main(String[] args)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		String missionFilename = args[0];
-		File missionJsonFile = new File(MISSIONS_PATH, missionFilename);
-		File mapsJsonDir = new File(MAPS_PATH);
-
-		Path policiesOutputPath = Paths.get(XPlannerOutDirectories.POLICIES_OUTPUT_PATH);
-		Path explanationOutputPath = Paths.get(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH);
-		Path prismOutputPath = Paths.get(XPlannerOutDirectories.PRISM_OUTPUT_PATH);
-		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
-				prismOutputPath);
+		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(MobileRobotXPlanner.class.getSimpleName(), args);
+		System.out.println("These are the properties: ");
+		arguments.list(System.out);
+		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
+		File mapsJsonDir = new File(arguments.getProperty(MAPS_PATH_PROP));
+	
+		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(arguments);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
-		xplanner.runXPlanning(missionJsonFile);
+		xplanner.runXPlanning(problemFile);
 	}
 
 	public static Vocabulary getVocabulary() {

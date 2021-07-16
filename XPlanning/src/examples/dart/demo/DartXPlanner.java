@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
+import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
+import examples.common.PlannerArguments;
 import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import examples.dart.metrics.DestroyedProbabilityQFunction;
@@ -23,8 +26,6 @@ import solver.prismconnector.exceptions.PrismConnectorException;
 import solver.prismconnector.exceptions.ResultParsingException;
 
 public class DartXPlanner {
-
-	private static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/dart/missions";
 
 	private XPlanner mXPlanner;
 
@@ -45,14 +46,11 @@ public class DartXPlanner {
 
 	public static void main(String[] args)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
-		String problemFilename = args[0];
-		File problemFile = new File(PROBLEMS_PATH, problemFilename);
+		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(DartXPlanner.class.getSimpleName(), args);
+		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
 
-		Path policiesOutputPath = Paths.get(XPlannerOutDirectories.POLICIES_OUTPUT_PATH);
-		Path explanationOutputPath = Paths.get(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH);
-		Path prismOutputPath = Paths.get(XPlannerOutDirectories.PRISM_OUTPUT_PATH);
-		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
-				prismOutputPath);
+	
+		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(arguments);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		DartXPlanner xplanner = new DartXPlanner(outputDirs, defaultVerbalizerSettings);

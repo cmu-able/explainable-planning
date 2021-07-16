@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 
 import examples.clinicscheduling.metrics.IdleTimeQFunction;
 import examples.clinicscheduling.metrics.LeadTimeQFunction;
@@ -12,6 +13,7 @@ import examples.clinicscheduling.metrics.RevenueQFunction;
 import examples.clinicscheduling.metrics.SwitchABPQFunction;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
+import examples.common.PlannerArguments;
 import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import explanation.analysis.PolicyInfo;
@@ -20,6 +22,7 @@ import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
 import language.exceptions.XMDPException;
 import language.objectives.CostCriterion;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
 import prism.PrismException;
 import solver.prismconnector.exceptions.ExplicitModelParsingException;
 import solver.prismconnector.exceptions.PrismConnectorException;
@@ -27,7 +30,6 @@ import solver.prismconnector.exceptions.ResultParsingException;
 
 public class ClinicSchedulingXPlanner {
 
-	public static final String PROBLEMS_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/clinicscheduling/missions";
 	public static final int DEFAULT_BRANCH_FACTOR = 3;
 
 	private XPlanner mXPlanner;
@@ -50,14 +52,11 @@ public class ClinicSchedulingXPlanner {
 
 	public static void main(String[] args)
 			throws PrismException, XMDPException, IOException, GRBException, DSMException, PrismConnectorException {
-		String problemFilename = args[0];
-		File problemFile = new File(PROBLEMS_PATH, problemFilename);
+		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(ClinicSchedulingXPlanner.class.getSimpleName(), args);
+		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
 
-		Path policiesOutputPath = Paths.get(XPlannerOutDirectories.POLICIES_OUTPUT_PATH);
-		Path explanationOutputPath = Paths.get(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH);
-		Path prismOutputPath = Paths.get(XPlannerOutDirectories.PRISM_OUTPUT_PATH);
-		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(policiesOutputPath, explanationOutputPath,
-				prismOutputPath);
+	
+		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(arguments);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		ClinicSchedulingXPlanner xplanner = new ClinicSchedulingXPlanner(DEFAULT_BRANCH_FACTOR, outputDirs,

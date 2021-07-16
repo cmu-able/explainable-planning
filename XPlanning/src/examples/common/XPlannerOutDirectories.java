@@ -3,14 +3,22 @@ package examples.common;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
 public class XPlannerOutDirectories {
-
-	public static final String PRISM_MODELS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
-	public static final String PRISM_ADVS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
-	public static final String POLICIES_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
-	public static final String EXPLANATIONS_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
-	public static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism";
+	
+	public static final String PRISM_MODELS_OUTPUT_PATH_PROP = "Prism.Models.Output";
+	public static final String PRISM_ADVS_OUTPUT_PATH_PROP = "Prism.Advs.Output";
+	public static final String POLICIES_OUTPUT_PATH_PROP = "Policies.Output";
+	public static final String EXPLANATIONS_OUTPUT_PATH_PROP = "Explanations.Output";
+//	public static final String PRISM_OUTPUT_PATH_PROP = "Prism.Output.Path";
+	
+	public static final String PRISM_MODELS_OUTPUT_PATH_DEFAULT = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/models";
+	public static final String PRISM_ADVS_OUTPUT_PATH_DEFAULT = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism/advs";
+	private static final String POLICIES_OUTPUT_PATH_DEFAULT = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/policies";
+	public static final String EXPLANATIONS_OUTPUT_PATH_DEFAULT = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/explanations";
+//	public static final String PRISM_OUTPUT_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/tmpdata/prism";
 
 	public static final String POLICIES_SUBDIR_NAME = "policies";
 	public static final String EXPLANATIONS_SUBDIR_NAME = "explanations";
@@ -26,11 +34,12 @@ public class XPlannerOutDirectories {
 	private Path mPrismOutputModelsPath;
 	private Path mPrismOutputAdvsPath;
 
-	public XPlannerOutDirectories(Path policiesOutputPath, Path explanationsOutputPath, Path prismOutputPath) throws IOException {
-		mPoliciesOutputPath = policiesOutputPath;
-		mExplanationsOutputPath = explanationsOutputPath;
-		mPrismOutputModelsPath = prismOutputPath.resolve("models");
-		mPrismOutputAdvsPath = prismOutputPath.resolve("advs");
+	
+	public XPlannerOutDirectories(Properties outputProperties) throws IOException {
+		mPoliciesOutputPath = Paths.get(outputProperties.getProperty(POLICIES_OUTPUT_PATH_PROP, POLICIES_OUTPUT_PATH_DEFAULT));
+		mExplanationsOutputPath = Paths.get(outputProperties.getProperty(EXPLANATIONS_OUTPUT_PATH_PROP, EXPLANATIONS_OUTPUT_PATH_DEFAULT));
+		mPrismOutputModelsPath = Paths.get(outputProperties.getProperty(PRISM_MODELS_OUTPUT_PATH_PROP, PRISM_MODELS_OUTPUT_PATH_DEFAULT));
+		mPrismOutputAdvsPath = Paths.get(outputProperties.getProperty(PRISM_ADVS_OUTPUT_PATH_PROP, PRISM_ADVS_OUTPUT_PATH_DEFAULT));
 		createDirectories();
 	}
 

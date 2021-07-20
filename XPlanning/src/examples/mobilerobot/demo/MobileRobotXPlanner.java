@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import org.apache.commons.io.FilenameUtils;
+
 import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
@@ -16,6 +18,10 @@ import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import explanation.analysis.PolicyInfo;
+import explanation.rendering.IPolicyRenderer;
+import explanation.rendering.TextBasedExplanationRenderer;
+import explanation.rendering.GenericTextBasedPolicyRenderer;
+import explanation.rendering.IExplanationRenderer;
 import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
@@ -57,8 +63,6 @@ public class MobileRobotXPlanner {
 	public static void main(String[] args)
 			throws PrismException, IOException, XMDPException, PrismConnectorException, GRBException, DSMException {
 		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(MobileRobotXPlanner.class.getSimpleName(), args);
-		System.out.println("These are the properties: ");
-		arguments.list(System.out);
 		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
 		File mapsJsonDir = new File(arguments.getProperty(MAPS_PATH_PROP));
 	
@@ -67,6 +71,13 @@ public class MobileRobotXPlanner {
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		xplanner.runXPlanning(problemFile);
+		
+		// Generate explanation in text
+		IPolicyRenderer policyRenderer = new GenericTextBasedPolicyRenderer();
+		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer);
+		String problem = arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP);
+		String explanationFile = FilenameUtils.getBaseName(problem) + "_explanation.json";
+		xplanRenderer.renderExplanation(Paths.get(arguments.getProperty(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH_PROP), explanationFile).toString());
 	}
 
 	public static Vocabulary getVocabulary() {

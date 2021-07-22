@@ -25,6 +25,7 @@ import examples.dart.models.TeamAltitude;
 import examples.dart.models.TeamDestroyed;
 import examples.dart.models.TeamECM;
 import examples.dart.models.TeamFormation;
+import explanation.rendering.IPolicyRenderer;
 import language.domain.models.IAction;
 import language.domain.models.IStateVarInt;
 import language.domain.models.StateVarDefinition;
@@ -36,7 +37,7 @@ import language.policy.Decision;
 import language.policy.Policy;
 import uiconnector.PolicyReader;
 
-public class DartPolicyViz {
+public class DartPolicyViz implements IPolicyRenderer {
 
 	private static final String DOMAIN_PATH = "/Users/rsukkerd/Projects/explainable-planning/XPlanning/data/dart";
 
@@ -76,14 +77,18 @@ public class DartPolicyViz {
 		mECMDef = xmdp.getStateSpace().getStateVarDefinition("ecm");
 		mDestroyedDef = xmdp.getStateSpace().getStateVarDefinition("destroyed");
 	}
-
+	
 	public String visualizePolicy(File policyJsonFile) throws VarNotFoundException, IOException, ParseException {
+		return visualizePolicy(policyJsonFile, "");
+	}
+	
+	public String visualizePolicy(File policyJsonFile, String prefix) throws VarNotFoundException, IOException, ParseException {
 		Policy policy = mPolicyReader.readPolicy(policyJsonFile);
 
 		int maxAltitude = mMission.getMaximumAltitudeLevel();
 		int horizon = mMission.getHorizon();
 
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder(prefix);
 
 		// Destination state of a durative action, whose segment is at the horizon
 		StateVarTuple destStateAtHorizon = getDestStateAtHorizon(policy, horizon);
@@ -101,6 +106,7 @@ public class DartPolicyViz {
 
 				// Draw the next lower altitude level
 				builder.append("\n");
+				builder.append(prefix);
 				continue;
 			}
 
@@ -108,6 +114,7 @@ public class DartPolicyViz {
 
 			// Draw the next lower altitude level
 			builder.append("\n");
+			builder.append(prefix);
 		}
 
 		// Draw threats on the ground level (altitude=0)
@@ -117,6 +124,7 @@ public class DartPolicyViz {
 		// Draw targets below the threats
 		double[] expTargetProbs = mMission.getExpectedTargetProbabilities();
 		builder.append("\n");
+		builder.append(prefix);
 		buildRow(expTargetProbs, TARGET, builder);
 
 		return builder.toString();
@@ -295,6 +303,25 @@ public class DartPolicyViz {
 				writer.flush();
 			}
 		}
+	}
+
+	@Override
+	public void renderPolicy(String policyFile) throws IOException {
+		try {
+			System.out.println(visualizePolicy(new File(policyFile), ""));
+		} catch (VarNotFoundException | ParseException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void renderPolicy(String policyFile, String prefix) throws IOException {
+		try {
+			System.out.println(visualizePolicy(new File(policyFile), prefix));
+		} catch (VarNotFoundException | ParseException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

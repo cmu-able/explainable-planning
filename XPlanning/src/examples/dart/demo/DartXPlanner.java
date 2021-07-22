@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import org.apache.commons.io.FilenameUtils;
+
 import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
@@ -14,7 +16,12 @@ import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import examples.dart.metrics.DestroyedProbabilityQFunction;
 import examples.dart.metrics.MissTargetEvent;
+import examples.dart.viz.DartPolicyViz;
 import explanation.analysis.PolicyInfo;
+import explanation.rendering.GenericTextBasedPolicyRenderer;
+import explanation.rendering.IExplanationRenderer;
+import explanation.rendering.IPolicyRenderer;
+import explanation.rendering.TextBasedExplanationRenderer;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
 import gurobi.GRBException;
@@ -55,6 +62,13 @@ public class DartXPlanner {
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		DartXPlanner xplanner = new DartXPlanner(outputDirs, defaultVerbalizerSettings);
 		xplanner.runXPlanning(problemFile);
+		
+		// Generate explanation in text
+		IPolicyRenderer policyRenderer = new DartPolicyViz(problemFile);
+		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer);
+		String problem = arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP);
+		String explanationFile = FilenameUtils.getBaseName(problem) + "_explanation.json";
+		xplanRenderer.renderExplanation(Paths.get(arguments.getProperty(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH_PROP), explanationFile).toString());
 	}
 
 	public static Vocabulary getVocabulary() {

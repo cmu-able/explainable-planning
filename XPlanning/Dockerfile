@@ -71,6 +71,11 @@ RUN mvn install
 ADD gurobi9.1.0_linux64.tar.gz /gurobi9.1.0_linux64
 ADD gurobi.lic /opt/gurobi/
 RUN echo "export LD_LIBRARY_PATH=/gurobi9.1.0_linux64/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc
- 
+
+ADD run-demo.sh run-demo.sh
+RUN chmod +x run-demo.sh
+SHELL ["/bin/bash", "-c"]
+
+ENTRYPOINT ["/xplanning/run-demo.sh"]
 
 

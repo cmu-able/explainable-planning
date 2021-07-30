@@ -305,15 +305,15 @@ the last segment, and so the goal is for the `segment` state variable to be the 
      2. Defining action descriptions for the actions
      3. Defining the transition function (an instance of `language.mdp.FactoredPSO`) that defines a factored representation of the MDP.
   
-Let's take a look at the transition functions for `IncAlt`. The first thing to do is for each `IncAlteAction`, 
-define a precondition that ensures the action can only be performed if the team is not destroyed. Second, the 
-`IncAltAction` cannot increase the altitude higher than the highest altitude level. Then, the 
-`IncAltAltitudeActionDescription` is created for the `incAlt` action definition, passing in the
- preconditions, as well as the discriminants for the action (`teamAltDef` for the altitude and 
- `teamDestrouedDef` for whether the team is destroyed). Finally, the a `FactoredPSO` object is created 
- that will implement the MDP transitions.
-  
-  A similar `FactoredPSO` must be constructed for each type in the action space.
+	Let's take a look at the transition functions for `IncAlt`. The first thing to do is for each `IncAlteAction`, 
+	define a precondition that ensures the action can only be performed if the team is not destroyed. Second, the 
+	`IncAltAction` cannot increase the altitude higher than the highest altitude level. Then, the 
+	`IncAltAltitudeActionDescription` is created for the `incAlt` action definition, passing in the
+	 preconditions, as well as the discriminants for the action (`teamAltDef` for the altitude and 
+	 `teamDestrouedDef` for whether the team is destroyed). Finally, the a `FactoredPSO` object is created 
+	 that will implement the MDP transitions.
+	  
+	  A similar `FactoredPSO` must be constructed for each type in the action space.
 
 6. Build the quality space (`DartXMDPBuilder.buildQFunctions`): For the two qualities we are concerned about (number of targets detected and whether the team is destroyed), we build a function. For the first, we define a `language.domain.metrics.CountQFunction` which is used to count the number of missed targets from a `MissedTargetEvent`. For the second, we define the function already in `DestroyedProbabilityQFunction`. We construct these and add them to a `language.mdp.QSpace` instance that represents the quality space.
 
@@ -325,7 +325,90 @@ Finally, a `language.mdp.XMDP` instance is created using all these pieces of inf
 
 Finally, after building the planning problem space as above, we can generate an explanation by running the planner to generate the plan as well as an internal representation of the explanation. To render this plan, we use have to define how to render it which requires a custom render for the plan itself as well as way to render the explanation. In this example, we use a text based explanation renderer, which just renders the explanation in plain text. The policy is rendered using a Dart-specific renderer to render the plan (`DartPolicyViz`). All of this is done in [DartXPlanner](demo/DartXPlanner.java). When running this class on the following mission, it generates the subsequent explanation.
 
-```--maxAltitude=4 --horizon=4 --targetSensorReadings=0,0,1,0 --threatSensorReadings=0,1,1,0 --targetWeight=0.5 --threatWeight=0.5 --iniAltitude=1 --iniFormation=loose --iniECM=false --sensorRange=4 --threatRange=4 --sigma=1.33 --psi=1.33```
+```
+--maxAltitude=4 --horizon=4 --targetSensorReadings=0,0,1,0 --threatSensorReadings=0,1,1,0 --targetWeight=0.5 --threatWeight=0.5 --iniAltitude=1 --iniFormation=loose --iniECM=false --sensorRange=4 --threatRange=4 --sigma=1.33 --psi=1.33
+```
+
+When passing this mission to the planner (this is `mission6.txt` in the repository), for example with:
+
+```
+$ docker run cmuable/xplanner dart mission6.txt
+```
+
+the following explanation is generated:
+
+```
+Explanation: (/explanations/mission6_explanation.json)
+============
+I'm planning to follow this policy [Solution] (below). It is expected to miss
+0.9770558327208999 expected target (0.48852791636044995 in cost); and have
+0.04644040788060376 probaility of being destroyed (0.02322020394030188 in cost).
+
+Alternatively, following this policy [Alternative 0 (below)] would reduce the
+expected probability of being destroyed by 0.022944167279092483
+(-0.011472083639546242 in cost). It would also increase the expected expected
+number of targets missed by 0.022944167279251304 (+0.011472083639625652 in
+cost). The objective function is indifferent between this alternative and the
+solution policy.
+
+Alternatively, following this policy [Alternative 1 (below)] would reduce the
+expected expected number of targets missed by 0.02294416727959847
+(-0.011472083639799235 in cost). It would also increase the expected probability
+of being destroyed by 0.022944167279068617 (+0.011472083639534308 in cost). The
+objective function is indifferent between this alternative and the solution
+policy.
+
+Solution
+========
+                      0
+            0                   0
+
+  0
+            ^ (1.00)  ^ (1.00)
+                      T (1.00)
+Qualities:
+  +--------------------------------------+
+  | Quality              | Value         |
+  +======================================+
+  | missTarget           | 0.98          |
+  +--------------------------------------+
+  | destroyedProbability | 0.05          |
+  +--------------------------------------+
+
+Alternative 0
+=============
+                      0         0
+            0
+
+  #
+            ^ (1.00)  ^ (1.00)
+                      T (1.00)
+Qualities:
+  +--------------------------------------+
+  | Quality              | Value         |
+  +======================================+
+  | missTarget           | 1.00          |
+  +--------------------------------------+
+  | destroyedProbability | 0.02          |
+  +--------------------------------------+
+
+Alternative 1
+=============
+                      0
+            0
+                                0
+  #
+            ^ (1.00)  ^ (1.00)
+                      T (1.00)
+Qualities:
+  +--------------------------------------+
+  | Quality              | Value         |
+  +======================================+
+  | missTarget           | 0.95          |
+  +--------------------------------------+
+  | destroyedProbability | 0.07          |
+  +--------------------------------------+
+```
 
 
      

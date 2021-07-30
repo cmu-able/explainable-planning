@@ -89,14 +89,19 @@ public class TextBasedExplanationRenderer implements IExplanationRenderer {
 		System.out.println("Qualities:");
 		JSONObject qualities = (JSONObject) xplanationJson.get(policyKey);
 		Set qualityKeys = qualities.keySet();
-		String ruler = StringUtils.repeat("+" + StringUtils.repeat("-", 15), 2) + "+";
+		int maxKeySize = "Quality".length();
+		for (Object key : qualityKeys) {
+			if (((String )key).length() > maxKeySize)
+				maxKeySize = ((String )key).length();
+		}
+		String ruler = "+" + StringUtils.repeat("-", maxKeySize + 2) +  StringUtils.repeat("-", 16) + "+";
 		System.out.println("  " + ruler);
-		System.out.println("  | Quality       | Value         |");
-		System.out.println("  " + StringUtils.repeat("+" + StringUtils.repeat("=", 15), 2) + "+");
+		System.out.println("  | Quality" + StringUtils.repeat(' ', maxKeySize-7) + " | Value         |");
+		System.out.println("  +" + StringUtils.repeat('=', maxKeySize + 2) +  StringUtils.repeat('=', 16) + "+");
 		for (Object key : qualityKeys) {
 			System.out.print("  | ");
-			System.out.print(key + StringUtils.repeat(" ", 14 - ((String )key).length()));
-			System.out.print("| ");
+			System.out.print(key + StringUtils.repeat(" ", maxKeySize - ((String )key).length()));
+			System.out.print(" | ");
 			Object value = qualities.get(key);
 			if (value instanceof String) {
 				String valStr = (String )value;

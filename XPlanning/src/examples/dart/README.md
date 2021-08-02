@@ -261,7 +261,7 @@ the mission with a simple file of the form:
 --maxAltitude=              # The number of altitude missions for this tutorial
 --horizon=                  # The number of route segments in the mission 
 --targetSensorReadings=     # For each segment in the horizon, the probability that a 
-									# target exists in the segment
+                            # target exists in the segment
 --threatSensorReadings=     # For each segment in the horizon, the probability that 
                             # a threat exists in that segment
 --targetWeight=             # The weight to use for missing to balance the cost function

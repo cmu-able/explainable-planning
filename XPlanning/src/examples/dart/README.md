@@ -257,20 +257,24 @@ the possible states, actions, transition functions, qualities, and costs that we
 builder pattern, and takes in a mission specification and produces the XMDP for that mission. For this example, we specify 
 the mission with a simple file of the form:
 
-```
---maxAltitude= 
---horizon= 
---targetSensorReadings= 
---threatSensorReadings= 
---targetWeight= 
---threatWeight= 
---iniAltitude= 
---iniFormation= 
---iniECM=false 
---sensorRange= 
---threatRange= 
---sigma= 
---psi=
+```bash
+--maxAltitude=              # The number of altitude missions for this tutorial
+--horizon=                  # The number of route segments in the mission 
+--targetSensorReadings=     # For each segment in the horizon, the probability that a 
+									# target exists in the segment
+--threatSensorReadings=     # For each segment in the horizon, the probability that 
+                            # a threat exists in that segment
+--targetWeight=             # The weight to use for missing to balance the cost function
+--threatWeight=             # The weight to use for avoiding threats, to balance cost function
+--iniAltitude=              # The altitude level at which the team starts the mission
+--iniFormation=             # The initial formation of the team at the start of the mission
+--iniECM=false              # The initial deployment of countermeasures at mission start
+--sensorRange=              # The altitude below which (inclusive) the sensor can detect targets,
+                            # (e.g.,2 means mission altitude <= 2)
+--threatRange=              # The altitude below which threats can destroy the tea
+--sigma=                    # Factor by which detection probability is reduced when flying in tight formation
+--psi=                      # Factor by which probability of being destroyed is reduced due to 
+                            # flying in tight formation
 ```
 
 These arguments are read into an object [DartMission](dsm/DartMission.java) that is used to build the state space. While

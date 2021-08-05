@@ -8,6 +8,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import gurobi.GRB.IntParam;
 import solver.common.ExplicitMDP;
 
 public class UpperBoundOccupationMeasureSolver {
@@ -69,6 +70,9 @@ public class UpperBoundOccupationMeasureSolver {
 	public static double[][] solveMaximumOccupationMeasure(ExplicitMDP explicitMDP, double feasibilityTol)
 			throws GRBException {
 		GRBEnv env = new GRBEnv();
+		env.set(IntParam.LogToConsole, 0);
+		env.set(IntParam.OutputFlag, 0);
+		env.start();
 		GRBModel model = new GRBModel(env);
 
 		GRBSolverUtils.configureToleranceParameters(model, GRBSolverUtils.DEFAULT_INT_FEAS_TOL, feasibilityTol);
@@ -99,6 +103,7 @@ public class UpperBoundOccupationMeasureSolver {
 		assert consistencyCheckDiscountedFlowConservationConstraints(xResults, explicitMDP, feasibilityTol);
 
 		return xResults;
+		
 	}
 
 	/**

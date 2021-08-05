@@ -3,6 +3,7 @@ package solver.gurobiconnector;
 import java.util.Arrays;
 
 import gurobi.GRB;
+import gurobi.GRB.IntParam;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
@@ -167,6 +168,9 @@ public class AverageCostMDPSolver {
 		double feasTol = mSettings.getFeasibilityTolerance();
 
 		GRBEnv env = new GRBEnv();
+		env.set(IntParam.LogToConsole, 0);
+		env.set(IntParam.OutputFlag, 0);
+		env.start();
 		GRBModel model = new GRBModel(env);
 
 		GRBSolverUtils.configureToleranceParameters(model, intFeasTol, feasTol);

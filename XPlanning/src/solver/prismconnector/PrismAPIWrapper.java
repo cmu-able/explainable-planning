@@ -52,7 +52,7 @@ public class PrismAPIWrapper {
 
 	private void initializePrism() throws PrismException {
 		// Create a log for PRISM output (stdout)
-		PrismLog mainLog = new PrismFileLog("stdout");
+		PrismLog mainLog = new PrismFileLog("prism.log");
 
 		// Initialize PRISM engine
 		mPrism = new Prism(mainLog);

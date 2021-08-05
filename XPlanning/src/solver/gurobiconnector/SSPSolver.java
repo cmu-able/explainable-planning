@@ -8,6 +8,7 @@ import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
+import gurobi.GRB.IntParam;
 import solver.common.ExplicitMDP;
 import solver.common.LPSolution;
 import solver.common.NonStrictConstraint;
@@ -142,6 +143,9 @@ public class SSPSolver {
 		double feasTol = mSettings.getFeasibilityTolerance();
 
 		GRBEnv env = new GRBEnv();
+		env.set(IntParam.LogToConsole, 0);
+		env.set(IntParam.OutputFlag, 0);
+		env.start();
 		GRBModel model = new GRBModel(env);
 
 		GRBSolverUtils.configureToleranceParameters(model, intFeasTol, feasTol);

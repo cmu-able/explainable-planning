@@ -17,6 +17,7 @@ import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
+import examples.mobilerobot.viz.MapBasedPolicyRenderer;
 import explanation.analysis.PolicyInfo;
 import explanation.rendering.IPolicyRenderer;
 import explanation.rendering.TextBasedExplanationRenderer;
@@ -73,7 +74,7 @@ public class MobileRobotXPlanner {
 		xplanner.runXPlanning(problemFile);
 		
 		// Generate explanation in text
-		IPolicyRenderer policyRenderer = new GenericTextBasedPolicyRenderer();
+		IPolicyRenderer policyRenderer = new MapBasedPolicyRenderer(mapsJsonDir, problemFile, -1);
 		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer);
 		String problem = arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP);
 		String explanationFile = FilenameUtils.getBaseName(problem) + "_explanation.json";

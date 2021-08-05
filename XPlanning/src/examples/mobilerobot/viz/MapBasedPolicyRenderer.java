@@ -86,8 +86,8 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			"| Edges:                   |",
 			"|  ()  : Sparse occlusion  |", 
 			"|  []  : Dense occlusion   |", 
-			"|  ⇒   : 0.7m/s traversal  |",
-			"|  →   : 0.35m/s traversal |", 
+			"|  " + (char )0x21D2 + "   : 0.7m/s traversal  |",
+			"|  " + (char )0x2192 + "   : 0.35m/s traversal |", 
 			"+--------------------------+" };
 	public static final int LEGEND_WIDTH = LEGEND[0].length();
 	public static final int LEGEND_HEIGHT = LEGEND.length;
@@ -192,6 +192,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		}
 	};
 	private int consoleWidth;
+	private String outfile;
 
 	public MapBasedPolicyRenderer(File mapsJsonDir, File missionJsonFile, int consoleWidth) throws DSMException {
 		mMapsJsonDir = mapsJsonDir;
@@ -339,13 +340,17 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			}
 
 		}
-		try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("out.txt"),
-				StandardCharsets.UTF_8)) {
-			writer.write("linelength = " + m_graph.getMaxX() + "\n");
-
-			String renderedPolicy = m_graph.draw();
-			renderedPolicy = insertLegend(renderedPolicy);
-			writer.write(renderedPolicy);
+		String renderedPolicy = m_graph.draw();
+		renderedPolicy = insertLegend(renderedPolicy);
+		if (this.outfile != null) {
+			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(this.outfile),
+					StandardCharsets.UTF_8)) {
+		
+				writer.write(renderedPolicy);
+			}
+		}
+		else {
+			System.out.println(renderedPolicy);
 		}
 	}
 
@@ -409,7 +414,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		}
 		// Insert
 		for (int i = 0; i < LEGEND_HEIGHT; i++) {
-			policyByLine[start + i ] = policyByLine[start + i] + StringUtils.repeat(' ', policyByLine[start + i].length() - maxLength) + LEGEND[i]; 
+			policyByLine[start + i ] = policyByLine[start + i] + StringUtils.repeat(' ', maxLength - policyByLine[start + i].length()) + LEGEND[i]; 
 		}
 		return String.join("\n", policyByLine);
 	}
@@ -424,6 +429,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		File mission = new File("data/mobilerobot/missions/mission0.json");
 
 		MapBasedPolicyRenderer renderer = new MapBasedPolicyRenderer(mapDir, mission, -1);
+		renderer.outfile = "out.txt";
 		renderer.renderPolicy("data/mobilerobot/policies/mission0/solnPolicy.json");
 	}
 

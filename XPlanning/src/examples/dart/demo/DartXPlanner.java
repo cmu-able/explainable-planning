@@ -2,6 +2,7 @@ package examples.dart.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -53,6 +54,7 @@ public class DartXPlanner {
 
 	public static void main(String[] args)
 			throws IOException, PrismException, XMDPException, PrismConnectorException, GRBException, DSMException {
+			
 		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(DartXPlanner.class.getSimpleName(), args);
 		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
 
@@ -61,11 +63,19 @@ public class DartXPlanner {
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		DartXPlanner xplanner = new DartXPlanner(outputDirs, defaultVerbalizerSettings);
+		System.out.println("Running the planner and generating explanation...");
+		// Reassign Sytem.out to a file to prevent trace output of planning
+		PrintStream console = System.out;
+		System.setOut(new PrintStream(new File("planning-trace.log")));
+		System.setErr(new PrintStream(new File("planning-trace-err.log")));
 		xplanner.runXPlanning(problemFile);
+		System.setOut(console);
 		
 		// Generate explanation in text
+		int consoleWidth = -1;
+		if (arguments.containsKey("consoleWidth")) consoleWidth = (Integer )arguments.get("consoleWidth");
 		IPolicyRenderer policyRenderer = new DartPolicyViz(problemFile);
-		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer);
+		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer, consoleWidth);
 		String problem = arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP);
 		String explanationFile = FilenameUtils.getBaseName(problem) + "_explanation.json";
 		xplanRenderer.renderExplanation(Paths.get(arguments.getProperty(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH_PROP), explanationFile).toString());

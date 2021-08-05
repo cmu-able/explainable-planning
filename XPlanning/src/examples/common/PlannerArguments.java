@@ -30,7 +30,6 @@ public class PlannerArguments {
 			if (propFile != null) {
 				for (Object f : propFile) {
 					try {
-						System.out.println("Loading " + f);
 						props.load(new FileInputStream((String) f));
 					} catch (FileNotFoundException e) {
 						ArgumentParserException pe = new ArgumentParserException("File '" + propFile + "' not found", e,
@@ -50,6 +49,10 @@ public class PlannerArguments {
 			updatePropertyWithArgument(XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH_PROP, arguments, parser, props);
 			updatePropertyWithArgument(XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH_PROP, arguments, parser, props);
 			props.setProperty(PROBLEM_FILE_PROP, arguments.getString("problem"));
+			Integer ll = arguments.getInt("linelength");
+			if (ll != null) {
+				props.put("consoleWidth", ll);
+			}
 			return props;
 		} catch (ArgumentParserException e) {
 			parser.handleError(e);
@@ -89,6 +92,7 @@ public class PlannerArguments {
 				.help("The directory to output PRISM adv files -- overrides props");
 		parser.addArgument("--" + XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH_PROP).type(String.class).required(false)
 				.help("The directory to output PRISM models -- overrides props");
+		parser.addArgument("--linelength").type(Integer.class).required(false).help("The line length to use for explanation");
 		parser.addArgument("problem").type(String.class).required(true).help("The problem to be explained");
 		return parser;
 	}

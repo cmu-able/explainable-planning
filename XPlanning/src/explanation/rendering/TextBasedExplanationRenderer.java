@@ -16,10 +16,13 @@ import org.json.simple.parser.ParseException;
 public class TextBasedExplanationRenderer implements IExplanationRenderer {
 
 	private final IPolicyRenderer mPolicyRenderer;
+	private int consoleWidth;
 	private static final Pattern POLICY_PATTERN = Pattern.compile("\\[([^\\[]*)\\]");
 
-	public TextBasedExplanationRenderer(IPolicyRenderer policyRenderer) {
+	public TextBasedExplanationRenderer(IPolicyRenderer policyRenderer, int consoleWidth) {
 		this.mPolicyRenderer = policyRenderer;
+		if (consoleWidth == -1) this.consoleWidth = 80;
+		else this.consoleWidth = consoleWidth;
 	}
 
 	@Override
@@ -57,7 +60,7 @@ public class TextBasedExplanationRenderer implements IExplanationRenderer {
 			// on the output
 			String[] lines = explanation.split("\n");
 			for (String line : lines) {
-				System.out.println(WordUtils.wrap(line, 80));
+				System.out.println(WordUtils.wrap(line, this.consoleWidth));
 			}
 			
 			// Print out the solution

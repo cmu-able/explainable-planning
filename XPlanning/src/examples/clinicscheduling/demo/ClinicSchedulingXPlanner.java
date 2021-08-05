@@ -2,6 +2,7 @@ package examples.clinicscheduling.demo;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -55,13 +56,18 @@ public class ClinicSchedulingXPlanner {
 		Properties arguments = PlannerArguments.parsePlanningCommandLineArguments(ClinicSchedulingXPlanner.class.getSimpleName(), args);
 		File problemFile = new File(arguments.getProperty(PlannerArguments.PROBLEM_FILES_PATH_PROP), arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP));
 
-	
+		System.out.println("Running the planner and generating explanation...");
+		// Reassign Sytem.out to a file to prevent trace output of planning
+		PrintStream console = System.out;
+		System.setOut(new PrintStream(new File("planning-trace.log")));
+		System.setErr(new PrintStream(new File("planning-trace-err.log")));
 		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(arguments);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		ClinicSchedulingXPlanner xplanner = new ClinicSchedulingXPlanner(DEFAULT_BRANCH_FACTOR, outputDirs,
 				defaultVerbalizerSettings);
 		xplanner.runXPlanning(problemFile);
+		System.setOut(console);
 	}
 
 	public static Vocabulary getVocabulary() {

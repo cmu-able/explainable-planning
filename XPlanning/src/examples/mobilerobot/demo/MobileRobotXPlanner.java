@@ -2,13 +2,12 @@ package examples.mobilerobot.demo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.io.PrintStream;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
 
-import examples.clinicscheduling.demo.ClinicSchedulingXPlanner;
 import examples.common.DSMException;
 import examples.common.IXMDPLoader;
 import examples.common.PlannerArguments;
@@ -19,10 +18,9 @@ import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.viz.MapBasedPolicyRenderer;
 import explanation.analysis.PolicyInfo;
+import explanation.rendering.IExplanationRenderer;
 import explanation.rendering.IPolicyRenderer;
 import explanation.rendering.TextBasedExplanationRenderer;
-import explanation.rendering.GenericTextBasedPolicyRenderer;
-import explanation.rendering.IExplanationRenderer;
 import explanation.verbalization.QADecimalFormatter;
 import explanation.verbalization.VerbalizerSettings;
 import explanation.verbalization.Vocabulary;
@@ -71,11 +69,19 @@ public class MobileRobotXPlanner {
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
 		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
+		System.out.println("Running the planner and generating explanation...");
+		// Reassign Sytem.out to a file to prevent trace output of planning
+		PrintStream console = System.out;
+		System.setOut(new PrintStream(new File("planning-trace.log")));
+		System.setErr(new PrintStream(new File("planning-trace-err.log")));
 		xplanner.runXPlanning(problemFile);
+		System.setOut(console);
 		
 		// Generate explanation in text
-		IPolicyRenderer policyRenderer = new MapBasedPolicyRenderer(mapsJsonDir, problemFile, -1);
-		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer);
+		int consoleWidth = -1;
+		if (arguments.containsKey("consoleWidth")) consoleWidth = (Integer )arguments.get("consoleWidth");
+		IPolicyRenderer policyRenderer = new MapBasedPolicyRenderer(mapsJsonDir, problemFile, consoleWidth);
+		IExplanationRenderer xplanRenderer = new TextBasedExplanationRenderer(policyRenderer, consoleWidth);
 		String problem = arguments.getProperty(PlannerArguments.PROBLEM_FILE_PROP);
 		String explanationFile = FilenameUtils.getBaseName(problem) + "_explanation.json";
 		xplanRenderer.renderExplanation(Paths.get(arguments.getProperty(XPlannerOutDirectories.EXPLANATIONS_OUTPUT_PATH_PROP), explanationFile).toString());

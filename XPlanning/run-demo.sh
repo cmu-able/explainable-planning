@@ -1,6 +1,25 @@
 #!/bin/bash
 # Parse command line arguments - origin code from https://stackoverflow.com/a/14203146 - please look there for details
-# Usage: Usage demo-space-separated.sh -e conf -s /etc -l /usr/lib /etc/hosts
+# Usage: Usage run-demo [-l|--line-length <line length>] (dart | mobilerobot | clinic) mission_file
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  
+  case $key in
+    -l|--line-length)
+    	LINELENGTH="$2"
+    	shift;
+    	shift;
+    	;;
+    *)
+    	POSITIONAL+=("$1")
+    	shift
+    	;;
+  esac
+done
+
+set -- "${POSITIONAL[@]}"
 
 RUNNER=""
 PROPS="--props data/docker-globals.properties"
@@ -18,7 +37,9 @@ elif [ "$1" = "clinic" ]; then
   RUNNER="examples.clinicscheduling.demo.ClinicSchedulingXPlanner"
   PROPS="${PROPS} --props data/clinicscheduling/docker-problem-spec.properties"
   DIR="data/clinicscheduling/missions/"
-  
+elif [ "$1" != "" ]; then
+  $1
+  exit 0
 else
   echo "Must specify [dart | mobilerobot | clinic] as the first argument"
   exit 1
@@ -35,4 +56,10 @@ if [ "" = "${MISSION}" ]; then
   exit 1
 fi
 
-LD_LIBRARY_PATH=/xplanning/lib/:/gurobi9.1.0_linux64/gurobi910/linux64/lib/ java -cp target/classes:lib/* ${RUNNER} ${PROPS} ${MISSION}
+ARGS=""
+
+if [ "$LINELENGTH" != "" ]; then
+  ARGS="--linelength ${LINELENGTH}"
+fi
+
+LD_LIBRARY_PATH=/xplanning/lib/:/gurobi9.1.0_linux64/gurobi910/linux64/lib/ java -Dfile.encoding=UTF-8 -cp target/classes:lib/* ${RUNNER} ${ARGS} ${PROPS} ${MISSION}

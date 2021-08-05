@@ -1,3 +1,8 @@
+# Dockerfile for creating self-contained planning explanation examples.
+# Note, you must have a Gurobi license to successfully run this,
+# and the Gurobi license file must be mounted when running the container
+# See: https://www.gurobi.com/
+# e.g., docker run -v /full/path/on/host:/opt/gurobi/gurobi.lic -it cmuable/xplanning -l 120 mobilerobot mission64.json
 FROM ubuntu:focal
 
 RUN apt-get update \
@@ -37,17 +42,6 @@ RUN  wget https://github.com/prismmodelchecker/prism/archive/refs/tags/v${PRISM_
   && echo "export LD_LIBRARY_PATH=/xplanning/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc \
   && cd ../.. \
   && rm -f v${PRISM_VER}.tar.gz
-  
-
-# Install PRISM
-#RUN wget http://acme.able.cs.cmu.edu/public/BRASS/p2/prism-${PRISM_VER}-linux64.tar.gz && \
-#    tar zxf prism-${PRISM_VER}-linux64.tar.gz && \
-#    cd prism-${PRISM_VER}-linux64 && \
-#    ./install.sh && \
-#    mv /xplanning/prism-${PRISM_VER}-linux64/lib /xplanning/lib && \
-#    echo "export LD_LIBRARY_PATH=/xplanning/prism-${PRISM_VER}-linux64/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc && \
-#    cd .. && \
-#    rm -f prism-${PRISM_VER}-linux64.tar.gz
 
 ADD src src
 ADD data data
@@ -69,7 +63,6 @@ ADD data/docker-globals.properties /data/globals.properties
 RUN mvn install
 
 ADD gurobi9.1.0_linux64.tar.gz /gurobi9.1.0_linux64
-ADD gurobi.lic /opt/gurobi/
 RUN echo "export LD_LIBRARY_PATH=/gurobi9.1.0_linux64/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc
 
 ADD run-demo.sh run-demo.sh
@@ -78,4 +71,4 @@ SHELL ["/bin/bash", "-c"]
 
 ENTRYPOINT ["/xplanning/run-demo.sh"]
 
-
+# docker run -v /mnt/d/ONR/explainable-planning/XPlanning/gurobi.lic:/opt/gurobi/gurobi.lic -it cmuable/xplanning -l 120 mobilerobot mission64.json

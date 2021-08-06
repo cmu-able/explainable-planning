@@ -28,6 +28,14 @@ For simplicity, the examples and code are provided in a docker container.
 
 ## Prerequisites
 
+### Gurobi
+
+Gurobi is a commercial mathematical optimization solver that is used for optimizing
+plans and finding contrastive explanations. A license is required to use it. To get a license,
+please register and get it at [Gurobi](https://www.gurobi.com).
+
+Note that academic licenses for use in containers are free.
+
 ### Docker
 
 Before you can use the images provided by the repo, make sure that [Docker](https://www.docker.com/) 17.05 or higher is installed on your machine.
@@ -53,10 +61,10 @@ $ docker build -t cmuable/xplanner .
 
 ## Running examples
 
-To run the example, you need to pass the example kind (`dart`, `mobilerobot`, or `clinic`) and the mission to explain when running a container. For example, to run the `dart` example on `mission0`, run:
+To run the example, you need to pass the example kind (`dart`, `mobilerobot`, or `clinic`) and the mission to explain when running a container. Furthmore, you need to mount the gurobi license file. For example, to run the `dart` example on `mission0` (with the license file on your host machine at `/path/to/gurobi.lic`, run:
 
 ```
-$ docker run cmuable/xplanning dart mission0.txt
+$ docker run -v /path/to/my/gurobi.lic:/opt/gurobi/gurobi.lic cmuable/xplanning dart mission0.txt
 ```
 
 To find what missions are available, you can omit the last parameter and the list of available missions will be presented.

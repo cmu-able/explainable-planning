@@ -361,26 +361,34 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			return addLegendAfterEnd(renderedPolicy);
 		int beforeStart = 0;
 		int afterStart = 0;
-		int beforeLegendTrack = 0;
-		int afterLegendTrack = 0;
+		int beforeLegendCursor = 0;
+		int afterLegendCursor = 0;
+		// Go line by line through the policy looking for space for the legend
+		// For the legend to fit, there needs to be enough contiguous lines that have the 
+		// legend width clear at the beginning or at the end
+		// beforeStart/afterStart store the start of enough space for the legend
+		// beforeLegendCursor/afterLegendCursor store how many contiguous lines with 
+		// enough space there are. We have enough space when one of these reaches LEGEND_HEIGHT.
+		// If we have enough space in before, give this priority and break.
 		for (int i = 0; i < policyByLine.length; i++) {
 			String line = policyByLine[i];
-			if (afterLegendTrack < LEGEND_HEIGHT) {
-				if (line.length() + LEGEND_WIDTH < consoleWidth && afterLegendTrack < LEGEND_HEIGHT) {
-					afterLegendTrack++;
-				} else if (afterLegendTrack < LEGEND_HEIGHT) {
+			if (afterLegendCursor < LEGEND_HEIGHT) {
+				if (line.length() + LEGEND_WIDTH < consoleWidth && afterLegendCursor < LEGEND_HEIGHT) {
+					afterLegendCursor++;
+				} else if (afterLegendCursor < LEGEND_HEIGHT) {
+					afterLegendCursor = 0;
 					afterStart = i + 1;
 				}
 			}
-			if (beforeLegendTrack < LEGEND_HEIGHT) {
+			if (beforeLegendCursor < LEGEND_HEIGHT) {
 				Matcher matcher = spacePattern.matcher(line);
 				if (matcher.find()) {
 					int length = matcher.group(1).length();
-					if (length >= LEGEND_WIDTH + 2 && beforeLegendTrack < LEGEND_HEIGHT) {
-						beforeLegendTrack++;
-					} else if (beforeLegendTrack < LEGEND_HEIGHT) {
+					if (length > LEGEND_WIDTH + 2 && beforeLegendCursor < LEGEND_HEIGHT) {
+						beforeLegendCursor++;
+					} else if (beforeLegendCursor < LEGEND_HEIGHT) {
 						beforeStart = i + 1;
-	
+						beforeLegendCursor = 0;
 					}
 				}
 				
@@ -390,8 +398,12 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			}
 		}
 		if (beforeStart < policyByLine.length - LEGEND_HEIGHT) {
+			// Enough space for the legend at the start of lines
+			// beforeStart stores the line to start the legend
 			return insertLegendAtBeginning(policyByLine, beforeStart);
 		} else if (afterStart < policyByLine.length - LEGEND_HEIGHT) {
+			// Enough space for the legend at the end of lines
+			// endStart stores the line to start the legend
 			return insertLegendAtEnd(policyByLine, afterStart);
 		}
 		return addLegendAfterEnd(renderedPolicy);
@@ -428,7 +440,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		File mapDir = new File("data/mobilerobot/maps");
 		File mission = new File("data/mobilerobot/missions/mission0.json");
 
-		MapBasedPolicyRenderer renderer = new MapBasedPolicyRenderer(mapDir, mission, -1);
+		MapBasedPolicyRenderer renderer = new MapBasedPolicyRenderer(mapDir, mission, 120);
 		renderer.outfile = "out.txt";
 		renderer.renderPolicy("data/mobilerobot/policies/mission0/solnPolicy.json");
 	}

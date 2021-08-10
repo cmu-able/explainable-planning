@@ -336,7 +336,7 @@ Finally, after building the planning problem space as above, we can generate an 
 When passing this mission to the planner (this is `mission6.txt` in the repository), for example with:
 
 ```
-$ docker run cmuable/xplanner dart mission6.txt
+$ docker run -v /path/to/my/gurobi.lic:/opt/gurobi/gurobi.lic cmuable/xplanner dart mission6.txt
 ```
 
 the following explanation is generated:
@@ -346,7 +346,7 @@ Explanation: (/explanations/mission6_explanation.json)
 ============
 I'm planning to follow this policy [Solution] (below). It is expected to miss
 0.9770558327208999 expected target (0.48852791636044995 in cost); and have
-0.04644040788060376 probaility of being destroyed (0.02322020394030188 in cost).
+0.04644040788060376 probability of being destroyed (0.02322020394030188 in cost).
 
 Alternatively, following this policy [Alternative 0 (below)] would reduce the
 expected probability of being destroyed by 0.022944167279092483

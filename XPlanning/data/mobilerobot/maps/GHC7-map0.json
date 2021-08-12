@@ -1,86 +1,5 @@
 {
-  "obstacles": [
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L19",
-      "from-id": "L15"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L7",
-      "from-id": "L2"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L17",
-      "from-id": "L16"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L32",
-      "from-id": "L31"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "LX4",
-      "from-id": "L29"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L11",
-      "from-id": "L8"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L16",
-      "from-id": "L15"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L31",
-      "from-id": "L29"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "LX5",
-      "from-id": "L26"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L12",
-      "from-id": "L11"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "LX3",
-      "from-id": "L18"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "LX4",
-      "from-id": "L23"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L2",
-      "from-id": "L1"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L20",
-      "from-id": "L15"
-    },
-    {
-      "occlusion": "OCCLUDED",
-      "to-id": "L3",
-      "from-id": "L2"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "L22",
-      "from-id": "L18"
-    }
-  ],
+  
   "mur": 10,
   "map": [
     {
@@ -546,6 +465,88 @@
         "LX2",
         "L15"
       ]
+    }
+  ],
+  "obstacles": [
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L19",
+      "from-id": "L15"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L7",
+      "from-id": "L2"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L17",
+      "from-id": "L16"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L32",
+      "from-id": "L31"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "LX4",
+      "from-id": "L29"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L11",
+      "from-id": "L8"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L16",
+      "from-id": "L15"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L31",
+      "from-id": "L29"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "LX5",
+      "from-id": "L26"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L12",
+      "from-id": "L11"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "LX3",
+      "from-id": "L18"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "LX4",
+      "from-id": "L23"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L2",
+      "from-id": "L1"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L20",
+      "from-id": "L15"
+    },
+    {
+      "occlusion": "OCCLUDED",
+      "to-id": "L3",
+      "from-id": "L2"
+    },
+    {
+      "occlusion": "PARTIALLY_OCCLUDED",
+      "to-id": "L22",
+      "from-id": "L18"
     }
   ]
 }

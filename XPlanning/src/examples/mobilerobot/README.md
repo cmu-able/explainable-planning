@@ -185,7 +185,7 @@ The `map-file` component of the mission points to a JSON formatted file containi
    "from-id": "<ID>"         // The identifier of the node at the other end of the edge
 ```
 
-The map is read into a [MapTopology](dsm/MapTopology.java) by the [MapTopologyReader](dsm/parser/MapTopologyReader.java) reads the JSON to construct the graph of the map as [LocationNode](dsm/LocationNode.java) and [Connection](dsm/Connection.java). Occlusion information is processed by the [OcclusionParser](dsm/parser/OcclusionParser).
+The map is read into a [MapTopology](dsm/MapTopology.java) by the [MapTopologyReader](dsm/parser/MapTopologyReader.java) reads the JSON to construct the graph of the map as [LocationNode](dsm/LocationNode.java) and [Connection](dsm/Connection.java). Occlusion information is processed by the [OcclusionParser](dsm/parser/OcclusionParser.java).
 
 
 The mission and the associated files are read into an object [Mission](dsm/Mission.java) that is used to represent the mission. This is loaded in [MobileRobotXMDPLoader](demo/MobileRobotXMDPLoader.java) and then the planning space is built by [MobileRobotXMDPBuilder](dsm/MobileRobotXMDPBuilder.java).
@@ -206,7 +206,7 @@ XMDPs, and which can be found in `MobileRobotXMDPBuilder.buildXMDP`.
      2. Defining action descriptions for each action
      3. Defininng the transition function (an instance of `language.mdp.FactoredPSO`) that defines the factored representation of the MDP.
      
-    Let's take a look at the transition function for the `MoveToAction` instances. For each `MoveToAction` (e.g., `MoveToAction(L2)`, `MoveToAction(L10)`), we find the connected nodes and set a precondition that states that for `MoveToAction(L2)` to be valid, the robot has to be in one of the adjacent locations to `L2`. We then construct a [RobotLocationActionDescription](models/RobotActionDescription.java) object that combines the discriminant and effect classes, the preconditions for the actions, and the probability of achieving the actions to define the function. Finally, the factored PSO is constructed with this action description an added to the set of transition functions.
+    Let's take a look at the transition function for the `MoveToAction` instances. For each `MoveToAction` (e.g., `MoveToAction(L2)`, `MoveToAction(L10)`), we find the connected nodes and set a precondition that states that for `MoveToAction(L2)` to be valid, the robot has to be in one of the adjacent locations to `L2`. We then construct a [RobotLocationActionDescription](models/RobotLocationActionDescription.java) object that combines the discriminant and effect classes, the preconditions for the actions, and the probability of achieving the actions to define the function. Finally, the factored PSO is constructed with this action description an added to the set of transition functions.
     
     A similar PSO is constructed for setting the robot speed (e.g., to set the speed to full speed, the current state of speed needs to be default speed).
     
@@ -220,7 +220,7 @@ With all this information, we have defined a Markov Decision Process for the pla
 
 ## Generating an explanation
 
-Finally, after building the planning problem space as above, we can generate an explanation by running the planner to generate the plan as well as an internal representation of the explanation. To render this plan, we use have to define how to render it which requires a custom render for the plan itself as well as way to render the explanation. In this example, we use a text based explanation renderer, which just renders the explanation in plain text. The policy is rendered using a MobileRobot-specific renderer to render the plan ([MapBasedPolicyRenderer](viz/MapBasedPolicyRenderer.java). All of this is done in [MobileRobotPlanner](demo/MobileRobotPlanner.java). When running this class on [mission0](../../../data/mobilerobot/missions/mission0.json), it generates the following explanation:
+Finally, after building the planning problem space as above, we can generate an explanation by running the planner to generate the plan as well as an internal representation of the explanation. To render this plan, we use have to define how to render it which requires a custom render for the plan itself as well as way to render the explanation. In this example, we use a text based explanation renderer, which just renders the explanation in plain text. The policy is rendered using a MobileRobot-specific renderer to render the plan ([MapBasedPolicyRenderer](viz/MapBasedPolicyRenderer.java), which renders the map and the path in ASCII). All of this is done in [MobileRobotXPlanner](demo/MobileRobotXPlanner.java). When running this class on [mission0](../../../data/mobilerobot/missions/mission0.json), it generates the following explanation:
 
 ```
 Explanation: (/explanations/mission0_explanation.json)

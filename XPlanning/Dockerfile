@@ -60,10 +60,11 @@ ADD data/dart /data/dart
 ADD data/mobilerobot /data/mobilerobot
 ADD data/docker-globals.properties /data/globals.properties
 
-RUN mvn install
-
 ADD gurobi9.1.0_linux64.tar.gz /gurobi9.1.0_linux64
 RUN echo "export LD_LIBRARY_PATH=/gurobi9.1.0_linux64/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc
+
+ENV LD_LIBRARY_PATH /xplanning/lib:/gurobi9.1.0_linux64/gurobi910/linux64/lib/
+RUN mvn install -DskipTests
 
 ADD run-demo.sh run-demo.sh
 RUN chmod +x run-demo.sh

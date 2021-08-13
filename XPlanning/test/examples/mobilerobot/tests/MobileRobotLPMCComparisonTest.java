@@ -57,8 +57,8 @@ public class MobileRobotLPMCComparisonTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String mapsJsonDirPath = MobileRobotXPlanner.MAPS_PATH;
-		String missionsJsonDirPath = MobileRobotXPlanner.MISSIONS_PATH;
+		String mapsJsonDirPath = "../../../../data/mobilerobots/maps/";
+		String missionsJsonDirPath = "../../../../data/mobilerobots/missions/";
 		File mapsJsonDir = new File(mapsJsonDirPath);
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);

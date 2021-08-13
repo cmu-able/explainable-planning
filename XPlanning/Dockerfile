@@ -45,7 +45,7 @@ RUN  wget https://github.com/prismmodelchecker/prism/archive/refs/tags/v${PRISM_
 
 ADD src src
 ADD data data
-# ADD test test
+ADD test test
 ADD pom.xml pom.xml
 ADD .classpath .classpath
  

@@ -37,8 +37,8 @@ public class MobileRobotExplanationTest {
 	public void testContrastiveJustification(File missionJsonFile, XMDP xmdp) throws PrismException,
 			ResultParsingException, XMDPException, IOException, ExplicitModelParsingException, GRBException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String modelOutputPath = "../../../../data/mobilerobots/policies/" + missionName;
+		String advOutputPath = "../../../../data/mobilerobots/policies/" + missionName;
 		PrismConnectorSettings prismConnSettings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 		PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSettings);
 		PolicyInfo policyInfo = prismConnector.generateOptimalPolicy();
@@ -52,7 +52,7 @@ public class MobileRobotExplanationTest {
 
 		Vocabulary vocabulary = MobileRobotXPlanner.getVocabulary();
 		VerbalizerSettings verbalizerSettings = new VerbalizerSettings();
-		File policyJsonDir = new File(XPlannerOutDirectories.POLICIES_OUTPUT_PATH + "/" + missionName);
+		File policyJsonDir = new File("../../../../data/mobilerobots/policies/" + missionName);
 		Verbalizer verbalizer = new Verbalizer(vocabulary, CostCriterion.TOTAL_COST, policyJsonDir, verbalizerSettings);
 		String verbalization = verbalizer.verbalize(explanation);
 
@@ -61,8 +61,8 @@ public class MobileRobotExplanationTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String mapsJsonDirPath = MobileRobotXPlanner.MAPS_PATH;
-		String missionsJsonDirPath = MobileRobotXPlanner.MISSIONS_PATH;
+		String mapsJsonDirPath = "../../../../data/mobilerobots/maps/";
+		String missionsJsonDirPath = "../../../../data/mobilerobots/missions/";
 		File mapsJsonDir = new File(mapsJsonDirPath);
 
 		MobileRobotXMDPLoader testLoader = new MobileRobotXMDPLoader(mapsJsonDir);

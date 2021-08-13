@@ -50,7 +50,7 @@ public class MobileRobotXMDPTest {
 	@Test(dataProvider = "xmdpProblems")
 	public void testPrismMDPAdversaryGeneration(File missionJsonFile, XMDP xmdp) throws XMDPException {
 		String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-		String outputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+		String outputPath = "../../../../data/mobilerobots/policies/" + missionName;
 		PrismExplicitModelPointer outputExplicitModelPointer = new PrismExplicitModelPointer(outputPath, "model",
 				PrismRewardType.TRANSITION_REWARD);
 

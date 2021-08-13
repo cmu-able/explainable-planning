@@ -139,8 +139,8 @@ public class MobileRobotAlternativeExplorerTest {
 
 			// PrismConnector
 			String missionName = FilenameUtils.removeExtension(missionJsonFile.getName());
-			String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + missionName;
-			String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + missionName;
+			String modelOutputPath = "../../../../data/mobilerobots/policies/" + missionName;
+			String advOutputPath = "../../../../data/mobilerobots/policies/" + missionName;
 			PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
 			PrismConnector prismConnector = new PrismConnector(xmdp, CostCriterion.TOTAL_COST, prismConnSetttings);
 

@@ -58,7 +58,7 @@ public class ClinicSchedulingTest {
 
 	@DataProvider(name = "xmdpProblems")
 	public Object[][] loadXMDPs() throws XMDPException, DSMException {
-		String problemsPath = ClinicSchedulingXPlanner.PROBLEMS_PATH;
+		String problemsPath = "../../../../data/clinicscheduling/missions";
 		int branchFactor = ClinicSchedulingXPlanner.DEFAULT_BRANCH_FACTOR;
 
 		ClinicSchedulingXMDPLoader testLoader = new ClinicSchedulingXMDPLoader(branchFactor);

@@ -36,8 +36,8 @@ public class LPMCComparisonTestUtils {
 			throws PrismException, XMDPException, IOException, PrismConnectorException, GRBException {
 		// Problem file
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
-		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
+		String modelOutputPath = "../../../../data/mobilerobots/policies/" + problemName;
+		String advOutputPath = "../../../../data/mobilerobots/policies/" + problemName;
 
 		// Create PRISM connector
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);
@@ -88,8 +88,8 @@ public class LPMCComparisonTestUtils {
 
 		// Problem file
 		String problemName = FilenameUtils.removeExtension(problemFile.getName());
-		String modelOutputPath = XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH + "/" + problemName;
-		String advOutputPath = XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH + "/" + problemName;
+		String modelOutputPath = "../../../../data/mobilerobots/policies/" + problemName;
+		String advOutputPath = "../../../../data/mobilerobots/policies/" + problemName;
 
 		// Create PRISM connector
 		PrismConnectorSettings prismConnSetttings = new PrismConnectorSettings(modelOutputPath, advOutputPath);

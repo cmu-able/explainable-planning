@@ -11,7 +11,7 @@ import java.util.Arrays;
  * @version 1.0.2
  * @package io.raffi.drawille
  * @author Rafael Grigorian <me@raffi.io>
- * @copyright 2018 Rafael Grigorian — All Rights Reserved
+ * @copyright 2018 Rafael Grigorian -- All Rights Reserved
  * @license MIT License
  */
 public class Canvas {
@@ -19,7 +19,7 @@ public class Canvas {
 	/**
 	 * @var Integer width Width of the canvas
 	 * @var Integer height Height of the canvas
-	 * @var BrailleMap [] screen Flattened screen matrix
+	 * @var ScreeData [] screen Flattened screen matrix containing Braille data or character data.
 	 */
 	protected int width;
 	protected int height;
@@ -175,6 +175,16 @@ public class Canvas {
 		this.change(x, y, !this.get(x, y));
 	}
 
+	/**
+	 * This methods adds text to the canvas at x, y. The character is aligned with the BrailleMap in the data, which means
+	 * characters will appear aligned on every 2nd x pixel and every 4th y pixel.
+	 * @param Integer
+	 * 			  x Horizontal pixel coordinate for placing the character
+	 * @param Integer
+	 * 			  y Vertical pixel coordinate for placing the character
+	 * @param String
+	 * 			  text the text to position on the canvas
+	 */
 	public void setText(int x, int y, String text) {
 		x = x / 2;
 		y = y / 4;

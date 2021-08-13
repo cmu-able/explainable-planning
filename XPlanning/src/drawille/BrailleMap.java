@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @version             1.0.2
  * @package             io.raffi.drawille
  * @author              Rafael Grigorian <me@raffi.io>
- * @copyright           2018 Rafael Grigorian — All Rights Reserved
+ * @copyright           2018 Rafael Grigorian -- All Rights Reserved
  * @license             MIT License
  */
 public class BrailleMap implements ScreenData {

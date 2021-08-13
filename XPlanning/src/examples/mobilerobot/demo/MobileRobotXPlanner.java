@@ -68,6 +68,8 @@ public class MobileRobotXPlanner {
 		XPlannerOutDirectories outputDirs = new XPlannerOutDirectories(arguments);
 
 		VerbalizerSettings defaultVerbalizerSettings = new VerbalizerSettings(); // describe costs
+		defaultVerbalizerSettings.setQADecimalFormatter(getQADecimalFormatter());
+		setVerbalizerOrdering(defaultVerbalizerSettings);
 		MobileRobotXPlanner xplanner = new MobileRobotXPlanner(mapsJsonDir, outputDirs, defaultVerbalizerSettings);
 		System.out.println("Running the planner and generating explanation...");
 		// Reassign Sytem.out to a file to prevent trace output of planning

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Parse command line arguments - origin code from https://stackoverflow.com/a/14203146 - please look there for details
 # Usage: Usage run-demo [-l|--line-length <line length>] (dart | mobilerobot | clinic) mission_file
-
+DEBUG=""
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -9,6 +9,11 @@ while [[ $# -gt 0 ]]; do
   case $key in
     -l|--line-length)
     	LINELENGTH="$2"
+    	shift;
+    	shift;
+    	;;
+    -d|--debug)
+    	DEBUG="-agentlib:jdwp=transport=dt_socket,server=y,address=$2"
     	shift;
     	shift;
     	;;
@@ -62,4 +67,4 @@ if [ "$LINELENGTH" != "" ]; then
   ARGS="--linelength ${LINELENGTH}"
 fi
 
-LD_LIBRARY_PATH=/xplanning/lib/:/gurobi9.1.0_linux64/gurobi910/linux64/lib/ java -Dfile.encoding=UTF-8 -cp target/classes:lib/* ${RUNNER} ${ARGS} ${PROPS} ${MISSION}
+LD_LIBRARY_PATH=/xplanning/lib/:/gurobi9.1.0_linux64/gurobi910/linux64/lib/ java ${DEBUG} -Dfile.encoding=UTF-8 -cp target/classes:lib/* ${RUNNER} ${ARGS} ${PROPS} ${MISSION}

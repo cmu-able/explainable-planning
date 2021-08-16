@@ -52,6 +52,20 @@ public class DartPolicyViz implements IPolicyRenderer {
 	private static final char TIGHT_FORM_ECM_ON = '0';
 	private static final char THREAT = '^';
 	private static final char TARGET = 'T';
+	
+	private static final String[] LEGEND = new String[] {
+		"+=== LEGEND =======================+",
+		"| UAV Team:                        |",
+		"| #       Loose formation, ECM on  |",
+		"| *       Tight formation, ECM off |",
+		"| @       Loose formation, ECM off |",
+		"| 0       Tight formation, ECM on  |",
+		"+----------------------------------+",
+		"| Segment:                         |",
+		"| ^ (#.#) Threat present (prob)    |",
+		"| T (#.#) Target presetn (prob)    |",
+		"+----------------------------------+"
+	};
 
 	private DartMissionReader mMissionReader = new DartMissionReader();
 	private DartMission mMission;
@@ -126,6 +140,11 @@ public class DartPolicyViz implements IPolicyRenderer {
 		builder.append("\n");
 		builder.append(prefix);
 		buildRow(expTargetProbs, TARGET, builder);
+		builder.append("\n\n");
+		for (String s : LEGEND) {
+			builder.append(s);
+			builder.append("\n");
+		}
 
 		return builder.toString();
 	}

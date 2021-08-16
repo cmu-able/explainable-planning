@@ -198,7 +198,6 @@
         "y": 5.33
       },
       "connected-to": [
-        "L26",
         "L31"
       ]
     },
@@ -261,7 +260,6 @@
       },
       "connected-to": [
         "L25",
-        "LX5",
         "L22"
       ]
     },
@@ -507,11 +505,6 @@
       "occlusion": "OCCLUDED",
       "to-id": "L31",
       "from-id": "L29"
-    },
-    {
-      "occlusion": "PARTIALLY_OCCLUDED",
-      "to-id": "LX5",
-      "from-id": "L26"
     },
     {
       "occlusion": "OCCLUDED",

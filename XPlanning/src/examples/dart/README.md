@@ -106,7 +106,10 @@ stronger than (and subsume) its supertype's precondition.
 
 ### Transition model
 
-Transition models describe how states and actions can be used to transition to other states. A transition model requires specifying the following:
+Transition models describe how states and actions can be used to transition to other states. To represent a transition model, we use factored probabilistic STRIPS operators (called PSOs) to describe the preconditions and context dependent, stochastic effects of each action type. type. A factored PSO consists of a set
+of mutually exclusive and exhaustive logical formulae, called contexts, and a stochastic effect
+associated with each context. A stochastic effect is a set of change sets – a list of variable values
+– with a probability attached to each change set. A transition model requires specifying the following:
 
 1. The types of state variables that a transition can use as a source, called the discriminant class. For example, in the UAV case, the `DecAlt` action's discriminants are the team's altitude and whether the team has been deployed. These discriminants specify the state variable types on which the action may execute.
 2. The preconditions for the transition (for example, any DecAlt action can only be applied if the team isn't destroyed and the altitude of the team is greater than the altitude to decrease). (Note: preconditions will not be discussed in this section - they are defined when the XMDP planning problem is composed together in the last step.)
@@ -117,7 +120,7 @@ Transition models describe how states and actions can be used to transition to o
 A "formula" action description functionally maps a set of mutually exclusive discriminants to the corresponding probabilistic
 effects. This description will further delegate to a `language.domain.models.IProbabilisticTransitionFormula` specialized for the action that calculates the result of applying the action in the state.
 
-If we look at the class [DecAltAltitudeActionDescription](models/DecAltAltitudeActionDescription), we can see all this information put together in the constructor: the discriminant classes, as mentioned, are the Altitude and whether the team is destroyed, the effect class is the Altitude, and the effect is an implementation of `IProbabilisticTransitionFormula` (DecAltAltitudeFormula) for the action type. The `formula` method in this case gets the current value for the altitude, 
+If we look at the class [DecAltAltitudeActionDescription](models/DecAltAltitudeActionDescription), we can see all this information put together in the constructor: the discriminant classes, as mentioned, are the Altitude and whether the team is destroyed, the effect class is the Altitude, and the effect is an implementation of `IProbabilisticTransitionFormula` (DecAltAltitudeFormula) for the action type. The `formula` method in this case gets the current value for the altitude, and decreases it by the value for `Altitude` with a probability of 1.
 
 We use
 factored PSOs (modeled by implementing `IProbabilisticTransitionFormula`) to describe the preconditions and context-dependent, probabilistic effects of each

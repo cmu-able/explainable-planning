@@ -63,7 +63,7 @@ public class DartPolicyViz implements IPolicyRenderer {
 		"+----------------------------------+",
 		"| Segment:                         |",
 		"| ^ (#.#) Threat present (prob)    |",
-		"| T (#.#) Target presetn (prob)    |",
+		"| T (#.#) Target present (prob)    |",
 		"+----------------------------------+"
 	};
 

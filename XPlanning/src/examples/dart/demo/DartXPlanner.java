@@ -67,7 +67,6 @@ public class DartXPlanner {
 		// Reassign Sytem.out to a file to prevent trace output of planning
 		PrintStream console = System.out;
 		System.setOut(new PrintStream(new File("planning-trace.log")));
-		System.setErr(new PrintStream(new File("planning-trace-err.log")));
 		xplanner.runXPlanning(problemFile);
 		System.setOut(console);
 		

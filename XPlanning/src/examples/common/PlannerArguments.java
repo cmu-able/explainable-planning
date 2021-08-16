@@ -48,7 +48,14 @@ public class PlannerArguments {
 			updatePropertyWithArgument(XPlannerOutDirectories.POLICIES_OUTPUT_PATH_PROP, arguments, parser, props);
 			updatePropertyWithArgument(XPlannerOutDirectories.PRISM_ADVS_OUTPUT_PATH_PROP, arguments, parser, props);
 			updatePropertyWithArgument(XPlannerOutDirectories.PRISM_MODELS_OUTPUT_PATH_PROP, arguments, parser, props);
-			props.setProperty(PROBLEM_FILE_PROP, arguments.getString("problem"));
+			String problemFile = arguments.getString("problem");
+			props.setProperty(PROBLEM_FILE_PROP, problemFile);
+			Path problemPath = Paths.get(props.getProperty(PROBLEM_FILES_PATH_PROP), problemFile);
+			if (!Files.isRegularFile(problemPath)) {
+				ArgumentParserException pe = new ArgumentParserException("Could not find file '" + problemPath.toString() + "'", parser);
+				throw pe;
+				
+			}
 			Integer ll = arguments.getInt("linelength");
 			if (ll != null) {
 				props.put("consoleWidth", ll);

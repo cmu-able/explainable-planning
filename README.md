@@ -1,3 +1,14 @@
+This top level README is out of date. You should look at [XPlanning](XPlanning/README.md) for the latest information on building and running the demos.
+
+This repository contains code for various parts of the Explainable Planning research at the ABLE group at Carnegie Mellon University. The code herein is in various stages of maturity. The repository is organized as follows (but is likely to undergo significant reorganization in the future):
+
+- **XPlanning**: Contains the source code and examples for the core work on explainable planning as detailed in [Towards Explainable Multi-Objective Probabilistic Planning](http://acme.able.cs.cmu.edu/pubs/show.php?id=572). This is the most reusable by third parties.
+- **XPlanningEvaluation**: Contains code for implementing the human studies experiment to show efficacy of contrastive explanations, as detailed in [Tradeoff-Focused Contrastive Explanation for MDP Planning](http://acme.able.cs.cmu.edu/pubs/show.php?id=629).
+- **IRB-docs**: Material related to IRB approval for the study in **XPlanningEvaluation**.
+- **XPlanningIterative**: Contains code for implementing "Why?" and "Why not?" questions about plans, as described in [Interactive Explanation for Planning-Based Systems](http://acme.able.cs.cmu.edu/pubs/show.php?id=596)
+
+Other folders here contain random presentations, scripts used to process data for evalutation, etc.
+
 # explainable-planning
 
 To run MobileRobotDemo:

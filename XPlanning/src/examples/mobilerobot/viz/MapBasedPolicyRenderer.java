@@ -296,6 +296,8 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		renderPolicy(policyFile, "");
 
 	}
+	
+
 
 	@Override
 	public void renderPolicy(String policyFile, String prefix) throws IOException {

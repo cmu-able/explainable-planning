@@ -53,7 +53,7 @@ public class EnergyConsumptionQFunction implements IStandardMetricQFunction<Move
 		RobotSpeed speed = transition.getSrcStateVarValue(RobotSpeed.class, mDomain.getSpeedStateVar());
 		
 		double consumption = distance.getDistance() / speed.getSpeed() * 
-				(BASE_DISCHARGE_RATE + speed.getSpeed() * SPEED_INCREASE_DISCHARGE_RATE);
+				(BASE_DISCHARGE_RATE + speed.getSpeed() * SPEED_INCREASE_DISCHARGE_RATE * 10);
 		
 		return consumption;
 	}

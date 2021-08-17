@@ -5,7 +5,6 @@
 	"preference-info": [
 		{
 			"scaling-const": 0.5, 
-			"scaling-const-comment": "time for longest path on map at 0.35s",
 			"min-step-value": 0.0,
 			"max-step-value": 165.0, 
 			"max-step-value-comment": "time to traverse longest segment at 0.35s",

@@ -42,12 +42,21 @@ RUN  wget https://github.com/prismmodelchecker/prism/archive/refs/tags/v${PRISM_
   && echo "export LD_LIBRARY_PATH=/xplanning/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc \
   && cd ../.. \
   && rm -f v${PRISM_VER}.tar.gz
+  
+RUN wget https://packages.gurobi.com/9.1/gurobi9.1.0_linux64.tar.gz \
+  && tar zxf gurobi9.1.0_linux64.tar.gz \
+  && mv gurobi910 /gurobi910 \
+  && echo "export LD_LIBRARY_PATH=/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc \
+  && rm -f gurobi9.1.0_linux64.tar.gz
 
 ADD src src
-ADD data data
 ADD test test
 ADD pom.xml pom.xml
 ADD .classpath .classpath
+
+
+ENV LD_LIBRARY_PATH /xplanning/lib:/gurobi9.1.0_linux64/gurobi910/linux64/lib/
+RUN mvn install -DskipTests
  
 RUN mkdir -p /xplanning/tmpdata/prism/models \
  && mkdir -p /xplanning/tmpdata/prism/advs \
@@ -55,16 +64,16 @@ RUN mkdir -p /xplanning/tmpdata/prism/models \
  && mkdir -p /explanations \
  && mkdir -p /data
    
+ADD data data
 ADD data/clinicscheduling /data/clinicscheduling
 ADD data/dart /data/dart
 ADD data/mobilerobot /data/mobilerobot
 ADD data/docker-globals.properties /data/globals.properties
 
-ADD gurobi9.1.0_linux64.tar.gz /gurobi9.1.0_linux64
-RUN echo "export LD_LIBRARY_PATH=/gurobi9.1.0_linux64/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc
 
-ENV LD_LIBRARY_PATH /xplanning/lib:/gurobi9.1.0_linux64/gurobi910/linux64/lib/
-RUN mvn install -DskipTests
+#ADD gurobi9.1.0_linux64.tar.gz /gurobi9.1.0_linux64
+#RUN echo "export LD_LIBRARY_PATH=/gurobi9.1.0_linux64/gurobi910/linux64/lib/:\$LD_LIBRARY_PATH" >> ~/.bashrc
+
 
 ADD run-demo.sh run-demo.sh
 RUN chmod +x run-demo.sh

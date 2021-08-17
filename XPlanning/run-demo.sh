@@ -67,4 +67,4 @@ if [ "$LINELENGTH" != "" ]; then
   ARGS="--linelength ${LINELENGTH}"
 fi
 
-LD_LIBRARY_PATH=/xplanning/lib/:/gurobi9.1.0_linux64/gurobi910/linux64/lib/ java ${DEBUG} -Dfile.encoding=UTF-8 -cp target/classes:lib/* ${RUNNER} ${ARGS} ${PROPS} ${MISSION}
+LD_LIBRARY_PATH=/xplanning/lib/:/gurobi910/linux64/lib/ java ${DEBUG} -Dfile.encoding=UTF-8 -cp target/classes:lib/* ${RUNNER} ${ARGS} ${PROPS} ${MISSION}

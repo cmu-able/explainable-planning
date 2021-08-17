@@ -266,7 +266,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			double tX = xTransform.transform(n.getNodeXCoordinate());
 			double tY = yTransform.transform(n.getNodeYCoordinate());
 			Node node = m_graph.addNode(n.getNodeID(), new HashMap<String, Object>(), new Position(tX, tY),
-					new Dimension(15, 15), true, true);
+					new Dimension(0, 0), true, true);
 			if (n == startNode)
 				node.setAttribute("start", Boolean.TRUE);
 			if (n == goalNode)
@@ -299,6 +299,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 
 	@Override
 	public void renderPolicy(String policyFile, String prefix) throws IOException {
+		m_graph.clearEdgeAttributes("dirAngle", "speed");
 		JSONParser jsonParser = new JSONParser();
 		JSONArray policy;
 		try (FileReader fr = new FileReader(policyFile)) {

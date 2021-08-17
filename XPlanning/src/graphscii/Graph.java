@@ -323,4 +323,12 @@ public class Graph {
 		return maxX;
 	}
 
+	public void clearEdgeAttributes(String...keys) {
+		for (Edge e : this.edges.values()) {
+			for (String k : keys) {
+				e.atts.remove(k);
+			}
+		}
+	}
+
 }

@@ -82,6 +82,14 @@ public class Graph {
 		this.edges.put(label0 + label1, edge);
 		return edge;
 	}
+	
+	public void clearEdgeAttributes(String... keys) {
+		for (Edge edge : this.edges.values()) {
+			for (String k : keys) {
+				edge.atts.remove(k);
+			}
+		}
+	}
 
 	public void drawNode(Canvas c, Node n) {
 		double x = n.pos.x * this.maxX;

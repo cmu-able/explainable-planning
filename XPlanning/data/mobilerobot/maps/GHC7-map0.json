@@ -4,6 +4,7 @@
   "map": [
     {
       "area": "SEMI_PRIVATE",
+      "charger": true,
       "node-id": "L10",
       "coords": {
         "x": 7.78,
@@ -79,6 +80,7 @@
     },
     {
       "area": "PUBLIC",
+      "charger": true,
       "node-id": "L30",
       "coords": {
         "x": 6.39,
@@ -192,6 +194,7 @@
     },
     {
       "area": "PUBLIC",
+      "charger": true,
       "node-id": "LX5",
       "coords": {
         "x": 7.14,

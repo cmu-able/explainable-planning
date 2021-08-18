@@ -18,12 +18,14 @@ import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.Mission;
 import examples.mobilerobot.dsm.MobileRobotXMDPBuilder;
 import examples.mobilerobot.dsm.parser.AreaParser;
+import examples.mobilerobot.dsm.parser.ChargerPresentParser;
 import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
 import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.ChargerPresence;
 import examples.mobilerobot.models.Occlusion;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
@@ -32,6 +34,7 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 
 	private static final Area DEFAULT_AREA = Area.PUBLIC;
 	private static final Occlusion DEFAULT_OCCLUSION = Occlusion.CLEAR;
+	private static final ChargerPresence DEFAULT_CHARGER_PRESENCE = new ChargerPresence(false);
 
 	private File mMapsJsonDir;
 	private MapTopologyReader mMapReader;
@@ -44,14 +47,17 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 		mMapsJsonDir = mapsJsonDir;
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
+		ChargerPresentParser chargerParser = new ChargerPresentParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
 		nodeAttributeParsers.add(areaParser);
+		nodeAttributeParsers.add(chargerParser);
 		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
 		edgeAttributeParsers.add(occlusionParser);
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 
 		// Default node/edge attribute values
 		mDefaultNodeAttributes.put(areaParser.getAttributeName(), DEFAULT_AREA);
+		mDefaultNodeAttributes.put(chargerParser.getAttributeName(), DEFAULT_CHARGER_PRESENCE);
 		mDefaultEdgeAttributes.put(occlusionParser.getAttributeName(), DEFAULT_OCCLUSION);
 	}
 

@@ -25,6 +25,13 @@ public class StateVarClass implements IStateVarClass {
 	public StateVarClass() {
 		// mStateVarClass initially empty
 	}
+	
+	public StateVarClass(StateVarDefinition<? extends IStateVarValue>...definitions) {
+		this();
+		for (StateVarDefinition<? extends IStateVarValue> defn : definitions) {
+			add(defn);
+		}
+	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mStateVarClass.add(stateVarDef);

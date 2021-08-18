@@ -24,6 +24,13 @@ public class EffectClass implements IStateVarClass {
 	public EffectClass() {
 		// mEffectClass initially empty
 	}
+	
+	public EffectClass(StateVarDefinition<? extends IStateVarValue>...definitions) {
+		this();
+		for (StateVarDefinition<? extends IStateVarValue> defn : definitions) {
+			add(defn);
+		}
+	}
 
 	public void add(StateVarDefinition<? extends IStateVarValue> stateVarDef) {
 		mStateVarClass.add(stateVarDef);

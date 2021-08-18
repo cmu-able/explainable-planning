@@ -16,6 +16,7 @@ import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.ChargerPresence;
 import examples.mobilerobot.models.Distance;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
@@ -118,7 +119,14 @@ public class MobileRobotXMDPBuilder {
 		Set<Location> locs = new HashSet<>();
 		for (LocationNode node : map) {
 			Area area = node.getNodeAttribute(Area.class, "area");
-			Location loc = new Location(node.getNodeID(), area);
+			ChargerPresence charger = new ChargerPresence(false);
+			try {
+				charger = node.getNodeAttribute(ChargerPresence.class, "hasCharger");
+			}
+			catch (NodeAttributeNotFoundException e) {
+				// Do nothing, assumed false
+			}
+			Location loc = new Location(node.getNodeID(), area, charger);
 			locs.add(loc);
 
 			// Map each location node to its corresponding location value

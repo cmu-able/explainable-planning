@@ -20,9 +20,10 @@ public class Location implements IStateVarValue {
 
 	private StateVarValue mValue;
 
-	public Location(String id, Area area) {
+	public Location(String id, Area area, ChargerPresence hasCharger) {
 		mValue = new StateVarValue(id);
 		mValue.putAttributeValue("area", area);
+		mValue.putAttributeValue("hasCharger", hasCharger);
 	}
 
 	public String getId() {
@@ -31,6 +32,10 @@ public class Location implements IStateVarValue {
 
 	public Area getArea() throws AttributeNameNotFoundException {
 		return (Area) getAttributeValue("area");
+	}
+	
+	public ChargerPresence getChargerPresent() throws AttributeNameNotFoundException {
+		return (ChargerPresence )getAttributeValue("hasCharger");
 	}
 
 	@Override

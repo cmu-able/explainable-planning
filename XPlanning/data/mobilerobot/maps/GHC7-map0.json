@@ -17,6 +17,7 @@
     },
     {
       "area": "PUBLIC",
+      "charger": true,
       "node-id": "LX1",
       "coords": {
         "x": 5.27,
@@ -80,7 +81,6 @@
     },
     {
       "area": "PUBLIC",
-      "charger": true,
       "node-id": "L30",
       "coords": {
         "x": 6.39,
@@ -168,6 +168,7 @@
     },
     {
       "area": "SEMI_PRIVATE",
+      "charger": true,
       "node-id": "L18",
       "coords": {
         "x": 7.73,
@@ -244,6 +245,7 @@
     },
     {
       "area": "PUBLIC",
+      "charger": true,
       "node-id": "L27",
       "coords": {
         "x": 6.68,

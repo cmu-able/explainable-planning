@@ -14,6 +14,7 @@ import examples.common.PlannerArguments;
 import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.EnergyConsumptionQFunction;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.viz.MapBasedPolicyRenderer;
@@ -107,6 +108,10 @@ public class MobileRobotXPlanner {
 				"very-intrusive");
 		vocab.putPreposition(IntrusiveMoveEvent.NAME, "at");
 		vocab.putUnit(IntrusiveMoveEvent.NAME, "location", "locations");
+		
+		vocab.putNoun(EnergyConsumptionQFunction.NAME, "energy");
+		vocab.putVerb(EnergyConsumptionQFunction.NAME, "consumes");
+		vocab.putUnit(EnergyConsumptionQFunction.NAME, "milliwatt", "milliwatts");
 		return vocab;
 	}
 
@@ -115,6 +120,7 @@ public class MobileRobotXPlanner {
 		decimalFormatter.putDecimalFormat(TravelTimeQFunction.NAME, "#");
 		decimalFormatter.putDecimalFormat(CollisionEvent.NAME, "#.#");
 		decimalFormatter.putDecimalFormat(IntrusiveMoveEvent.NAME, "#");
+		decimalFormatter.putDecimalFormat(EnergyConsumptionQFunction.NAME, "#");
 		return decimalFormatter;
 	}
 
@@ -122,6 +128,8 @@ public class MobileRobotXPlanner {
 		verbalizerSettings.appendQFunctionName(TravelTimeQFunction.NAME);
 		verbalizerSettings.appendQFunctionName(CollisionEvent.NAME);
 		verbalizerSettings.appendQFunctionName(IntrusiveMoveEvent.NAME);
+		verbalizerSettings.appendQFunctionName(EnergyConsumptionQFunction.NAME);
+
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME);

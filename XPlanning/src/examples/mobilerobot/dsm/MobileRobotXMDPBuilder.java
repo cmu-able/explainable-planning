@@ -9,6 +9,8 @@ import examples.mobilerobot.dsm.exceptions.MapTopologyException;
 import examples.mobilerobot.dsm.exceptions.NodeAttributeNotFoundException;
 import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
+import examples.mobilerobot.metrics.EnergyConsumptionDomain;
+import examples.mobilerobot.metrics.EnergyConsumptionQFunction;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
@@ -252,11 +254,16 @@ public class MobileRobotXMDPBuilder {
 		metric.putEventValue(veryIntrusive, VERY_INTRUSIVE_PENALTY);
 		NonStandardMetricQFunction<MoveToAction, IntrusivenessDomain, IntrusiveMoveEvent> intrusiveQFunction = new NonStandardMetricQFunction<>(
 				metric);
+		
+		// Energy Consumption
+		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, moveToDef);
+		EnergyConsumptionQFunction energyQFunction = new EnergyConsumptionQFunction(energyDomain);
 
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		qSpace.addQFunction(collisionQFunction);
 		qSpace.addQFunction(intrusiveQFunction);
+		qSpace.addQFunction(energyQFunction);
 		return qSpace;
 	}
 

@@ -1,0 +1,26 @@
+{
+	"map-file": "WEH4-scaled.json",
+	"start-id": "l38",
+	"goal-id": "l35",
+	"preference-info": [
+		{
+			"scaling-const": 0.5, 
+			"min-step-value": 0.0,
+			"max-step-value": 165.0, 
+			"max-step-value-comment": "time to traverse longest segment at 0.35s",
+			"objective": "travelTime"
+		},
+		{
+			"scaling-const": 0.4,
+			"min-step-value": 0.0,
+			"max-step-value": 1.0,
+			"objective": "collision"
+		},
+		{
+			"scaling-const": 0.1,
+			"min-step-value": 0.0,
+			"max-step-value": 3.0,
+			"objective": "intrusiveness"
+		}
+	]
+}

@@ -1,0 +1,439 @@
+{
+    "mur": 16,
+    "map": [
+        {
+            "area": "PRIVATE",
+            "node-id": "l1",
+            "coords": {
+                "y": 3.598,
+                "x": 2.9526875
+            },
+            "connected-to": [
+                "l3",
+                "l2"
+            ]
+        },
+        {
+            "area": "PRIVATE",
+            "node-id": "l2",
+            "coords": {
+                "y": 3.598,
+                "x": 3.1723125000000003
+            },
+            "connected-to": [
+                "l1",
+                "l56"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l3",
+            "coords": {
+                "y": 3.598,
+                "x": 2.5641875
+            },
+            "connected-to": [
+                "l4",
+                "l1",
+                "l8",
+                "l39"
+            ]
+        },
+        {
+            "area": "SEMI_PRIVATE",
+            "node-id": "l4",
+            "coords": {
+                "y": 3.598,
+                "x": 1.1486250000000002
+            },
+            "connected-to": [
+                "l5",
+                "l37",
+                "l3",
+                "l6"
+            ]
+        },
+        {
+            "area": "PRIVATE",
+            "node-id": "l5",
+            "coords": {
+                "y": 3.598,
+                "x": 0.013500000000000068
+            },
+            "connected-to": [
+                "l38",
+                "l36",
+                "l4"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l6",
+            "coords": {
+                "y": 4.239875,
+                "x": 1.1486250000000002
+            },
+            "connected-to": [
+                "l8",
+                "l7",
+                "l4"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l7",
+            "coords": {
+                "y": 4.239875,
+                "x": 0.8885000000000001
+            },
+            "connected-to": [
+                "l6",
+                "l28"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l8",
+            "coords": {
+                "y": 4.239875,
+                "x": 2.5641875
+            },
+            "connected-to": [
+                "l9",
+                "l6",
+                "l3",
+                "l34"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l9",
+            "coords": {
+                "y": 4.239875,
+                "x": 3.1723125000000003
+            },
+            "connected-to": [
+                "l56",
+                "l8",
+                "l10"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l10",
+            "coords": {
+                "y": 4.6588125,
+                "x": 3.1723125000000003
+            },
+            "connected-to": [
+                "l35",
+                "l9"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l13",
+            "coords": {
+                "y": 2.2871875,
+                "x": 2.9526875
+            },
+            "connected-to": [
+                "l14",
+                "l39",
+                "l19"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l14",
+            "coords": {
+                "y": 2.2871875,
+                "x": 2.8006875
+            },
+            "connected-to": [
+                "l13",
+                "l37",
+                "l15"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l15",
+            "coords": {
+                "y": 1.0473124999999999,
+                "x": 2.8006875
+            },
+            "connected-to": [
+                "l16",
+                "l21",
+                "l14"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l16",
+            "coords": {
+                "y": 1.0473124999999999,
+                "x": 3.0709375000000003
+            },
+            "connected-to": [
+                "l17",
+                "l15"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l17",
+            "coords": {
+                "y": 1.4121875,
+                "x": 3.0709375000000003
+            },
+            "connected-to": [
+                "l18",
+                "l16"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l18",
+            "coords": {
+                "y": 1.4121875,
+                "x": 3.2635
+            },
+            "connected-to": [
+                "l19",
+                "l17"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l19",
+            "coords": {
+                "y": 2.2973125,
+                "x": 3.2635
+            },
+            "connected-to": [
+                "l18",
+                "l13"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l21",
+            "coords": {
+                "y": 0.3344999999999998,
+                "x": 2.8006875
+            },
+            "connected-to": [
+                "l15",
+                "l22"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l22",
+            "coords": {
+                "y": 0.3344999999999998,
+                "x": 2.9358125
+            },
+            "connected-to": [
+                "l21",
+                "l23"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l23",
+            "coords": {
+                "y": 0.0,
+                "x": 2.9358125
+            },
+            "connected-to": [
+                "l22",
+                "l24"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l24",
+            "coords": {
+                "y": 0.0,
+                "x": 2.75
+            },
+            "connected-to": [
+                "l23",
+                "l38"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l28",
+            "coords": {
+                "y": 4.358124999999999,
+                "x": 0.8885000000000001
+            },
+            "connected-to": [
+                "l36",
+                "l29",
+                "l7"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l29",
+            "coords": {
+                "y": 5.0371875,
+                "x": 0.8885000000000001
+            },
+            "connected-to": [
+                "l28",
+                "l30"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l30",
+            "coords": {
+                "y": 5.0371875,
+                "x": 1.6351250000000002
+            },
+            "connected-to": [
+                "l29",
+                "l31"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l31",
+            "coords": {
+                "y": 4.628375,
+                "x": 1.6351250000000002
+            },
+            "connected-to": [
+                "l30",
+                "l32"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l32",
+            "coords": {
+                "y": 4.628375,
+                "x": 2.0574375000000003
+            },
+            "connected-to": [
+                "l31",
+                "l33"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l33",
+            "coords": {
+                "y": 4.847999999999999,
+                "x": 2.0574375000000003
+            },
+            "connected-to": [
+                "l32",
+                "l34"
+            ]
+        },
+        {
+            "area": "PRIVATE",
+            "node-id": "l34",
+            "coords": {
+                "y": 4.847999999999999,
+                "x": 2.5641875
+            },
+            "connected-to": [
+                "l33",
+                "l35",
+                "l8"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l35",
+            "coords": {
+                "y": 4.847999999999999,
+                "x": 3.1723125000000003
+            },
+            "connected-to": [
+                "l34",
+                "l10"
+            ]
+        },
+        {
+            "area": "PRIVATE",
+            "node-id": "l36",
+            "coords": {
+                "y": 4.354749999999999,
+                "x": 0.0
+            },
+            "connected-to": [
+                "l28",
+                "l5"
+            ]
+        },
+        {
+            "area": "SEMI_PRIVATE",
+            "node-id": "l37",
+            "coords": {
+                "y": 2.2871875,
+                "x": 1.1486250000000002
+            },
+            "connected-to": [
+                "l4",
+                "l14"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l38",
+            "coords": {
+                "y": 0.0,
+                "x": 0.013500000000000068
+            },
+            "connected-to": [
+                "l24",
+                "l5"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l39",
+            "coords": {
+                "y": 2.6689374999999997,
+                "x": 2.9526875
+            },
+            "connected-to": [
+                "l3",
+                "l13"
+            ]
+        },
+        {
+            "area": "PUBLIC",
+            "node-id": "l56",
+            "coords": {
+                "y": 4.003375,
+                "x": 3.1723125000000003
+            },
+            "connected-to": [
+                "l2",
+                "l9"
+            ]
+        }
+    ],
+    "obstacles": [
+        {
+            "occlusion": "OCCLUDED",
+            "to-id": "l15",
+            "from-id": "l14"
+        },
+        {
+            "occlusion": "PARTIALLY_OCCLUDED",
+            "to-id": "l39",
+            "from-id": "l3"
+        }
+    ]
+}

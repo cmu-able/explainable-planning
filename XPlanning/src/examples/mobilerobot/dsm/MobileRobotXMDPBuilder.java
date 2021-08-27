@@ -199,6 +199,10 @@ public class MobileRobotXMDPBuilder {
 		goal.addStateVar(rLocDef.getStateVar(loc));
 		return goal;
 	}
+	
+	private boolean isDark(Connection conn) {
+		return false;
+	}
 
 	private TransitionFunction buildTransitionFunction(MapTopology map) throws XMDPException, MapTopologyException {
 		// MoveTo:
@@ -214,6 +218,9 @@ public class MobileRobotXMDPBuilder {
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
 				preMoveTo.add(moveTo, rLocDef, locSrc);
+				if (isDark(conn)) {
+					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
+				}
 			}
 		}
 

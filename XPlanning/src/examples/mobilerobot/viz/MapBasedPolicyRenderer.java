@@ -34,6 +34,7 @@ import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Darkness;
 import examples.mobilerobot.models.Occlusion;
 import explanation.rendering.IPolicyRenderer;
 import graphscii.Edge;
@@ -86,6 +87,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			"| Edges:                   |",
 			"|  ()  : Sparse occlusion  |", 
 			"|  []  : Dense occlusion   |", 
+			"|  o   : Dark corridor     |",
 			"|  " + (char )0x21D2 + "   : 0.7m/s traversal  |",
 			"|  " + (char )0x2192 + "   : 0.35m/s traversal |", 
 			"+--------------------------+" };
@@ -154,6 +156,10 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 				label = String.format("(%s)", label);
 				break;
 			}
+			
+			Darkness dark = (Darkness) e.getAttribute("lighting");
+			if (dark == Darkness.DARK)
+				label = "o" + label;
 
 			return label;
 		}

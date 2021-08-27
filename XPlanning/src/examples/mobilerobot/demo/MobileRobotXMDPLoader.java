@@ -18,12 +18,14 @@ import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.Mission;
 import examples.mobilerobot.dsm.MobileRobotXMDPBuilder;
 import examples.mobilerobot.dsm.parser.AreaParser;
+import examples.mobilerobot.dsm.parser.DarknessParser;
 import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
 import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
 import examples.mobilerobot.dsm.parser.MissionReader;
 import examples.mobilerobot.dsm.parser.OcclusionParser;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Darkness;
 import examples.mobilerobot.models.Occlusion;
 import language.exceptions.XMDPException;
 import language.mdp.XMDP;
@@ -44,15 +46,18 @@ public class MobileRobotXMDPLoader implements IXMDPLoader {
 		mMapsJsonDir = mapsJsonDir;
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
+		DarknessParser darknessParser = new DarknessParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
 		nodeAttributeParsers.add(areaParser);
 		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
 		edgeAttributeParsers.add(occlusionParser);
+		edgeAttributeParsers.add(darknessParser);
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 
 		// Default node/edge attribute values
 		mDefaultNodeAttributes.put(areaParser.getAttributeName(), DEFAULT_AREA);
 		mDefaultEdgeAttributes.put(occlusionParser.getAttributeName(), DEFAULT_OCCLUSION);
+		mDefaultEdgeAttributes.put(darknessParser.getAttributeName(), Darkness.LIGHT);
 	}
 
 	@Override

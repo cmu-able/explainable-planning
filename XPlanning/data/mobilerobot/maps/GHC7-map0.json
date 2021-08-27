@@ -548,5 +548,12 @@
       "to-id": "L22",
       "from-id": "L18"
     }
-  ]
+  ],
+  "lighting": [
+	{
+		"dark": true,
+		"to-id": "L22",
+		"from-id": "L18"	
+	}
+	]
 }

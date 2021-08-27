@@ -21,6 +21,11 @@ public class HeadlampState implements IStateVarBoolean {
 	public boolean getValue() {
 		return mOn;
 	}
+	
+	@Override
+	public String toString() {
+		return Boolean.toString(mOn);
+	}
 
 	
 	/*

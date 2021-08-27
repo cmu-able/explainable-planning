@@ -147,6 +147,7 @@ public class MobileRobotXMDPBuilder {
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(rLocDef);
 		stateSpace.addStateVarDefinition(rSpeedDef);
+		stateSpace.addStateVarDefinition(rHeadlampDef);
 		return stateSpace;
 	}
 
@@ -190,6 +191,7 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
+		initialState.addStateVar(rHeadlampDef.getStateVar(headlampOff));
 		return initialState;
 	}
 

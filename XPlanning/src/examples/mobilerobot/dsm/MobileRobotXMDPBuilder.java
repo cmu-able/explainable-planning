@@ -17,12 +17,15 @@ import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.Area;
 import examples.mobilerobot.models.Distance;
+import examples.mobilerobot.models.HeadlampActionDescription;
+import examples.mobilerobot.models.HeadlampState;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotLocationActionDescription;
 import examples.mobilerobot.models.RobotSpeed;
 import examples.mobilerobot.models.RobotSpeedActionDescription;
+import examples.mobilerobot.models.SetHeadlampAction;
 import examples.mobilerobot.models.SetSpeedAction;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.EventBasedMetric;
@@ -78,6 +81,20 @@ public class MobileRobotXMDPBuilder {
 	// SetSpeed action definition
 	private ActionDefinition<SetSpeedAction> setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedHalf,
 			setSpeedFull);
+	
+	// --- Headlamp setting --- //
+	private HeadlampState headlampOn = new HeadlampState(true);
+	private HeadlampState headlampOff = new HeadlampState(false);
+	
+	// Robot's headlamp state variable
+	private StateVarDefinition<HeadlampState> rHeadlampDef = new StateVarDefinition<>("rHeadlamp", headlampOn, headlampOff);
+	
+	// Headlamp-setting actions
+	private SetHeadlampAction setHeadlampOff = new SetHeadlampAction(rHeadlampDef.getStateVar(headlampOff));
+	private SetHeadlampAction setHeadlampOn = new SetHeadlampAction(rHeadlampDef.getStateVar(headlampOn));
+	
+	// SetHeadlamp action defintion
+	private ActionDefinition<SetHeadlampAction> setHeadlampDef = new ActionDefinition<>("setHeadlamp", setHeadlampOff, setHeadlampOn);
 	// ------ //
 
 	// --- QA functions --- //
@@ -217,14 +234,28 @@ public class MobileRobotXMDPBuilder {
 		// Action description for rSpeed
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,
 				rSpeedDef);
-
+		
 		// PSO
 		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef, preSetSpeed);
 		setSpeedPSO.addActionDescription(rSpeedActionDesc);
+		
+		// SetHeadlamp
+		// Precondition
+		Precondition<SetHeadlampAction> preSetHeadlamp = new Precondition<>(setHeadlampDef);
+		preSetHeadlamp.add(setHeadlampOn, rHeadlampDef, headlampOff);
+		preSetHeadlamp.add(setHeadlampOff, rHeadlampDef, headlampOn);
+		
+		// Action description for rHeadlamp
+		HeadlampActionDescription rHeadlampActionDesc = new HeadlampActionDescription(setHeadlampDef, preSetHeadlamp, rHeadlampDef);
+		
+		// PSO
+		FactoredPSO<SetHeadlampAction> setHeadlampPSO = new FactoredPSO<>(setHeadlampDef, preSetHeadlamp);
+		setHeadlampPSO.addActionDescription(rHeadlampActionDesc);
 
 		TransitionFunction transFunction = new TransitionFunction();
 		transFunction.add(moveToPSO);
 		transFunction.add(setSpeedPSO);
+		transFunction.add(setHeadlampPSO);
 		return transFunction;
 	}
 
@@ -256,7 +287,7 @@ public class MobileRobotXMDPBuilder {
 				metric);
 		
 		// Energy Consumption
-		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, moveToDef);
+		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, rHeadlampDef, moveToDef);
 		EnergyConsumptionQFunction energyQFunction = new EnergyConsumptionQFunction(energyDomain);
 
 		QSpace qSpace = new QSpace();

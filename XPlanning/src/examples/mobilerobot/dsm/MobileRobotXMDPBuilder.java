@@ -11,11 +11,14 @@ import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.EnergyConsumptionDomain;
 import examples.mobilerobot.metrics.EnergyConsumptionQFunction;
+import examples.mobilerobot.metrics.HeadlampDomain;
+import examples.mobilerobot.metrics.HeadlampEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Darkness;
 import examples.mobilerobot.models.Distance;
 import examples.mobilerobot.models.HeadlampActionDescription;
 import examples.mobilerobot.models.HeadlampState;
@@ -202,8 +205,8 @@ public class MobileRobotXMDPBuilder {
 		return goal;
 	}
 	
-	private boolean isDark(Connection conn) {
-		return false;
+	private boolean isDark(Connection conn) throws MapTopologyException{
+		return conn.getConnectionAttribute(Darkness.class, "lighting") == Darkness.DARK;
 	}
 
 	private TransitionFunction buildTransitionFunction(MapTopology map) throws XMDPException, MapTopologyException {
@@ -222,6 +225,9 @@ public class MobileRobotXMDPBuilder {
 				preMoveTo.add(moveTo, rLocDef, locSrc);
 				if (isDark(conn)) {
 					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
+				}
+				else {
+					preMoveTo.add(moveTo, rHeadlampDef, headlampOff);
 				}
 			}
 		}
@@ -298,12 +304,23 @@ public class MobileRobotXMDPBuilder {
 		// Energy Consumption
 		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, rHeadlampDef, moveToDef);
 		EnergyConsumptionQFunction energyQFunction = new EnergyConsumptionQFunction(energyDomain);
-
+		
+		// Headlamp
+		HeadlampDomain headlampDomain = new HeadlampDomain(setHeadlampDef, rHeadlampDef);
+		HeadlampEvent headlampOn = new HeadlampEvent("headlampOn", headlampDomain, true);
+		HeadlampEvent headlampOff = new HeadlampEvent("headlampOff", headlampDomain, false);
+		EventBasedMetric<SetHeadlampAction, HeadlampDomain, HeadlampEvent> headlampMetric = new EventBasedMetric<>(
+				HeadlampEvent.NAME, headlampDomain);
+		
+		headlampMetric.putEventValue(headlampOn, 1);
+		headlampMetric.putEventValue(headlampOff, 0);
+		NonStandardMetricQFunction<SetHeadlampAction, HeadlampDomain, HeadlampEvent> headlampQFunction = new NonStandardMetricQFunction<>(headlampMetric);
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		qSpace.addQFunction(collisionQFunction);
 		qSpace.addQFunction(intrusiveQFunction);
 		qSpace.addQFunction(energyQFunction);
+		qSpace.addQFunction(headlampQFunction);
 		return qSpace;
 	}
 

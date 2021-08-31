@@ -15,7 +15,7 @@
       "objective": "collision"
     },
     {
-      "scaling-const": 0.2,
+      "scaling-const": 0.19,
       "min-step-value": 0.0,
       "max-step-value": 3.0,
       "objective": "intrusiveness"
@@ -24,7 +24,13 @@
 		"objective": "energyConsumption",
 		"scaling-const": 0.3,
 		"min-step-value": 0.0,
-		"max-step-value": 2525
+		"max-step-value": 4185.0
+	},
+	{
+		"objective": "headlampChange",
+		"scaling-const": 0.01,
+		"min-step-value": 0.0,
+		"max-step-value": 1.0
 	}
   ],
   "start-id": "L1"

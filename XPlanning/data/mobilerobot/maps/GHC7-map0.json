@@ -554,6 +554,16 @@
 		"dark": true,
 		"to-id": "L22",
 		"from-id": "L18"	
+	},
+	{
+		"dark": true,
+		"to-id": "L21",
+		"from-id": "L17"
+	},
+	{
+		"dark": true,
+		"to-id": "L24",
+		"from-id": "L27"
 	}
 	]
 }

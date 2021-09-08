@@ -186,6 +186,7 @@ public class MobileRobotXMDPBuilder {
 		ActionSpace actionSpace = new ActionSpace();
 		actionSpace.addActionDefinition(moveToDef);
 		actionSpace.addActionDefinition(setSpeedDef);
+		actionSpace.addActionDefinition(setHeadlampDef);
 		return actionSpace;
 	}
 
@@ -226,9 +227,9 @@ public class MobileRobotXMDPBuilder {
 				if (isDark(conn)) {
 					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
 				}
-				else {
-					preMoveTo.add(moveTo, rHeadlampDef, headlampOff);
-				}
+//				else {
+//					preMoveTo.add(moveTo, rHeadlampDef, headlampOff);
+//				}
 			}
 		}
 

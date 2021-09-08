@@ -161,7 +161,7 @@ public class PrismTranslatorHelper {
 		builder.append("\n\n");
 
 		// module helper [...] endmodule
-		builder.append("module helper"); 
+		builder.append("module helper");
 		builder.append("\n");
 
 		if (hasGoal) {

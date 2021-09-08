@@ -28,9 +28,11 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 
 	private StateVarDefinition<Location> mrLocDef;
 	private EffectClass mEffectClass; // of rLoc
+	private StateVarDefinition<HeadlampState> mrHeadlampDef;
 
-	public RobotLocationFormula(StateVarDefinition<Location> rLocDef) {
+	public RobotLocationFormula(StateVarDefinition<Location> rLocDef, StateVarDefinition<HeadlampState> rHeadlampDef) {
 		mrLocDef = rLocDef;
+		mrHeadlampDef = rHeadlampDef;
 
 		mEffectClass = new EffectClass();
 		mEffectClass.add(rLocDef);
@@ -39,8 +41,10 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 	@Override
 	public ProbabilisticEffect formula(Discriminant discriminant, MoveToAction moveTo) throws XMDPException {
 		Location srcLoc = discriminant.getStateVarValue(Location.class, mrLocDef);
+		HeadlampState srcHeadlamp = discriminant.getStateVarValue(HeadlampState.class, mrHeadlampDef);
 		StateVar<Location> rLocSrc = mrLocDef.getStateVar(srcLoc);
 		Occlusion occlusion = moveTo.getOcclusion(rLocSrc);
+		Darkness darkness = moveTo.getDarkness(rLocSrc);
 		ProbabilisticEffect rLocProbEffect = new ProbabilisticEffect(mEffectClass);
 		// Possible effects on rLoc
 		Effect newLoc = new Effect(mEffectClass);
@@ -48,12 +52,18 @@ public class RobotLocationFormula implements IProbabilisticTransitionFormula<Mov
 		newLoc.add(mrLocDef.getStateVar(moveTo.getDestination()));
 		oldLoc.add(rLocSrc);
 
-		if (occlusion == Occlusion.OCCLUDED) {
-			rLocProbEffect.put(newLoc, MOVE_PROB_OCCLUDED);
-			rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_OCCLUDED);
-		} else {
-			rLocProbEffect.put(newLoc, MOVE_PROB_NON_OCCLUDED);
-			rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_NON_OCCLUDED);
+		if (darkness == Darkness.DARK && !srcHeadlamp.getValue()) {
+			rLocProbEffect.put(newLoc, 0);
+			rLocProbEffect.put(oldLoc, 1);
+		}
+		else {
+			if (occlusion == Occlusion.OCCLUDED) {
+				rLocProbEffect.put(newLoc, MOVE_PROB_OCCLUDED);
+				rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_OCCLUDED);
+			} else {
+				rLocProbEffect.put(newLoc, MOVE_PROB_NON_OCCLUDED);
+				rLocProbEffect.put(oldLoc, 1 - MOVE_PROB_NON_OCCLUDED);
+			}
 		}
 
 		return rLocProbEffect;

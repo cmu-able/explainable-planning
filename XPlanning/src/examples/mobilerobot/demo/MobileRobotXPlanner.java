@@ -112,7 +112,6 @@ public class MobileRobotXPlanner {
 		vocab.putNoun(EnergyConsumptionQFunction.NAME, "energy");
 		vocab.putVerb(EnergyConsumptionQFunction.NAME, "consumes");
 		vocab.putUnit(EnergyConsumptionQFunction.NAME, "milliwatt", "milliwatts");
-		
 		return vocab;
 	}
 
@@ -134,8 +133,6 @@ public class MobileRobotXPlanner {
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME);
-		
-		
 	}
 
 }

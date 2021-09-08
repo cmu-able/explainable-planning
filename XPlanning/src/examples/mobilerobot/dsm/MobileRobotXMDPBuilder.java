@@ -231,9 +231,6 @@ public class MobileRobotXMDPBuilder {
 				if (isDark(conn) && !hlState.getValue()) {
 					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
 				}
-//				else {
-//					preMoveTo.add(moveTo, rHeadlampDef, headlampOff);
-//				}
 			}
 		}
 

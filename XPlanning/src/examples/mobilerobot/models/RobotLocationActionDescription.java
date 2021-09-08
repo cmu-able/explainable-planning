@@ -34,12 +34,13 @@ public class RobotLocationActionDescription implements IActionDescription<MoveTo
 	private FormulaActionDescription<MoveToAction> mrLocActionDesc;
 
 	public RobotLocationActionDescription(ActionDefinition<MoveToAction> moveToDef,
-			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocDef) {
+			Precondition<MoveToAction> precondition, StateVarDefinition<Location> rLocDef, StateVarDefinition<HeadlampState> rHeadlampDef) {
 		DiscriminantClass discrClass = new DiscriminantClass();
 		discrClass.add(rLocDef);
+		discrClass.add(rHeadlampDef);
 		EffectClass effectClass = new EffectClass();
 		effectClass.add(rLocDef);
-		RobotLocationFormula rLocFormula = new RobotLocationFormula(rLocDef);
+		RobotLocationFormula rLocFormula = new RobotLocationFormula(rLocDef, rHeadlampDef);
 		mrLocActionDesc = new FormulaActionDescription<>(moveToDef, precondition, discrClass, effectClass, rLocFormula);
 	}
 

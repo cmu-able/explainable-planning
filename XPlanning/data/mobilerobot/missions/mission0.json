@@ -24,7 +24,7 @@
 		"objective": "energyConsumption",
 		"scaling-const": 0.3,
 		"min-step-value": 0.0,
-		"max-step-value": 2525
+		"max-step-value": 4185.0
 	}
   ],
   "start-id": "L1"

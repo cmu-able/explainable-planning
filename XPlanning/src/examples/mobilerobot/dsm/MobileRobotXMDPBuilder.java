@@ -16,13 +16,17 @@ import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.models.Area;
+import examples.mobilerobot.models.Darkness;
 import examples.mobilerobot.models.Distance;
+import examples.mobilerobot.models.HeadlampActionDescription;
+import examples.mobilerobot.models.HeadlampState;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.Occlusion;
 import examples.mobilerobot.models.RobotLocationActionDescription;
 import examples.mobilerobot.models.RobotSpeed;
 import examples.mobilerobot.models.RobotSpeedActionDescription;
+import examples.mobilerobot.models.SetHeadlampAction;
 import examples.mobilerobot.models.SetSpeedAction;
 import language.domain.metrics.CountQFunction;
 import language.domain.metrics.EventBasedMetric;
@@ -78,6 +82,20 @@ public class MobileRobotXMDPBuilder {
 	// SetSpeed action definition
 	private ActionDefinition<SetSpeedAction> setSpeedDef = new ActionDefinition<>("setSpeed", setSpeedHalf,
 			setSpeedFull);
+	
+	// --- Headlamp setting --- //
+	private HeadlampState headlampOn = new HeadlampState(true);
+	private HeadlampState headlampOff = new HeadlampState(false);
+	
+	// Robot's headlamp state variable
+	private StateVarDefinition<HeadlampState> rHeadlampDef = new StateVarDefinition<>("rHeadlamp", headlampOn, headlampOff);
+	
+	// Headlamp-setting actions
+	private SetHeadlampAction setHeadlampOff = new SetHeadlampAction(rHeadlampDef.getStateVar(headlampOff));
+	private SetHeadlampAction setHeadlampOn = new SetHeadlampAction(rHeadlampDef.getStateVar(headlampOn));
+	
+	// SetHeadlamp action defintion
+	private ActionDefinition<SetHeadlampAction> setHeadlampDef = new ActionDefinition<>("setHeadlamp", setHeadlampOff, setHeadlampOn);
 	// ------ //
 
 	// --- QA functions --- //
@@ -130,6 +148,7 @@ public class MobileRobotXMDPBuilder {
 		StateSpace stateSpace = new StateSpace();
 		stateSpace.addStateVarDefinition(rLocDef);
 		stateSpace.addStateVarDefinition(rSpeedDef);
+		stateSpace.addStateVarDefinition(rHeadlampDef);
 		return stateSpace;
 	}
 
@@ -139,24 +158,29 @@ public class MobileRobotXMDPBuilder {
 
 		// Assume that all locations are reachable
 		for (Location locDest : rLocDef.getPossibleValues()) {
-			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest));
-
-			// Derived attributes for each move action are obtained from edges in the map
-			LocationNode node = map.lookUpLocationNode(locDest.getId());
-			Set<Connection> connections = map.getConnections(node);
-			for (Connection conn : connections) {
-				Location locSrc = mLocMap.get(conn.getOtherNode(node));
-
-				// Distance
-				Distance distance = new Distance(conn.getDistance());
-				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
-
-				// Occlusion
-				Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
-				moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
+			for (HeadlampState hlState : rHeadlampDef.getPossibleValues()) {
+				MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest), rHeadlampDef.getStateVar(hlState));
+	
+				// Derived attributes for each move action are obtained from edges in the map
+				LocationNode node = map.lookUpLocationNode(locDest.getId());
+				Set<Connection> connections = map.getConnections(node);
+				for (Connection conn : connections) {
+					Location locSrc = mLocMap.get(conn.getOtherNode(node));
+	
+					// Distance
+					Distance distance = new Distance(conn.getDistance());
+					moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
+	
+					// Occlusion
+					Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
+					moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
+					
+					Darkness darkness = conn.getConnectionAttribute(Darkness.class, "lighting");
+					moveTo.putDarknessValue(darkness, rLocDef.getStateVar(locSrc));
+				}
+	
+				moveTos.add(moveTo);
 			}
-
-			moveTos.add(moveTo);
 		}
 
 		// MoveTo action definition
@@ -165,6 +189,7 @@ public class MobileRobotXMDPBuilder {
 		ActionSpace actionSpace = new ActionSpace();
 		actionSpace.addActionDefinition(moveToDef);
 		actionSpace.addActionDefinition(setSpeedDef);
+		actionSpace.addActionDefinition(setHeadlampDef);
 		return actionSpace;
 	}
 
@@ -173,6 +198,7 @@ public class MobileRobotXMDPBuilder {
 		StateVarTuple initialState = new StateVarTuple();
 		initialState.addStateVar(rLocDef.getStateVar(loc));
 		initialState.addStateVar(rSpeedDef.getStateVar(DEFAULT_SPEED));
+		initialState.addStateVar(rHeadlampDef.getStateVar(headlampOff));
 		return initialState;
 	}
 
@@ -182,6 +208,10 @@ public class MobileRobotXMDPBuilder {
 		goal.addStateVar(rLocDef.getStateVar(loc));
 		return goal;
 	}
+	
+	private boolean isDark(Connection conn) throws MapTopologyException{
+		return conn.getConnectionAttribute(Darkness.class, "lighting") == Darkness.DARK;
+	}
 
 	private TransitionFunction buildTransitionFunction(MapTopology map) throws XMDPException, MapTopologyException {
 		// MoveTo:
@@ -190,6 +220,7 @@ public class MobileRobotXMDPBuilder {
 
 		for (MoveToAction moveTo : moveToDef.getActions()) {
 			Location locDest = moveTo.getDestination();
+			HeadlampState hlState = moveTo.getHeadlampState();
 
 			// Source location for each move action from the map
 			LocationNode node = map.lookUpLocationNode(locDest.getId());
@@ -197,12 +228,15 @@ public class MobileRobotXMDPBuilder {
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
 				preMoveTo.add(moveTo, rLocDef, locSrc);
+				if (isDark(conn) && !hlState.getValue()) {
+					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
+				}
 			}
 		}
 
 		// Action description for rLoc
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
-				rLocDef);
+				rLocDef, rHeadlampDef);
 
 		// PSO
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
@@ -217,14 +251,28 @@ public class MobileRobotXMDPBuilder {
 		// Action description for rSpeed
 		RobotSpeedActionDescription rSpeedActionDesc = new RobotSpeedActionDescription(setSpeedDef, preSetSpeed,
 				rSpeedDef);
-
+		
 		// PSO
 		FactoredPSO<SetSpeedAction> setSpeedPSO = new FactoredPSO<>(setSpeedDef, preSetSpeed);
 		setSpeedPSO.addActionDescription(rSpeedActionDesc);
+		
+		// SetHeadlamp
+		// Precondition
+		Precondition<SetHeadlampAction> preSetHeadlamp = new Precondition<>(setHeadlampDef);
+		preSetHeadlamp.add(setHeadlampOn, rHeadlampDef, headlampOff);
+		preSetHeadlamp.add(setHeadlampOff, rHeadlampDef, headlampOn);
+		
+		// Action description for rHeadlamp
+		HeadlampActionDescription rHeadlampActionDesc = new HeadlampActionDescription(setHeadlampDef, preSetHeadlamp, rHeadlampDef);
+		
+		// PSO
+		FactoredPSO<SetHeadlampAction> setHeadlampPSO = new FactoredPSO<>(setHeadlampDef, preSetHeadlamp);
+		setHeadlampPSO.addActionDescription(rHeadlampActionDesc);
 
 		TransitionFunction transFunction = new TransitionFunction();
 		transFunction.add(moveToPSO);
 		transFunction.add(setSpeedPSO);
+		transFunction.add(setHeadlampPSO);
 		return transFunction;
 	}
 
@@ -256,9 +304,10 @@ public class MobileRobotXMDPBuilder {
 				metric);
 		
 		// Energy Consumption
-		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, moveToDef);
+		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, rHeadlampDef, moveToDef);
 		EnergyConsumptionQFunction energyQFunction = new EnergyConsumptionQFunction(energyDomain);
-
+		
+		
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		qSpace.addQFunction(collisionQFunction);

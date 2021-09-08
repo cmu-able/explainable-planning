@@ -1,6 +1,7 @@
 package examples.mobilerobot.metrics;
 
 import examples.mobilerobot.models.Distance;
+import examples.mobilerobot.models.HeadlampState;
 import examples.mobilerobot.models.Location;
 import examples.mobilerobot.models.MoveToAction;
 import examples.mobilerobot.models.RobotSpeed;
@@ -24,6 +25,7 @@ public class EnergyConsumptionQFunction implements IStandardMetricQFunction<Move
 	
 	public static final double BASE_DISCHARGE_RATE = 20.0;
 	public static final double SPEED_INCREASE_DISCHARGE_RATE = 1.5;
+	public static final double HEADLAMP_DISCHARGE_RATE = 20.0;
 
 	private EnergyConsumptionDomain mDomain;
 	
@@ -52,8 +54,13 @@ public class EnergyConsumptionQFunction implements IStandardMetricQFunction<Move
 		
 		RobotSpeed speed = transition.getSrcStateVarValue(RobotSpeed.class, mDomain.getSpeedStateVar());
 		
+		// If the headlamp is on, then need to discharge at a higher rate
+		HeadlampState hl = transition.getSrcStateVarValue(HeadlampState.class, mDomain.getHeadlampStateVar());
+		
 		double consumption = distance.getDistance() / speed.getSpeed() * 
-				(BASE_DISCHARGE_RATE + speed.getSpeed() * SPEED_INCREASE_DISCHARGE_RATE * 10);
+				(BASE_DISCHARGE_RATE 
+						+ speed.getSpeed() * SPEED_INCREASE_DISCHARGE_RATE * 10
+						+ (hl.getValue() ? HEADLAMP_DISCHARGE_RATE : 0));
 		
 		return consumption;
 	}

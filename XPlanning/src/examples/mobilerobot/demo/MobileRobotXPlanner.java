@@ -15,6 +15,7 @@ import examples.common.XPlanner;
 import examples.common.XPlannerOutDirectories;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.EnergyConsumptionQFunction;
+import examples.mobilerobot.metrics.HeadlampEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.TravelTimeQFunction;
 import examples.mobilerobot.viz.MapBasedPolicyRenderer;
@@ -112,6 +113,15 @@ public class MobileRobotXPlanner {
 		vocab.putNoun(EnergyConsumptionQFunction.NAME, "energy");
 		vocab.putVerb(EnergyConsumptionQFunction.NAME, "consumes");
 		vocab.putUnit(EnergyConsumptionQFunction.NAME, "milliwatt", "milliwatts");
+		
+		
+		vocab.putNoun(HeadlampEvent.NAME, "headlamp change");
+		vocab.putVerb(HeadlampEvent.NAME, "change to");
+		vocab.putPreposition(HeadlampEvent.NAME, "");
+		vocab.setOmitUnitWhenNounPresent(HeadlampEvent.NAME);
+		vocab.putUnit(HeadlampEvent.NAME, "time", "times");
+		vocab.putCategoricalValue(HeadlampEvent.NAME, "headlampOn", "on");
+		vocab.putCategoricalValue(HeadlampEvent.NAME, "headlampOff", "off");
 		return vocab;
 	}
 
@@ -121,6 +131,7 @@ public class MobileRobotXPlanner {
 		decimalFormatter.putDecimalFormat(CollisionEvent.NAME, "#.#");
 		decimalFormatter.putDecimalFormat(IntrusiveMoveEvent.NAME, "#");
 		decimalFormatter.putDecimalFormat(EnergyConsumptionQFunction.NAME, "#");
+		decimalFormatter.putDecimalFormat(HeadlampEvent.NAME, "#");
 		return decimalFormatter;
 	}
 
@@ -129,10 +140,14 @@ public class MobileRobotXPlanner {
 		verbalizerSettings.appendQFunctionName(CollisionEvent.NAME);
 		verbalizerSettings.appendQFunctionName(IntrusiveMoveEvent.NAME);
 		verbalizerSettings.appendQFunctionName(EnergyConsumptionQFunction.NAME);
+		verbalizerSettings.appendQFunctionName(HeadlampEvent.NAME);
 
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.NON_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.SOMEWHAT_INTRUSIVE_EVENT_NAME);
 		verbalizerSettings.appendEventName(IntrusiveMoveEvent.NAME, IntrusiveMoveEvent.VERY_INTRUSIVE_EVENT_NAME);
+		
+		verbalizerSettings.appendEventName(HeadlampEvent.NAME, "headlampOn");
+		verbalizerSettings.appendEventName(HeadlampEvent.NAME, "headlampOff");
 	}
 
 }

@@ -11,8 +11,6 @@ import examples.mobilerobot.metrics.CollisionDomain;
 import examples.mobilerobot.metrics.CollisionEvent;
 import examples.mobilerobot.metrics.EnergyConsumptionDomain;
 import examples.mobilerobot.metrics.EnergyConsumptionQFunction;
-import examples.mobilerobot.metrics.HeadlampDomain;
-import examples.mobilerobot.metrics.HeadlampEvent;
 import examples.mobilerobot.metrics.IntrusiveMoveEvent;
 import examples.mobilerobot.metrics.IntrusivenessDomain;
 import examples.mobilerobot.metrics.TravelTimeDomain;
@@ -160,24 +158,29 @@ public class MobileRobotXMDPBuilder {
 
 		// Assume that all locations are reachable
 		for (Location locDest : rLocDef.getPossibleValues()) {
-			MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest));
-
-			// Derived attributes for each move action are obtained from edges in the map
-			LocationNode node = map.lookUpLocationNode(locDest.getId());
-			Set<Connection> connections = map.getConnections(node);
-			for (Connection conn : connections) {
-				Location locSrc = mLocMap.get(conn.getOtherNode(node));
-
-				// Distance
-				Distance distance = new Distance(conn.getDistance());
-				moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
-
-				// Occlusion
-				Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
-				moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
+			for (HeadlampState hlState : rHeadlampDef.getPossibleValues()) {
+				MoveToAction moveTo = new MoveToAction(rLocDef.getStateVar(locDest), rHeadlampDef.getStateVar(hlState));
+	
+				// Derived attributes for each move action are obtained from edges in the map
+				LocationNode node = map.lookUpLocationNode(locDest.getId());
+				Set<Connection> connections = map.getConnections(node);
+				for (Connection conn : connections) {
+					Location locSrc = mLocMap.get(conn.getOtherNode(node));
+	
+					// Distance
+					Distance distance = new Distance(conn.getDistance());
+					moveTo.putDistanceValue(distance, rLocDef.getStateVar(locSrc));
+	
+					// Occlusion
+					Occlusion occlusion = conn.getConnectionAttribute(Occlusion.class, "occlusion");
+					moveTo.putOcclusionValue(occlusion, rLocDef.getStateVar(locSrc));
+					
+					Darkness darkness = conn.getConnectionAttribute(Darkness.class, "lighting");
+					moveTo.putDarknessValue(darkness, rLocDef.getStateVar(locSrc));
+				}
+	
+				moveTos.add(moveTo);
 			}
-
-			moveTos.add(moveTo);
 		}
 
 		// MoveTo action definition
@@ -217,6 +220,7 @@ public class MobileRobotXMDPBuilder {
 
 		for (MoveToAction moveTo : moveToDef.getActions()) {
 			Location locDest = moveTo.getDestination();
+			HeadlampState hlState = moveTo.getHeadlampState();
 
 			// Source location for each move action from the map
 			LocationNode node = map.lookUpLocationNode(locDest.getId());
@@ -224,7 +228,7 @@ public class MobileRobotXMDPBuilder {
 			for (Connection conn : connections) {
 				Location locSrc = mLocMap.get(conn.getOtherNode(node));
 				preMoveTo.add(moveTo, rLocDef, locSrc);
-				if (isDark(conn)) {
+				if (isDark(conn) && !hlState.getValue()) {
 					preMoveTo.add(moveTo, rHeadlampDef, headlampOn);
 				}
 //				else {
@@ -235,7 +239,7 @@ public class MobileRobotXMDPBuilder {
 
 		// Action description for rLoc
 		RobotLocationActionDescription rLocActionDesc = new RobotLocationActionDescription(moveToDef, preMoveTo,
-				rLocDef);
+				rLocDef, rHeadlampDef);
 
 		// PSO
 		FactoredPSO<MoveToAction> moveToPSO = new FactoredPSO<>(moveToDef, preMoveTo);
@@ -306,22 +310,12 @@ public class MobileRobotXMDPBuilder {
 		EnergyConsumptionDomain energyDomain = new EnergyConsumptionDomain(rLocDef, rSpeedDef, rHeadlampDef, moveToDef);
 		EnergyConsumptionQFunction energyQFunction = new EnergyConsumptionQFunction(energyDomain);
 		
-		// Headlamp
-		HeadlampDomain headlampDomain = new HeadlampDomain(setHeadlampDef, rHeadlampDef);
-		HeadlampEvent headlampOn = new HeadlampEvent("headlampOn", headlampDomain, true);
-		HeadlampEvent headlampOff = new HeadlampEvent("headlampOff", headlampDomain, false);
-		EventBasedMetric<SetHeadlampAction, HeadlampDomain, HeadlampEvent> headlampMetric = new EventBasedMetric<>(
-				HeadlampEvent.NAME, headlampDomain);
 		
-		headlampMetric.putEventValue(headlampOn, 1);
-		headlampMetric.putEventValue(headlampOff, 0);
-		NonStandardMetricQFunction<SetHeadlampAction, HeadlampDomain, HeadlampEvent> headlampQFunction = new NonStandardMetricQFunction<>(headlampMetric);
 		QSpace qSpace = new QSpace();
 		qSpace.addQFunction(timeQFunction);
 		qSpace.addQFunction(collisionQFunction);
 		qSpace.addQFunction(intrusiveQFunction);
 		qSpace.addQFunction(energyQFunction);
-		qSpace.addQFunction(headlampQFunction);
 		return qSpace;
 	}
 

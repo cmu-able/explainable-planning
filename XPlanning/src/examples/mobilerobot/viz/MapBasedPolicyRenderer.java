@@ -89,6 +89,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			"|  ()  : Sparse occlusion  |", 
 			"|  []  : Dense occlusion   |", 
 			"|  o   : Dark corridor     |",
+			"|  *   : Headlamp on       |",
 			"|  " + (char )0x21D2 + "   : 0.7m/s traversal  |",
 			"|  " + (char )0x2192 + "   : 0.35m/s traversal |", 
 			"+--------------------------+" };

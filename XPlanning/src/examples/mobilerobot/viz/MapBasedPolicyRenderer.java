@@ -28,6 +28,7 @@ import examples.mobilerobot.dsm.LocationNode;
 import examples.mobilerobot.dsm.MapTopology;
 import examples.mobilerobot.dsm.Mission;
 import examples.mobilerobot.dsm.parser.AreaParser;
+import examples.mobilerobot.dsm.parser.DarknessParser;
 import examples.mobilerobot.dsm.parser.IEdgeAttributeParser;
 import examples.mobilerobot.dsm.parser.INodeAttributeParser;
 import examples.mobilerobot.dsm.parser.MapTopologyReader;
@@ -147,6 +148,10 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		public String labelFor(Edge e) {
 			Character dir = getAngleChar(e);
 			String label = dir == null ? "" : ("" + dir);
+			Boolean headlamp = (Boolean )e.getAttribute("headlamp");
+			if (headlamp != null && headlamp) {
+				label += "*";
+			}
 			Occlusion occ = (Occlusion) e.getAttribute("occlusion");
 			switch (occ) {
 			case OCCLUDED:
@@ -193,6 +198,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			}
 			// System.out.println(
 			// String.format("%s -- %s: %.0f", e.getSource().getLabel(), e.getTarget().getLabel(), angle, ret));
+			
 			return ret;
 
 		}
@@ -215,15 +221,18 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 		}
 		AreaParser areaParser = new AreaParser();
 		OcclusionParser occlusionParser = new OcclusionParser();
+		DarknessParser darknessParser = new DarknessParser();
 		Set<INodeAttributeParser<? extends INodeAttribute>> nodeAttributeParsers = new HashSet<>();
 		nodeAttributeParsers.add(areaParser);
 		Set<IEdgeAttributeParser<? extends IEdgeAttribute>> edgeAttributeParsers = new HashSet<>();
 		edgeAttributeParsers.add(occlusionParser);
+		edgeAttributeParsers.add(darknessParser);
 		mMapReader = new MapTopologyReader(nodeAttributeParsers, edgeAttributeParsers);
 
 		// Default node/edge attribute values
 		mDefaultNodeAttributes.put(areaParser.getAttributeName(), DEFAULT_AREA);
 		mDefaultEdgeAttributes.put(occlusionParser.getAttributeName(), DEFAULT_OCCLUSION);
+		mDefaultEdgeAttributes.put(darknessParser.getAttributeName(), Darkness.LIGHT);
 
 		Mission mission;
 		try {
@@ -289,6 +298,10 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			if (occlusion != null) {
 				edge.setAttribute("occlusion", occlusion);
 			}
+			Darkness darkness = e.getConnectionAttribute(Darkness.class, "lighting");
+			if (darkness != null) {
+				edge.setAttribute("lighting", darkness);
+			}
 		}
 
 	}
@@ -326,6 +339,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 			if ("moveTo".equals(actionType)) {
 				String sourceLabel = (String) state.get("rLoc");
 				double speed = (Double) state.get("rSpeed");
+				boolean headlamp = (Boolean )state.get("rHeadlamp");
 				String targetLabel = (String) ((JSONArray) action.get("params")).get(0);
 				Edge e = m_graph.getEdgeBySourceTarget(sourceLabel, targetLabel);
 				Node source = null;
@@ -346,6 +360,7 @@ public class MapBasedPolicyRenderer implements IPolicyRenderer {
 				}
 				e.setAttribute("dirAngle", angle);
 				e.setAttribute("speed", speed == 0.35 ? "normal" : "fast");
+				e.setAttribute("headlamp", headlamp);
 			}
 
 		}

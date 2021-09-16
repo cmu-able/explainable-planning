@@ -2,6 +2,7 @@ package explanation.verbalization;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ public class Verbalizer {
 
 	private static final double EQUALITY_THRESHOLD = 5e-4;
 	private static final String COMMA_AND = ", and ";
+	private static final DecimalFormat COST_FORMAT = new DecimalFormat("#.###");
 
 	private Vocabulary mVocabulary;
 	private CostCriterion mCostCriterion;
@@ -240,7 +242,7 @@ public class Verbalizer {
 		if (isCostDiff) {
 			builder.append(scaledQACost >= 0 ? "+" : "");
 		}
-		builder.append(scaledQACost);
+		builder.append(COST_FORMAT.format(scaledQACost));
 		builder.append(" in cost");
 		builder.append(")");
 		return builder.toString();
